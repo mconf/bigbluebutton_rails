@@ -1,0 +1,6 @@
+*~
+rdoc/*
+pkg
+*.sqlite3
+log
+*.gem
