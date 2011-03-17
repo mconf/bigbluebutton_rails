@@ -15,7 +15,7 @@ end
 desc 'Generate documentation.'
 Rake::RDocTask.new(:rdoc) do |rdoc|
   rdoc.rdoc_dir = 'rdoc'
-  rdoc.title    = 'BigBlueButton-Rails'
+  rdoc.title    = 'BigBlueButton on Rails'
   rdoc.rdoc_files.include('README.rdoc')
   rdoc.rdoc_files.include('lib/**/*.rb')
 end

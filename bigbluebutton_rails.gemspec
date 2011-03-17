@@ -1,13 +1,13 @@
 $:.push File.expand_path("../lib", __FILE__)
-require "bigbluebutton-rails/version"
+require "bigbluebutton_rails/version"
 
 Gem::Specification.new do |s|
-  s.name        = "bigbluebutton-rails"
-  s.version     = BigBlueButtonRails::VERSION.dup
+  s.name        = "bigbluebutton_rails"
+  s.version     = BigbluebuttonRails::VERSION.dup
   s.platform    = Gem::Platform::RUBY  
   s.summary     = "BigBlueButton integration for Ruby on Rails"
   s.email       = "mconf@googlegroups.com"
-  s.homepage    = "http://github.com/mconf/bigbluebutton-rails"
+  s.homepage    = "http://github.com/mconf/bigbluebutton_rails"
   s.description = "BigBlueButton integration for Ruby on Rails"
   s.authors     = ['Leonardo Crauss Daronco']
 
