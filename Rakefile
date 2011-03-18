@@ -1,16 +1,14 @@
-require 'rake/testtask'
+require 'rubygems'
+require 'bundler/setup'
+
 require 'rake/rdoctask'
+require 'rspec/core/rake_task'
+#require 'ci/reporter/rake/rspec'
 
 desc 'Default: run tests.'
-task :default => :test
+task :default => :spec
 
-desc 'Run all unit tests.'
-Rake::TestTask.new(:test) do |t|
-  t.libs << 'lib'
-  t.libs << 'test'
-  t.pattern = 'test/**/*_test.rb'
-  t.verbose = true
-end
+RSpec::Core::RakeTask.new(:spec)
 
 desc 'Generate documentation.'
 Rake::RDocTask.new(:rdoc) do |rdoc|

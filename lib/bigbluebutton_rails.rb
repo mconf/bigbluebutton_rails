@@ -1,2 +1,5 @@
 require 'rails'
-require 'bigbluebutton_rails/rails'
+
+module BigbluebuttonRails
+  require 'bigbluebutton_rails/rails'
+end
