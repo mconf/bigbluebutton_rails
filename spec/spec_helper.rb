@@ -2,7 +2,9 @@
 ENV["RAILS_ENV"] = "test"
 
 require "rails_app/config/environment"
+require "rails/test_help"
 require "rspec/rails"
+require "shoulda-matchers"
 
 ActionMailer::Base.delivery_method = :test
 ActionMailer::Base.perform_deliveries = true
@@ -15,15 +17,12 @@ Rails.backtrace_cleaner.remove_silencers!
 #Capybara.default_driver   = :rack_test
 #Capybara.default_selector = :css
 
-require "rails/test_help"
-# Run any available migration
-#ActiveRecord::Migrator.migrate File.expand_path("../dummy/db/migrate/", __FILE__)
-
 # Load support files
-Dir["#{File.dirname(__FILE__)}/support/**/*.rb"].each {  |f| require f }
+Dir["#{File.dirname(__FILE__)}/support/**/*.rb"].each { |f| require f }
 
 # Load Factories
 require 'factory_girl'
+require 'forgery'
 Dir["#{ File.dirname(__FILE__)}/factories/*.rb"].each { |f| require f }
 
 RSpec.configure do |config|
@@ -31,6 +30,6 @@ RSpec.configure do |config|
   config.mock_with :rspec
 end
 
-# For generators
+# To test generators
 require "generator_spec/test_case"
 require "generators/bigbluebutton_rails/install_generator"

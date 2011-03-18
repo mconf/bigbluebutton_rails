@@ -8,4 +8,6 @@ group :test do
   gem 'factory_girl', '~> 1.3.2'
   gem 'sqlite3-ruby'
   gem 'generator_spec'
+  gem 'shoulda-matchers'
+  gem 'forgery'
 end

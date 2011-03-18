@@ -1,14 +1,14 @@
-class BigbluebuttonRailsCreate < ActiveRecord::Migration
+class CreateBigbluebuttonRails < ActiveRecord::Migration
 
   def self.up
-    create_table :bbb_servers do |t|
+    create_table :bigbluebutton_servers do |t|
       t.string :name
       t.string :url
-      t.salt :salt
+      t.string :salt
       t.timestamps
     end
-    create_table :bbb_rooms do |t|
-      t.integer :bbb_server_id
+    create_table :bigbluebutton_rooms do |t|
+      t.integer :bigbluebutton_server_id
       t.string :meeting_id
       t.string :meeting_name
       t.string :attendee_password
@@ -16,13 +16,13 @@ class BigbluebuttonRailsCreate < ActiveRecord::Migration
       t.string :welcome_msg
       t.timestamps
     end
-    add_index :bbb_rooms, :bbb_server_id
-    add_index :bbb_rooms, :meeting_id, :unique => true
+    add_index :bigbluebutton_rooms, :bigbluebutton_server_id
+    add_index :bigbluebutton_rooms, :meeting_id, :unique => true
   end
 
   def self.down
-    drop_table :bbb_rooms
-    drop_table :bbb_servers
+    drop_table :bigbluebutton_rooms
+    drop_table :bigbluebutton_servers
   end
 
 end
