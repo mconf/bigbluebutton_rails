@@ -26,8 +26,8 @@ require 'forgery'
 Dir["#{ File.dirname(__FILE__)}/factories/*.rb"].each { |f| require f }
 
 RSpec.configure do |config|
-  # == Mock Framework
   config.mock_with :rspec
+  config.use_transactional_fixtures = true
 end
 
 # To test generators

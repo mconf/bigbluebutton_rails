@@ -15,8 +15,20 @@ describe BigbluebuttonServer do
   it { should allow_mass_assignment_of(:url) }
   it { should allow_mass_assignment_of(:salt) }
 
-  #it {
-  #  Factory.create(:bigbluebutton_server)
-  #  should validate_uniqueness_of(:url)
-  #}
+  it {
+    Factory.create(:bigbluebutton_server)
+    should validate_uniqueness_of(:url)
+  }
+
+  it { should ensure_length_of(:name).
+              is_at_least(1).is_at_most(500) }
+  it { should ensure_length_of(:url).
+              is_at_most(500) }
+  it { should ensure_length_of(:salt).
+              is_at_least(1).is_at_most(500) }
+
+  it { should allow_value('http://demo.bigbluebutton.org/bigbluebutton/api').for(:url) }
+  it { should_not allow_value('').for(:url) }
+  it { should_not allow_value('http://demo.bigbluebutton.org').for(:url) }
+  it { should_not allow_value('demo.bigbluebutton.org/bigbluebutton/api').for(:url) }
 end
