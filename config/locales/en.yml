@@ -1,3 +1,11 @@
 en:
   bigbluebutton_rails:
     bigbluebutton: "BigBlueButton"
+    servers:
+      notice:
+        successfully_updated: "Your server was successfully updated."
+        successfully_created: "Your server was successfully created."
+    rooms:
+      notice:
+        successfully_updated: "Your room was successfully updated."
+        successfully_created: "Your room was successfully created."

@@ -36,7 +36,10 @@ class Bigbluebutton::ServersController < ApplicationController
 
     respond_to do |format|
       if @server.save
-        format.html { redirect_to(@server, :notice => 'BigbluebuttonServer was successfully created.') }
+        format.html {
+          message = t('bigbluebutton_rails.servers.notice.successfully_created')
+          redirect_to(@server, :notice => message)
+        }
         format.xml  { render :xml => @server, :status => :created, :location => @server }
       else
         format.html { render :action => "new" }
@@ -50,7 +53,10 @@ class Bigbluebutton::ServersController < ApplicationController
 
     respond_to do |format|
       if @server.update_attributes(params[:bigbluebutton_server])
-        format.html { redirect_to(@server, :notice => 'BigbluebuttonServer was successfully updated.') }
+        format.html {
+          message = t('bigbluebutton_rails.servers.notice.successfully_updated')
+          redirect_to(@server, :notice => message)
+        }
         format.xml  { head :ok }
       else
         format.html { render :action => "edit" }

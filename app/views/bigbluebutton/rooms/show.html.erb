@@ -1,0 +1,31 @@
+<h1>Room:</h1>
+
+<p id="notice"><%= notice %></p>
+
+<p>
+  <b>Server ID:</b>
+  <%= @room.server.id %>
+</p>
+<p>
+  <b>Meeting ID:</b>
+  <%= @room.meeting_id %>
+</p>
+<p>
+  <b>Meeting Name:</b>
+  <%= @room.meeting_name %>
+</p>
+<p>
+  <b>Attendee Password:</b>
+  <%= @room.attendee_password %>
+</p>
+<p>
+  <b>Moderator Password:</b>
+  <%= @room.moderator_password %>
+</p>
+<p>
+  <b>Welcome Message:</b>
+  <%= @room.welcome_msg %>
+</p>
+
+<%= link_to 'Edit', edit_bigbluebutton_server_room_path(@room.server, @room) %> |
+<%= link_to 'Back', bigbluebutton_server_rooms_path %>

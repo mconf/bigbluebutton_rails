@@ -1,0 +1,34 @@
+<h1>Listing rooms</h1>
+
+<table>
+  <tr>
+    <th>Server ID</th>
+    <th>Meeting ID</th>
+    <th>Meeting Name</th>
+    <th>Attendee Password</th>
+    <th>Moderator Password</th>
+    <th>Welcome Message</th>
+    <th></th>
+    <th></th>
+    <th></th>
+  </tr>
+
+<% @rooms.each do |room| %>
+  <tr>
+    <td><%= room.server.id %></td>
+    <td><%= room.meeting_id %></td>
+    <td><%= room.meeting_name %></td>
+    <td><%= room.attendee_password %></td>
+    <td><%= room.moderator_password %></td>
+    <td><%= room.welcome_msg %></td>
+    <td><%= link_to 'Show', bigbluebutton_server_room_path(@server, room) %></td>
+    <td><%= link_to 'Edit', edit_bigbluebutton_server_room_path(@server, room) %></td>
+    <td><%= link_to 'Destroy', bigbluebutton_server_room_path(@server, room), :confirm => 'Are you sure?', :method => :delete %></td>
+  </tr>
+<% end %>
+
+</table>
+
+<br />
+
+<%= link_to 'New Room', new_bigbluebutton_server_room_path %>

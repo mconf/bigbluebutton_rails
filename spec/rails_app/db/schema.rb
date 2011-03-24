@@ -10,10 +10,10 @@
 #
 # It's strongly recommended to check this file into your version control system.
 
-ActiveRecord::Schema.define(:version => 20110318183557) do
+ActiveRecord::Schema.define(:version => 20110324150834) do
 
   create_table "bigbluebutton_rooms", :force => true do |t|
-    t.integer  "bigbluebutton_server_id"
+    t.integer  "server_id"
     t.string   "meeting_id"
     t.string   "meeting_name"
     t.string   "attendee_password"
@@ -23,8 +23,8 @@ ActiveRecord::Schema.define(:version => 20110318183557) do
     t.datetime "updated_at"
   end
 
-  add_index "bigbluebutton_rooms", ["bigbluebutton_server_id"], :name => "index_bigbluebutton_rooms_on_bigbluebutton_server_id"
   add_index "bigbluebutton_rooms", ["meeting_id"], :name => "index_bigbluebutton_rooms_on_meeting_id", :unique => true
+  add_index "bigbluebutton_rooms", ["server_id"], :name => "index_bigbluebutton_rooms_on_server_id"
 
   create_table "bigbluebutton_servers", :force => true do |t|
     t.string   "name"

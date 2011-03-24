@@ -1,7 +1,7 @@
 class BigbluebuttonRoom < ActiveRecord::Base
-  belongs_to :bigbluebutton_server
+  belongs_to :server, :class_name => 'BigbluebuttonServer'
 
-  validates :bigbluebutton_server_id, :presence => true
+  validates :server_id, :presence => true
   validates :meeting_id, :presence => true, :uniqueness => true,
     :length => { :minimum => 1, :maximum => 50 }
   validates :meeting_name, :presence => true,

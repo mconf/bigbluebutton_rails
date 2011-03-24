@@ -5,13 +5,13 @@ describe BigbluebuttonRoom do
     BigbluebuttonRoom.new.should be_a_kind_of(ActiveRecord::Base)
   end
 
-  it { should belong_to(:bigbluebutton_server) }
+  it { should belong_to(:server) }
 
-  it { should validate_presence_of(:bigbluebutton_server_id) }
+  it { should validate_presence_of(:server_id) }
   it { should validate_presence_of(:meeting_id) }
   it { should validate_presence_of(:meeting_name) }
 
-  it { should allow_mass_assignment_of(:bigbluebutton_server_id) }
+  it { should allow_mass_assignment_of(:server_id) }
   it { should allow_mass_assignment_of(:meeting_id) }
   it { should allow_mass_assignment_of(:meeting_name) }
   it { should allow_mass_assignment_of(:attendee_password) }
@@ -21,6 +21,11 @@ describe BigbluebuttonRoom do
   it {
     Factory.create(:bigbluebutton_room)
     should validate_uniqueness_of(:meeting_id)
+  }
+
+  it {
+    room = Factory.create(:bigbluebutton_room)
+    room.server.should_not be_nil
   }
 
   it { should ensure_length_of(:meeting_id).

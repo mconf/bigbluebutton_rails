@@ -1,0 +1,41 @@
+<% if @room.new_record? %>
+  <% url = bigbluebutton_server_rooms_path(@server) %>
+<% else %>
+  <% url = bigbluebutton_server_room_path(@server, @room) %>
+<% end %>
+<%= form_for [@server, @room], :url => url do |f| %>
+  <% if @room.errors.any? %>
+    <div id="error_explanation">
+      <h2><%= pluralize(@room.errors.count, "error") %> prohibited this bigbluebutton_room from being saved:</h2>
+      <ul>
+      <% @room.errors.full_messages.each do |msg| %>
+        <li><%= msg %></li>
+      <% end %>
+      </ul>
+    </div>
+  <% end %>
+
+  <div class="field">
+    <%= f.label :meeting_id %><br />
+    <%= f.text_field :meeting_id %>
+  </div>
+  <div class="field">
+    <%= f.label :meeting_name %><br />
+    <%= f.text_field :meeting_name %>
+  </div>
+  <div class="field">
+    <%= f.label :attendee_password %><br />
+    <%= f.text_field :attendee_password %>
+  </div>
+  <div class="field">
+    <%= f.label :moderator_password %><br />
+    <%= f.text_field :moderator_password %>
+  </div>
+  <div class="field">
+    <%= f.label :welcome_msg %><br />
+    <%= f.text_field :welcome_msg %>
+  </div>
+  <div class="actions">
+    <%= f.submit %>
+  </div>
+<% end %>

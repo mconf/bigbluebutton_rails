@@ -1,0 +1,22 @@
+<h1>Server:</h1>
+
+<p id="notice"><%= notice %></p>
+
+<p>
+  <b>Name:</b>
+  <%= @server.name %>
+</p>
+
+<p>
+  <b>Url:</b>
+  <%= @server.url %>
+</p>
+
+<p>
+  <b>Salt:</b>
+  <%= @server.salt %>
+</p>
+
+
+<%= link_to 'Edit', edit_bigbluebutton_server_path(@server) %> |
+<%= link_to 'Back', bigbluebutton_servers_path %>

@@ -35,12 +35,44 @@ describe Bigbluebutton::ServersController do
         post :create, :bigbluebutton_server => Factory.attributes_for(:bigbluebutton_server)
       }.to change{ BigbluebuttonServer.count }.by(1)
     end
-    it { should respond_with(:redirect) }
-    it { should redirect_to(bigbluebutton_server_path(BigbluebuttonServer.last)) }
+    it {
+      should respond_with(:redirect)
+      should redirect_to(bigbluebutton_server_path(BigbluebuttonServer.last))
+    }
+    it { should set_the_flash.to(I18n.t('bigbluebutton_rails.servers.notice.successfully_created')) }
   end
 
-  it "#update"
-  it "#destroy"
+  describe "#update" do
+    let(:new_server) { Factory.build(:bigbluebutton_server) }
+    before :each do
+      @server = server
+      expect {
+        put :update, :id => @server.to_param, :bigbluebutton_server => new_server.attributes
+      }.not_to change{ BigbluebuttonServer.count }
+    end
+    it {
+      should respond_with(:redirect)
+      should redirect_to(bigbluebutton_server_path(@server))
+    }
+    it {
+      saved = BigbluebuttonServer.find(@server)
+      saved.should have_same_attributes_as(new_server)
+    }
+    it { should set_the_flash.to(I18n.t('bigbluebutton_rails.servers.notice.successfully_updated')) }
+  end
+
+  describe "#destroy" do
+    before :each do
+      @server = server
+      expect {
+        delete :destroy, :id => @server.to_param
+      }.to change{ BigbluebuttonServer.count }.by(-1)
+    end
+    it {
+      should respond_with(:redirect)
+      should redirect_to(bigbluebutton_servers_path)
+    }
+  end
 
 end
 
