@@ -28,6 +28,10 @@ describe Bigbluebutton::RoomsController do
       should route(:delete, "/bigbluebutton/servers/1/rooms/1").
         to(:action => :destroy, :server_id => "1", :id => "1")
     }
+    it {
+      should route(:get, "/bigbluebutton/servers/1/rooms/1/join").
+        to(:action => :join, :server_id => "1", :id => "1")
+    }
   end
 
 end

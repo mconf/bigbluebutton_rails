@@ -10,6 +10,7 @@ describe BigbluebuttonServer do
   it { should validate_presence_of(:name) }
   it { should validate_presence_of(:url) }
   it { should validate_presence_of(:salt) }
+  it { should validate_presence_of(:version) }
 
   it { should allow_mass_assignment_of(:name) }
   it { should allow_mass_assignment_of(:url) }
@@ -40,4 +41,35 @@ describe BigbluebuttonServer do
   it { should_not allow_value('').for(:url) }
   it { should_not allow_value('http://demo.bigbluebutton.org').for(:url) }
   it { should_not allow_value('demo.bigbluebutton.org/bigbluebutton/api').for(:url) }
+
+  it { should allow_value('0.64').for(:version) }
+  it { should allow_value('0.7').for(:version) }
+  it { should_not allow_value('').for(:version) }
+  it { should_not allow_value('0.8').for(:version) }
+  it { should_not allow_value('0.6').for(:version) }
+
+  context "has an api object" do
+    let(:server) { server = Factory.build(:bigbluebutton_server) }
+    it { should respond_to(:api) }
+    it { server.api.should_not be_nil }
+    it {
+      server.save
+      server.api.should_not be_nil
+    }
+    context "with the correct attributes" do
+      let(:api) { api = BigBlueButton::BigBlueButtonApi.new(server.url, server.salt,
+                                                            server.version, false) }
+      it { server.api.should == api }
+
+      # updating any of these attributes should update the api
+      { :url => 'http://anotherurl.com/bigbluebutton/api',
+        :salt => '12345-abcde-67890-fghijk', :version => '0.64' }.each do |k,v|
+        it {
+          server.send("#{k}=", v)
+          server.api.send(k).should == v
+        }
+      end
+    end
+  end
+
 end

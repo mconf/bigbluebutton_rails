@@ -78,6 +78,28 @@ class Bigbluebutton::RoomsController < ApplicationController
     end
   end
 
+  def join
+    @room = BigbluebuttonRoom.find(params[:id])
+
+#    unless running
+#      if mod_permission
+#        create_room
+#      else
+#        redir_to_wait_for_mod
+#      end
+#    end
+#    join
+
+    join_url = @server.api.moderator_url(@room.meeting_id,
+                                         bigbluebutton_user.name,
+                                         @room.moderator_password)
+
+    respond_to do |format|
+      format.html { redirect_to(join_url) }
+      format.xml  { head :ok }
+    end
+  end
+
   private
 
   def find_server

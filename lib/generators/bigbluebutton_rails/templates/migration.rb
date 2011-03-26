@@ -5,6 +5,7 @@ class CreateBigbluebuttonRails < ActiveRecord::Migration
       t.string :name
       t.string :url
       t.string :salt
+      t.string :version
       t.timestamps
     end
     create_table :bigbluebutton_rooms do |t|

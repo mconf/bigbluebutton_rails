@@ -1,2 +1,3 @@
 config/locales/bigbluebutton_rails.en.yml
 db/migrate/*.rb
+db/schema.rb

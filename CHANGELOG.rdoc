@@ -1,0 +1,6 @@
+== 0.1.0
+
+* First version
+* DB models for BigBlueButton servers and rooms
+* Controller to access servers and rooms
+* rooms_controller interacts with a BBB server using bigbluebutton-api-ruby

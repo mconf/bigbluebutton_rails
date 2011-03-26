@@ -42,7 +42,7 @@ describe Bigbluebutton::RoomsController do
     end
     it {
       should respond_with(:redirect)
-      should redirect_to(bigbluebutton_server_room_path(server, BigbluebuttonRoom.last))    
+      should redirect_to(bigbluebutton_server_room_path(server, BigbluebuttonRoom.last))
     }
     it { should set_the_flash.to(I18n.t('bigbluebutton_rails.rooms.notice.successfully_created')) }
     it { should assign_to(:server).with(server) }
@@ -80,6 +80,22 @@ describe Bigbluebutton::RoomsController do
       should redirect_to(bigbluebutton_server_rooms_path)
     }
     it { should assign_to(:server).with(server) }
+  end
+
+  describe "#join" do
+
+    before { controller.stub_chain(:current_user, :name).and_return("Test name") }
+    before :each do
+      @join_url = server.api.moderator_url(room.meeting_id, "Test name", room.moderator_password)
+      get :join, :server_id => server.to_param, :id => room.to_param
+    end
+
+    it {
+      should respond_with(:redirect)
+      should redirect_to(@join_url)
+    }
+    it { should assign_to(:server).with(server) }
+
   end
 
 end
