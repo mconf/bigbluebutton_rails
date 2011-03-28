@@ -1,4 +1,5 @@
 require 'spec_helper'
+require 'bigbluebutton-api'
 
 describe Bigbluebutton::RoomsController do
 
@@ -84,17 +85,55 @@ describe Bigbluebutton::RoomsController do
 
   describe "#join" do
 
-    before { controller.stub_chain(:current_user, :name).and_return("Test name") }
-    before :each do
-      @join_url = server.api.moderator_url(room.meeting_id, "Test name", room.moderator_password)
-      get :join, :server_id => server.to_param, :id => room.to_param
-    end
+    before { controller.stub_chain(:bigbluebutton_user, :name).and_return("Test name") }
 
-    it {
-      should respond_with(:redirect)
-      should redirect_to(@join_url)
-    }
-    it { should assign_to(:server).with(server) }
+    # mocking the server so we can mock the BBB API
+    # we don't want to trigger real API calls here (this is done in the integration tests)
+    context "mocking the server" do
+
+      # setup basic server and API mocks
+      let(:api_mock) { mock(BigBlueButton::BigBlueButtonApi) }
+      let(:server_mock) { mock_model(BigbluebuttonServer) }
+      before do
+        server_mock.stub(:api).and_return(api_mock)
+        BigbluebuttonServer.stub(:find).with(server_mock.id.to_s).and_return(server_mock)
+      end
+
+      context "if the conference is running" do
+        before {
+          api_mock.should_receive(:is_meeting_running?).and_return(true)
+          api_mock.should_receive(:moderator_url).and_return("http://test.com/join")
+        }
+        before :each do
+          get :join, :server_id => server_mock.to_param, :id => room.to_param
+        end
+
+        it "assigns server" do
+          should assign_to(:server).with(server_mock)
+        end
+
+        it "redirects to the join url" do
+          should respond_with(:redirect)
+          should redirect_to("http://test.com/join")
+        end
+      end
+
+      context "if the conference is NOT running" do
+        before {
+          api_mock.should_receive(:is_meeting_running?).and_return(false)
+          api_mock.should_receive(:moderator_url).and_return("http://test.com/join")
+        }
+
+        it "creates the conference" do
+          api_mock.should_receive(:create_meeting).
+            with(room.meeting_name, room.meeting_id,
+                 room.moderator_password, room.attendee_password,
+                 room.welcome_msg)
+          get :join, :server_id => server_mock.to_param, :id => room.to_param
+        end
+      end
+
+    end
 
   end
 

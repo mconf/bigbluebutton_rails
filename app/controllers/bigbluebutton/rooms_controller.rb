@@ -81,6 +81,10 @@ class Bigbluebutton::RoomsController < ApplicationController
   def join
     @room = BigbluebuttonRoom.find(params[:id])
 
+    unless bbb_is_meeting_running?
+      bbb_create_room
+    end
+
 #    unless running
 #      if mod_permission
 #        create_room
@@ -90,9 +94,7 @@ class Bigbluebutton::RoomsController < ApplicationController
 #    end
 #    join
 
-    join_url = @server.api.moderator_url(@room.meeting_id,
-                                         bigbluebutton_user.name,
-                                         @room.moderator_password)
+    join_url = bbb_join_url(bigbluebutton_user.name)
 
     respond_to do |format|
       format.html { redirect_to(join_url) }
@@ -104,6 +106,22 @@ class Bigbluebutton::RoomsController < ApplicationController
 
   def find_server
     @server = BigbluebuttonServer.find(params[:server_id])
+  end
+
+  def bbb_is_meeting_running?
+    @server.api.is_meeting_running?(@room.meeting_id)
+  end
+
+  def bbb_create_room
+    @server.api.create_meeting(@room.meeting_name, @room.meeting_id,
+                               @room.moderator_password, @room.attendee_password,
+                               @room.welcome_msg)
+  end
+
+  def bbb_join_url(username)
+    @server.api.moderator_url(@room.meeting_id,
+                              username,
+                              @room.moderator_password)
   end
 
 end
