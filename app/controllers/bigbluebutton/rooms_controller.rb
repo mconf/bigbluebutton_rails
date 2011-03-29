@@ -1,52 +1,36 @@
 class Bigbluebutton::RoomsController < ApplicationController
 
   before_filter :find_server
+  respond_to :html
 
   def index
-    @rooms = BigbluebuttonRoom.all
-
-    respond_to do |format|
-      format.html # index.html.erb
-      format.xml  { render :xml => @rooms }
-    end
+    respond_with(@rooms = BigbluebuttonRoom.all)
   end
 
   def show
-    @room = BigbluebuttonRoom.find(params[:id])
-
-    respond_to do |format|
-      format.html # show.html.erb
-      format.xml  { render :xml => @room }
-    end
+    respond_with(@room = BigbluebuttonRoom.find(params[:id]))
   end
 
   def new
-    @room = BigbluebuttonRoom.new
-
-    respond_to do |format|
-      format.html # new.html.erb
-      format.xml  { render :xml => @room }
-    end
+    respond_with(@room = BigbluebuttonRoom.new)
   end
 
   def edit
-    @room = BigbluebuttonRoom.find(params[:id])
+    respond_with(@room = BigbluebuttonRoom.find(params[:id]))
   end
 
   def create
     @room = BigbluebuttonRoom.new(params[:bigbluebutton_room])
     @room.server = @server
 
-    respond_to do |format|
+    respond_with @room do |format|
       if @room.save
         format.html {
           message = t('bigbluebutton_rails.rooms.notice.successfully_created')
           redirect_to(bigbluebutton_server_room_path(@server, @room), :notice => message)
         }
-        format.xml  { render :xml => @room, :status => :created, :location => @room }
       else
         format.html { render :action => "new" }
-        format.xml  { render :xml => @room.errors, :status => :unprocessable_entity }
       end
     end
   end
@@ -54,16 +38,14 @@ class Bigbluebutton::RoomsController < ApplicationController
   def update
     @room = BigbluebuttonRoom.find(params[:id])
 
-    respond_to do |format|
+    respond_with @room do |format|
       if @room.update_attributes(params[:bigbluebutton_room])
         format.html {
           message = t('bigbluebutton_rails.rooms.notice.successfully_updated')
           redirect_to(bigbluebutton_server_room_path(@server, @room), :notice => message)
         }
-        format.xml  { head :ok }
       else
         format.html { render :action => "edit" }
-        format.xml  { render :xml => @room.errors, :status => :unprocessable_entity }
       end
     end
   end
@@ -72,34 +54,34 @@ class Bigbluebutton::RoomsController < ApplicationController
     @room = BigbluebuttonRoom.find(params[:id])
     @room.destroy
 
-    respond_to do |format|
-      format.html { redirect_to(bigbluebutton_server_rooms_url) }
-      format.xml  { head :ok }
-    end
+    redirect_to(bigbluebutton_server_rooms_url)
   end
 
   def join
     @room = BigbluebuttonRoom.find(params[:id])
+    role = bigbluebutton_role(@room)
 
-    unless bbb_is_meeting_running?
-      bbb_create_room
+    # if the current user is a moderator, create the room (if needed)
+    # and join it
+    if role  == :moderator
+      bbb_create_room unless bbb_is_meeting_running?
+      join_url = bbb_join_url(bigbluebutton_user.name, role)
+      redirect_to(join_url)
+
+    # normal user only joins if the conference is running
+    # if it's not, wait for a moderator to create the conference
+    else
+      if bbb_is_meeting_running?
+        join_url = bbb_join_url(bigbluebutton_user.name, role)
+        redirect_to(join_url)
+      else
+        render :action => :join_wait
+      end
     end
 
-#    unless running
-#      if mod_permission
-#        create_room
-#      else
-#        redir_to_wait_for_mod
-#      end
-#    end
-#    join
+  end
 
-    join_url = bbb_join_url(bigbluebutton_user.name)
-
-    respond_to do |format|
-      format.html { redirect_to(join_url) }
-      format.xml  { head :ok }
-    end
+  def join_wait
   end
 
   private
@@ -107,6 +89,11 @@ class Bigbluebutton::RoomsController < ApplicationController
   def find_server
     @server = BigbluebuttonServer.find(params[:server_id])
   end
+
+
+  #
+  # Functions that directly call BBB API. Prefixed with bbb_
+  #
 
   def bbb_is_meeting_running?
     @server.api.is_meeting_running?(@room.meeting_id)
@@ -118,10 +105,14 @@ class Bigbluebutton::RoomsController < ApplicationController
                                @room.welcome_msg)
   end
 
-  def bbb_join_url(username)
-    @server.api.moderator_url(@room.meeting_id,
-                              username,
-                              @room.moderator_password)
+  def bbb_join_url(username, role)
+    if role == :moderator
+      @server.api.moderator_url(@room.meeting_id, username,
+                                @room.moderator_password)
+    else
+      @server.api.attendee_url(@room.meeting_id, username,
+                               @room.attendee_password)
+    end
   end
 
 end

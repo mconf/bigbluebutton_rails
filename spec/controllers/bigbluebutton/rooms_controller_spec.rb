@@ -83,53 +83,97 @@ describe Bigbluebutton::RoomsController do
     it { should assign_to(:server).with(server) }
   end
 
+
   describe "#join" do
 
     before { controller.stub_chain(:bigbluebutton_user, :name).and_return("Test name") }
 
-    # mocking the server so we can mock the BBB API
+    # mock the server so we can mock the BBB API
     # we don't want to trigger real API calls here (this is done in the integration tests)
-    context "mocking the server" do
 
-      # setup basic server and API mocks
-      let(:api_mock) { mock(BigBlueButton::BigBlueButtonApi) }
-      let(:server_mock) { mock_model(BigbluebuttonServer) }
-      before do
-        server_mock.stub(:api).and_return(api_mock)
-        BigbluebuttonServer.stub(:find).with(server_mock.id.to_s).and_return(server_mock)
-      end
+    # setup basic server and API mocks
+    let(:api_mock) { mock(BigBlueButton::BigBlueButtonApi) }
+    let(:server_mock) { mock_model(BigbluebuttonServer) }
+    before do
+      server_mock.stub(:api).and_return(api_mock)
+      BigbluebuttonServer.stub(:find).with(server_mock.id.to_s).and_return(server_mock)
+    end
 
-      context "if the conference is running" do
+    context "if the user is a moderator" do
+      before {
+        controller.should_receive(:bigbluebutton_role).with(room).and_return(:moderator)
+        api_mock.should_receive(:moderator_url).and_return("http://test.com/mod/join")
+      }
+
+      context "and the conference is running" do
         before {
           api_mock.should_receive(:is_meeting_running?).and_return(true)
-          api_mock.should_receive(:moderator_url).and_return("http://test.com/join")
         }
-        before :each do
-          get :join, :server_id => server_mock.to_param, :id => room.to_param
-        end
 
         it "assigns server" do
+          get :join, :server_id => server_mock.to_param, :id => room.to_param
           should assign_to(:server).with(server_mock)
         end
 
-        it "redirects to the join url" do
+        it "redirects to the moderator join url" do
+          get :join, :server_id => server_mock.to_param, :id => room.to_param
           should respond_with(:redirect)
-          should redirect_to("http://test.com/join")
+          should redirect_to("http://test.com/mod/join")
         end
       end
 
-      context "if the conference is NOT running" do
+      context "and the conference is NOT running" do
         before {
           api_mock.should_receive(:is_meeting_running?).and_return(false)
-          api_mock.should_receive(:moderator_url).and_return("http://test.com/join")
         }
 
         it "creates the conference" do
           api_mock.should_receive(:create_meeting).
-            with(room.meeting_name, room.meeting_id,
-                 room.moderator_password, room.attendee_password,
-                 room.welcome_msg)
+            with(room.meeting_name, room.meeting_id, room.moderator_password,
+                 room.attendee_password, room.welcome_msg)
           get :join, :server_id => server_mock.to_param, :id => room.to_param
+        end
+      end
+
+    end
+
+    context "if the user is an attendee" do
+      before {
+        controller.should_receive(:bigbluebutton_role).with(room).and_return(:attendee)
+      }
+
+      context "and the conference is running" do
+        before {
+          api_mock.should_receive(:is_meeting_running?).and_return(true)
+          api_mock.should_receive(:attendee_url).and_return("http://test.com/attendee/join")
+        }
+
+        it "assigns server" do
+          get :join, :server_id => server_mock.to_param, :id => room.to_param
+          should assign_to(:server).with(server_mock)
+        end
+
+        it "redirects to the attendee join url" do
+          get :join, :server_id => server_mock.to_param, :id => room.to_param
+          should respond_with(:redirect)
+          should redirect_to("http://test.com/attendee/join")
+        end
+      end
+
+      context "and the conference is NOT running" do
+        before {
+          api_mock.should_receive(:is_meeting_running?).and_return(false)
+        }
+
+        it "do not try to create the conference" do
+          api_mock.should_not_receive(:create_meeting)
+          get :join, :server_id => server_mock.to_param, :id => room.to_param
+        end
+
+        it "render the join_wait view to wait for a moderator" do
+          get :join, :server_id => server_mock.to_param, :id => room.to_param
+          should respond_with(:success)
+          should render_template(:join_wait)
         end
       end
 

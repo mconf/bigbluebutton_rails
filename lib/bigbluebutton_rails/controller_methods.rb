@@ -11,7 +11,8 @@ module BigbluebuttonRails
         # Defaults to the user currently logged in, using the method current_user.
         # If your application has no method current_user or if you want
         # to change the behavior of this method, just redefine it in your
-        # controller. For example:
+        # controller. You may want to do it in the ApplicationController to make it
+        # available to all controllers. For example:
         #
         #   def bigbluebutton_user
         #     User.where(:bigbluebutton_admin => true).first
@@ -22,6 +23,27 @@ module BigbluebuttonRails
         def bigbluebutton_user
           current_user
         end
+
+        # Returns the role that the current user has in the room 'room'.
+        # Possibilities:
+        #   :moderator
+        #   :attendee
+        # You may want to redefine this method in your controllers to define
+        # real roles to the users. By default, everyone has moderator permissions.
+        # Redefine it in your ApplicationController to make it available to all
+        # controllers. For example:
+        #
+        #   def bigbluebutton_role(@room)
+        #     r = Roles.where(:bigbluebutton_room_id => @room.id).
+        #               where(:user_id => current_user.id).
+        #               first
+        #     r.role
+        #   end
+        #
+        def bigbluebutton_role(room)
+          :moderator
+        end
+
       end
     end
 
