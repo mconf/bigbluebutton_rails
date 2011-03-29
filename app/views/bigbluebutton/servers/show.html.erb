@@ -17,6 +17,15 @@
   <%= @server.salt %>
 </p>
 
+<p>
+  <b>Version:</b>
+  <%= @server.version %>
+</p>
+
 
 <%= link_to 'Edit', edit_bigbluebutton_server_path(@server) %> |
 <%= link_to 'Back', bigbluebutton_servers_path %>
+
+<br/>
+
+<%= link_to 'New room', new_bigbluebutton_server_room_path(@server) %>
