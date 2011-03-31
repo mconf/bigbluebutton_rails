@@ -1,6 +1,17 @@
 require 'spec_helper'
 require 'bigbluebutton-api'
 
+def build_running_json(value)
+  { :running => "#{value}" }.to_json
+end
+
+def mock_server_and_api
+  @api_mock = mock(BigBlueButton::BigBlueButtonApi)
+  @server_mock = mock_model(BigbluebuttonServer)
+  @server_mock.stub(:api).and_return(@api_mock)
+  BigbluebuttonServer.stub(:find).with(@server_mock.id.to_s).and_return(@server_mock)
+end
+
 describe Bigbluebutton::RoomsController do
 
   render_views
@@ -83,6 +94,26 @@ describe Bigbluebutton::RoomsController do
     it { should assign_to(:server).with(server) }
   end
 
+  describe "#running" do
+    # setup basic server and API mocks
+    before { mock_server_and_api }
+
+    context "room is running" do
+      before { @api_mock.should_receive(:is_meeting_running?).and_return(true) }
+      before(:each) { get :running, :server_id => @server_mock.to_param, :id => room.to_param }
+      it { should respond_with(:success) }
+      it { should respond_with_content_type(:json) }
+      it { should assign_to(:server).with(@server_mock) }
+      it { should assign_to(:room).with(room) }
+      it { response.body.should == build_running_json(true) }
+    end
+
+    context "room is not running" do
+      before { @api_mock.should_receive(:is_meeting_running?).and_return(false) }
+      before(:each) { get :running, :server_id => @server_mock.to_param, :id => room.to_param }
+      it { response.body.should == build_running_json(false) }
+    end
+  end
 
   describe "#join" do
 
@@ -92,31 +123,26 @@ describe Bigbluebutton::RoomsController do
     # we don't want to trigger real API calls here (this is done in the integration tests)
 
     # setup basic server and API mocks
-    let(:api_mock) { mock(BigBlueButton::BigBlueButtonApi) }
-    let(:server_mock) { mock_model(BigbluebuttonServer) }
-    before do
-      server_mock.stub(:api).and_return(api_mock)
-      BigbluebuttonServer.stub(:find).with(server_mock.id.to_s).and_return(server_mock)
-    end
+    before { mock_server_and_api }
 
     context "if the user is a moderator" do
       before {
         controller.should_receive(:bigbluebutton_role).with(room).and_return(:moderator)
-        api_mock.should_receive(:moderator_url).and_return("http://test.com/mod/join")
+        @api_mock.should_receive(:moderator_url).and_return("http://test.com/mod/join")
       }
 
       context "and the conference is running" do
         before {
-          api_mock.should_receive(:is_meeting_running?).and_return(true)
+          @api_mock.should_receive(:is_meeting_running?).and_return(true)
         }
 
         it "assigns server" do
-          get :join, :server_id => server_mock.to_param, :id => room.to_param
-          should assign_to(:server).with(server_mock)
+          get :join, :server_id => @server_mock.to_param, :id => room.to_param
+          should assign_to(:server).with(@server_mock)
         end
 
         it "redirects to the moderator join url" do
-          get :join, :server_id => server_mock.to_param, :id => room.to_param
+          get :join, :server_id => @server_mock.to_param, :id => room.to_param
           should respond_with(:redirect)
           should redirect_to("http://test.com/mod/join")
         end
@@ -124,14 +150,14 @@ describe Bigbluebutton::RoomsController do
 
       context "and the conference is NOT running" do
         before {
-          api_mock.should_receive(:is_meeting_running?).and_return(false)
+          @api_mock.should_receive(:is_meeting_running?).and_return(false)
         }
 
         it "creates the conference" do
-          api_mock.should_receive(:create_meeting).
+          @api_mock.should_receive(:create_meeting).
             with(room.meeting_name, room.meeting_id, room.moderator_password,
                  room.attendee_password, room.welcome_msg)
-          get :join, :server_id => server_mock.to_param, :id => room.to_param
+          get :join, :server_id => @server_mock.to_param, :id => room.to_param
         end
       end
 
@@ -144,17 +170,17 @@ describe Bigbluebutton::RoomsController do
 
       context "and the conference is running" do
         before {
-          api_mock.should_receive(:is_meeting_running?).and_return(true)
-          api_mock.should_receive(:attendee_url).and_return("http://test.com/attendee/join")
+          @api_mock.should_receive(:is_meeting_running?).and_return(true)
+          @api_mock.should_receive(:attendee_url).and_return("http://test.com/attendee/join")
         }
 
         it "assigns server" do
-          get :join, :server_id => server_mock.to_param, :id => room.to_param
-          should assign_to(:server).with(server_mock)
+          get :join, :server_id => @server_mock.to_param, :id => room.to_param
+          should assign_to(:server).with(@server_mock)
         end
 
         it "redirects to the attendee join url" do
-          get :join, :server_id => server_mock.to_param, :id => room.to_param
+          get :join, :server_id => @server_mock.to_param, :id => room.to_param
           should respond_with(:redirect)
           should redirect_to("http://test.com/attendee/join")
         end
@@ -162,16 +188,16 @@ describe Bigbluebutton::RoomsController do
 
       context "and the conference is NOT running" do
         before {
-          api_mock.should_receive(:is_meeting_running?).and_return(false)
+          @api_mock.should_receive(:is_meeting_running?).and_return(false)
         }
 
         it "do not try to create the conference" do
-          api_mock.should_not_receive(:create_meeting)
-          get :join, :server_id => server_mock.to_param, :id => room.to_param
+          @api_mock.should_not_receive(:create_meeting)
+          get :join, :server_id => @server_mock.to_param, :id => room.to_param
         end
 
         it "render the join_wait view to wait for a moderator" do
-          get :join, :server_id => server_mock.to_param, :id => room.to_param
+          get :join, :server_id => @server_mock.to_param, :id => room.to_param
           should respond_with(:success)
           should render_template(:join_wait)
         end

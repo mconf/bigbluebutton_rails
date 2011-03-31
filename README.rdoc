@@ -4,7 +4,7 @@ BigBlueButton (http://bigbluebutton.org) for Ruby on Rails 3.
 
 == Install
 
-This project is not available as a gem yet.
+This project is not available in rubygems yet.
 You can use it from git, adding this line to your Gemfile:
 
   gem 'bigbluebutton_rails', :git => git://github.com/mconf/bigbluebutton_rails.git

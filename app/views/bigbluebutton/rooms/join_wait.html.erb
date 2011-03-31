@@ -1,2 +1,26 @@
-<h1>Join wait</h1>
+<script type="text/javascript">
+
+function heartbeat_callback() {
+  // TODO Should parse the json to get the response
+  if ($("#room_heartbeat_div").text().search("true") > 0) {
+    window.location.reload();
+  }
+}
+
+$(document).ready(function(){
+  $.jheartbeat.set({
+    url: "<%= running_bigbluebutton_server_room_url(@server, @room, :format => 'json') %>",
+    delay: 5000,
+    div_id: "room_heartbeat_div"
+  }, function () {
+    heartbeat_callback();
+  });
+});
+
+</script>
+
+<h1>Meeting <%= @room.meeting_name %></h1>
+
+<p>The meeting has not started yet, you must wait for the moderator to join.</p>
+<p>Your browser will automatically refresh and join the meeting when it starts.</p>
 

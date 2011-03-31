@@ -1,7 +1,8 @@
 class Bigbluebutton::RoomsController < ApplicationController
 
   before_filter :find_server
-  respond_to :html
+  respond_to :html, :except => :running
+  respond_to :json, :only => :running
 
   def index
     respond_with(@rooms = BigbluebuttonRoom.all)
@@ -82,6 +83,12 @@ class Bigbluebutton::RoomsController < ApplicationController
   end
 
   def join_wait
+  end
+
+  def running
+    @room = BigbluebuttonRoom.find(params[:id])
+    run = bbb_is_meeting_running?
+    render :json => { running: "#{run}" }
   end
 
   private

@@ -32,7 +32,11 @@ describe Bigbluebutton::RoomsController do
       should route(:get, "/bigbluebutton/servers/1/rooms/1/join").
         to(:action => :join, :server_id => "1", :id => "1")
     }
-  end
+    it {
+      should route(:get, "/bigbluebutton/servers/1/rooms/1/running").
+        to(:action => :running, :server_id => "1", :id => "1")
+    }
+ end
 
 end
 
