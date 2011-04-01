@@ -7,6 +7,12 @@ describe BigbluebuttonRoom do
 
   it { should belong_to(:server) }
 
+  it { should belong_to(:owner) }
+  it { should have_db_column(:owner_id).of_type(:integer) }
+  it { should have_db_column(:owner_type).of_type(:string) }
+  it { should_not validate_presence_of(:owner_id) }
+  it { should_not validate_presence_of(:owner_type) }
+
   it { should validate_presence_of(:server_id) }
   it { should validate_presence_of(:meeting_id) }
   it { should validate_presence_of(:meeting_name) }

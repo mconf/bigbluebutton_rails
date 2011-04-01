@@ -1,5 +1,6 @@
 class BigbluebuttonRoom < ActiveRecord::Base
   belongs_to :server, :class_name => 'BigbluebuttonServer'
+  belongs_to :owner, :polymorphic => true
 
   validates :server_id, :presence => true
   validates :meeting_id, :presence => true, :uniqueness => true,
