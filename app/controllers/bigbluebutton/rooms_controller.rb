@@ -5,6 +5,7 @@ class Bigbluebutton::RoomsController < ApplicationController
   respond_to :json, :only => :running
 
   def index
+    # TODO restrict to rooms belonging to the selected server
     respond_with(@rooms = BigbluebuttonRoom.all)
   end
 
@@ -54,7 +55,6 @@ class Bigbluebutton::RoomsController < ApplicationController
   def destroy
     @room = BigbluebuttonRoom.find(params[:id])
     @room.destroy
-
     redirect_to(bigbluebutton_server_rooms_url)
   end
 
@@ -91,12 +91,15 @@ class Bigbluebutton::RoomsController < ApplicationController
     render :json => { running: "#{run}" }
   end
 
-  private
+  protected
 
   def find_server
-    @server = BigbluebuttonServer.find(params[:server_id])
+    if params.has_key?(:server_id)
+      @server = BigbluebuttonServer.find(params[:server_id])
+    else
+      @server = BigbluebuttonServer.first
+    end
   end
-
 
   #
   # Functions that directly call BBB API. Prefixed with bbb_

@@ -207,5 +207,15 @@ describe Bigbluebutton::RoomsController do
 
   end
 
+  # can be used when matching rooms inside some resource other than servers
+  context "selects the first server when the server_id in the url is inexistent" do
+    let(:server2) { Factory.create(:bigbluebutton_server) }
+    
+    # get /users/:user_id/room/:id(.:format)
+    before(:each) { get :show, :id => room.to_param, :user_id => "1" }
+    it { should respond_with(:success) }
+    it { should assign_to(:server).with(server) }
+  end
+
 end
 
