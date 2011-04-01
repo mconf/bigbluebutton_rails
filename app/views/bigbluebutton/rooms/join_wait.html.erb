@@ -10,7 +10,7 @@ function heartbeat_callback() {
 $(document).ready(function(){
   $.jheartbeat.set({
     url: "<%= running_bigbluebutton_server_room_url(@server, @room, :format => 'json') %>",
-    delay: 5000,
+    delay: 3000,
     div_id: "room_heartbeat_div"
   }, function () {
     heartbeat_callback();
@@ -19,8 +19,9 @@ $(document).ready(function(){
 
 </script>
 
-<h1>Meeting <%= @room.meeting_name %></h1>
+<h1>Meeting <%= @room.name %></h1>
 
+<%= image_tag "loading.gif" %>
 <p>The meeting has not started yet, you must wait for the moderator to join.</p>
 <p>Your browser will automatically refresh and join the meeting when it starts.</p>
 

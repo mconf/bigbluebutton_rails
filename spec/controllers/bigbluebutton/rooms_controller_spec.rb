@@ -47,37 +47,75 @@ describe Bigbluebutton::RoomsController do
   end
 
   describe "#create" do
-    before :each do
-      expect {
-        post :create, :server_id => server.to_param, :bigbluebutton_room => Factory.attributes_for(:bigbluebutton_room)
-      }.to change{ BigbluebuttonRoom.count }.by(1)
+    let(:new_room) { Factory.build(:bigbluebutton_room, :server => server) }
+
+    context do
+      before :each do
+        expect {
+          post :create, :server_id => server.to_param, :bigbluebutton_room => new_room.attributes
+        }.to change{ BigbluebuttonRoom.count }.by(1)
+      end
+      it {
+        should respond_with(:redirect)
+        should redirect_to(bigbluebutton_server_room_path(server, BigbluebuttonRoom.last))
+      }
+      it { should set_the_flash.to(I18n.t('bigbluebutton_rails.rooms.notice.successfully_created')) }
+      it { should assign_to(:server).with(server) }
+      it {
+        saved = BigbluebuttonRoom.last
+        saved.should have_same_attributes_as(new_room)
+      }
     end
-    it {
-      should respond_with(:redirect)
-      should redirect_to(bigbluebutton_server_room_path(server, BigbluebuttonRoom.last))
-    }
-    it { should set_the_flash.to(I18n.t('bigbluebutton_rails.rooms.notice.successfully_created')) }
-    it { should assign_to(:server).with(server) }
+
+    context "when meeting_id is not specified should copied from name" do
+      before :each do
+        attr = new_room.attributes
+        attr.delete("meeting_id")
+        post :create, :server_id => server.to_param, :bigbluebutton_room => attr
+      end
+      it {
+        saved = BigbluebuttonRoom.last
+        new_room.meeting_id = new_room.name
+        saved.should have_same_attributes_as(new_room)
+      }
+    end
   end
 
   describe "#update" do
     let(:new_room) { Factory.build(:bigbluebutton_room) }
-    before :each do
-      @room = room
-      expect {
-        put :update, :server_id => server.to_param, :id => @room.to_param, :bigbluebutton_room => new_room.attributes
-      }.not_to change{ BigbluebuttonRoom.count }
+    before { @room = room }
+
+    context do
+      before :each do
+        expect {
+          put :update, :server_id => server.to_param, :id => @room.to_param, :bigbluebutton_room => new_room.attributes
+        }.not_to change{ BigbluebuttonRoom.count }
+      end
+      it {
+        should respond_with(:redirect)
+        should redirect_to(bigbluebutton_server_room_path(server, @room))
+      }
+      it {
+        saved = BigbluebuttonRoom.find(@room)
+        saved.should have_same_attributes_as(new_room)
+      }
+      it { should set_the_flash.to(I18n.t('bigbluebutton_rails.rooms.notice.successfully_updated')) }
+      it { should assign_to(:server).with(server) }
     end
-    it {
-      should respond_with(:redirect)
-      should redirect_to(bigbluebutton_server_room_path(server, @room))
-    }
-    it {
-      saved = BigbluebuttonRoom.find(@room)
-      saved.should have_same_attributes_as(new_room)
-    }
-    it { should set_the_flash.to(I18n.t('bigbluebutton_rails.rooms.notice.successfully_updated')) }
-    it { should assign_to(:server).with(server) }
+
+    context "when meeting_id is not specified should copied from name" do
+      before :each do
+        attr = new_room.attributes
+        attr.delete("meeting_id")
+        put :update, :server_id => server.to_param, :id => @room.to_param, :bigbluebutton_room => attr
+      end
+      it {
+        saved = BigbluebuttonRoom.find(@room)
+        new_room.meeting_id = new_room.name
+        saved.should have_same_attributes_as(new_room)
+      }
+    end
+
   end
 
   describe "#destroy" do
@@ -155,7 +193,7 @@ describe Bigbluebutton::RoomsController do
 
         it "creates the conference" do
           @api_mock.should_receive(:create_meeting).
-            with(room.meeting_name, room.meeting_id, room.moderator_password,
+            with(room.name, room.meeting_id, room.moderator_password,
                  room.attendee_password, room.welcome_msg)
           get :join, :server_id => @server_mock.to_param, :id => room.to_param
         end

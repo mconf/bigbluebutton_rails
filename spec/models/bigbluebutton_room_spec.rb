@@ -5,6 +5,8 @@ describe BigbluebuttonRoom do
     BigbluebuttonRoom.new.should be_a_kind_of(ActiveRecord::Base)
   end
 
+  before { Factory.create(:bigbluebutton_room) }
+
   it { should belong_to(:server) }
 
   it { should belong_to(:owner) }
@@ -15,19 +17,18 @@ describe BigbluebuttonRoom do
 
   it { should validate_presence_of(:server_id) }
   it { should validate_presence_of(:meeting_id) }
-  it { should validate_presence_of(:meeting_name) }
+  it { should validate_presence_of(:name) }
 
-  it { should allow_mass_assignment_of(:server_id) }
-  it { should allow_mass_assignment_of(:meeting_id) }
-  it { should allow_mass_assignment_of(:meeting_name) }
+  it { should allow_mass_assignment_of(:name) }
   it { should allow_mass_assignment_of(:attendee_password) }
   it { should allow_mass_assignment_of(:moderator_password) }
   it { should allow_mass_assignment_of(:welcome_msg) }
+  it { should allow_mass_assignment_of(:server_id) }
+  it { should allow_mass_assignment_of(:meeting_id) }
+  it { should_not allow_mass_assignment_of(:id) }
 
-  it {
-    Factory.create(:bigbluebutton_room)
-    should validate_uniqueness_of(:meeting_id)
-  }
+  it { should validate_uniqueness_of(:meeting_id) }
+  it { should validate_uniqueness_of(:name) }
 
   it {
     room = Factory.create(:bigbluebutton_room)
@@ -35,8 +36,8 @@ describe BigbluebuttonRoom do
   }
 
   it { should ensure_length_of(:meeting_id).
-              is_at_least(1).is_at_most(50) }
-  it { should ensure_length_of(:meeting_name).
+              is_at_least(1).is_at_most(100) }
+  it { should ensure_length_of(:name).
               is_at_least(1).is_at_most(150) }
   it { should ensure_length_of(:attendee_password).
               is_at_most(50) }
