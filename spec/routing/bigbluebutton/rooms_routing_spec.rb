@@ -40,6 +40,10 @@ describe Bigbluebutton::RoomsController do
         {:get => "/#{prefix}/servers/1/rooms/1/running"}.
         should route_to(:controller => "bigbluebutton/rooms", :action => "running", :server_id => "1", :id => "1")
       }
+      it {
+        {:get => "/#{prefix}/servers/1/rooms/1/end"}.
+        should route_to(:controller => "bigbluebutton/rooms", :action => "end", :server_id => "1", :id => "1")
+      }
 
     end
 
@@ -56,6 +60,10 @@ describe Bigbluebutton::RoomsController do
       should route(:get, "/users/1/room/1/running").
         to(:action => :running, :user_id => "1", :id => "1")
     }
+    it {
+      should route(:get, "/users/1/room/1/end").
+        to(:action => :end, :user_id => "1", :id => "1")
+    }
 
     # room matchers inside users/spaces
     # FIXME shoulda-matcher is not working here, why?
@@ -70,6 +78,10 @@ describe Bigbluebutton::RoomsController do
     it {
       { :get => "/users/1/spaces/2/room/3/running" }.
       should route_to(:controller => "bigbluebutton/rooms", :action => "running", :user_id => "1", :space_id => "2", :id => "3")
+    }
+    it {
+      { :get => "/users/1/spaces/2/room/3/end" }.
+      should route_to(:controller => "bigbluebutton/rooms", :action => "end", :user_id => "1", :space_id => "2", :id => "3")
     }
  end
 

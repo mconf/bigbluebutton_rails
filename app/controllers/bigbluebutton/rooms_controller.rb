@@ -1,5 +1,7 @@
 class Bigbluebutton::RoomsController < ApplicationController
 
+  # TODO create filter find_room
+
   before_filter :find_server
   respond_to :html, :except => :running
   respond_to :json, :only => :running
@@ -34,7 +36,7 @@ class Bigbluebutton::RoomsController < ApplicationController
     respond_with @room do |format|
       if @room.save
         format.html {
-          message = t('bigbluebutton_rails.rooms.notice.successfully_created')
+          message = t('bigbluebutton_rails.rooms.notice.create.success')
           redirect_to(bigbluebutton_server_room_path(@server, @room), :notice => message)
         }
       else
@@ -54,7 +56,7 @@ class Bigbluebutton::RoomsController < ApplicationController
     respond_with @room do |format|
       if @room.update_attributes(params[:bigbluebutton_room])
         format.html {
-          message = t('bigbluebutton_rails.rooms.notice.successfully_updated')
+          message = t('bigbluebutton_rails.rooms.notice.update.success')
           redirect_to(bigbluebutton_server_room_path(@server, @room), :notice => message)
         }
       else
@@ -65,6 +67,11 @@ class Bigbluebutton::RoomsController < ApplicationController
 
   def destroy
     @room = BigbluebuttonRoom.find(params[:id])
+
+    if bbb_is_meeting_running?
+      bbb_end_meeting
+    end
+
     @room.destroy
     redirect_to(bigbluebutton_server_rooms_url)
   end
@@ -102,6 +109,17 @@ class Bigbluebutton::RoomsController < ApplicationController
     render :json => { running: "#{run}" }
   end
 
+  def end
+    @room = BigbluebuttonRoom.find(params[:id])
+    if bbb_is_meeting_running?
+      bbb_end_meeting
+      message = t('bigbluebutton_rails.rooms.notice.end.success')
+    else
+      message = t('bigbluebutton_rails.rooms.notice.end.not_running')
+    end
+    redirect_to(bigbluebutton_server_room_path(@server, @room), :notice => message)
+  end
+
   protected
 
   def find_server
@@ -112,12 +130,17 @@ class Bigbluebutton::RoomsController < ApplicationController
     end
   end
 
+
   #
   # Functions that directly call BBB API. Prefixed with bbb_
   #
 
   def bbb_is_meeting_running?
     @server.api.is_meeting_running?(@room.meeting_id)
+  end
+
+  def bbb_end_meeting
+    @server.api.end_meeting(@room.meeting_id, @room.moderator_password)
   end
 
   def bbb_create_room

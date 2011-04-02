@@ -10,7 +10,7 @@ module ActionDispatch::Routing
     #   bigbluebutton_routes :room_matchers
     #
     # ==== Default routes
-    # 
+    #
     # Passing the option :default, it will generate the default routes to access
     # bigbluebutton servers and rooms. These routes are the resourceful routes generated
     # by rails to a resource, plus two new actions for the rooms.
@@ -45,9 +45,9 @@ module ActionDispatch::Routing
     #                                             { :action=>"running", :controller=>"bigbluebutton/rooms" }
     #
     # ==== Room matchers
-    # 
+    #
     # Generates matchers to access a room from a different url or inside another resource.
-    # It creates routes to the actions #show, #join and #running.
+    # It creates routes to the actions #show, #join, #running, and #end.
     #
     #    bigbluebutton_routes :room_matchers
     #
@@ -65,6 +65,8 @@ module ActionDispatch::Routing
     #                           { :controller=>"bigbluebutton/rooms", :action=>"join" }
     #   user_running_room  GET  /users/:user_id/room/:id/running(.:format)
     #                           { :controller=>"bigbluebutton/rooms", :action=>"running" }
+    #   user_end_room      GET  /users/:user_id/room/:id/end(.:format)
+    #                           { :controller=>"bigbluebutton/rooms", :action=>"end" }
     #
     def bigbluebutton_routes(*params)
       options = params.extract_options!
@@ -82,6 +84,7 @@ module ActionDispatch::Routing
           resources :rooms, :controller => 'bigbluebutton/rooms' do
             get :join, :on => :member
             get :running, :on => :member
+            get :end, :on => :member
           end
         end
       end
@@ -91,6 +94,7 @@ module ActionDispatch::Routing
       get 'room/:id' => 'bigbluebutton/rooms#show', :as => 'room'
       get 'room/:id/join' => 'bigbluebutton/rooms#join', :as => 'join_room'
       get 'room/:id/running' => 'bigbluebutton/rooms#running', :as => 'running_room'
+      get 'room/:id/end' => 'bigbluebutton/rooms#end', :as => 'end_room'
     end
 
   end

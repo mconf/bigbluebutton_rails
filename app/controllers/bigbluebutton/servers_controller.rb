@@ -24,7 +24,7 @@ class Bigbluebutton::ServersController < ApplicationController
     respond_with @server do |format|
       if @server.save
         format.html {
-          message = t('bigbluebutton_rails.servers.notice.successfully_created')
+          message = t('bigbluebutton_rails.servers.notice.create.success')
           redirect_to(@server, :notice => message)
         }
       else
@@ -39,7 +39,7 @@ class Bigbluebutton::ServersController < ApplicationController
     respond_with @server do |format|
       if @server.update_attributes(params[:bigbluebutton_server])
         format.html {
-          message = t('bigbluebutton_rails.servers.notice.successfully_updated')
+          message = t('bigbluebutton_rails.servers.notice.update.success')
           redirect_to(@server, :notice => message)
         }
       else

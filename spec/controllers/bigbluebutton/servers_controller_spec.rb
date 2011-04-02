@@ -39,7 +39,7 @@ describe Bigbluebutton::ServersController do
       should respond_with(:redirect)
       should redirect_to(bigbluebutton_server_path(BigbluebuttonServer.last))
     }
-    it { should set_the_flash.to(I18n.t('bigbluebutton_rails.servers.notice.successfully_created')) }
+    it { should set_the_flash.to(I18n.t('bigbluebutton_rails.servers.notice.create.success')) }
   end
 
   describe "#update" do
@@ -58,7 +58,7 @@ describe Bigbluebutton::ServersController do
       saved = BigbluebuttonServer.find(@server)
       saved.should have_same_attributes_as(new_server)
     }
-    it { should set_the_flash.to(I18n.t('bigbluebutton_rails.servers.notice.successfully_updated')) }
+    it { should set_the_flash.to(I18n.t('bigbluebutton_rails.servers.notice.update.success')) }
   end
 
   describe "#destroy" do

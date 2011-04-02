@@ -3,9 +3,16 @@ en:
     bigbluebutton: "BigBlueButton"
     servers:
       notice:
-        successfully_updated: "Your server was successfully updated."
-        successfully_created: "Your server was successfully created."
+        create:
+          success: "Your server was successfully created."
+        update:
+          success: "Your server was successfully updated."
     rooms:
       notice:
-        successfully_updated: "Your room was successfully updated."
-        successfully_created: "Your room was successfully created."
+        create:
+          success: "Your room was successfully created."
+        update:
+          success: "Your room was successfully updated."
+        end:
+          success: "The meeting was successfully ended."
+          not_running: "The meeting could not be ended because it is not running."
