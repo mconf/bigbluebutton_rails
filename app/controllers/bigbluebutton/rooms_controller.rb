@@ -1,3 +1,5 @@
+require 'bigbluebutton-api'
+
 class Bigbluebutton::RoomsController < ApplicationController
 
   # TODO create filter find_room
@@ -68,8 +70,13 @@ class Bigbluebutton::RoomsController < ApplicationController
   def destroy
     @room = BigbluebuttonRoom.find(params[:id])
 
-    if bbb_is_meeting_running?
-      bbb_end_meeting
+    # TODO Destroy room even if end_meeting failed?
+
+    begin
+      bbb_end_meeting if bbb_is_meeting_running?
+    rescue BigBlueButton::BigBlueButtonException => e
+      flash[:error] = e.to_s
+      # TODO Better error message: "Room destroyed in DB, but not in BBB..."
     end
 
     @room.destroy
@@ -80,22 +87,29 @@ class Bigbluebutton::RoomsController < ApplicationController
     @room = BigbluebuttonRoom.find(params[:id])
     role = bigbluebutton_role(@room)
 
-    # if the current user is a moderator, create the room (if needed)
-    # and join it
-    if role  == :moderator
-      bbb_create_room unless bbb_is_meeting_running?
-      join_url = bbb_join_url(bigbluebutton_user.name, role)
-      redirect_to(join_url)
+    begin
 
-    # normal user only joins if the conference is running
-    # if it's not, wait for a moderator to create the conference
-    else
-      if bbb_is_meeting_running?
+      # if the current user is a moderator, create the room (if needed)
+      # and join it
+      if role == :moderator
+        bbb_create_room unless bbb_is_meeting_running?
         join_url = bbb_join_url(bigbluebutton_user.name, role)
         redirect_to(join_url)
+
+      # normal user only joins if the conference is running
+      # if it's not, wait for a moderator to create the conference
       else
-        render :action => :join_wait
+        if bbb_is_meeting_running?
+          join_url = bbb_join_url(bigbluebutton_user.name, role)
+          redirect_to(join_url)
+        else
+          render :action => :join_wait
+        end
       end
+
+    rescue BigBlueButton::BigBlueButtonException => e
+      flash[:error] = e.to_s
+      redirect_to request.referer
     end
 
   end
@@ -105,19 +119,36 @@ class Bigbluebutton::RoomsController < ApplicationController
 
   def running
     @room = BigbluebuttonRoom.find(params[:id])
-    run = bbb_is_meeting_running?
-    render :json => { running: "#{run}" }
+
+    begin
+      run = bbb_is_meeting_running?
+    rescue BigBlueButton::BigBlueButtonException => e
+      flash[:error] = e.to_s
+      render :json => { running: "false", error: "#{e.to_s}" }
+      #redirect_to request.referer
+    else
+      render :json => { running: "#{run}" }
+    end
+
   end
 
   def end
     @room = BigbluebuttonRoom.find(params[:id])
-    if bbb_is_meeting_running?
-      bbb_end_meeting
-      message = t('bigbluebutton_rails.rooms.notice.end.success')
+
+    begin
+      if bbb_is_meeting_running?
+        bbb_end_meeting
+        message = t('bigbluebutton_rails.rooms.notice.end.success')
+      else
+        message = t('bigbluebutton_rails.rooms.notice.end.not_running')
+      end
+    rescue BigBlueButton::BigBlueButtonException => e
+      flash[:error] = e.to_s
+      redirect_to request.referer
     else
-      message = t('bigbluebutton_rails.rooms.notice.end.not_running')
+      redirect_to(bigbluebutton_server_room_path(@server, @room), :notice => message)
     end
-    redirect_to(bigbluebutton_server_room_path(@server, @room), :notice => message)
+
   end
 
   protected
@@ -132,7 +163,7 @@ class Bigbluebutton::RoomsController < ApplicationController
 
 
   #
-  # Functions that directly call BBB API. Prefixed with bbb_
+  # Functions that directly call the BBB API. All prefixed with bbb_
   #
 
   def bbb_is_meeting_running?
@@ -151,11 +182,11 @@ class Bigbluebutton::RoomsController < ApplicationController
 
   def bbb_join_url(username, role)
     if role == :moderator
-      @server.api.moderator_url(@room.meeting_id, username,
-                                @room.moderator_password)
+      @server.api.join_meeting_url(@room.meeting_id, username,
+                                   @room.moderator_password)
     else
-      @server.api.attendee_url(@room.meeting_id, username,
-                               @room.attendee_password)
+      @server.api.join_meeting_url(@room.meeting_id, username,
+                                   @room.attendee_password)
     end
   end
 
