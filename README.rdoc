@@ -1,36 +1,141 @@
 = BigBlueButton on Rails
 
-BigBlueButton (http://bigbluebutton.org) for Ruby on Rails 3.
+BigBlueButton (http://bigbluebutton.org) integration for Ruby on Rails 3.
 
-== Install
+Features:
+* Allows multiple servers and multiple conference rooms
+* Full API access using bigbluebutton-api-ruby (https://github.com/mconf/bigbluebutton-api-ruby)
+* Easy way to join conferences: simply create a room and call the "join" action
+* Easy integration with authentication and authorization mechanisms, such as Devise and CanCan
 
-This project is not available in rubygems yet.
-You can use it from git, adding this line to your Gemfile:
+Future:
+* Friendly URLs (e.g. http://somewhere.com/my-server/my-room)
+* Random meeting IDs to avoid problems with end_meeting and timeouts
+* Server administration (modify config.xml, use bbb-conf, etc.)
 
-  gem 'bigbluebutton_rails', :git => git://github.com/mconf/bigbluebutton_rails.git
+For more future features and issues check http://code.google.com/p/mconf/issues/list?can=2&q=label%3AComponent%20label%3ABigBlueButtonRails
 
-Or you have to clone the repository and build yourself the gem file.
+== Installation
 
-  git clone git://github.com/mconf/bigbluebutton_rails.git
+You can install the latest version of bigbluebutton_rails using RubyGems:
 
-Building the gem:
+  gem install bigbluebutton_rails
 
-  cd bigbluebutton_rails
-  gem build bigbluebutton_rails.gemspec
+Or simply add the following line in your Gemfile:
 
-Use it in your rails app (in your Gemfile):
+  gem "bigbluebutton_rails"
 
-  gem 'bigbluebutton_rails', :path => "../path/to/bigbluebutton_rails/"
-
-Then use the install generator to create the files in your app:
+After installing, you need to run the generator:
 
   rails generate bigbluebutton_rails:install
+
+This generator will create a migration file and a locale file in your application directories.
+Take a look at the migration to see how the models used by bigbluebutton_rails look like.
+
+All models, controllers and views used are embedded in the gem, but you can replace or extend them if you need to.
+There is one generator to help you with that:
+
+  rails generate bigbluebutton_rails:views
+
+It copies all bigbluebutton_rails views into your application, so you can customize them as you wish.
+
+There is yet another generator that copies the public files (javascripts, images and stylesheets) used by bigbluebutton_rails:
+
+  rails generate bigbluebutton_rails:public
+
+For more information see the section Dependencies below.
+
+=== Routes
+
+The routes to bigbluebutton_rails can be generated with the helper "bigbluebutton_routes". See the example below:
+
+  bigbluebutton_routes :default
+
+  resources :users do
+    bigbluebutton_routes :room_matchers
+    resources :spaces do
+      bigbluebutton_routes :room_matchers
+    end
+  end
+
+The first line generates the default routes. You need to call it at least once to generate the following routes:
+
+  bigbluebutton_routes :default
+
+To have your rooms beloging to a model other than servers, use the room_matchers:
+
+  bigbluebutton_routes :room_matchers
+
+It creates routes to the actions "show", "running", "end", and "join".
+So you can allow access to webconference rooms using URLs such as:
+
+  http://myserver.com/user-10/room-5/join
+  http://myserver.com/zaphod/public-room/join
+
+PS: bigbluebutton_rails does not allows the room access using IDs such as "room-5" or "public-room" yet, but soon you it will.
+
+=== User authorization, permissions and assumptions
+
+There is one basic assumption made by bigbluebutton_rails:
+
+* You have a method called "current_user" that returns the current user. And this user has an attribute or method called "name" that returns his/her fullname.
+
+If you don't, you can change this behaviour easily, keep reading.
+
+bigbluebutton_rails uses the methods "bigbluebutton_user" and "bigbluebutton_role(room)" to get the current user and to get the permission that the current
+user has in the "room", respectively.
+
+These methods are defined in "lib/bigbluebutton_rails/controller_methods.rb" and you can reimplement them in your application_controller to change their behaviour.
+
+
+==== Integration with Devise
+
+To be written...
+
+==== Integration with CanCan
+
+To be written...
+
+=== Dependencies
+
+For gem dependencies check the gemspec file.
+
+Files:
+
+* Javascripts:
+  * JQuery (jquery.min.js). See http://jquery.com/
+  * JQuery Heartbeat plugin (heartbeat.js). See http://plugins.jquery.com/project/Heartbeat
+* Images:
+  * loading.gif
+
+All these files are used by views/bigbluebutton/rooms/join_wait and can be generated with:
+
+  rails generate bigbluebutton_rails:public
+
+== How it works
+
+bigbluebutton_rails has two entities: servers and rooms. Servers can have multiple rooms, that belong to a server and can also belong to any other model.
+You can make a room belong to a user, for example.
+
+Every server has an associated API object (using the gem bigbluebutton-api-ruby) used to access BigBlueButton.
+The server now has basically the RESTful actions defined in Rails.
+
+The rooms also have the RESTful actions, plus specific actions to "join", "end", and check if a meeting is being held currently in the room ("running").
+All actions are pretty simple. "running" returns a json indicating if the conference is running or not and "end" ends the meeting.
+The most elaborated action is "join", that does the following:
+
+* If the user is a moderator:
+  * If the rooms is not created yet, creates it.
+  * Redirects to the url to join as a moderator.
+* If the user is a normal attendee:
+  * If the rooms is running, redirects to the url to join as an attendee.
+  * Otherwise, redirects to join_wait, to wait for a moderator before joining the conference.
 
 == Development
 
 Install the dependencies:
 
-  bundle update
+  bundle install
 
 Prepare the rails_app used for tests:
 
