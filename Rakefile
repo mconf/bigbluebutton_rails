@@ -1,9 +1,8 @@
 require 'rubygems'
 require 'bundler/setup'
-
 require 'rake/rdoctask'
 require 'rspec/core/rake_task'
-#require 'ci/reporter/rake/rspec'
+require 'rake/gempackagetask'
 
 desc 'Default: run tests.'
 task :default => :spec
@@ -17,6 +16,12 @@ Rake::RDocTask.new(:rdoc) do |rdoc|
   rdoc.rdoc_files.include('README.rdoc')
   rdoc.rdoc_files.include('CHANGELOG.rdoc')
   rdoc.rdoc_files.include('lib/**/*.rb')
+end
+
+eval("$specification = begin; #{ IO.read('bigbluebutton_rails.gemspec')}; end")
+Rake::GemPackageTask.new $specification do |pkg|
+  pkg.need_tar = true
+  pkg.need_zip = true
 end
 
 desc 'Setup RailsApp used in tests.'
