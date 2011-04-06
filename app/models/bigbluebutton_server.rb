@@ -1,7 +1,8 @@
 require 'bigbluebutton-api'
 
 class BigbluebuttonServer < ActiveRecord::Base
-  has_many :rooms, :class_name => 'BigbluebuttonRoom', :foreign_key => 'server_id'
+  has_many :rooms, :class_name => 'BigbluebuttonRoom', :foreign_key => 'server_id',
+                   :dependent => :destroy
 
   validates :name, :presence => true, :length => { :minimum => 1, :maximum => 500 }
 

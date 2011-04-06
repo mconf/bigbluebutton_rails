@@ -21,21 +21,29 @@ describe BigbluebuttonServer do
     should validate_uniqueness_of(:url)
   }
 
-  it {
+  it "has associated rooms" do
     server = Factory.create(:bigbluebutton_server)
     server.rooms.should be_empty
 
     Factory.create(:bigbluebutton_room, :server => server)
     server = BigbluebuttonServer.find(server.id)
     server.rooms.should_not be_empty
-  }
+  end
 
-  it { should ensure_length_of(:name).
-              is_at_least(1).is_at_most(500) }
-  it { should ensure_length_of(:url).
-              is_at_most(500) }
-  it { should ensure_length_of(:salt).
-              is_at_least(1).is_at_most(500) }
+  it "destroys associated rooms" do
+    server = Factory.create(:bigbluebutton_server)
+    Factory.create(:bigbluebutton_room, :server => server)
+    Factory.create(:bigbluebutton_room, :server => server)
+    expect { 
+      expect { 
+        server.destroy
+      }.to change{ BigbluebuttonServer.count }.by(-1)
+    }.to change{ BigbluebuttonRoom.count }.by(-2)
+  end
+
+  it { should ensure_length_of(:name).is_at_least(1).is_at_most(500) }
+  it { should ensure_length_of(:url).is_at_most(500) }
+  it { should ensure_length_of(:salt).is_at_least(1).is_at_most(500) }
 
   it { should allow_value('http://demo.bigbluebutton.org/bigbluebutton/api').for(:url) }
   it { should_not allow_value('').for(:url) }

@@ -76,9 +76,10 @@ PS: bigbluebutton_rails does not allows the room access using IDs such as "room-
 
 === User authorization, permissions and assumptions
 
-There is one basic assumption made by bigbluebutton_rails:
+There are some basic assumptions made by bigbluebutton_rails:
 
-* You have a method called "current_user" that returns the current user. And this user has an attribute or method called "name" that returns his/her fullname.
+* You have a method called "current_user" that returns the current user;
+* The current_user has an attribute or method called "name" that returns his/her fullname.
 
 If you don't, you can change this behaviour easily, keep reading.
 
@@ -103,7 +104,7 @@ For gem dependencies check the gemspec file.
 Files:
 
 * Javascripts:
-  * JQuery (jquery.min.js). See http://jquery.com/
+  * JQuery (jquery.min.js). See http://jquery.com
   * JQuery Heartbeat plugin (heartbeat.js). See http://plugins.jquery.com/project/Heartbeat
 * Images:
   * loading.gif
