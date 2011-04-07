@@ -1,4 +1,10 @@
-== 0.1.0
+== 0.0.2
+
+* New "fetch" methods in BigbluebuttonRooms to fetch info about meetings from BBB and store in the model.
+* New class BigbluebuttonAttendee to store attendee information returned by BBB.
+
+
+== 0.0.1
 
 * First version
 * DB models for BigBlueButton servers and rooms
