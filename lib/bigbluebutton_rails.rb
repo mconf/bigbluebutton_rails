@@ -1,6 +1,7 @@
 require 'rails'
 
 require 'classes/bigbluebutton_attendee'
+require 'classes/bigbluebutton_meeting'
 
 module BigbluebuttonRails
   require 'bigbluebutton_rails/rails'

@@ -1,8 +1,8 @@
 == 0.0.2
 
 * New "fetch" methods in BigbluebuttonRooms to fetch info about meetings from BBB and store in the model.
-* New class BigbluebuttonAttendee to store attendee information returned by BBB.
-
+* New class BigbluebuttonAttendee to store attendee information returned by BBB in get_meeting_info.
+* New class BigbluebuttonMeeting to store meeting information returned by BBB in get_meetings.
 
 == 0.0.1
 

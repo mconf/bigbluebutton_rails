@@ -22,4 +22,21 @@ class BigbluebuttonServer < ActiveRecord::Base
     @api
   end
 
+  attr_reader :meetings
+
+  def fetch_meetings
+    response = self.api.get_meetings
+
+    # updates the information in the rooms that are currently in BBB
+    @meetings = []
+    response[:meetings].each do |attr|
+      room = BigbluebuttonRoom.find_by_server_id_and_meeting_id(self.id, attr[:meetingID])
+
+      meeting = BigbluebuttonMeeting.new
+      meeting.from_hash(attr)
+      meeting.room = room
+      @meetings << meeting
+    end
+  end
+
 end
