@@ -52,8 +52,17 @@ class BigbluebuttonRoom < ActiveRecord::Base
   end
 
   def send_create
-    self.server.api.create_meeting(self.name, self.meeting_id, self.moderator_password,
-                                   self.attendee_password, self.welcome_msg)
+    response = self.server.api.create_meeting(self.name, self.meeting_id, self.moderator_password,
+                                              self.attendee_password, self.welcome_msg)
+
+    # updates model information with data returned by BBB
+    unless response.nil?
+      self.attendee_password = response[:attendeePW].to_s
+      self.moderator_password = response[:moderatorPW].to_s
+      self.save
+    end
+
+    response
   end
 
   # uses the API but does not require a request to the server

@@ -167,6 +167,15 @@ describe BigbluebuttonRoom do
     end
 
     describe "#send_create" do
+      let(:attendee_password) { Forgery(:basic).password }
+      let(:moderator_password) { Forgery(:basic).password }
+      let(:hash_create) {
+        {                                                                                                                                                                         
+          :returncode => "SUCCESS", :meetingID => "test_id",
+          :attendeePW => attendee_password, :moderatorPW => moderator_password,
+          :hasBeenForciblyEnded => "false", :messageKey => {}, :message => {}
+        }
+      }
 
       it { should respond_to(:send_create) }
 
@@ -176,6 +185,22 @@ describe BigbluebuttonRoom do
                room.attendee_password, room.welcome_msg)
         room.server = mocked_server
         room.send_create
+      end
+
+      it "send create_meeting" do
+        mocked_api.should_receive(:create_meeting).
+          with(room.name, room.meeting_id, room.moderator_password,
+               room.attendee_password, room.welcome_msg).and_return(hash_create)
+        room.server = mocked_server
+        room.send_create
+
+        room.attendee_password.should == attendee_password
+        room.moderator_password.should == moderator_password
+
+        # to be sure that the model was saved
+        saved = BigbluebuttonRoom.find(room.id)
+        saved.attendee_password.should == attendee_password
+        saved.moderator_password.should == moderator_password
       end
 
     end
