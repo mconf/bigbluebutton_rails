@@ -11,7 +11,7 @@ def mock_server_and_api
   @api_mock = mock(BigBlueButton::BigBlueButtonApi)
   @server_mock = mock_model(BigbluebuttonServer)
   @server_mock.stub(:api).and_return(@api_mock)
-  BigbluebuttonServer.stub(:find).with(@server_mock.id.to_s).and_return(@server_mock)
+  BigbluebuttonServer.stub(:find).and_return(@server_mock)
 end
 
 def mocked_server

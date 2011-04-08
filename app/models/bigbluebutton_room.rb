@@ -18,6 +18,10 @@ class BigbluebuttonRoom < ActiveRecord::Base
   attr_reader :running, :participant_count, :moderator_count, :attendees,
               :has_been_forcibly_ended, :start_time, :end_time
 
+  def is_running?
+    @running
+  end
+
   def fetch_meeting_info
     response = self.server.api.get_meeting_info(self.meeting_id, self.moderator_password)
 
@@ -41,6 +45,26 @@ class BigbluebuttonRoom < ActiveRecord::Base
 
   def fetch_is_running?
     @running = self.server.api.is_meeting_running?(self.meeting_id)
+  end
+
+  def send_end
+    self.server.api.end_meeting(self.meeting_id, self.moderator_password)
+  end
+
+  def send_create
+    self.server.api.create_meeting(self.name, self.meeting_id, self.moderator_password,
+                                   self.attendee_password, self.welcome_msg)
+  end
+
+  # uses the API but does not require a request to the server
+  def join_url(username, role)
+    if role == :moderator
+      self.server.api.join_meeting_url(self.meeting_id, username,
+                                       self.moderator_password)
+    else
+      self.server.api.join_meeting_url(self.meeting_id, username,
+                                       self.attendee_password)
+    end
   end
 
 end
