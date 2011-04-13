@@ -7,12 +7,16 @@ class BigbluebuttonRoom < ActiveRecord::Base
     :length => { :minimum => 1, :maximum => 100 }
   validates :name, :presence => true, :uniqueness => true,
     :length => { :minimum => 1, :maximum => 150 }
-  validates :attendee_password, :length => { :maximum => 50 }
-  validates :moderator_password, :length => { :maximum => 50 }
   validates :welcome_msg, :length => { :maximum => 250 }
+  validates :private, :inclusion => { :in => [true, false] }
+
+  # Passwords are 16 character strings
+  # See http://groups.google.com/group/bigbluebutton-dev/browse_thread/thread/9be5aae1648bcab?pli=1
+  validates :attendee_password, :length => { :maximum => 16 }
+  validates :moderator_password, :length => { :maximum => 16 }
 
   attr_accessible :name, :server_id, :meeting_id, :attendee_password,
-                  :moderator_password, :welcome_msg, :owner, :server
+                  :moderator_password, :welcome_msg, :owner, :server, :private
 
   # Note: these params need to be fetched before being accessed
   attr_reader :running, :participant_count, :moderator_count, :attendees,

@@ -41,7 +41,11 @@ module BigbluebuttonRails
         #   end
         #
         def bigbluebutton_role(room)
-          :moderator
+          if bigbluebutton_user.nil? # e.g.: no user logged
+            :attendee
+          else
+            :moderator
+          end
         end
 
       end
