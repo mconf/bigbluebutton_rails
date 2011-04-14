@@ -16,3 +16,27 @@ en:
         end:
           success: "The meeting was successfully ended."
           not_running: "The meeting could not be ended because it is not running."
+
+  activerecord:
+    models:
+      bigbluebutton_server: "BigBlueButton Server"
+      bigbluebutton_room: "BigBlueButton Room"
+    attributes: 
+      bigbluebutton_server:
+        name: "Name"
+        url: "URL"
+        salt: "Security Salt"
+        version: "Version"
+      bigbluebutton_room:
+        server_id: "Server ID"
+        meeting_id: "Meeting ID"
+        private: "Private"
+        name: "Name"
+        attendee_password: "Attendee Password"
+        moderator_password: "Moderator Password"
+        welcome_msg: "Welcome Message"
+        logout_url: "Logout URL"
+        dial_number: "Dial Number"
+        voice_bridge: "Voice Bridge"
+        max_participants: "Maximum Number of Participants"
+

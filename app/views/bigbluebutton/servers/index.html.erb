@@ -1,10 +1,11 @@
-<h1>Listing servers</h1>
+<h1>Listing <%= BigbluebuttonServer.human_name %>:</h1>
 
 <table>
   <tr>
-    <th>Name</th>
-    <th>Url</th>
-    <th>Salt</th>
+    <th><%= BigbluebuttonServer.human_attribute_name(:name) %></th>
+    <th><%= BigbluebuttonServer.human_attribute_name(:url) %></th>
+    <th><%= BigbluebuttonServer.human_attribute_name(:salt) %></th>
+    <th><%= BigbluebuttonServer.human_attribute_name(:version) %></th>
     <th></th>
     <th></th>
     <th></th>
@@ -15,6 +16,7 @@
     <td><%= server.name %></td>
     <td><%= server.url %></td>
     <td><%= server.salt %></td>
+    <td><%= server.version %></td>
     <td><%= link_to 'Show', server %></td>
     <td><%= link_to 'Edit', edit_bigbluebutton_server_path(server) %></td>
     <td><%= link_to 'Destroy', server, :confirm => 'Are you sure?', :method => :delete %></td>

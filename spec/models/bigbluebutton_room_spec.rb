@@ -15,6 +15,10 @@ describe BigbluebuttonRoom do
     it { should have_db_column(:attendee_password).of_type(:string) }
     it { should have_db_column(:moderator_password).of_type(:string) }
     it { should have_db_column(:welcome_msg).of_type(:string) }
+    it { should have_db_column(:dial_number).of_type(:string) }
+    it { should have_db_column(:logout_url).of_type(:string) }
+    it { should have_db_column(:voice_bridge).of_type(:string) }
+    it { should have_db_column(:max_participants).of_type(:integer) }
     it { should have_db_index(:server_id) }
     it { should have_db_index(:meeting_id).unique(true) }
     it { 
@@ -41,13 +45,11 @@ describe BigbluebuttonRoom do
     it { should_not allow_value(nil).for(:private) }
     it { should_not allow_value("").for(:private) }
 
-    it { should allow_mass_assignment_of(:name) }
-    it { should allow_mass_assignment_of(:attendee_password) }
-    it { should allow_mass_assignment_of(:moderator_password) }
-    it { should allow_mass_assignment_of(:welcome_msg) }
-    it { should allow_mass_assignment_of(:server_id) }
-    it { should allow_mass_assignment_of(:meeting_id) }
-    it { should allow_mass_assignment_of(:private) }
+    [:name, :server_id, :meeting_id, :attendee_password, :moderator_password,
+     :welcome_msg, :owner, :server, :private, :logout_url, :dial_number,
+     :voice_bridge, :max_participants].each do |attribute|
+      it { should allow_mass_assignment_of(attribute) }
+    end
     it { should_not allow_mass_assignment_of(:id) }
 
     it { should validate_uniqueness_of(:meeting_id) }

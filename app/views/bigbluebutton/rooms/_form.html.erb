@@ -3,6 +3,7 @@
 <% else %>
   <% url = bigbluebutton_server_room_path(@server, @room) %>
 <% end %>
+
 <%= form_for [@server, @room], :url => url do |f| %>
   <% if @room.errors.any? %>
     <div id="error_explanation">
@@ -24,6 +25,10 @@
     <%= f.text_field :name %>
   </div>
   <div class="field">
+    <%= f.label :private %><br />
+    <%= f.check_box :private %>
+  </div>
+  <div class="field">
     <%= f.label :attendee_password %><br />
     <%= f.text_field :attendee_password %>
   </div>
@@ -34,6 +39,22 @@
   <div class="field">
     <%= f.label :welcome_msg %><br />
     <%= f.text_field :welcome_msg %>
+  </div>
+  <div class="field">
+    <%= f.label :logout_url %><br />
+    <%= f.text_field :logout_url %>
+  </div>
+  <div class="field">
+    <%= f.label :dial_number %><br />
+    <%= f.text_field :dial_number %>
+  </div>
+  <div class="field">
+    <%= f.label :voice_bridge %><br />
+    <%= f.text_field :voice_bridge %>
+  </div>
+  <div class="field">
+    <%= f.label :max_participants %><br />
+    <%= f.text_field :max_participants %>
   </div>
   <div class="actions">
     <%= f.submit %>

@@ -15,8 +15,9 @@ class BigbluebuttonRoom < ActiveRecord::Base
   validates :attendee_password, :length => { :maximum => 16 }
   validates :moderator_password, :length => { :maximum => 16 }
 
-  attr_accessible :name, :server_id, :meeting_id, :attendee_password,
-                  :moderator_password, :welcome_msg, :owner, :server, :private
+  attr_accessible :name, :server_id, :meeting_id, :attendee_password, :moderator_password,
+                  :welcome_msg, :owner, :server, :private, :logout_url, :dial_number,
+                  :voice_bridge, :max_participants
 
   # Note: these params need to be fetched before being accessed
   attr_reader :running, :participant_count, :moderator_count, :attendees,

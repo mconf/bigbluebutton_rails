@@ -1,24 +1,24 @@
-<h1>Server:</h1>
+<h1><%= BigbluebuttonServer.human_name %>:</h1>
 
 <p id="notice"><%= notice %></p>
 
 <p>
-  <b>Name:</b>
+  <b><%= BigbluebuttonServer.human_attribute_name(:name) %>:</b>
   <%= @server.name %>
 </p>
 
 <p>
-  <b>Url:</b>
+  <b><%= BigbluebuttonServer.human_attribute_name(:url) %>:</b>
   <%= @server.url %>
 </p>
 
 <p>
-  <b>Salt:</b>
+  <b><%= BigbluebuttonServer.human_attribute_name(:salt) %>:</b>
   <%= @server.salt %>
 </p>
 
 <p>
-  <b>Version:</b>
+  <b><%= BigbluebuttonServer.human_attribute_name(:version) %>:</b>
   <%= @server.version %>
 </p>
 
