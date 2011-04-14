@@ -1,3 +1,5 @@
+# Used to store the attendees of a meeting as returned by BigBlueButton in
+# <tt>get_meeting_info</tt>.
 class BigbluebuttonAttendee
 
   attr_accessor :user_id, :full_name, :role

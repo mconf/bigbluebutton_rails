@@ -16,6 +16,7 @@ Rake::RDocTask.new(:rdoc) do |rdoc|
   rdoc.rdoc_files.include('README.rdoc')
   rdoc.rdoc_files.include('CHANGELOG.rdoc')
   rdoc.rdoc_files.include('lib/**/*.rb')
+  rdoc.rdoc_files.include('app/**/*.rb')
 end
 
 eval("$specification = begin; #{ IO.read('bigbluebutton_rails.gemspec')}; end")

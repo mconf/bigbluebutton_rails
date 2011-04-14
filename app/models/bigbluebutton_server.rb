@@ -14,6 +14,8 @@ class BigbluebuttonServer < ActiveRecord::Base
 
   validates :version, :presence => true, :inclusion => { :in => ['0.64', '0.7'] }
 
+  # Returns the API object (<tt>BigBlueButton::BigBlueButtonAPI</tt> defined in
+  # <tt>bigbluebutton-api-ruby</tt>) associated with this server.
   def api
     if @api.nil?
       @api = BigBlueButton::BigBlueButtonApi.new(self.url, self.salt,
@@ -22,8 +24,15 @@ class BigbluebuttonServer < ActiveRecord::Base
     @api
   end
 
+  # Array of <tt>BigbluebuttonMeeting</tt>
   attr_reader :meetings
 
+  # Fetches the meetings currently created in the server (running or not).
+  #
+  # Using the response, updates <tt>meetings</tt> with a list of <tt>BigbluebuttonMeeting</tt>
+  # objects.
+  #
+  # Triggers API call: <tt>get_meetings</tt>.
   def fetch_meetings
     response = self.api.get_meetings
 

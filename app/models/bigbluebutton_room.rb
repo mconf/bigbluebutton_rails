@@ -23,10 +23,27 @@ class BigbluebuttonRoom < ActiveRecord::Base
   attr_reader :running, :participant_count, :moderator_count, :attendees,
               :has_been_forcibly_ended, :start_time, :end_time
 
+  # Another way to access the attribute <tt>running</tt>
   def is_running?
     @running
   end
 
+  # Fetches info from BBB about this room.
+  # The response is parsed and stored in the model. You can access it using attributes such as:
+  #
+  #   room.participant_count
+  #   room.attendees[0].full_name
+  #
+  # The attributes changed are:
+  # * <tt>participant_count</tt>
+  # * <tt>moderator_count</tt>
+  # * <tt>running</tt>
+  # * <tt>has_been_forcibly_ended</tt>
+  # * <tt>start_time</tt>
+  # * <tt>end_time</tt>
+  # * <tt>attendees</tt> (array of <tt>BigbluebuttonAttendee</tt>)
+  #
+  # Triggers API call: <tt>get_meeting_info</tt>.
   def fetch_meeting_info
     response = self.server.api.get_meeting_info(self.meeting_id, self.moderator_password)
 
@@ -48,19 +65,30 @@ class BigbluebuttonRoom < ActiveRecord::Base
     response
   end
 
+  # Fetches the BBB server to see if the meeting is running. Sets <tt>running</tt>
+  #
+  # Triggers API call: <tt>is_meeting_running</tt>.
   def fetch_is_running?
     @running = self.server.api.is_meeting_running?(self.meeting_id)
   end
 
+  # Sends a call to the BBB server to end the meeting.
+  #
+  # Triggers API call: <tt>end_meeting</tt>.
   def send_end
     self.server.api.end_meeting(self.meeting_id, self.moderator_password)
   end
 
+  # Sends a call to the BBB server to create the meeting.
+  #
+  # With the response, updates the following attributes:
+  # * <tt>attendee_password</tt>
+  # * <tt>moderator_password</tt>
+  #
+  # Triggers API call: <tt>create_meeting</tt>.
   def send_create
     response = self.server.api.create_meeting(self.name, self.meeting_id, self.moderator_password,
                                               self.attendee_password, self.welcome_msg)
-
-    # updates model information with data returned by BBB
     unless response.nil?
       self.attendee_password = response[:attendeePW].to_s
       self.moderator_password = response[:moderatorPW].to_s
@@ -70,7 +98,11 @@ class BigbluebuttonRoom < ActiveRecord::Base
     response
   end
 
-  # uses the API but does not require a request to the server
+  # Returns the URL to join this room.
+  # username:: Name of the user
+  # role:: Role of the user in this room. Can be <tt>[:moderator, :attendee]</tt>
+  #
+  # Uses the API but does not require a request to the server.
   def join_url(username, role)
     if role == :moderator
       self.server.api.join_meeting_url(self.meeting_id, username,

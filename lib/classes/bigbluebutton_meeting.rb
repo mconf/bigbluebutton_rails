@@ -1,3 +1,5 @@
+# Used to store the meetings of a server as returned by BigBlueButton in
+# <tt>get_meetings</tt>.
 class BigbluebuttonMeeting
 
   attr_accessor :running, :has_been_forcibly_ended, :room
