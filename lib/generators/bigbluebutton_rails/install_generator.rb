@@ -9,7 +9,8 @@ module BigbluebuttonRails
       desc "Creates the initializer, initial migration and locale files."
 
       def copy_locale
-        copy_file "../../../../config/locales/en.yml", "config/locales/bigbluebutton_rails.en.yml"
+        # uses bigbluebutton_rails/config to avoid using the local application en.yml
+        copy_file "../../../../../bigbluebutton_rails/config/locales/en.yml", "config/locales/bigbluebutton_rails.en.yml"
       end
 
       def self.next_migration_number(dirname)
