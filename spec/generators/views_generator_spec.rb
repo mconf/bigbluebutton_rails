@@ -33,7 +33,7 @@ describe BigbluebuttonRails::Generators::ViewsGenerator do
       "app/views/#{scope}/rooms/edit.html.erb",
       "app/views/#{scope}/rooms/_form.html.erb",
       "app/views/#{scope}/rooms/index.html.erb",
-      "app/views/#{scope}/rooms/join_wait.html.erb",
+      "app/views/#{scope}/rooms/join.html.erb",
       "app/views/#{scope}/rooms/new.html.erb",
       "app/views/#{scope}/rooms/show.html.erb",
       "app/views/#{scope}/servers/edit.html.erb",

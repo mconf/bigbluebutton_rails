@@ -258,10 +258,10 @@ describe Bigbluebutton::RoomsController do
             get :join, :server_id => mocked_server.to_param, :id => room.to_param
           end
 
-          it "renders #join_wait to wait for a moderator" do
+          it "renders #join to wait for a moderator" do
             get :join, :server_id => mocked_server.to_param, :id => room.to_param
             should respond_with(:success)
-            should render_template(:join_wait)
+            should render_template(:join)
           end
         end
 

@@ -90,11 +90,8 @@ class Bigbluebutton::RoomsController < ApplicationController
     if @room.private or bigbluebutton_user.nil?
       redirect_to :action => :invite
     else
-      join_internal(bigbluebutton_user.name, bigbluebutton_role(@room), :join_wait)
+      join_internal(bigbluebutton_user.name, bigbluebutton_role(@room), :join)
     end
-  end
-
-  def join_wait
   end
 
   # Used to join private rooms or to invited anonymous users (not logged)

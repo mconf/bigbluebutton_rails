@@ -109,7 +109,7 @@ Files:
 * Images:
   * loading.gif
 
-These files are used by the views <tt>join_wait</tt> and <tt>invite</tt> and can be copied into your application with:
+JQuery is used in the views <tt>join_wait</tt> and <tt>invite</tt> and can be copied into your application with:
 
   rails generate bigbluebutton_rails:public
 
