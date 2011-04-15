@@ -23,7 +23,7 @@ class BigbluebuttonRoom < ActiveRecord::Base
   attr_reader :running, :participant_count, :moderator_count, :attendees,
               :has_been_forcibly_ended, :start_time, :end_time
 
-  # Another way to access the attribute <tt>running</tt>
+  # Convenience method to access the attribute <tt>running</tt>
   def is_running?
     @running
   end
@@ -105,12 +105,27 @@ class BigbluebuttonRoom < ActiveRecord::Base
   # Uses the API but does not require a request to the server.
   def join_url(username, role)
     if role == :moderator
-      self.server.api.join_meeting_url(self.meeting_id, username,
-                                       self.moderator_password)
+      self.server.api.join_meeting_url(self.meeting_id, username, self.moderator_password)
     else
-      self.server.api.join_meeting_url(self.meeting_id, username,
-                                       self.attendee_password)
+      self.server.api.join_meeting_url(self.meeting_id, username, self.attendee_password)
     end
+  end
+
+
+  # Returns the role of the user based on the password given.
+  # The return value can be <tt>:moderator</tt>, <tt>:attendee</tt>, or
+  # nil if the password given does not match any of the room passwords.
+  # params:: Hash with a key :password
+  def user_role(params)
+    role = nil
+    if params.has_key?(:password)
+      if self.moderator_password == params[:password]
+        role = :moderator
+      elsif self.attendee_password == params[:password]
+        role = :attendee
+      end
+    end
+    role
   end
 
 end

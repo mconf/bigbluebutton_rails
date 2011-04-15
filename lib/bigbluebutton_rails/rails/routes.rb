@@ -47,7 +47,7 @@ module ActionDispatch::Routing
     # ==== Room matchers
     #
     # Generates matchers to access a room from a different url or inside another resource.
-    # It creates routes to the actions #show, #join, #running, and #end.
+    # It creates routes to the actions #show, #join, #running, #end, #invite, and #auth.
     #
     #    bigbluebutton_routes :room_matchers
     #
@@ -63,10 +63,14 @@ module ActionDispatch::Routing
     #                           { :controller=>"bigbluebutton/rooms", :action=>"show" }
     #   user_join_room     GET  /users/:user_id/room/:id/join(.:format)
     #                           { :controller=>"bigbluebutton/rooms", :action=>"join" }
+    #   user_auth_room     POST /users/:user_id/room/:id/join(.:format)
+    #                           { :controller=>"bigbluebutton/rooms", :action=>"auth" }
     #   user_running_room  GET  /users/:user_id/room/:id/running(.:format)
     #                           { :controller=>"bigbluebutton/rooms", :action=>"running" }
     #   user_end_room      GET  /users/:user_id/room/:id/end(.:format)
     #                           { :controller=>"bigbluebutton/rooms", :action=>"end" }
+    #   user_invite_room   GET  /users/:user_id/room/:id/invite(.:format)
+    #                           { :controller=>"bigbluebutton/rooms", :action=>"invite" }
     #
     def bigbluebutton_routes(*params)
       options = params.extract_options!
@@ -85,16 +89,21 @@ module ActionDispatch::Routing
             get :join, :on => :member
             get :running, :on => :member
             get :end, :on => :member
+            get :invite, :on => :member
+            post :auth, :on => :member
           end
         end
       end
     end
 
     def bigbluebutton_routes_room_matchers(*params) #:nodoc:
+      # TODO This is generating helpers like "user_running_room" instead of "running_user_room"
       get 'room/:id' => 'bigbluebutton/rooms#show', :as => 'room'
       get 'room/:id/join' => 'bigbluebutton/rooms#join', :as => 'join_room'
+      post 'room/:id/join' => 'bigbluebutton/rooms#auth', :as => 'auth_room'
       get 'room/:id/running' => 'bigbluebutton/rooms#running', :as => 'running_room'
       get 'room/:id/end' => 'bigbluebutton/rooms#end', :as => 'end_room'
+      get 'room/:id/invite' => 'bigbluebutton/rooms#invite', :as => 'invite_room'
     end
 
   end

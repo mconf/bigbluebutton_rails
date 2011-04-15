@@ -82,39 +82,48 @@ class Bigbluebutton::RoomsController < ApplicationController
     redirect_to(bigbluebutton_server_rooms_url)
   end
 
+  # Used to join public rooms.
   def join
     @room = BigbluebuttonRoom.find(params[:id])
-    role = bigbluebutton_role(@room)
 
-    begin
-      @room.fetch_is_running?
-
-      # if the current user is a moderator, create the room (if needed)
-      # and join it
-      if role == :moderator
-        @room.send_create unless @room.is_running?
-        join_url = @room.join_url(bigbluebutton_user.name, role)
-        redirect_to(join_url)
-
-      # normal user only joins if the conference is running
-      # if it's not, wait for a moderator to create the conference
-      else
-        if @room.is_running?
-          join_url = @room.join_url(bigbluebutton_user.name, role)
-          redirect_to(join_url)
-        else
-          render :action => :join_wait
-        end
-      end
-
-    rescue BigBlueButton::BigBlueButtonException => e
-      flash[:error] = e.to_s
-      redirect_to request.referer
+    # private rooms are joined through #invite
+    if @room.private
+      redirect_to :action => :invite
+    else
+      join_internal(bigbluebutton_user.name, bigbluebutton_role(@room))
     end
-
   end
 
   def join_wait
+  end
+
+  # Used to join private rooms.
+  def invite
+    @room = BigbluebuttonRoom.find(params[:id])
+
+    respond_with @room do |format|
+
+      # A logged user can join a public room without authorization
+      if !@room.private # and !bigbluebutton_user.nil?
+        format.html { redirect_to :action => :join }
+      else
+        format.html
+      end
+
+    end
+  end
+
+  def auth
+    @room = BigbluebuttonRoom.find(params[:id])
+
+    role = @room.user_role(params[:user])
+    unless role.nil?
+      join_internal(params[:user][:name], role)
+    else
+      # TODO flash message
+      flash[:error] = t('bigbluebutton_rails.rooms.alert.auth.failure')
+      render :action => "invite", :status => :unauthorized
+    end
   end
 
   def running
@@ -159,6 +168,36 @@ class Bigbluebutton::RoomsController < ApplicationController
       @server = BigbluebuttonServer.find(params[:server_id])
     else
       @server = BigbluebuttonServer.first
+    end
+  end
+
+  def join_internal(username, role)
+
+    begin
+      @room.fetch_is_running?
+
+      # if the current user is a moderator, create the room (if needed)
+      # and join it
+      if role == :moderator
+        @room.send_create unless @room.is_running?
+        join_url = @room.join_url(username, role)
+        redirect_to(join_url)
+
+
+      # normal user only joins if the conference is running
+      # if it's not, wait for a moderator to create the conference
+      else
+        if @room.is_running?
+          join_url = @room.join_url(username, role)
+          redirect_to(join_url)
+        else
+          render :action => :join_wait
+        end
+      end
+
+    rescue BigBlueButton::BigBlueButtonException => e
+      flash[:error] = e.to_s
+      redirect_to request.referer
     end
   end
 

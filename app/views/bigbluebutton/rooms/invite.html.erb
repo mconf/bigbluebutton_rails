@@ -1,0 +1,19 @@
+<h1>Invite to the meeting <%= @room.name %></h1>
+
+<p id="error"><%= flash[:error] %></p>
+
+<p><%= @room.name %> is a private meeting. You must enter the password to join.</p>
+
+<%= form_tag auth_bigbluebutton_server_room_path do %>
+
+  <div class="field">
+    Name:<br />
+    <%= text_field_tag "user[name]", "" %>
+  </div>
+  <div class="field">
+    Password:<br />
+    <%= text_field_tag "user[password]", "" %>
+  </div>
+
+  <%= submit_tag "Submit" %>
+<% end %>

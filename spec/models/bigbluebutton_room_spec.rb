@@ -74,6 +74,16 @@ describe BigbluebuttonRoom do
 
     it { should respond_to(:is_running?) }
 
+    describe "#user_role" do
+      let(:room) { Factory.build(:bigbluebutton_room, :moderator_password => "mod", :attendee_password => "att") }
+      it { should respond_to(:user_role) }
+      it { room.user_role({ :password => room.moderator_password }).should == :moderator }
+      it { room.user_role({ :password => room.attendee_password }).should == :attendee }
+      it { room.user_role({ :password => "wrong" }).should == nil }
+      it { room.user_role({ :password => nil }).should == nil }
+      it { room.user_role({ :not_password => "any" }).should == nil }
+    end
+
     context "using the api" do
       before { mock_server_and_api }
       let(:room) { Factory.create(:bigbluebutton_room) }

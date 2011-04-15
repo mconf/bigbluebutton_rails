@@ -1,5 +1,6 @@
 * Rooms can be private - require a password to join.
-* New fields for rooms: logout_url, dial_number, voice_bridge and max_participant.
+* New route "invite" used to request a password for private rooms. "join" is used for public rooms.
+* New attributes for rooms: logout_url, dial_number, voice_bridge and max_participant.
 
 == 0.0.2
 
