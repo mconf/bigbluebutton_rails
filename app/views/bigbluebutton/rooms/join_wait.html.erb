@@ -1,20 +1,24 @@
 <script type="text/javascript">
 
-function heartbeat_callback() {
-  // TODO Should parse the json to get the response
-  if ($("#room_heartbeat_div").text().search("true") > 0) {
-    window.location.reload();
-  }
+function ajax_request() {
+  $.ajax({
+    url: "<%= running_bigbluebutton_server_room_url(@server, @room, :format => 'json') %>",
+    dataType: 'json',
+    error: function(xhr_data) {
+      //
+    },
+    success: function(xhr_data) {
+      if (xhr_data.running == 'true') {
+        window.location.reload();
+      }
+      setTimeout(function() { ajax_request(); }, 3000);
+    },
+    contentType: 'application/json'
+  });
 }
 
 $(document).ready(function(){
-  $.jheartbeat.set({
-    url: "<%= running_bigbluebutton_server_room_url(@server, @room, :format => 'json') %>",
-    delay: 3000,
-    div_id: "room_heartbeat_div"
-  }, function () {
-    heartbeat_callback();
-  });
+  ajax_request();
 });
 
 </script>

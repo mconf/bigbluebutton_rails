@@ -106,11 +106,10 @@ Files:
 
 * Javascripts:
   * JQuery (jquery.min.js). See http://jquery.com
-  * JQuery Heartbeat plugin (heartbeat.js). See http://plugins.jquery.com/project/Heartbeat
 * Images:
   * loading.gif
 
-All these files are used by views/bigbluebutton/rooms/join_wait and can be copied into your application with:
+These files are used by the views <tt>join_wait</tt> and <tt>invite</tt> and can be copied into your application with:
 
   rails generate bigbluebutton_rails:public
 

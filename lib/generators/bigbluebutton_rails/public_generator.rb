@@ -7,7 +7,6 @@ module BigbluebuttonRails
       desc "Copies all bigbluebutton_rails public files (javascripts and images) to your application."
 
       def copy_files
-        copy_file "javascripts/heartbeat.js", "public/javascripts/heartbeat.js"
         copy_file "javascripts/jquery.min.js", "public/javascripts/jquery.min.js"
         copy_file "images/loading.gif", "public/images/loading.gif"
       end

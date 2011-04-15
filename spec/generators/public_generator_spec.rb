@@ -19,7 +19,6 @@ describe BigbluebuttonRails::Generators::PublicGenerator do
   def assert_files(assert_exists=true)
     files = [
       "public/images/loading.gif",
-      "public/javascripts/heartbeat.js",
       "public/javascripts/jquery.min.js"
     ]
     if assert_exists

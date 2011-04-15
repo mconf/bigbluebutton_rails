@@ -1,6 +1,9 @@
 require 'spec_helper'
 require 'bigbluebutton-api'
 
+# Some tests mock the server and its API object
+# We don't want to trigger real API calls here (this is done in the integration tests)
+
 def build_running_json(value, error=nil)
   hash = { :running => "#{value}" }
   hash[:error] = error unless error.nil?
@@ -157,14 +160,20 @@ describe Bigbluebutton::RoomsController do
 
   describe "#join" do
     let(:user) { Factory.build(:user) }
-    before { controller.stub(:bigbluebutton_user) { user } }
-
-    # mock the server so we can mock the BBB API
-    # we don't want to trigger real API calls here (this is done in the integration tests)
-
     before { mock_server_and_api }
 
+    context "for an anonymous user" do
+      before { controller.stub(:bigbluebutton_user) { nil } }
+      before(:each) { get :join, :server_id => mocked_server.to_param, :id => private_room.to_param }
+
+      it {
+        should respond_with(:redirect)
+        should redirect_to(invite_bigbluebutton_server_room_path(mocked_server, private_room))
+      }
+    end
+
     context "for a private room" do
+      before { controller.stub(:bigbluebutton_user) { user } }
       before(:each) { get :join, :server_id => mocked_server.to_param, :id => private_room.to_param }
 
       it {
@@ -174,6 +183,7 @@ describe Bigbluebutton::RoomsController do
     end
 
     context "for a public room" do
+      before { controller.stub(:bigbluebutton_user) { user } }
 
       context "if the user is a moderator" do
         before {
@@ -248,7 +258,7 @@ describe Bigbluebutton::RoomsController do
             get :join, :server_id => mocked_server.to_param, :id => room.to_param
           end
 
-          it "render the join_wait view to wait for a moderator" do
+          it "renders #join_wait to wait for a moderator" do
             get :join, :server_id => mocked_server.to_param, :id => room.to_param
             should respond_with(:success)
             should render_template(:join_wait)
@@ -286,57 +296,55 @@ describe Bigbluebutton::RoomsController do
 
   describe "#invite" do
     before { mock_server_and_api }
+    let(:user) { Factory.build(:user) }
 
-    context "for a public room" do
-      before(:each) { get :invite, :server_id => mocked_server.to_param, :id => room.to_param }
-      it { should respond_with(:redirect) }
-      it { should redirect_to(join_bigbluebutton_server_room_path(mocked_server, room)) }
-    end
-
-    context "for a private room" do
-      before(:each) { get :invite, :server_id => mocked_server.to_param, :id => private_room.to_param }
-      it { should respond_with(:success) }
-      it { should render_template(:invite) }
-      it { should assign_to(:room).with(private_room) }
-    end
-
-=begin
-    context "a logged user to a public room" do
-      before { controller.stub(:bigbluebutton_user) { Factory.build(:user) } }
-      before(:each) { get :invite, :server_id => server.to_param, :id => room.to_param }
-      it { should respond_with(:redirect) }
-      it { should assign_to(:room).with(room) }
-    end
-
-    context "an anonymous user to a public room" do
+    context "for an anonymous user" do
       before { controller.stub(:bigbluebutton_user).and_return(nil) }
-      before(:each) { get :invite, :server_id => server.to_param, :id => room.to_param }
-      it { should respond_with(:success) }
-      it { should render_template(:invite) }
-      it { should assign_to(:room).with(room) }
+      
+      context "and a public room" do
+        before(:each) { get :invite, :server_id => mocked_server.to_param, :id => room.to_param }
+        it { should respond_with(:success) }
+        it { should render_template(:invite) }
+        it { should assign_to(:room).with(room) }
+      end
+
+      context "and a private room" do
+        before(:each) { get :invite, :server_id => mocked_server.to_param, :id => private_room.to_param }
+        it { should respond_with(:success) }
+        it { should render_template(:invite) }
+        it { should assign_to(:room).with(private_room) }
+      end
     end
 
-    context "an anonymous user to a private room" do
-      before { controller.stub(:bigbluebutton_user).and_return(nil) }
-      before(:each) { get :invite, :server_id => server.to_param, :id => private_room.to_param }
-      it { should respond_with(:success) }
-      it { should render_template(:invite) }
-      it { should assign_to(:room).with(private_room) }
+    context "for a logged user" do
+      before { controller.stub(:bigbluebutton_user).and_return(user) }
+
+      context "and a public room" do
+        before(:each) { get :invite, :server_id => mocked_server.to_param, :id => room.to_param }
+        it { should respond_with(:redirect) }
+        it { should redirect_to(join_bigbluebutton_server_room_path(mocked_server, room)) }
+      end
+
+      context "and a private room" do
+        before(:each) { get :invite, :server_id => mocked_server.to_param, :id => private_room.to_param }
+        it { should respond_with(:success) }
+        it { should render_template(:invite) }
+        it { should assign_to(:room).with(private_room) }
+      end
     end
-=end
 
   end
 
   describe "#auth" do
     before { mock_server_and_api }
 
-    context "entering a wrong password" do
+    context "entering the wrong password" do
       let(:hash) { { :name => "Elftor", :password => nil } }
       before(:each) { post :auth, :server_id => mocked_server.to_param, :id => private_room.to_param, :user => hash }
       it { should respond_with(:unauthorized) }
       it { should assign_to(:room).with(private_room) }
       it { should render_template(:invite) }
-      it { should set_the_flash.to(I18n.t('bigbluebutton_rails.rooms.alert.auth.failure')) }
+      it { should set_the_flash.to(I18n.t('bigbluebutton_rails.rooms.error.auth.failure')) }
     end
 
     context "entering the attendee password" do
@@ -371,10 +379,11 @@ describe Bigbluebutton::RoomsController do
           post :auth, :server_id => mocked_server.to_param, :id => private_room.to_param, :user => hash
         end
 
-        it "render the join_wait view to wait for a moderator" do
+        it "renders #invite" do
           post :auth, :server_id => mocked_server.to_param, :id => private_room.to_param, :user => hash
           should respond_with(:success)
-          should render_template(:join_wait)
+          should render_template(:invite)
+          should set_the_flash.to(I18n.t('bigbluebutton_rails.rooms.error.not_running'))
         end
       end
 
