@@ -33,7 +33,7 @@ $(document).ready(function(){
 <p>Meeting status: <span id="meeting_status">-</span> (<a href="javascript:ajax_request();">refresh</a>)</p>
 <p><%= @room.name %> is a private meeting. Enter the password to join:</p>
 
-<%= form_tag auth_bigbluebutton_server_room_path do %>
+<%= form_tag join_bigbluebutton_server_room_path(@server, @room) do %>
 
   <div class="field">
     Name:<br />

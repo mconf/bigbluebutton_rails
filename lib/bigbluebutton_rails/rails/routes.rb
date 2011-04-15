@@ -90,7 +90,7 @@ module ActionDispatch::Routing
             get :running, :on => :member
             get :end, :on => :member
             get :invite, :on => :member
-            post :auth, :on => :member
+            post :join, :on => :member, :action => :auth
           end
         end
       end
@@ -100,7 +100,7 @@ module ActionDispatch::Routing
       # TODO This is generating helpers like "user_running_room" instead of "running_user_room"
       get 'room/:id' => 'bigbluebutton/rooms#show', :as => 'room'
       get 'room/:id/join' => 'bigbluebutton/rooms#join', :as => 'join_room'
-      post 'room/:id/join' => 'bigbluebutton/rooms#auth', :as => 'auth_room'
+      post 'room/:id/join' => 'bigbluebutton/rooms#auth', :as => 'join_room'
       get 'room/:id/running' => 'bigbluebutton/rooms#running', :as => 'running_room'
       get 'room/:id/end' => 'bigbluebutton/rooms#end', :as => 'end_room'
       get 'room/:id/invite' => 'bigbluebutton/rooms#invite', :as => 'invite_room'
