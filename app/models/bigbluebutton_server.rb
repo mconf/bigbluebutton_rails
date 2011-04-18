@@ -40,11 +40,18 @@ class BigbluebuttonServer < ActiveRecord::Base
     @meetings = []
     response[:meetings].each do |attr|
       room = BigbluebuttonRoom.find_by_server_id_and_meeting_id(self.id, attr[:meetingID])
+      if room.nil?
+        room = BigbluebuttonRoom.new(:server => self, :meeting_id => attr[:meetingID],
+                                     :attendee_password => attr[:attendeePW],
+                                     :moderator_password => attr[:moderatorPW])
+        room.running = attr[:running]
+      else
+        room.update_attributes(:attendee_password => attr[:attendeePW],
+                               :moderator_password => attr[:moderatorPW])
+        room.running = attr[:running]
+      end
 
-      meeting = BigbluebuttonMeeting.new
-      meeting.from_hash(attr)
-      meeting.room = room
-      @meetings << meeting
+      @meetings << room
     end
   end
 

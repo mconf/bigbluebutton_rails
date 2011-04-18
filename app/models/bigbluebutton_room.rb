@@ -19,9 +19,9 @@ class BigbluebuttonRoom < ActiveRecord::Base
                   :welcome_msg, :owner, :server, :private, :logout_url, :dial_number,
                   :voice_bridge, :max_participants
 
-  # Note: these params need to be fetched before being accessed
-  attr_reader :running, :participant_count, :moderator_count, :attendees,
-              :has_been_forcibly_ended, :start_time, :end_time
+  # Note: these params need to be fetched from the server before being accessed
+  attr_accessor :running, :participant_count, :moderator_count, :attendees,
+                :has_been_forcibly_ended, :start_time, :end_time
 
   # Convenience method to access the attribute <tt>running</tt>
   def is_running?
@@ -49,12 +49,10 @@ class BigbluebuttonRoom < ActiveRecord::Base
 
     @participant_count = response[:participantCount]
     @moderator_count = response[:moderatorCount]
-    @running = response[:running].downcase == "true"
-    @has_been_forcibly_ended = response[:hasBeenForciblyEnded].downcase == "true"
-    @start_time = response[:startTime] == "null" ?
-                  nil : DateTime.parse(response[:startTime])
-    @end_time = response[:endTime] == "null" ?
-                nil : DateTime.parse(response[:endTime])
+    @running = response[:running]
+    @has_been_forcibly_ended = response[:hasBeenForciblyEnded]
+    @start_time = response[:startTime]
+    @end_time = response[:endTime]
     @attendees = []
     response[:attendees].each do |att|
       attendee = BigbluebuttonAttendee.new
@@ -90,8 +88,8 @@ class BigbluebuttonRoom < ActiveRecord::Base
     response = self.server.api.create_meeting(self.name, self.meeting_id, self.moderator_password,
                                               self.attendee_password, self.welcome_msg)
     unless response.nil?
-      self.attendee_password = response[:attendeePW].to_s
-      self.moderator_password = response[:moderatorPW].to_s
+      self.attendee_password = response[:attendeePW]
+      self.moderator_password = response[:moderatorPW]
       self.save
     end
 

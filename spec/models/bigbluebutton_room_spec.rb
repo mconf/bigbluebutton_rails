@@ -66,10 +66,11 @@ describe BigbluebuttonRoom do
     it { should ensure_length_of(:moderator_password).is_at_most(16) }
     it { should ensure_length_of(:welcome_msg).is_at_most(250) }
 
-    # attr_readers
+    # attr_accessors
     [:running, :participant_count, :moderator_count, :attendees,
      :has_been_forcibly_ended, :start_time, :end_time].each do |attr|
       it { should respond_to(attr) }
+      it { should respond_to("#{attr}=") }
     end
 
     it { should respond_to(:is_running?) }
@@ -114,24 +115,24 @@ describe BigbluebuttonRoom do
 
         # these hashes should be exactly as returned by bigbluebutton-api-ruby to be sure we are testing it right
         let(:hash_info) { 
-          { :returncode=>"SUCCESS", :meetingID=>"test_id", :attendeePW=>1234, :moderatorPW=>4321,
-            :running=>"false", :hasBeenForciblyEnded=>"false", :startTime=>"null", :endTime=>"null",
-            :participantCount=>0, :moderatorCount=>0, :attendees=>[], :messageKey=>{ }, :message=>{ }
+          { :returncode=>true, :meetingID=>"test_id", :attendeePW=>"1234", :moderatorPW=>"4321",
+            :running=>false, :hasBeenForciblyEnded=>false, :startTime=>nil, :endTime=>nil,
+            :participantCount=>0, :moderatorCount=>0, :attendees=>[], :messageKey=>"", :message=>""
           }
         }
         let(:users) { 
           [
-           {:userID=>"ndw1fnaev0rj", :fullName=>"House M.D.", :role=>"MODERATOR"},
-           {:userID=>"gn9e22b7ynna", :fullName=>"Dexter Morgan", :role=>"MODERATOR"},
-           {:userID=>"llzihbndryc3", :fullName=>"Cameron Palmer", :role=>"VIEWER"},
-           {:userID=>"rbepbovolsxt", :fullName=>"Trinity", :role=>"VIEWER"}
+           {:userID=>"ndw1fnaev0rj", :fullName=>"House M.D.", :role=>:moderator},
+           {:userID=>"gn9e22b7ynna", :fullName=>"Dexter Morgan", :role=>:moderator},
+           {:userID=>"llzihbndryc3", :fullName=>"Cameron Palmer", :role=>:viewer},
+           {:userID=>"rbepbovolsxt", :fullName=>"Trinity", :role=>:viewer}
           ]
         }
         let(:hash_info2) { 
-          { :returncode=>"SUCCESS", :meetingID=>"test_id", :attendeePW=>1234, :moderatorPW=>4321,
-            :running=>"true", :hasBeenForciblyEnded=>"false", :startTime=>"Wed Apr 06 17:09:57 UTC 2011",
-            :endTime=>"null", :participantCount=>4, :moderatorCount=>2,
-            :attendees => users, :messageKey=>{ }, :message=>{ }
+          { :returncode=>true, :meetingID=>"test_id", :attendeePW=>"1234", :moderatorPW=>"4321",
+            :running=>true, :hasBeenForciblyEnded=>false, :startTime=>DateTime.parse("Wed Apr 06 17:09:57 UTC 2011"),
+            :endTime=>nil, :participantCount=>4, :moderatorCount=>2,
+            :attendees=>users, :messageKey=>{ }, :message=>{ }
           }
         }
 
