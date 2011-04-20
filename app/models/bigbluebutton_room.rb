@@ -17,11 +17,13 @@ class BigbluebuttonRoom < ActiveRecord::Base
 
   attr_accessible :name, :server_id, :meeting_id, :attendee_password, :moderator_password,
                   :welcome_msg, :owner, :server, :private, :logout_url, :dial_number,
-                  :voice_bridge, :max_participants
+                  :voice_bridge, :max_participants, :owner_id, :owner_type
 
   # Note: these params need to be fetched from the server before being accessed
   attr_accessor :running, :participant_count, :moderator_count, :attendees,
                 :has_been_forcibly_ended, :start_time, :end_time
+
+  after_initialize :initialize_fetched_attributes
 
   # Convenience method to access the attribute <tt>running</tt>
   def is_running?
@@ -86,7 +88,8 @@ class BigbluebuttonRoom < ActiveRecord::Base
   # Triggers API call: <tt>create_meeting</tt>.
   def send_create
     response = self.server.api.create_meeting(self.name, self.meeting_id, self.moderator_password,
-                                              self.attendee_password, self.welcome_msg)
+                                              self.attendee_password, self.welcome_msg, self.dial_number,
+                                              self.logout_url, self.max_participants, self.voice_bridge)
     unless response.nil?
       self.attendee_password = response[:attendeePW]
       self.moderator_password = response[:moderatorPW]
@@ -125,5 +128,18 @@ class BigbluebuttonRoom < ActiveRecord::Base
     end
     role
   end
+
+  private
+
+  def initialize_fetched_attributes
+    @participant_count = 0
+    @moderator_count = 0
+    @running = false
+    @has_been_forcibly_ended = false
+    @start_time = nil
+    @end_time = nil
+    @attendees = []
+  end
+
 
 end

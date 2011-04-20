@@ -48,7 +48,7 @@ describe Bigbluebutton::RoomsController do
   describe "#create" do
     let(:new_room) { Factory.build(:bigbluebutton_room, :server => server) }
 
-    context do
+    context "on success" do
       before :each do
         expect {
           post :create, :server_id => server.to_param, :bigbluebutton_room => new_room.attributes
@@ -56,7 +56,7 @@ describe Bigbluebutton::RoomsController do
       end
       it {
         should respond_with(:redirect)
-        should redirect_to(bigbluebutton_server_room_path(server, BigbluebuttonRoom.last))
+        should redirect_to bigbluebutton_server_room_path(server, BigbluebuttonRoom.last)
       }
       it { should set_the_flash.to(I18n.t('bigbluebutton_rails.rooms.notice.create.success')) }
       it { should assign_to(:server).with(server) }
@@ -66,7 +66,38 @@ describe Bigbluebutton::RoomsController do
       }
     end
 
-    context "when meeting_id is not specified should copied from name" do
+    context "on failure" do
+      before :each do
+        new_room.name = nil # invalid
+        expect {
+          post :create, :server_id => server.to_param, :bigbluebutton_room => new_room.attributes
+        }.not_to change{ BigbluebuttonRoom.count }
+      end
+      it { should render_template(:new) }
+      it { should assign_to(:server).with(server) }
+    end
+
+    context "with :redir_url" do
+      it "on success" do
+        expect {
+          post :create, :server_id => server.to_param, :bigbluebutton_room => new_room.attributes,
+                        :redir_url => bigbluebutton_servers_path
+        }.to change{ BigbluebuttonRoom.count }.by(1)
+        should respond_with(:redirect)
+        should redirect_to bigbluebutton_servers_path
+      end
+      it "on failure" do
+        new_room.name = nil # invalid
+        expect {
+          post :create, :server_id => server.to_param, :bigbluebutton_room => new_room.attributes,
+                        :redir_url => bigbluebutton_servers_path
+        }.not_to change{ BigbluebuttonRoom.count }
+        should respond_with(:redirect)
+        should redirect_to bigbluebutton_servers_path
+      end
+    end
+
+    context "when meeting_id is not specified it should be copied from name" do
       before :each do
         attr = new_room.attributes
         attr.delete("meeting_id")
@@ -84,7 +115,7 @@ describe Bigbluebutton::RoomsController do
     let(:new_room) { Factory.build(:bigbluebutton_room) }
     before { @room = room }
 
-    context do
+    context "on success" do
       before :each do
         expect {
           put :update, :server_id => server.to_param, :id => @room.to_param, :bigbluebutton_room => new_room.attributes
@@ -92,7 +123,7 @@ describe Bigbluebutton::RoomsController do
       end
       it {
         should respond_with(:redirect)
-        should redirect_to(bigbluebutton_server_room_path(server, @room))
+        should redirect_to bigbluebutton_server_room_path(server, @room)
       }
       it {
         saved = BigbluebuttonRoom.find(@room)
@@ -100,6 +131,32 @@ describe Bigbluebutton::RoomsController do
       }
       it { should set_the_flash.to(I18n.t('bigbluebutton_rails.rooms.notice.update.success')) }
       it { should assign_to(:server).with(server) }
+    end
+
+    context "on failure" do
+      before :each do
+        new_room.name = nil # invalid
+        put :update, :server_id => server.to_param, :id => @room.to_param, :bigbluebutton_room => new_room.attributes
+      end
+      it { should render_template(:edit) }
+      it { should assign_to(:server).with(server) }
+      it { should assign_to(:room).with(@room) }
+    end
+
+    context "with :redir_url" do
+      it "on success" do
+        put :update, :server_id => server.to_param, :id => @room.to_param, :bigbluebutton_room => new_room.attributes,
+                     :redir_url => bigbluebutton_servers_path
+        should respond_with(:redirect)
+        should redirect_to bigbluebutton_servers_path
+      end
+      it "on failure" do
+        new_room.name = nil # invalid
+        put :update, :server_id => server.to_param, :id => @room.to_param, :bigbluebutton_room => new_room.attributes,
+                     :redir_url => bigbluebutton_servers_path
+        should respond_with(:redirect)
+        should redirect_to bigbluebutton_servers_path
+      end
     end
 
     context "when meeting_id is not specified should copied from name" do
@@ -125,16 +182,28 @@ describe Bigbluebutton::RoomsController do
       mocked_api.should_receive(:end_meeting).with(room.meeting_id, room.moderator_password)
     }
 
-    before :each do
-      expect {
-        delete :destroy, :server_id => mocked_server.to_param, :id => room.to_param
-      }.to change{ BigbluebuttonRoom.count }.by(-1)
+    context do
+      before :each do
+        expect {
+          delete :destroy, :server_id => mocked_server.to_param, :id => room.to_param
+        }.to change{ BigbluebuttonRoom.count }.by(-1)
+      end
+      it {
+        should respond_with(:redirect)
+        should redirect_to bigbluebutton_server_rooms_url
+      }
+      it { should assign_to(:server).with(mocked_server) }
     end
-    it {
+
+    it "with :redir_url" do
+      expect {
+        delete :destroy, :server_id => mocked_server.to_param, :id => room.to_param,
+                         :redir_url => bigbluebutton_servers_path
+      }.to change{ BigbluebuttonRoom.count }.by(-1)
       should respond_with(:redirect)
-      should redirect_to(bigbluebutton_server_rooms_path)
-    }
-    it { should assign_to(:server).with(mocked_server) }
+      should redirect_to bigbluebutton_servers_path
+    end
+
   end
 
   describe "#running" do
@@ -217,7 +286,8 @@ describe Bigbluebutton::RoomsController do
           it "creates the conference" do
             mocked_api.should_receive(:create_meeting).
               with(room.name, room.meeting_id, room.moderator_password,
-                   room.attendee_password, room.welcome_msg)
+                   room.attendee_password, room.welcome_msg, room.dial_number,
+                   room.logout_url, room.max_participants, room.voice_bridge)
             get :join, :server_id => mocked_server.to_param, :id => room.to_param
           end
         end
@@ -422,7 +492,8 @@ describe Bigbluebutton::RoomsController do
         it "creates the conference" do
           mocked_api.should_receive(:create_meeting).
             with(private_room.name, private_room.meeting_id, private_room.moderator_password,
-                 private_room.attendee_password, private_room.welcome_msg)
+                 private_room.attendee_password, private_room.welcome_msg, private_room.dial_number,
+                 private_room.logout_url, private_room.max_participants, private_room.voice_bridge)
           post :auth, :server_id => mocked_server.to_param, :id => private_room.to_param, :user => hash
         end
       end
@@ -462,7 +533,7 @@ describe Bigbluebutton::RoomsController do
       after :each do
         delete :destroy, :server_id => mocked_server.to_param, :id => room.to_param
         should respond_with(:redirect)
-        should redirect_to(bigbluebutton_server_rooms_path)
+        should redirect_to bigbluebutton_server_rooms_url
         should set_the_flash.to(bbb_error_msg)
       end
     end

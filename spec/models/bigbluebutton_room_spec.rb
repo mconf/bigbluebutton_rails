@@ -47,7 +47,7 @@ describe BigbluebuttonRoom do
 
     [:name, :server_id, :meeting_id, :attendee_password, :moderator_password,
      :welcome_msg, :owner, :server, :private, :logout_url, :dial_number,
-     :voice_bridge, :max_participants].each do |attribute|
+     :voice_bridge, :max_participants, :owner_id, :owner_type].each do |attribute|
       it { should allow_mass_assignment_of(attribute) }
     end
     it { should_not allow_mass_assignment_of(:id) }
@@ -83,6 +83,17 @@ describe BigbluebuttonRoom do
       it { room.user_role({ :password => "wrong" }).should == nil }
       it { room.user_role({ :password => nil }).should == nil }
       it { room.user_role({ :not_password => "any" }).should == nil }
+    end
+
+    it "initializes the fetched attributes before they are fetched" do
+      room = BigbluebuttonRoom.new
+      room.participant_count.should == 0
+      room.moderator_count.should == 0
+      room.running.should be_false
+      room.has_been_forcibly_ended.should be_false
+      room.start_time.should be_nil
+      room.end_time.should be_nil
+      room.attendees.should == []
     end
 
     context "using the api" do
@@ -203,7 +214,8 @@ describe BigbluebuttonRoom do
         it "send create_meeting" do
           mocked_api.should_receive(:create_meeting).
             with(room.name, room.meeting_id, room.moderator_password,
-                 room.attendee_password, room.welcome_msg)
+                 room.attendee_password, room.welcome_msg, room.dial_number,
+                 room.logout_url, room.max_participants, room.voice_bridge)
           room.server = mocked_server
           room.send_create
         end
@@ -211,7 +223,9 @@ describe BigbluebuttonRoom do
         it "send create_meeting" do
           mocked_api.should_receive(:create_meeting).
             with(room.name, room.meeting_id, room.moderator_password,
-                 room.attendee_password, room.welcome_msg).and_return(hash_create)
+                 room.attendee_password, room.welcome_msg, room.dial_number,
+                 room.logout_url, room.max_participants, room.voice_bridge).
+            and_return(hash_create)
           room.server = mocked_server
           room.send_create
 

@@ -26,7 +26,7 @@ class Bigbluebutton::RoomsController < ApplicationController
   def create
     @room = BigbluebuttonRoom.new(params[:bigbluebutton_room])
     @room.server = @server
-
+    
     # TODO Generate a random meeting_id everytime a room is created
     if !params[:bigbluebutton_room].has_key?(:meeting_id) or
         params[:bigbluebutton_room][:meeting_id].blank?
@@ -37,10 +37,18 @@ class Bigbluebutton::RoomsController < ApplicationController
       if @room.save
         format.html {
           message = t('bigbluebutton_rails.rooms.notice.create.success')
-          redirect_to(bigbluebutton_server_room_path(@server, @room), :notice => message)
+          params[:redir_url] ||= bigbluebutton_server_room_path(@server, @room)
+          redirect_to params[:redir_url], :notice => message
         }
       else
-        format.html { render :action => "new" }
+        format.html {
+          unless params[:redir_url].blank?
+            message = t('bigbluebutton_rails.rooms.notice.create.failure')
+            redirect_to params[:redir_url], :error => message
+          else
+            render :action => "new"
+          end
+        }
       end
     end
   end
@@ -57,10 +65,18 @@ class Bigbluebutton::RoomsController < ApplicationController
       if @room.update_attributes(params[:bigbluebutton_room])
         format.html {
           message = t('bigbluebutton_rails.rooms.notice.update.success')
-          redirect_to(bigbluebutton_server_room_path(@server, @room), :notice => message)
+          params[:redir_url] ||= bigbluebutton_server_room_path(@server, @room)
+          redirect_to params[:redir_url], :notice => message
         }
       else
-        format.html { render :action => "edit" }
+        format.html {
+          unless params[:redir_url].blank?
+            message = t('bigbluebutton_rails.rooms.notice.update.failure')
+            redirect_to params[:redir_url], :error => message
+          else
+            render :action => "edit"
+          end
+        }
       end
     end
   end
@@ -79,7 +95,8 @@ class Bigbluebutton::RoomsController < ApplicationController
     end
 
     @room.destroy
-    redirect_to(bigbluebutton_server_rooms_url)
+    params[:redir_url] ||= bigbluebutton_server_rooms_url
+    redirect_to params[:redir_url]
   end
 
   # Used to join public rooms with a logged user.
