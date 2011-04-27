@@ -41,8 +41,8 @@ module BigbluebuttonRails
         #   end
         #
         def bigbluebutton_role(room)
-          if bigbluebutton_user.nil? # e.g.: no user logged
-            :attendee
+          if room.private or current_user.nil?
+            nil # ask for a password
           else
             :moderator
           end

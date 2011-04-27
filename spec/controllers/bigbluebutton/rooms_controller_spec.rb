@@ -15,7 +15,6 @@ describe Bigbluebutton::RoomsController do
   render_views
   let(:server) { Factory.create(:bigbluebutton_server) }
   let(:room) { Factory.create(:bigbluebutton_room, :server => server) }
-  let(:private_room) { Factory.create(:bigbluebutton_room, :server => server, :private => true) }
 
   describe "#index" do
     before(:each) { get :index, :server_id => server.to_param }
@@ -233,25 +232,25 @@ describe Bigbluebutton::RoomsController do
 
     context "for an anonymous user" do
       before { controller.stub(:bigbluebutton_user) { nil } }
-      before(:each) { get :join, :server_id => mocked_server.to_param, :id => private_room.to_param }
-
+      before { controller.stub(:bigbluebutton_role) { :moderator } }
+      before(:each) { get :join, :server_id => mocked_server.to_param, :id => room.to_param }
       it {
         should respond_with(:redirect)
-        should redirect_to(invite_bigbluebutton_server_room_path(mocked_server, private_room))
+        should redirect_to(invite_bigbluebutton_server_room_path(mocked_server, room))
       }
     end
 
-    context "for a private room" do
+    context "for a user without a role" do
       before { controller.stub(:bigbluebutton_user) { user } }
-      before(:each) { get :join, :server_id => mocked_server.to_param, :id => private_room.to_param }
-
+      before { controller.stub(:bigbluebutton_role) { nil } }
+      before(:each) { get :join, :server_id => mocked_server.to_param, :id => room.to_param }
       it {
         should respond_with(:redirect)
-        should redirect_to(invite_bigbluebutton_server_room_path(mocked_server, private_room))
+        should redirect_to(invite_bigbluebutton_server_room_path(mocked_server, room))
       }
     end
 
-    context "for a public room" do
+    context do
       before { controller.stub(:bigbluebutton_user) { user } }
 
       context "if the user is a moderator" do
@@ -371,54 +370,89 @@ describe Bigbluebutton::RoomsController do
     context "for an anonymous user" do
       before { controller.stub(:bigbluebutton_user).and_return(nil) }
       
-      context "and a public room" do
+      context "with a role defined" do
+        before { controller.stub(:bigbluebutton_role).and_return(:attendee) }
         before(:each) { get :invite, :server_id => mocked_server.to_param, :id => room.to_param }
         it { should respond_with(:success) }
         it { should render_template(:invite) }
         it { should assign_to(:room).with(room) }
       end
 
-      context "and a private room" do
-        before(:each) { get :invite, :server_id => mocked_server.to_param, :id => private_room.to_param }
+      context "without a role" do
+        before { controller.stub(:bigbluebutton_role).and_return(nil) }
+        before(:each) { get :invite, :server_id => mocked_server.to_param, :id => room.to_param }
         it { should respond_with(:success) }
         it { should render_template(:invite) }
-        it { should assign_to(:room).with(private_room) }
+        it { should assign_to(:room).with(room) }
       end
     end
 
     context "for a logged user" do
       before { controller.stub(:bigbluebutton_user).and_return(user) }
 
-      context "and a public room" do
+      context "with a role defined" do
+        before { controller.stub(:bigbluebutton_role).and_return(:attendee) }
         before(:each) { get :invite, :server_id => mocked_server.to_param, :id => room.to_param }
         it { should respond_with(:redirect) }
         it { should redirect_to(join_bigbluebutton_server_room_path(mocked_server, room)) }
       end
 
-      context "and a private room" do
-        before(:each) { get :invite, :server_id => mocked_server.to_param, :id => private_room.to_param }
+      context "without a role" do
+        before { controller.stub(:bigbluebutton_role).and_return(nil) }
+        before(:each) { get :invite, :server_id => mocked_server.to_param, :id => room.to_param }
         it { should respond_with(:success) }
         it { should render_template(:invite) }
-        it { should assign_to(:room).with(private_room) }
+        it { should assign_to(:room).with(room) }
       end
     end
 
   end
 
   describe "#auth" do
-    before { mock_server_and_api }
+    let(:user) { Factory.build(:user) }
+    before {
+      mock_server_and_api
+      controller.stub(:bigbluebutton_user).and_return(nil)
+    }
 
-    context "entering the wrong password" do
-      let(:hash) { { :name => "Elftor", :password => nil } }
-      before(:each) { post :auth, :server_id => mocked_server.to_param, :id => private_room.to_param, :user => hash }
-      it { should respond_with(:unauthorized) }
-      it { should assign_to(:room).with(private_room) }
-      it { should render_template(:invite) }
-      it { should set_the_flash.to(I18n.t('bigbluebutton_rails.rooms.error.auth.failure')) }
+    context "if there's a user logged, should use it's name" do
+      let(:hash) { { :name => "Elftor", :password => room.attendee_password } }
+      it do
+        controller.stub(:bigbluebutton_user).and_return(user)
+        mocked_api.should_receive(:is_meeting_running?).and_return(true)
+        mocked_api.should_receive(:join_meeting_url).
+          with(room.meeting_id, user.name, room.attendee_password).
+          and_return("http://test.com/attendee/join")
+        post :auth, :server_id => mocked_server.to_param, :id => room.to_param, :user => hash
+        should respond_with(:redirect)
+        should redirect_to("http://test.com/attendee/join")
+      end
+    end
+
+    context "shows error when" do
+
+      context "name is not set" do
+        let(:hash) { { :name => nil, :password => room.moderator_password } }
+        before(:each) { post :auth, :server_id => mocked_server.to_param, :id => room.to_param, :user => hash }
+        it { should respond_with(:unauthorized) }
+        it { should assign_to(:room).with(room) }
+        it { should render_template(:invite) }
+        it { should set_the_flash.to(I18n.t('bigbluebutton_rails.rooms.error.auth.failure')) }
+      end
+
+      context "the password is wrong" do
+        let(:hash) { { :name => "Elftor", :password => nil } }
+        before(:each) { post :auth, :server_id => mocked_server.to_param, :id => room.to_param, :user => hash }
+        it { should respond_with(:unauthorized) }
+        it { should assign_to(:room).with(room) }
+        it { should render_template(:invite) }
+        it { should set_the_flash.to(I18n.t('bigbluebutton_rails.rooms.error.auth.failure')) }
+      end
+
     end
 
     context "entering the attendee password" do
-      let(:hash) { { :name => "Elftor", :password => private_room.attendee_password } }
+      let(:hash) { { :name => "Elftor", :password => room.attendee_password } }
 
       # OPTMIZE Almost the same tests as in #join. Can they be integrated somehow?
       context "and the conference is running" do
@@ -428,12 +462,12 @@ describe Bigbluebutton::RoomsController do
         }
 
         it "assigns server" do
-          post :auth, :server_id => mocked_server.to_param, :id => private_room.to_param, :user => hash
+          post :auth, :server_id => mocked_server.to_param, :id => room.to_param, :user => hash
           should assign_to(:server).with(mocked_server)
         end
 
         it "redirects to the attendee join url" do
-          post :auth, :server_id => mocked_server.to_param, :id => private_room.to_param, :user => hash
+          post :auth, :server_id => mocked_server.to_param, :id => room.to_param, :user => hash
           should respond_with(:redirect)
           should redirect_to("http://test.com/attendee/join")
         end
@@ -446,11 +480,11 @@ describe Bigbluebutton::RoomsController do
 
         it "do not try to create the conference" do
           mocked_api.should_not_receive(:create_meeting)
-          post :auth, :server_id => mocked_server.to_param, :id => private_room.to_param, :user => hash
+          post :auth, :server_id => mocked_server.to_param, :id => room.to_param, :user => hash
         end
 
         it "renders #invite" do
-          post :auth, :server_id => mocked_server.to_param, :id => private_room.to_param, :user => hash
+          post :auth, :server_id => mocked_server.to_param, :id => room.to_param, :user => hash
           should respond_with(:success)
           should render_template(:invite)
           should set_the_flash.to(I18n.t('bigbluebutton_rails.rooms.error.not_running'))
@@ -460,7 +494,7 @@ describe Bigbluebutton::RoomsController do
     end
 
     context "entering the moderator password" do
-      let(:hash) { { :name => "Elftor", :password => private_room.moderator_password } }
+      let(:hash) { { :name => "Elftor", :password => room.moderator_password } }
 
       # OPTMIZE Almost the same tests as in #join. Can they be integrated somehow?
       before {
@@ -473,12 +507,12 @@ describe Bigbluebutton::RoomsController do
         }
 
         it "assigns server" do
-          post :auth, :server_id => mocked_server.to_param, :id => private_room.to_param, :user => hash
+          post :auth, :server_id => mocked_server.to_param, :id => room.to_param, :user => hash
           should assign_to(:server).with(mocked_server)
         end
 
         it "redirects to the moderator join url" do
-          post :auth, :server_id => mocked_server.to_param, :id => private_room.to_param, :user => hash
+          post :auth, :server_id => mocked_server.to_param, :id => room.to_param, :user => hash
           should respond_with(:redirect)
           should redirect_to("http://test.com/mod/join")
         end
@@ -491,10 +525,10 @@ describe Bigbluebutton::RoomsController do
 
         it "creates the conference" do
           mocked_api.should_receive(:create_meeting).
-            with(private_room.name, private_room.meeting_id, private_room.moderator_password,
-                 private_room.attendee_password, private_room.welcome_msg, private_room.dial_number,
-                 private_room.logout_url, private_room.max_participants, private_room.voice_bridge)
-          post :auth, :server_id => mocked_server.to_param, :id => private_room.to_param, :user => hash
+            with(room.name, room.meeting_id, room.moderator_password,
+                 room.attendee_password, room.welcome_msg, room.dial_number,
+                 room.logout_url, room.max_participants, room.voice_bridge)
+          post :auth, :server_id => mocked_server.to_param, :id => room.to_param, :user => hash
         end
       end
 

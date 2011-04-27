@@ -103,12 +103,14 @@ class Bigbluebutton::RoomsController < ApplicationController
   def join
     @room = BigbluebuttonRoom.find(params[:id])
 
-    # private rooms and anonymous users join through #invite
-    if @room.private or bigbluebutton_user.nil?
+    # anonymous users or users without a role join through #invite
+    role = bigbluebutton_role(@room)
+    if bigbluebutton_user.nil? or role.nil?
       redirect_to :action => :invite
     else
-      join_internal(bigbluebutton_user.name, bigbluebutton_role(@room), :join)
+      join_internal(bigbluebutton_user.name, role, :join)
     end
+
   end
 
   # Used to join private rooms or to invited anonymous users (not logged)
@@ -117,8 +119,8 @@ class Bigbluebutton::RoomsController < ApplicationController
 
     respond_with @room do |format|
 
-      # A logged user can join a public room without authorization
-      if !@room.private and !bigbluebutton_user.nil?
+      # if there's already a logged user with a role in the room, join through #join
+      unless bigbluebutton_user.nil? or bigbluebutton_role(@room).nil?
         format.html { redirect_to :action => :join }
       else
         format.html
@@ -127,12 +129,16 @@ class Bigbluebutton::RoomsController < ApplicationController
     end
   end
 
+  # Authenticates an user using name and password passed in the params from #invite
   def auth
     @room = BigbluebuttonRoom.find(params[:id])
 
+    # if there's a user logged, use his name instead of the name in the params
+    name = bigbluebutton_user.nil? ? params[:user][:name] : bigbluebutton_user.name
     role = @room.user_role(params[:user])
-    unless role.nil?
-      join_internal(params[:user][:name], role, :invite)
+
+    unless role.nil? or name.nil?
+      join_internal(name, role, :invite)
     else
       flash[:error] = t('bigbluebutton_rails.rooms.error.auth.failure')
       render :action => "invite", :status => :unauthorized
@@ -147,7 +153,6 @@ class Bigbluebutton::RoomsController < ApplicationController
     rescue BigBlueButton::BigBlueButtonException => e
       flash[:error] = e.to_s
       render :json => { running: "false", error: "#{e.to_s}" }
-      #redirect_to request.referer
     else
       render :json => { running: "#{@room.is_running?}" }
     end

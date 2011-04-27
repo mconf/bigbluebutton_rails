@@ -85,9 +85,11 @@ There are some basic assumptions made by bigbluebutton_rails:
 If you don't, you can change this behaviour easily, keep reading.
 
 bigbluebutton_rails uses the methods <tt>bigbluebutton_user</tt> and <tt>bigbluebutton_role(room)</tt> to get the current user and to get the permission that the current
-user has in the <tt>room</tt>, respectively.
+user has in the <tt>room</tt>, respectively. These methods are defined in <tt>lib/bigbluebutton_rails/controller_methods.rb</tt> and you can reimplement them in your
+application controller to change their behaviour.
 
-These methods are defined in <tt>lib/bigbluebutton_rails/controller_methods.rb</tt> and you can reimplement them in your application_controller to change their behaviour.
+Although this is the general rule, the permission checking is different for public or private rooms. Check the <tt>How it Works</tt>
+section below for more details.
 
 
 ==== Integration with Devise
@@ -115,32 +117,53 @@ JQuery is used in the views <tt>join_wait</tt> and <tt>invite</tt> and can be co
 
 == How it works
 
+=== Overview
+
 bigbluebutton_rails has two entities: servers and rooms. Servers can have multiple rooms, that belong to a server and can also belong to any other model.
 You can make a room belong to a user, for example.
 
-Every server has an associated API object (using the gem bigbluebutton-api-ruby) used to access BigBlueButton.
-The server controller has basically only the RESTful actions defined in Rails.
+Every server has an associated API object (using the gem bigbluebutton-api-ruby) used to access the BigBlueButton server.
+The server controller has only the standard CRUD actions defined by Rails.
 
-The rooms controller also have the RESTful actions, plus specific actions to "join", "end", and check if a meeting is being held currently in the room ("running").
-All actions are pretty simple. "running" returns a json indicating if the conference is running or not and "end" ends the meeting.
-The most elaborated action is "join", that does the following:
+The rooms controller also have the CRUD actions, plus some specific actions to join, end, and check if a meeting is currently running in the room.
+These extra actions will be explained bellow.
 
-* If the user is a moderator:
-  * If the rooms is not created yet, creates it.
-  * Redirects to the url to join as a moderator.
-* If the user is a normal attendee:
-  * If the rooms is running, redirects to the url to join as an attendee.
-  * Otherwise, redirects to <tt>join_wait</tt>, to wait for a moderator before joining the conference.
+A room model has methods to fetch and send information to the BBB server. They are simple API calls, but the "fetch" methods check the response and store
+data from it, while the "send" methods just make the API call. You can, for example, use <tt>fetch_meeting_info</tt> to get information about the meeting
+(will trigger the API call <tt>getMeetingInfo</tt>). The data parsed from the response wil be stored in the model and can be accessed using it's attributes. 
 
-A room model has methods to fetch and send information to the BBB server. They are simple API calls, but the fetch methods check the response and store
-data from it, while the send methods just make the API call.
-
-You can, for exemple, use <tt>fetch_meeting_info</tt> to get information about the meeting (API call <tt>getMeetingInfo</tt>). The data parsed from the
-response wil be stored in the model and can be accessed using it's attributes. 
-
-All methods in the models that trigger any API call are documented with the phrase "Triggers API call" and the API functions that are called. Be aware that they
+All methods in the models that trigger any API call are documented with "Triggers API call" and the API functions that are called. Be aware that they
 can throw a BigBlueButtonException.
 
+=== RoomsController
+
+==== <tt>running</tt> and <tt>end</tt>
+
+These are pretty simple actions. <tt>running</tt> returns a json indicating if the conference is running or not, while <tt>end</tt> ends the meeting.
+
+==== <tt>join</tt>, <tt>invite</tt> and <tt>auth</tt>
+
+The actions used to redirect a user to join a room are <tt>join</tt> and <tt>invite</tt>, while <tt>auth</tt> is used by <tt>invite</tt> to authenticate
+the user. Basic differences:
+
+* <tt>invite</tt> renders a view to ask for a user name and a password. It is used to enable <b>anonymous users</b> to join a room or
+  to define the user role using the <b>room password</b> instead of the <tt>bigbluebutton_role</tt> method.
+  * It first checks <tt>bigbluebutton_role</tt> to see if the current user already has a role in the target room. In case it has, redirects to <tt>join</tt>.
+  * If there is a user logged, uses <tt>bigbluebutton_user().name</tt> as the user name. Otherwise, ask the user to type a name.
+* <tt>join</tt> requires a <b>logged user</b> and uses <tt>bigbluebutton_role</tt> to get the role of this user.
+  * It redirects the user straight to the meeting if the join is successful.
+  * In case there's no role associated with the current user, falls back to <tt>invite</tt> to ask for a password.
+
+Internally, they use the same algorithm:
+
+* If the user is a moderator:
+  * If the room is not created yet, creates it.
+  * Redirects the user to the meeting as a moderator.
+* If the user is a normal attendee:
+  * If the meeting is running, redirects the user to the meeting as an attendee.
+  * Otherwise:
+    * <tt>join</tt> redirects to <tt>join_wait</tt>, to wait for a moderator before joining the conference.
+    * <tt>invite</tt> renders the invite view again and shows a warning that the metting is not running.
 
 == Development
 
