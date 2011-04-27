@@ -6,6 +6,8 @@ module BigbluebuttonRails
     def self.included(base)
       base.class_eval do
 
+        helper_method :bigbluebutton_user, :bigbluebutton_role
+
         # Method used to acquire the user for which the BigBlueButton actions are being
         # called (e.g. the user creating or joining the room).
         # Defaults to the user currently logged in, using the method current_user.

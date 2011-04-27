@@ -432,7 +432,7 @@ describe Bigbluebutton::RoomsController do
     context "shows error when" do
 
       context "name is not set" do
-        let(:hash) { { :name => nil, :password => room.moderator_password } }
+        let(:hash) { { :password => room.moderator_password } }
         before(:each) { post :auth, :server_id => mocked_server.to_param, :id => room.to_param, :user => hash }
         it { should respond_with(:unauthorized) }
         it { should assign_to(:room).with(room) }

@@ -1,5 +1,5 @@
-* Rooms can be private - require a password to join.
-* New route "invite" used to request a password for private rooms. "join" is used for public rooms.
+* Rooms can be public or private
+* New route RoomsController#invite used to request a password to join a room or to allow anonymous users to join.
 * New attributes for rooms: logout_url, dial_number, voice_bridge and max_participant.
 
 == 0.0.2

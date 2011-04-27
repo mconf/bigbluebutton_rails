@@ -37,11 +37,19 @@ $(document).ready(function(){
 
   <div class="field">
     Name:<br />
-    <%= text_field_tag "user[name]", "" %>
+    <% if bigbluebutton_user.nil? %>
+      <%= text_field_tag "user[name]", "" %>
+    <% else %>
+      <%= text_field_tag "user[name]", bigbluebutton_user.name %>
+    <% end %>
   </div>
   <div class="field">
     Password:<br />
-    <%= text_field_tag "user[password]", "" %>
+    <% if @room.private %>
+      <%= password_field_tag "user[password]", "" %>
+    <% else %>
+      <%= password_field_tag "user[password]", @room.attendee_password %>
+    <% end %>
   </div>
 
   <%= submit_tag "Submit" %>
