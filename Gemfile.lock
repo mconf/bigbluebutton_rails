@@ -1,8 +1,8 @@
 PATH
   remote: .
   specs:
-    bigbluebutton_rails (0.0.2)
-      bigbluebutton-api-ruby (~> 0.0.9)
+    bigbluebutton_rails (0.0.3)
+      bigbluebutton-api-ruby (~> 0.0.10)
       rails (~> 3.0.3)
 
 GEM
@@ -36,7 +36,7 @@ GEM
       activesupport (= 3.0.6)
     activesupport (3.0.6)
     arel (2.0.9)
-    bigbluebutton-api-ruby (0.0.9)
+    bigbluebutton-api-ruby (0.0.10)
       nokogiri (~> 1.4.0)
     builder (2.1.2)
     diff-lcs (1.1.2)

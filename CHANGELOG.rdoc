@@ -1,3 +1,5 @@
+== 0.0.3
+
 * Rooms can be public or private
 * New route RoomsController#invite used to request a password to join a room or to allow anonymous users to join.
 * Room's "meeting_id" attribute renamed to "meetingid".
