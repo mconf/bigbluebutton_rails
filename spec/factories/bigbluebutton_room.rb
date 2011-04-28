@@ -1,6 +1,6 @@
 Factory.define :bigbluebutton_room do |r|
   r.association :server, :factory => :bigbluebutton_server
-  r.sequence(:meeting_id) { |n| "MeetingID#{n}" }
+  r.sequence(:meetingid) { |n| "MeetingID#{n}" }
   r.sequence(:name) { |n| "Name#{n}" }
   r.attendee_password { Forgery(:basic).password :at_least => 10, :at_most => 16 }
   r.moderator_password { Forgery(:basic).password :at_least => 10, :at_most => 16 }

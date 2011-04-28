@@ -3,7 +3,7 @@
 <table>
   <tr>
     <th><%= BigbluebuttonRoom.human_attribute_name(:server_id) %></th>
-    <th><%= BigbluebuttonRoom.human_attribute_name(:meeting_id) %></th>
+    <th><%= BigbluebuttonRoom.human_attribute_name(:meetingid) %></th>
     <th><%= BigbluebuttonRoom.human_attribute_name(:meeting_name) %></th>
     <th><%= BigbluebuttonRoom.human_attribute_name(:private) %></th>
     <th><%= BigbluebuttonRoom.human_attribute_name(:attendee_password) %></th>
@@ -21,7 +21,7 @@
 <% @rooms.each do |room| %>
   <tr>
     <td><%= room.server.id %></td>
-    <td><%= room.meeting_id %></td>
+    <td><%= room.meetingid %></td>
     <td><%= room.name %></td>
     <td><%= room.private %></td>
     <td><%= room.attendee_password %></td>

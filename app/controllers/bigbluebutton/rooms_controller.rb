@@ -27,10 +27,10 @@ class Bigbluebutton::RoomsController < ApplicationController
     @room = BigbluebuttonRoom.new(params[:bigbluebutton_room])
     @room.server = @server
     
-    # TODO Generate a random meeting_id everytime a room is created
-    if !params[:bigbluebutton_room].has_key?(:meeting_id) or
-        params[:bigbluebutton_room][:meeting_id].blank?
-      @room.meeting_id = @room.name
+    # TODO Generate a random meetingid everytime a room is created
+    if !params[:bigbluebutton_room].has_key?(:meetingid) or
+        params[:bigbluebutton_room][:meetingid].blank?
+      @room.meetingid = @room.name
     end
 
     respond_with @room do |format|
@@ -56,9 +56,9 @@ class Bigbluebutton::RoomsController < ApplicationController
   def update
     @room = BigbluebuttonRoom.find(params[:id])
 
-    if !params[:bigbluebutton_room].has_key?(:meeting_id) or
-        params[:bigbluebutton_room][:meeting_id].blank?
-      params[:bigbluebutton_room][:meeting_id] = params[:bigbluebutton_room][:name]
+    if !params[:bigbluebutton_room].has_key?(:meetingid) or
+        params[:bigbluebutton_room][:meetingid].blank?
+      params[:bigbluebutton_room][:meetingid] = params[:bigbluebutton_room][:name]
     end
 
     respond_with @room do |format|

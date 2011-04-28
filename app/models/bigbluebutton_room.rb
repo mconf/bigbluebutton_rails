@@ -5,7 +5,7 @@ class BigbluebuttonRoom < ActiveRecord::Base
   belongs_to :owner, :polymorphic => true
 
   validates :server_id, :presence => true
-  validates :meeting_id, :presence => true, :uniqueness => true,
+  validates :meetingid, :presence => true, :uniqueness => true,
     :length => { :minimum => 1, :maximum => 100 }
   validates :name, :presence => true, :uniqueness => true,
     :length => { :minimum => 1, :maximum => 150 }
@@ -18,7 +18,7 @@ class BigbluebuttonRoom < ActiveRecord::Base
   validates :attendee_password, :length => { :maximum => 16 }
   validates :moderator_password, :length => { :maximum => 16 }
 
-  attr_accessible :name, :server_id, :meeting_id, :attendee_password, :moderator_password,
+  attr_accessible :name, :server_id, :meetingid, :attendee_password, :moderator_password,
                   :welcome_msg, :owner, :server, :private, :logout_url, :dial_number,
                   :voice_bridge, :max_participants, :owner_id, :owner_type, :randomize_meetingid
 
@@ -50,7 +50,7 @@ class BigbluebuttonRoom < ActiveRecord::Base
   #
   # Triggers API call: <tt>get_meeting_info</tt>.
   def fetch_meeting_info
-    response = self.server.api.get_meeting_info(self.meeting_id, self.moderator_password)
+    response = self.server.api.get_meeting_info(self.meetingid, self.moderator_password)
 
     @participant_count = response[:participantCount]
     @moderator_count = response[:moderatorCount]
@@ -72,14 +72,14 @@ class BigbluebuttonRoom < ActiveRecord::Base
   #
   # Triggers API call: <tt>is_meeting_running</tt>.
   def fetch_is_running?
-    @running = self.server.api.is_meeting_running?(self.meeting_id)
+    @running = self.server.api.is_meeting_running?(self.meetingid)
   end
 
   # Sends a call to the BBB server to end the meeting.
   #
   # Triggers API call: <tt>end_meeting</tt>.
   def send_end
-    self.server.api.end_meeting(self.meeting_id, self.moderator_password)
+    self.server.api.end_meeting(self.meetingid, self.moderator_password)
   end
 
   # Sends a call to the BBB server to create the meeting.
@@ -96,7 +96,7 @@ class BigbluebuttonRoom < ActiveRecord::Base
 
     # create a new random meetingid everytime create fails with "duplicateWarning"
     else
-      self.meeting_id = random_meetingid
+      self.meetingid = random_meetingid
 
       count = 0
       try_again = true
@@ -107,7 +107,7 @@ class BigbluebuttonRoom < ActiveRecord::Base
         try_again = false
         unless response.nil?
           if response[:returncode] && response[:messageKey] == "duplicateWarning"
-            self.meeting_id = random_meetingid
+            self.meetingid = random_meetingid
             try_again = true
           end
         end
@@ -131,9 +131,9 @@ class BigbluebuttonRoom < ActiveRecord::Base
   # Uses the API but does not require a request to the server.
   def join_url(username, role)
     if role == :moderator
-      self.server.api.join_meeting_url(self.meeting_id, username, self.moderator_password)
+      self.server.api.join_meeting_url(self.meetingid, username, self.moderator_password)
     else
-      self.server.api.join_meeting_url(self.meeting_id, username, self.attendee_password)
+      self.server.api.join_meeting_url(self.meetingid, username, self.attendee_password)
     end
   end
 
@@ -157,7 +157,7 @@ class BigbluebuttonRoom < ActiveRecord::Base
   protected
 
   def init
-    self[:meeting_id] ||= random_meetingid
+    self[:meetingid] ||= random_meetingid
 
     # fetched attributes
     @participant_count = 0
@@ -171,7 +171,7 @@ class BigbluebuttonRoom < ActiveRecord::Base
 
   def random_meetingid
     #ActiveSupport::SecureRandom.hex(16)
-    # TODO temporarily using the name to get a friendlier meeting_id
+    # TODO temporarily using the name to get a friendlier meetingid
     if self[:name].blank?
       ActiveSupport::SecureRandom.hex(8)
     else
@@ -180,7 +180,7 @@ class BigbluebuttonRoom < ActiveRecord::Base
   end
 
   def do_create_meeting
-    self.server.api.create_meeting(self.name, self.meeting_id, self.moderator_password,
+    self.server.api.create_meeting(self.name, self.meetingid, self.moderator_password,
                                    self.attendee_password, self.welcome_msg, self.dial_number,
                                    self.logout_url, self.max_participants, self.voice_bridge)
   end

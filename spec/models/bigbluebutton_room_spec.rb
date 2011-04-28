@@ -10,7 +10,7 @@ describe BigbluebuttonRoom do
     it { should have_db_column(:server_id).of_type(:integer) }
     it { should have_db_column(:owner_id).of_type(:integer) }
     it { should have_db_column(:owner_type).of_type(:string) }
-    it { should have_db_column(:meeting_id).of_type(:string) }
+    it { should have_db_column(:meetingid).of_type(:string) }
     it { should have_db_column(:name).of_type(:string) }
     it { should have_db_column(:attendee_password).of_type(:string) }
     it { should have_db_column(:moderator_password).of_type(:string) }
@@ -22,7 +22,7 @@ describe BigbluebuttonRoom do
     it { should have_db_column(:private).of_type(:boolean) }
     it { should have_db_column(:randomize_meetingid).of_type(:boolean) }
     it { should have_db_index(:server_id) }
-    it { should have_db_index(:meeting_id).unique(true) }
+    it { should have_db_index(:meetingid).unique(true) }
     it { 
       room = BigbluebuttonRoom.new
       room.private.should be_false
@@ -43,13 +43,13 @@ describe BigbluebuttonRoom do
     it { should_not validate_presence_of(:owner_type) }
 
     it { should validate_presence_of(:server_id) }
-    it { should validate_presence_of(:meeting_id) }
+    it { should validate_presence_of(:meetingid) }
     it { should validate_presence_of(:name) }
 
     it { should be_boolean(:private) }
     it { should be_boolean(:randomize_meetingid) }
 
-    [:name, :server_id, :meeting_id, :attendee_password, :moderator_password,
+    [:name, :server_id, :meetingid, :attendee_password, :moderator_password,
      :welcome_msg, :owner, :server, :private, :logout_url, :dial_number,
      :voice_bridge, :max_participants, :owner_id, :owner_type, :randomize_meetingid].
       each do |attribute|
@@ -57,7 +57,7 @@ describe BigbluebuttonRoom do
     end
     it { should_not allow_mass_assignment_of(:id) }
 
-    it { should validate_uniqueness_of(:meeting_id) }
+    it { should validate_uniqueness_of(:meetingid) }
     it { should validate_uniqueness_of(:name) }
 
     it {
@@ -65,7 +65,7 @@ describe BigbluebuttonRoom do
       room.server.should_not be_nil
     }
 
-    it { should ensure_length_of(:meeting_id).is_at_least(1).is_at_most(100) }
+    it { should ensure_length_of(:meetingid).is_at_least(1).is_at_most(100) }
     it { should ensure_length_of(:name).is_at_least(1).is_at_most(150) }
     it { should ensure_length_of(:attendee_password).is_at_most(16) }
     it { should ensure_length_of(:moderator_password).is_at_most(16) }
@@ -103,8 +103,8 @@ describe BigbluebuttonRoom do
         room.attendees.should == []
       end
 
-      it "meeting_id if it's nil" do
-        room.meeting_id.should_not be_nil
+      it "meetingid if it's nil" do
+        room.meetingid.should_not be_nil
       end
     end
 
@@ -117,7 +117,7 @@ describe BigbluebuttonRoom do
         it { should respond_to(:fetch_is_running?) }
 
         it "fetches is_running? when not running" do
-          mocked_api.should_receive(:is_meeting_running?).with(room.meeting_id).and_return(false)
+          mocked_api.should_receive(:is_meeting_running?).with(room.meetingid).and_return(false)
           room.server = mocked_server
           room.fetch_is_running?
           room.running.should == false
@@ -125,7 +125,7 @@ describe BigbluebuttonRoom do
         end
 
         it "fetches is_running? when running" do
-          mocked_api.should_receive(:is_meeting_running?).with(room.meeting_id).and_return(true)
+          mocked_api.should_receive(:is_meeting_running?).with(room.meetingid).and_return(true)
           room.server = mocked_server
           room.fetch_is_running?
           room.running.should == true
@@ -163,7 +163,7 @@ describe BigbluebuttonRoom do
 
         it "fetches meeting info when the meeting is not running" do
           mocked_api.should_receive(:get_meeting_info).
-            with(room.meeting_id, room.moderator_password).and_return(hash_info)
+            with(room.meetingid, room.moderator_password).and_return(hash_info)
           room.server = mocked_server
 
           room.fetch_meeting_info
@@ -178,7 +178,7 @@ describe BigbluebuttonRoom do
 
         it "fetches meeting info when the meeting is running" do
           mocked_api.should_receive(:get_meeting_info).
-            with(room.meeting_id, room.moderator_password).and_return(hash_info2)
+            with(room.meetingid, room.moderator_password).and_return(hash_info2)
           room.server = mocked_server
 
           room.fetch_meeting_info
@@ -203,7 +203,7 @@ describe BigbluebuttonRoom do
         it { should respond_to(:send_end) }
 
         it "send end_meeting" do
-          mocked_api.should_receive(:end_meeting).with(room.meeting_id, room.moderator_password)
+          mocked_api.should_receive(:end_meeting).with(room.meetingid, room.moderator_password)
           room.server = mocked_server
           room.send_end
         end
@@ -225,7 +225,7 @@ describe BigbluebuttonRoom do
 
         it "send create_meeting" do
           mocked_api.should_receive(:create_meeting).
-            with(room.name, room.meeting_id, room.moderator_password,
+            with(room.name, room.meetingid, room.moderator_password,
                  room.attendee_password, room.welcome_msg, room.dial_number,
                  room.logout_url, room.max_participants, room.voice_bridge)
           room.server = mocked_server
@@ -234,7 +234,7 @@ describe BigbluebuttonRoom do
 
         it "send create_meeting" do
           mocked_api.should_receive(:create_meeting).
-            with(room.name, room.meeting_id, room.moderator_password,
+            with(room.name, room.meetingid, room.moderator_password,
                  room.attendee_password, room.welcome_msg, room.dial_number,
                  room.logout_url, room.max_participants, room.voice_bridge).
             and_return(hash_create)
@@ -309,14 +309,14 @@ describe BigbluebuttonRoom do
 
         it "with moderator role" do
           mocked_api.should_receive(:join_meeting_url).
-            with(room.meeting_id, username, room.moderator_password)
+            with(room.meetingid, username, room.moderator_password)
           room.server = mocked_server
           room.join_url(username, :moderator)
         end
 
         it "with attendee role" do
           mocked_api.should_receive(:join_meeting_url).
-            with(room.meeting_id, username, room.attendee_password)
+            with(room.meetingid, username, room.attendee_password)
           room.server = mocked_server
           room.join_url(username, :attendee)
         end

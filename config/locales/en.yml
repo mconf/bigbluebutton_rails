@@ -35,7 +35,8 @@ en:
         version: "Version"
       bigbluebutton_room:
         server_id: "Server ID"
-        meeting_id: "Meeting ID"
+        meetingid: "Meeting ID"
+        randomize_meetingid: "Randomize Meeting ID"
         private: "Private"
         name: "Name"
         attendee_password: "Attendee Password"

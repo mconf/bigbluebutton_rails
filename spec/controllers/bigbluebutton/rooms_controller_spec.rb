@@ -96,15 +96,15 @@ describe Bigbluebutton::RoomsController do
       end
     end
 
-    context "when meeting_id is not specified it should be copied from name" do
+    context "when meetingid is not specified it should be copied from name" do
       before :each do
         attr = new_room.attributes
-        attr.delete("meeting_id")
+        attr.delete("meetingid")
         post :create, :server_id => server.to_param, :bigbluebutton_room => attr
       end
       it {
         saved = BigbluebuttonRoom.last
-        new_room.meeting_id = new_room.name
+        new_room.meetingid = new_room.name
         saved.should have_same_attributes_as(new_room)
       }
     end
@@ -158,15 +158,15 @@ describe Bigbluebutton::RoomsController do
       end
     end
 
-    context "when meeting_id is not specified should copied from name" do
+    context "when meetingid is not specified should copied from name" do
       before :each do
         attr = new_room.attributes
-        attr.delete("meeting_id")
+        attr.delete("meetingid")
         put :update, :server_id => server.to_param, :id => @room.to_param, :bigbluebutton_room => attr
       end
       it {
         saved = BigbluebuttonRoom.find(@room)
-        new_room.meeting_id = new_room.name
+        new_room.meetingid = new_room.name
         saved.should have_same_attributes_as(new_room)
       }
     end
@@ -178,7 +178,7 @@ describe Bigbluebutton::RoomsController do
       mock_server_and_api
       # to make sure it calls end_meeting if the meeting is running
       mocked_api.should_receive(:is_meeting_running?).and_return(true)
-      mocked_api.should_receive(:end_meeting).with(room.meeting_id, room.moderator_password)
+      mocked_api.should_receive(:end_meeting).with(room.meetingid, room.moderator_password)
     }
 
     context do
@@ -256,7 +256,7 @@ describe Bigbluebutton::RoomsController do
       context "if the user is a moderator" do
         before {
           controller.should_receive(:bigbluebutton_role).with(room).and_return(:moderator)
-          mocked_api.should_receive(:join_meeting_url).with(room.meeting_id, user.name, room.moderator_password).
+          mocked_api.should_receive(:join_meeting_url).with(room.meetingid, user.name, room.moderator_password).
             and_return("http://test.com/mod/join")
         }
 
@@ -284,7 +284,7 @@ describe Bigbluebutton::RoomsController do
 
           it "creates the conference" do
             mocked_api.should_receive(:create_meeting).
-              with(room.name, room.meeting_id, room.moderator_password,
+              with(room.name, room.meetingid, room.moderator_password,
                    room.attendee_password, room.welcome_msg, room.dial_number,
                    room.logout_url, room.max_participants, room.voice_bridge)
             get :join, :server_id => mocked_server.to_param, :id => room.to_param
@@ -301,7 +301,7 @@ describe Bigbluebutton::RoomsController do
         context "and the conference is running" do
           before {
             mocked_api.should_receive(:is_meeting_running?).and_return(true)
-            mocked_api.should_receive(:join_meeting_url).with(room.meeting_id, user.name, room.attendee_password).
+            mocked_api.should_receive(:join_meeting_url).with(room.meetingid, user.name, room.attendee_password).
               and_return("http://test.com/attendee/join")
           }
 
@@ -346,7 +346,7 @@ describe Bigbluebutton::RoomsController do
     context "room is running" do
       before {
         mocked_api.should_receive(:is_meeting_running?).and_return(true)
-        mocked_api.should_receive(:end_meeting).with(room.meeting_id, room.moderator_password)
+        mocked_api.should_receive(:end_meeting).with(room.meetingid, room.moderator_password)
       }
       before(:each) { get :end, :server_id => mocked_server.to_param, :id => room.to_param }
       it { should respond_with(:redirect) }
@@ -421,7 +421,7 @@ describe Bigbluebutton::RoomsController do
         controller.stub(:bigbluebutton_user).and_return(user)
         mocked_api.should_receive(:is_meeting_running?).and_return(true)
         mocked_api.should_receive(:join_meeting_url).
-          with(room.meeting_id, user.name, room.attendee_password).
+          with(room.meetingid, user.name, room.attendee_password).
           and_return("http://test.com/attendee/join")
         post :auth, :server_id => mocked_server.to_param, :id => room.to_param, :user => hash
         should respond_with(:redirect)
@@ -525,7 +525,7 @@ describe Bigbluebutton::RoomsController do
 
         it "creates the conference" do
           mocked_api.should_receive(:create_meeting).
-            with(room.name, room.meeting_id, room.moderator_password,
+            with(room.name, room.meetingid, room.moderator_password,
                  room.attendee_password, room.welcome_msg, room.dial_number,
                  room.logout_url, room.max_participants, room.voice_bridge)
           post :auth, :server_id => mocked_server.to_param, :id => room.to_param, :user => hash

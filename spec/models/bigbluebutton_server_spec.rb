@@ -92,8 +92,8 @@ describe BigbluebuttonServer do
 
     context "fetching info from bbb" do
       let(:server) { Factory.create(:bigbluebutton_server) }
-      let(:room1) { Factory.create(:bigbluebutton_room, :server => server, :meeting_id => "room1") }
-      let(:room2) { Factory.create(:bigbluebutton_room, :server => server, :meeting_id => "room2") }
+      let(:room1) { Factory.create(:bigbluebutton_room, :server => server, :meetingid => "room1") }
+      let(:room2) { Factory.create(:bigbluebutton_room, :server => server, :meetingid => "room2") }
       before {
         @api_mock = mock(BigBlueButton::BigBlueButtonApi)
         server.stub(:api).and_return(@api_mock)
@@ -102,8 +102,8 @@ describe BigbluebuttonServer do
       # the hashes should be exactly as returned by bigbluebutton-api-ruby to be sure we are testing it right
       let(:meetings) {
         [
-         { :meetingID => room1.meeting_id, :attendeePW=>"ap", :moderatorPW=>"mp", :hasBeenForciblyEnded => false, :running => true},
-         { :meetingID => room2.meeting_id, :attendeePW=>"pass", :moderatorPW=>"pass", :hasBeenForciblyEnded => true, :running => false},
+         { :meetingID => room1.meetingid, :attendeePW=>"ap", :moderatorPW=>"mp", :hasBeenForciblyEnded => false, :running => true},
+         { :meetingID => room2.meetingid, :attendeePW=>"pass", :moderatorPW=>"pass", :hasBeenForciblyEnded => true, :running => false},
          { :meetingID => "im not in the db", :attendeePW=>"pass", :moderatorPW=>"pass", :hasBeenForciblyEnded => true, :running => true}
         ]
       }
@@ -132,7 +132,7 @@ describe BigbluebuttonServer do
         server.meetings[1].moderator_password.should == "pass"
         server.meetings[1].running.should == false
 
-        server.meetings[2].meeting_id.should == "im not in the db"
+        server.meetings[2].meetingid.should == "im not in the db"
         server.meetings[2].server.should == server
         server.meetings[2].new_record?.should be_true
         server.meetings[2].attendee_password.should == "pass"

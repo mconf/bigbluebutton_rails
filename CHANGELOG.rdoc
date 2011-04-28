@@ -1,5 +1,7 @@
 * Rooms can be public or private
 * New route RoomsController#invite used to request a password to join a room or to allow anonymous users to join.
+* Room's "meeting_id" attribute renamed to "meetingid".
+* A room can have it's meetingid randomly generated for each "send_create" call if randomize_meetingid is set.
 * New attributes for rooms: logout_url, dial_number, voice_bridge and max_participant.
 
 == 0.0.2

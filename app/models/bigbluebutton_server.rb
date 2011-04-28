@@ -39,9 +39,9 @@ class BigbluebuttonServer < ActiveRecord::Base
     # updates the information in the rooms that are currently in BBB
     @meetings = []
     response[:meetings].each do |attr|
-      room = BigbluebuttonRoom.find_by_server_id_and_meeting_id(self.id, attr[:meetingID])
+      room = BigbluebuttonRoom.find_by_server_id_and_meetingid(self.id, attr[:meetingID])
       if room.nil?
-        room = BigbluebuttonRoom.new(:server => self, :meeting_id => attr[:meetingID],
+        room = BigbluebuttonRoom.new(:server => self, :meetingid => attr[:meetingID],
                                      :attendee_password => attr[:attendeePW],
                                      :moderator_password => attr[:moderatorPW])
         room.running = attr[:running]
