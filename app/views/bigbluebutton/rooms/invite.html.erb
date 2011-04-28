@@ -31,7 +31,7 @@ $(document).ready(function(){
 <p id="error"><%= flash[:error] %></p>
 
 <p>Meeting status: <span id="meeting_status">-</span> (<a href="javascript:ajax_request();">refresh</a>)</p>
-<p><%= @room.name %> is a private meeting. Enter the password to join:</p>
+<p><%= @room.name %> requires a name and/or password to join:</p>
 
 <%= form_tag join_bigbluebutton_server_room_path(@server, @room) do %>
 

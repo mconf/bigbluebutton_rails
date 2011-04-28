@@ -17,12 +17,16 @@
   <% end %>
 
   <div class="field">
+    <%= f.label :name %><br />
+    <%= f.text_field :name %>
+  </div>
+  <div class="field">
     <%= f.label :meetingid %><br />
     <%= f.text_field :meetingid %>
   </div>
   <div class="field">
-    <%= f.label :name %><br />
-    <%= f.text_field :name %>
+    <%= f.label :randomize_meetingid %><br />
+    <%= f.check_box :randomize_meetingid %>
   </div>
   <div class="field">
     <%= f.label :private %><br />
@@ -30,11 +34,11 @@
   </div>
   <div class="field">
     <%= f.label :attendee_password %><br />
-    <%= f.text_field :attendee_password %>
+    <%= f.password_field :attendee_password %>
   </div>
   <div class="field">
     <%= f.label :moderator_password %><br />
-    <%= f.text_field :moderator_password %>
+    <%= f.password_field :moderator_password %>
   </div>
   <div class="field">
     <%= f.label :welcome_msg %><br />
