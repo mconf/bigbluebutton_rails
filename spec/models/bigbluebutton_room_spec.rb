@@ -19,11 +19,17 @@ describe BigbluebuttonRoom do
     it { should have_db_column(:logout_url).of_type(:string) }
     it { should have_db_column(:voice_bridge).of_type(:string) }
     it { should have_db_column(:max_participants).of_type(:integer) }
+    it { should have_db_column(:private).of_type(:boolean) }
+    it { should have_db_column(:randomize_meetingid).of_type(:boolean) }
     it { should have_db_index(:server_id) }
     it { should have_db_index(:meeting_id).unique(true) }
     it { 
       room = BigbluebuttonRoom.new
       room.private.should be_false
+    }
+    it { 
+      room = BigbluebuttonRoom.new
+      room.randomize_meetingid.should be_true
     }
   end
 
@@ -40,14 +46,13 @@ describe BigbluebuttonRoom do
     it { should validate_presence_of(:meeting_id) }
     it { should validate_presence_of(:name) }
 
-    it { should allow_value(true).for(:private) }
-    it { should allow_value(false).for(:private) }
-    it { should_not allow_value(nil).for(:private) }
-    it { should_not allow_value("").for(:private) }
+    it { should be_boolean(:private) }
+    it { should be_boolean(:randomize_meetingid) }
 
     [:name, :server_id, :meeting_id, :attendee_password, :moderator_password,
      :welcome_msg, :owner, :server, :private, :logout_url, :dial_number,
-     :voice_bridge, :max_participants, :owner_id, :owner_type].each do |attribute|
+     :voice_bridge, :max_participants, :owner_id, :owner_type, :randomize_meetingid].
+      each do |attribute|
       it { should allow_mass_assignment_of(attribute) }
     end
     it { should_not allow_mass_assignment_of(:id) }
@@ -85,15 +90,22 @@ describe BigbluebuttonRoom do
       it { room.user_role({ :not_password => "any" }).should == nil }
     end
 
-    it "initializes the fetched attributes before they are fetched" do
-      room = BigbluebuttonRoom.new
-      room.participant_count.should == 0
-      room.moderator_count.should == 0
-      room.running.should be_false
-      room.has_been_forcibly_ended.should be_false
-      room.start_time.should be_nil
-      room.end_time.should be_nil
-      room.attendees.should == []
+    context "initializes" do
+      let(:room) { BigbluebuttonRoom.new }
+
+      it "fetched attributes before they are fetched" do
+        room.participant_count.should == 0
+        room.moderator_count.should == 0
+        room.running.should be_false
+        room.has_been_forcibly_ended.should be_false
+        room.start_time.should be_nil
+        room.end_time.should be_nil
+        room.attendees.should == []
+      end
+
+      it "meeting_id if it's nil" do
+        room.meeting_id.should_not be_nil
+      end
     end
 
     context "using the api" do
@@ -236,6 +248,56 @@ describe BigbluebuttonRoom do
           saved = BigbluebuttonRoom.find(room.id)
           saved.attendee_password.should == attendee_password
           saved.moderator_password.should == moderator_password
+        end
+
+        context "randomizes meetingid" do
+          let(:fail_hash) { { :returncode => true, :meetingID => "new id",
+                              :messageKey => "duplicateWarning" } }
+          let(:success_hash) { { :returncode => true, :meetingID => "new id",
+                                 :messageKey => "" } }
+          let(:new_id) { "new id" }
+          before {
+            room.randomize_meetingid = true
+            room.server = mocked_server
+          }
+
+          it "before calling create" do
+            room.should_receive(:random_meetingid).and_return(new_id)
+            mocked_api.should_receive(:create_meeting).
+              with(room.name, new_id, room.moderator_password,
+                   room.attendee_password, room.welcome_msg, room.dial_number,
+                   room.logout_url, room.max_participants, room.voice_bridge)
+            room.send_create
+          end
+
+          it "and tries again on error" do
+            # fails twice and them succeds
+            room.should_receive(:random_meetingid).exactly(3).times.and_return(new_id)
+            mocked_api.should_receive(:create_meeting).
+              with(room.name, new_id, room.moderator_password,
+                   room.attendee_password, room.welcome_msg, room.dial_number,
+                   room.logout_url, room.max_participants, room.voice_bridge).
+              twice.
+              and_return(fail_hash)
+            mocked_api.should_receive(:create_meeting).
+              with(room.name, new_id, room.moderator_password,
+                   room.attendee_password, room.welcome_msg, room.dial_number,
+                   room.logout_url, room.max_participants, room.voice_bridge).
+              once.
+              and_return(success_hash)
+            room.send_create
+          end
+
+          it "and limits to 10 tries" do
+            room.should_receive(:random_meetingid).exactly(11).times.and_return(new_id)
+            mocked_api.should_receive(:create_meeting).
+              with(room.name, new_id, room.moderator_password,
+                   room.attendee_password, room.welcome_msg, room.dial_number,
+                   room.logout_url, room.max_participants, room.voice_bridge).
+              exactly(10).times.
+              and_return(fail_hash)
+            room.send_create
+          end
         end
 
       end

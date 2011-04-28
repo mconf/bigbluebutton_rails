@@ -22,6 +22,7 @@ class CreateBigbluebuttonRails < ActiveRecord::Migration
       t.string :dial_number
       t.integer :max_participants
       t.boolean :private, :default => false
+      t.boolean :randomize_meetingid, :default => true
       t.timestamps
     end
     add_index :bigbluebutton_rooms, :server_id

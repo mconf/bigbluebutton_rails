@@ -6,4 +6,5 @@ Factory.define :bigbluebutton_room do |r|
   r.moderator_password { Forgery(:basic).password :at_least => 10, :at_most => 16 }
   r.welcome_msg { Forgery(:lorem_ipsum).sentences(2) }
   r.private false
+  r.randomize_meetingid false
 end

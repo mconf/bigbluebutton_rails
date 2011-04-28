@@ -1,3 +1,5 @@
+require 'active_support/secure_random'
+
 class BigbluebuttonRoom < ActiveRecord::Base
   belongs_to :server, :class_name => 'BigbluebuttonServer'
   belongs_to :owner, :polymorphic => true
@@ -9,6 +11,7 @@ class BigbluebuttonRoom < ActiveRecord::Base
     :length => { :minimum => 1, :maximum => 150 }
   validates :welcome_msg, :length => { :maximum => 250 }
   validates :private, :inclusion => { :in => [true, false] }
+  validates :randomize_meetingid, :inclusion => { :in => [true, false] }
 
   # Passwords are 16 character strings
   # See http://groups.google.com/group/bigbluebutton-dev/browse_thread/thread/9be5aae1648bcab?pli=1
@@ -17,13 +20,13 @@ class BigbluebuttonRoom < ActiveRecord::Base
 
   attr_accessible :name, :server_id, :meeting_id, :attendee_password, :moderator_password,
                   :welcome_msg, :owner, :server, :private, :logout_url, :dial_number,
-                  :voice_bridge, :max_participants, :owner_id, :owner_type
+                  :voice_bridge, :max_participants, :owner_id, :owner_type, :randomize_meetingid
 
   # Note: these params need to be fetched from the server before being accessed
   attr_accessor :running, :participant_count, :moderator_count, :attendees,
                 :has_been_forcibly_ended, :start_time, :end_time
 
-  after_initialize :initialize_fetched_attributes
+  after_initialize :init
 
   # Convenience method to access the attribute <tt>running</tt>
   def is_running?
@@ -87,9 +90,31 @@ class BigbluebuttonRoom < ActiveRecord::Base
   #
   # Triggers API call: <tt>create_meeting</tt>.
   def send_create
-    response = self.server.api.create_meeting(self.name, self.meeting_id, self.moderator_password,
-                                              self.attendee_password, self.welcome_msg, self.dial_number,
-                                              self.logout_url, self.max_participants, self.voice_bridge)
+
+    unless self.randomize_meetingid
+      response = do_create_meeting
+
+    # create a new random meetingid everytime create fails with "duplicateWarning"
+    else
+      self.meeting_id = random_meetingid
+
+      count = 0
+      try_again = true
+      while try_again and count < 10
+        response = do_create_meeting
+
+        count += 1
+        try_again = false
+        unless response.nil?
+          if response[:returncode] && response[:messageKey] == "duplicateWarning"
+            self.meeting_id = random_meetingid
+            try_again = true
+          end
+        end
+
+      end
+    end
+
     unless response.nil?
       self.attendee_password = response[:attendeePW]
       self.moderator_password = response[:moderatorPW]
@@ -129,9 +154,12 @@ class BigbluebuttonRoom < ActiveRecord::Base
     role
   end
 
-  private
+  protected
 
-  def initialize_fetched_attributes
+  def init
+    self[:meeting_id] ||= random_meetingid
+
+    # fetched attributes
     @participant_count = 0
     @moderator_count = 0
     @running = false
@@ -141,5 +169,20 @@ class BigbluebuttonRoom < ActiveRecord::Base
     @attendees = []
   end
 
+  def random_meetingid
+    #ActiveSupport::SecureRandom.hex(16)
+    # TODO temporarily using the name to get a friendlier meeting_id
+    if self[:name].blank?
+      ActiveSupport::SecureRandom.hex(8)
+    else
+      self[:name] + '-' + ActiveSupport::SecureRandom.random_number(9999).to_s
+    end
+  end
+
+  def do_create_meeting
+    self.server.api.create_meeting(self.name, self.meeting_id, self.moderator_password,
+                                   self.attendee_password, self.welcome_msg, self.dial_number,
+                                   self.logout_url, self.max_participants, self.voice_bridge)
+  end
 
 end
