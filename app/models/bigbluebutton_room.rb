@@ -12,6 +12,7 @@ class BigbluebuttonRoom < ActiveRecord::Base
   validates :welcome_msg, :length => { :maximum => 250 }
   validates :private, :inclusion => { :in => [true, false] }
   validates :randomize_meetingid, :inclusion => { :in => [true, false] }
+  validates :voice_bridge, :presence => true, :uniqueness => true
 
   # Passwords are 16 character strings
   # See http://groups.google.com/group/bigbluebutton-dev/browse_thread/thread/9be5aae1648bcab?pli=1
@@ -62,7 +63,7 @@ class BigbluebuttonRoom < ActiveRecord::Base
     response[:attendees].each do |att|
       attendee = BigbluebuttonAttendee.new
       attendee.from_hash(att)
-      @attendees << attendee 
+      @attendees << attendee
     end
 
     response
@@ -158,6 +159,7 @@ class BigbluebuttonRoom < ActiveRecord::Base
 
   def init
     self[:meetingid] ||= random_meetingid
+    self[:voice_bridge] ||= random_voice_bridge
 
     # fetched attributes
     @participant_count = 0
@@ -177,6 +179,16 @@ class BigbluebuttonRoom < ActiveRecord::Base
     else
       self[:name] + '-' + ActiveSupport::SecureRandom.random_number(9999).to_s
     end
+  end
+
+  def random_voice_bridge
+    value = (70000 + ActiveSupport::SecureRandom.random_number(9999)).to_s
+    count = 0
+    while not BigbluebuttonRoom.find_by_voice_bridge(value).nil? and count < 10
+      count += 1
+      value = (70000 + ActiveSupport::SecureRandom.random_number(9999)).to_s
+    end
+    value
   end
 
   def do_create_meeting

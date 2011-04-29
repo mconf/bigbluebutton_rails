@@ -23,11 +23,12 @@ describe BigbluebuttonRoom do
     it { should have_db_column(:randomize_meetingid).of_type(:boolean) }
     it { should have_db_index(:server_id) }
     it { should have_db_index(:meetingid).unique(true) }
-    it { 
+    it { should have_db_index(:voice_bridge).unique(true) }
+    it {
       room = BigbluebuttonRoom.new
       room.private.should be_false
     }
-    it { 
+    it {
       room = BigbluebuttonRoom.new
       room.randomize_meetingid.should be_true
     }
@@ -44,6 +45,7 @@ describe BigbluebuttonRoom do
 
     it { should validate_presence_of(:server_id) }
     it { should validate_presence_of(:meetingid) }
+    it { should validate_presence_of(:voice_bridge) }
     it { should validate_presence_of(:name) }
 
     it { should be_boolean(:private) }
@@ -59,6 +61,7 @@ describe BigbluebuttonRoom do
 
     it { should validate_uniqueness_of(:meetingid) }
     it { should validate_uniqueness_of(:name) }
+    it { should validate_uniqueness_of(:voice_bridge) }
 
     it {
       room = Factory.create(:bigbluebutton_room)
@@ -103,10 +106,82 @@ describe BigbluebuttonRoom do
         room.attendees.should == []
       end
 
-      it "meetingid if it's nil" do
-        room.meetingid.should_not be_nil
+      context "meetingid" do
+        it { room.meetingid.should_not be_nil }
+        it {
+          b = BigbluebuttonRoom.new(:meetingid => "user defined")
+          b.meetingid.should == "user defined"
+        }
+      end
+
+      context "voice_bridge" do
+        it { room.voice_bridge.should_not be_nil }
+        it { room.voice_bridge.length.should == 5 }
+        it { room.voice_bridge[0].should == '7' }
+        it {
+          b = BigbluebuttonRoom.new(:voice_bridge => "user defined")
+          b.voice_bridge.should == "user defined"
+        }
       end
     end
+
+
+
+=begin
+        context "randomizes meetingid" do
+          let(:fail_hash) { { :returncode => true, :meetingID => "new id",
+                              :messageKey => "duplicateWarning" } }
+          let(:success_hash) { { :returncode => true, :meetingID => "new id",
+                                 :messageKey => "" } }
+          let(:new_id) { "new id" }
+          before {
+            room.randomize_meetingid = true
+            room.server = mocked_server
+          }
+
+          it "before calling create" do
+            room.should_receive(:random_meetingid).and_return(new_id)
+            mocked_api.should_receive(:create_meeting).
+              with(room.name, new_id, room.moderator_password,
+                   room.attendee_password, room.welcome_msg, room.dial_number,
+                   room.logout_url, room.max_participants, room.voice_bridge)
+            room.send_create
+          end
+
+          it "and tries again on error" do
+            # fails twice and them succeds
+            room.should_receive(:random_meetingid).exactly(3).times.and_return(new_id)
+            mocked_api.should_receive(:create_meeting).
+              with(room.name, new_id, room.moderator_password,
+                   room.attendee_password, room.welcome_msg, room.dial_number,
+                   room.logout_url, room.max_participants, room.voice_bridge).
+              twice.
+              and_return(fail_hash)
+            mocked_api.should_receive(:create_meeting).
+              with(room.name, new_id, room.moderator_password,
+                   room.attendee_password, room.welcome_msg, room.dial_number,
+                   room.logout_url, room.max_participants, room.voice_bridge).
+              once.
+              and_return(success_hash)
+            room.send_create
+          end
+
+          it "and limits to 10 tries" do
+            room.should_receive(:random_meetingid).exactly(11).times.and_return(new_id)
+            mocked_api.should_receive(:create_meeting).
+              with(room.name, new_id, room.moderator_password,
+                   room.attendee_password, room.welcome_msg, room.dial_number,
+                   room.logout_url, room.max_participants, room.voice_bridge).
+              exactly(10).times.
+              and_return(fail_hash)
+            room.send_create
+          end
+        end
+
+      end
+=end
+
+
 
     context "using the api" do
       before { mock_server_and_api }
@@ -137,13 +212,13 @@ describe BigbluebuttonRoom do
       describe "#fetch_meeting_info" do
 
         # these hashes should be exactly as returned by bigbluebutton-api-ruby to be sure we are testing it right
-        let(:hash_info) { 
+        let(:hash_info) {
           { :returncode=>true, :meetingID=>"test_id", :attendeePW=>"1234", :moderatorPW=>"4321",
             :running=>false, :hasBeenForciblyEnded=>false, :startTime=>nil, :endTime=>nil,
             :participantCount=>0, :moderatorCount=>0, :attendees=>[], :messageKey=>"", :message=>""
           }
         }
-        let(:users) { 
+        let(:users) {
           [
            {:userID=>"ndw1fnaev0rj", :fullName=>"House M.D.", :role=>:moderator},
            {:userID=>"gn9e22b7ynna", :fullName=>"Dexter Morgan", :role=>:moderator},
@@ -151,7 +226,7 @@ describe BigbluebuttonRoom do
            {:userID=>"rbepbovolsxt", :fullName=>"Trinity", :role=>:viewer}
           ]
         }
-        let(:hash_info2) { 
+        let(:hash_info2) {
           { :returncode=>true, :meetingID=>"test_id", :attendeePW=>"1234", :moderatorPW=>"4321",
             :running=>true, :hasBeenForciblyEnded=>false, :startTime=>DateTime.parse("Wed Apr 06 17:09:57 UTC 2011"),
             :endTime=>nil, :participantCount=>4, :moderatorCount=>2,
@@ -214,7 +289,7 @@ describe BigbluebuttonRoom do
         let(:attendee_password) { Forgery(:basic).password }
         let(:moderator_password) { Forgery(:basic).password }
         let(:hash_create) {
-          {                                                                                                                                                                         
+          {
             :returncode => "SUCCESS", :meetingID => "test_id",
             :attendeePW => attendee_password, :moderatorPW => moderator_password,
             :hasBeenForciblyEnded => "false", :messageKey => {}, :message => {}
