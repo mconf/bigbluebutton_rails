@@ -44,8 +44,8 @@ describe BigbluebuttonServer do
       server = Factory.create(:bigbluebutton_server)
       Factory.create(:bigbluebutton_room, :server => server)
       Factory.create(:bigbluebutton_room, :server => server)
-      expect { 
-        expect { 
+      expect {
+        expect {
           server.destroy
         }.to change{ BigbluebuttonServer.count }.by(-1)
       }.to change{ BigbluebuttonRoom.count }.by(-2)
@@ -90,6 +90,14 @@ describe BigbluebuttonServer do
       end
     end
 
+    context "initializes" do
+      let(:server) { BigbluebuttonServer.new }
+
+      it "fetched attributes before they are fetched" do
+        server.meetings.should == []
+      end
+    end
+
     context "fetching info from bbb" do
       let(:server) { Factory.create(:bigbluebutton_server) }
       let(:room1) { Factory.create(:bigbluebutton_room, :server => server, :meetingid => "room1") }
@@ -107,7 +115,7 @@ describe BigbluebuttonServer do
          { :meetingID => "im not in the db", :attendeePW=>"pass", :moderatorPW=>"pass", :hasBeenForciblyEnded => true, :running => true}
         ]
       }
-      let(:hash) { 
+      let(:hash) {
         { :returncode => true,
           :meetings => meetings
         }

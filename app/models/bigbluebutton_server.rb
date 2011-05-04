@@ -14,6 +14,11 @@ class BigbluebuttonServer < ActiveRecord::Base
 
   validates :version, :presence => true, :inclusion => { :in => ['0.64', '0.7'] }
 
+  # Array of <tt>BigbluebuttonMeeting</tt>
+  attr_reader :meetings
+
+  after_initialize :init
+
   # Returns the API object (<tt>BigBlueButton::BigBlueButtonAPI</tt> defined in
   # <tt>bigbluebutton-api-ruby</tt>) associated with this server.
   def api
@@ -23,9 +28,6 @@ class BigbluebuttonServer < ActiveRecord::Base
     end
     @api
   end
-
-  # Array of <tt>BigbluebuttonMeeting</tt>
-  attr_reader :meetings
 
   # Fetches the meetings currently created in the server (running or not).
   #
@@ -53,6 +55,13 @@ class BigbluebuttonServer < ActiveRecord::Base
 
       @meetings << room
     end
+  end
+
+  protected
+
+  def init
+    # fetched attributes
+    @meetings = []
   end
 
 end
