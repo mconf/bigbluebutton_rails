@@ -4,34 +4,39 @@ describe Bigbluebutton::ServersController do
   include Shoulda::Matchers::ActionController
 
   describe "routing" do
-    it {
-      should route(:get, "/bigbluebutton/servers").
-      to(:action => :index)
-    }
-    it {
-      should route(:post, "/bigbluebutton/servers").
-      to(:action => :create)
-    }
-    it {
-      should route(:get, "/bigbluebutton/servers/new").
-      to(:action => :new)
-    }
-    it {
-      should route(:get, "/bigbluebutton/servers/1/edit").
-      to(:action => :edit, :id => 1)
-    }
-    it {
-      should route(:get, "/bigbluebutton/servers/1").
-      to(:action => :show, :id => 1)
-    }
-    it {
-      should route(:put, "/bigbluebutton/servers/1").
-      to(:action => :update, :id => 1)
-    }
-    it {
-      should route(:delete, "/bigbluebutton/servers/1").
-      to(:action => :destroy, :id => 1)
-    }
+
+    # normal and scoped routes
+    ['bigbluebutton', 'webconference'].each do |prefix|
+      it {
+        {:get => "/#{prefix}/servers"}.
+        should route_to(:controller => "bigbluebutton/servers", :action => "index")
+      }
+      it {
+        {:post => "/#{prefix}/servers"}.
+        should route_to(:controller => "bigbluebutton/servers", :action => "create")
+      }
+      it {
+        {:get => "/#{prefix}/servers/new"}.
+        should route_to(:controller => "bigbluebutton/servers", :action => "new")
+      }
+      it {
+        {:get => "/#{prefix}/servers/1/edit"}.
+        should route_to(:controller => "bigbluebutton/servers", :action => "edit", :id => "1")
+      }
+      it {
+        {:get => "/#{prefix}/servers/1"}.
+        should route_to(:controller => "bigbluebutton/servers", :action => "show", :id => "1")
+      }
+      it {
+        {:put => "/#{prefix}/servers/1"}.
+        should route_to(:controller => "bigbluebutton/servers", :action => "update", :id => "1")
+      }
+      it {
+        {:delete => "/#{prefix}/servers/1"}.
+        should route_to(:controller => "bigbluebutton/servers", :action => "destroy", :id => "1")
+      }
+    end
+
   end
 
 end

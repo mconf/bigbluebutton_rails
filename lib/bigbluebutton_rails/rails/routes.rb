@@ -28,21 +28,14 @@ module ActionDispatch::Routing
     #   running_bigbluebutton_server_room  GET    /bigbluebutton/servers/:server_id/rooms/:id/running(.:format)
     #                                             { :action=>"running", :controller=>"bigbluebutton/rooms" }
     #
-    # The controllers used will always be bigbluebutton/servers and bigbluebutton/rooms,
-    # but you can change the url using the scope option:
+    # The routes point by default to the controllers Bigbluebutton::ServersController and Bigbluebutton::RoomsController
+    # and the the routes are scoped (namespaced) with 'bigbluebutton'. You can change the namespace with:
     #
     #    bigbluebutton_routes :default, :scope => "webconference"
     #
-    # This will generate routes such as:
+    # You can also change the controllers with:
     #
-    #   webconference_server               GET    /webconference/servers/:id(.:format)
-    #                                             { :action=>"show", :controller=>"bigbluebutton/servers" }
-    #                                      POST   /webconference/servers/:id(.:format)
-    #                                             { :action=>"update", :controller=>"bigbluebutton/servers" }
-    #   join_webconference_server_room     GET    /webconference/servers/:server_id/rooms/:id/join(.:format)
-    #                                             { :action=>"join", :controller=>"bigbluebutton/rooms" }
-    #   running_webconference_server_room  GET    /webconference/servers/:server_id/rooms/:id/running(.:format)
-    #                                             { :action=>"running", :controller=>"bigbluebutton/rooms" }
+    #    bigbluebutton_routes :default, :controllers { :servers => "custom_servers", :rooms => "custom_rooms" }
     #
     # ==== Room matchers
     #
@@ -81,11 +74,12 @@ module ActionDispatch::Routing
 
     def bigbluebutton_routes_default(*params) #:nodoc:
       options = params.extract_options!
-      options_scope = options.has_key?(:scope) ? options[:scope] : 'bigbluebutton'
+      options_scope = options.has_key?(:scope) ? options[:scope] : BigbluebuttonRails.routing_scope
+      BigbluebuttonRails.set_controllers(options[:controllers])
 
       scope options_scope, :as => options_scope do
-        resources :servers, :controller => 'bigbluebutton/servers' do
-          resources :rooms, :controller => 'bigbluebutton/rooms' do
+        resources :servers, :controller => BigbluebuttonRails.controllers[:servers] do
+          resources :rooms, :controller => BigbluebuttonRails.controllers[:rooms] do
             get :join, :on => :member
             get :running, :on => :member
             get :end, :on => :member
@@ -98,12 +92,12 @@ module ActionDispatch::Routing
 
     def bigbluebutton_routes_room_matchers(*params) #:nodoc:
       # TODO This is generating helpers like "user_running_room" instead of "running_user_room"
-      get 'room/:id' => 'bigbluebutton/rooms#show', :as => 'room'
-      get 'room/:id/join' => 'bigbluebutton/rooms#join', :as => 'join_room'
-      post 'room/:id/join' => 'bigbluebutton/rooms#auth', :as => 'join_room'
-      get 'room/:id/running' => 'bigbluebutton/rooms#running', :as => 'running_room'
-      get 'room/:id/end' => 'bigbluebutton/rooms#end', :as => 'end_room'
-      get 'room/:id/invite' => 'bigbluebutton/rooms#invite', :as => 'invite_room'
+      get 'room/:id' => "#{BigbluebuttonRails.controllers[:rooms]}#show", :as => 'room'
+      get 'room/:id/join' => "#{BigbluebuttonRails.controllers[:rooms]}#join", :as => 'join_room'
+      post 'room/:id/join' => "#{BigbluebuttonRails.controllers[:rooms]}#auth", :as => 'join_room'
+      get 'room/:id/running' => "#{BigbluebuttonRails.controllers[:rooms]}#running", :as => 'running_room'
+      get 'room/:id/end' => "#{BigbluebuttonRails.controllers[:rooms]}#end", :as => 'end_room'
+      get 'room/:id/invite' => "#{BigbluebuttonRails.controllers[:rooms]}#invite", :as => 'invite_room'
     end
 
   end
