@@ -152,9 +152,9 @@ class Bigbluebutton::RoomsController < ApplicationController
       @room.fetch_is_running?
     rescue BigBlueButton::BigBlueButtonException => e
       flash[:error] = e.to_s
-      render :json => { running: "false", error: "#{e.to_s}" }
+      render :json => { :running=>false, :error=>"#{e.to_s}" }.to_json
     else
-      render :json => { running: "#{@room.is_running?}" }
+      render :json => { :running=>"#{@room.is_running?}" }.to_json
     end
 
   end
