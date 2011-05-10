@@ -7,7 +7,7 @@ class BigbluebuttonAttendee
   def from_hash(hash)
     self.user_id = hash[:userID].to_s
     self.full_name = hash[:fullName].to_s
-    self.role = hash[:role].downcase == "moderator" ? :moderator : :attendee
+    self.role = hash[:role].to_s.downcase == "moderator" ? :moderator : :attendee
   end
 
   def ==(other)
