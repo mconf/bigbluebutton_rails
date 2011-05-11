@@ -26,7 +26,7 @@ class Bigbluebutton::RoomsController < ApplicationController
   def create
     @room = BigbluebuttonRoom.new(params[:bigbluebutton_room])
     @room.server = @server
-    
+
     # TODO Generate a random meetingid everytime a room is created
     if !params[:bigbluebutton_room].has_key?(:meetingid) or
         params[:bigbluebutton_room][:meetingid].blank?
@@ -152,9 +152,9 @@ class Bigbluebutton::RoomsController < ApplicationController
       @room.fetch_is_running?
     rescue BigBlueButton::BigBlueButtonException => e
       flash[:error] = e.to_s
-      render :json => { :running=>false, :error=>"#{e.to_s}" }
+      render :json => { :running => "false", :error => "#{e.to_s}" }
     else
-      render :json => { :running=>"#{@room.is_running?}" }
+      render :json => { :running => "#{@room.is_running?}" }
     end
 
   end
