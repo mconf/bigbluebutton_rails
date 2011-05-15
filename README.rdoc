@@ -22,7 +22,7 @@ For more future features and issues check {our google code page}[http://code.goo
 
 == Installation
 
-You can install the latest version of bigbluebutton_rails using RubyGems:
+You can install the latest version of BigbluebuttonRails using RubyGems:
 
   gem install bigbluebutton_rails
 
@@ -35,13 +35,13 @@ After installing, you need to run the generator:
   rails generate bigbluebutton_rails:install
 
 This generator will create a migration file and a locale file in your application directories.
-Take a look at the migration to see how the models used by bigbluebutton_rails look like.
+Take a look at the migration to see how the models used by BigbluebuttonRails look like.
 
 To now more about the generators see {How to: Generators}[https://github.com/mconf/bigbluebutton_rails/wiki/How-to:-Generators]
 
 === Routes
 
-The routes to bigbluebutton_rails can be generated with the helper <tt>bigbluebutton_routes</tt>. See the example below:
+The routes to BigbluebuttonRails can be generated with the helper <tt>bigbluebutton_routes</tt>. See the example below:
 
   bigbluebutton_routes :default
 
@@ -80,32 +80,25 @@ So you can allow access to webconference rooms using URLs such as:
   http://myserver.com/user-10/room-5/join
   http://myserver.com/zaphod/public-room/join
 
-Obs: bigbluebutton_rails does not allows the room access using IDs such as "room-5" or "public-room" yet, but soon you it will.
+Obs: BigbluebuttonRails does not allows the room access using IDs such as "room-5" or "public-room" yet, but soon you it will.
 
 === User authorization, permissions and assumptions
 
-There are some basic assumptions made by bigbluebutton_rails:
+There are some basic assumptions made by BigbluebuttonRails:
 
 * You have a method called <tt>current_user</tt> that returns the current user;
 * The <tt>current_user</tt> has an attribute or method called "name" that returns his/her fullname.
 
 If you don't, you can change this behaviour easily, keep reading.
 
-bigbluebutton_rails uses the methods <tt>bigbluebutton_user</tt> and <tt>bigbluebutton_role(room)</tt> to get the current user and to get the permission that the current
-user has in the <tt>room</tt>, respectively. These methods are defined in <tt>lib/bigbluebutton_rails/controller_methods.rb</tt> and you can reimplement them in your
-application controller to change their behaviour.
+BigbluebuttonRails uses the methods <tt>bigbluebutton_user</tt> and <tt>bigbluebutton_role(room)</tt> to get the current user and to get the permission that the current
+user has in the <tt>room</tt>, respectively. These methods are defined in {lib/bigbluebutton_rails/controller_methods.rb}[https://github.com/mconf/bigbluebutton_rails/blob/master/lib/bigbluebutton_rails/controller_methods.rb]
+and you can reimplement them in your application controller to change their behaviour.
 
-Although this is the general rule, the permission checking is different for public or private rooms. Check the <tt>How it Works</tt>
-section below for more details.
+==== See also
 
-
-==== Integration with Devise
-
-To be written...
-
-==== Integration with CanCan
-
-To be written...
+* {How to: Integrate with Devise}[https://github.com/mconf/bigbluebutton_rails/wiki/How-to:-Integrate-with-Devise]
+* {How to: Integrate with CanCan}[https://github.com/mconf/bigbluebutton_rails/wiki/How-to:-Integrate-with-CanCan]
 
 === Dependencies
 
@@ -126,7 +119,7 @@ JQuery is used in the views <tt>join_wait</tt> and <tt>invite</tt> and can be co
 
 === Overview
 
-bigbluebutton_rails has two entities: servers and rooms. Servers can have multiple rooms, that belong to a server and can also belong to any other model.
+BigbluebuttonRails has two entities: servers and rooms. Servers can have multiple rooms, that belong to a server and can also belong to any other model.
 You can make a room belong to a user, for example.
 
 Every server has an associated API object (using the gem bigbluebutton-api-ruby) used to access the BigBlueButton server.
@@ -157,13 +150,13 @@ the user. Basic differences:
   to define the user role using the <b>room password</b> instead of the <tt>bigbluebutton_role</tt> method.
   * It first checks <tt>bigbluebutton_role</tt> to see if the current user already has a role in the target room.
     * In case it has (see {controller_methods.rb}[https://github.com/mconf/bigbluebutton_rails/blob/master/lib/bigbluebutton_rails/controller_methods.rb] for more info), redirects to <tt>join</tt>.
-    * Otherwise: 
+    * Otherwise:
       * If there is a user logged, uses <tt>bigbluebutton_user().name</tt> as the user name. Otherwise, ask the user to type a name.
 * <tt>join</tt> requires a <b>logged user</b> and uses <tt>bigbluebutton_role</tt> to get the role for this user
   * It redirects the user straight to the meeting if the join is successful.
   * In case there's no role associated with the current user, falls back to <tt>invite</tt> to ask for a password.
 
-Internally, they use the same algorithm to decide if the user can join or not:
+Internally, they use the same algorithm:
 
 * If the user is a moderator:
   * If the room is not created yet, creates it.
