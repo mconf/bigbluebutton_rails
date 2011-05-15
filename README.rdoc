@@ -41,7 +41,7 @@ To now more about the generators see {How to: Generators}[https://github.com/mco
 
 === Routes
 
-The routes to bigbluebutton_rails can be generated with the helper . See the example below:
+The routes to bigbluebutton_rails can be generated with the helper <tt>bigbluebutton_routes</tt>. See the example below:
 
   bigbluebutton_routes :default
 
