@@ -7,12 +7,16 @@ Features:
 * Full API access using bigbluebutton-api-ruby (https://github.com/mconf/bigbluebutton-api-ruby)
 * Easy way to join conferences: simply create a room and call the "join" action
 * Easy integration with authentication and authorization mechanisms, such as Devise and CanCan
+* Possibility to create private rooms, that require a password to join
+* Deals with visitors (users that are not logged), allowing (or forbidding) them to join rooms
+* Random meeting IDs to avoid problems with end_meeting, timeouts and reuse of URLs
 
-Future:
-* Private room and invitations to allow visitants to join conferences (using a password or not).
+Planned features:
 * Friendly URLs (e.g. http://somewhere.com/my-server/my-room)
-* Random meeting IDs to avoid problems with end_meeting and timeouts
+* Limit the number of users per room and rooms per server
 * Server administration (modify config.xml, use bbb-conf, etc.)
+* Load balancing
+* Dealing with rooms that exist in the BigBlueButton server but not in the DB
 
 For more future features and issues check {our google code page}[http://code.google.com/p/mconf/issues/list?can=2&q=label%3AComponent%20label%3ABigBlueButtonRails].
 
@@ -33,22 +37,11 @@ After installing, you need to run the generator:
 This generator will create a migration file and a locale file in your application directories.
 Take a look at the migration to see how the models used by bigbluebutton_rails look like.
 
-All models, controllers and views used are embedded in the gem, but you can replace or extend them if you need to.
-There is one generator to help you with that:
-
-  rails generate bigbluebutton_rails:views
-
-It copies all bigbluebutton_rails views into your application, so you can customize them as you wish.
-
-There is yet another generator that copies the public files (javascripts, images and stylesheets) used by bigbluebutton_rails:
-
-  rails generate bigbluebutton_rails:public
-
-For more information see the section Dependencies below.
+To now more about the generators see {How to: Generators}[https://github.com/mconf/bigbluebutton_rails/wiki/How-to:-Generators]
 
 === Routes
 
-The routes to bigbluebutton_rails can be generated with the helper <tt>bigbluebutton_routes</tt>. See the example below:
+The routes to bigbluebutton_rails can be generated with the helper . See the example below:
 
   bigbluebutton_routes :default
 
@@ -162,22 +155,24 @@ the user. Basic differences:
 
 * <tt>invite</tt> renders a view to ask for a user name and a password. It is used to enable <b>anonymous users</b> to join a room or
   to define the user role using the <b>room password</b> instead of the <tt>bigbluebutton_role</tt> method.
-  * It first checks <tt>bigbluebutton_role</tt> to see if the current user already has a role in the target room. In case it has, redirects to <tt>join</tt>.
-  * If there is a user logged, uses <tt>bigbluebutton_user().name</tt> as the user name. Otherwise, ask the user to type a name.
-* <tt>join</tt> requires a <b>logged user</b> and uses <tt>bigbluebutton_role</tt> to get the role of this user.
+  * It first checks <tt>bigbluebutton_role</tt> to see if the current user already has a role in the target room.
+    * In case it has (see {controller_methods.rb}[https://github.com/mconf/bigbluebutton_rails/blob/master/lib/bigbluebutton_rails/controller_methods.rb] for more info), redirects to <tt>join</tt>.
+    * Otherwise: 
+      * If there is a user logged, uses <tt>bigbluebutton_user().name</tt> as the user name. Otherwise, ask the user to type a name.
+* <tt>join</tt> requires a <b>logged user</b> and uses <tt>bigbluebutton_role</tt> to get the role for this user
   * It redirects the user straight to the meeting if the join is successful.
   * In case there's no role associated with the current user, falls back to <tt>invite</tt> to ask for a password.
 
-Internally, they use the same algorithm:
+Internally, they use the same algorithm to decide if the user can join or not:
 
 * If the user is a moderator:
   * If the room is not created yet, creates it.
   * Redirects the user to the meeting as a moderator.
-* If the user is a normal attendee:
+* If the user is not a moderator (a normal attendee):
   * If the meeting is running, redirects the user to the meeting as an attendee.
   * Otherwise:
-    * <tt>join</tt> redirects to <tt>join_wait</tt>, to wait for a moderator before joining the conference.
-    * <tt>invite</tt> renders the invite view again and shows a warning that the metting is not running.
+    * <tt>join</tt> redirects to <tt>join_wait</tt>, to wait for a moderator before joining the conference. The page will continuously pool the server to check if the meeting is running. When it starts, it redirects the user to the conference.
+    * <tt>invite</tt> renders the invite view again and shows a warning informing that the meeting is not running. The user must re-submit the form to try again.
 
 == Development
 
