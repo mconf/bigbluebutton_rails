@@ -4,11 +4,11 @@ require "bigbluebutton_rails/version"
 Gem::Specification.new do |s|
   s.name        = "bigbluebutton_rails"
   s.version     = BigbluebuttonRails::VERSION.dup
-  s.platform    = Gem::Platform::RUBY  
+  s.platform    = Gem::Platform::RUBY
   s.summary     = "BigBlueButton integration for Ruby on Rails"
   s.email       = "mconf@googlegroups.com"
   s.homepage    = "http://github.com/mconf/bigbluebutton_rails"
-  s.description = "BigBlueButton integration for Ruby on Rails"
+  s.description = "It allows you to interact with a BigBlueButton server from your Ruby on Rails web application"
   s.authors     = ['Leonardo Crauss Daronco']
 
   s.files         = `git ls-files`.split("\n")

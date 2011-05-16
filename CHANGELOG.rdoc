@@ -1,4 +1,8 @@
+== 0.0.4
+
+* A random voice_bridge with 5 digits (recommended) is set when a room is created.
 * Routes generators now allow specifying custom controllers instead of the defaults Bigbluebutton::ServersController and Bigbluebutton::RoomsController.
+* Some bug fixes (including fixes for ruby 1.8).
 
 == 0.0.3
 
