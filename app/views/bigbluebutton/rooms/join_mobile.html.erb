@@ -1,10 +1,9 @@
 <h1>Mobile access to <%= @room.name %></h1>
 
-<p>To join the conference from a mobile phone click in the link or scan the QR-code below.<br/>
-It uses the protocol "bigbluebutton", so you can associate it to a native mobile application to open the conference.</p>
-
-<img src="<%= qrcode_url(@join_url) %>" style="float:left;border:1px solid #ccc;margin-right:10px;" />
-<p><a href="<%= @join_url %>">Click here to join from a mobile phone</a></p>
-
+<div style="text-align:center; width:250px;">
+  <a href="<%= @join_url %>"><b>Click here</b><br/>to join from a mobile device</a><br><br/>
+  <span>Or scan the code below:</span><br/>
+  <img src="<%= qrcode_url(@join_url) %>" style="float:left; border:1px solid #ccc;"/>
+</div>
 
 
