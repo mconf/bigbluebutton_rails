@@ -74,7 +74,7 @@ You may also want shorter routes to access conference rooms. For that, use the o
 
   bigbluebutton_routes :room_matchers
 
-It creates routes to the actions used to access the conference room: "show", "join", "auth", "running", "end", and "invite".
+It creates routes to the actions used to access the conference room: "show", "join", "auth", "running", "end", "invite", and "join_mobile".
 So you can allow access to webconference rooms using URLs such as:
 
   http://myserver.com/user-10/room-5/join
@@ -111,7 +111,7 @@ Files:
 * Images:
   * loading.gif
 
-JQuery is used in the views <tt>join_wait</tt> and <tt>invite</tt> and can be copied into your application with:
+JQuery is used in the views <tt>join</tt> and <tt>invite</tt> and can be copied into your application with:
 
   rails generate bigbluebutton_rails:public
 
@@ -141,6 +141,12 @@ can throw a BigBlueButtonException.
 
 These are pretty simple actions. <tt>running</tt> returns a json indicating if the conference is running or not, while <tt>end</tt> ends the meeting.
 
+==== <tt>join_mobile</tt>
+
+This is an action that simply renders a view with a {QR code}[http://code.google.com/apis/chart/image/docs/gallery/qr_codes.html] and a link to join the
+conference from a mobile device. The link and the QR code point to links using the protocol "bigbluebutton://", so it can be associated with a native mobile
+application that will open the conference (such as the {Android client for BigBlueButton}[https://github.com/mconf/mconf-mobile]).
+
 ==== <tt>join</tt>, <tt>invite</tt> and <tt>auth</tt>
 
 The actions used to redirect a user to join a room are <tt>join</tt> and <tt>invite</tt>, while <tt>auth</tt> is used by <tt>invite</tt> to authenticate
@@ -164,7 +170,7 @@ Internally, they use the same algorithm:
 * If the user is not a moderator (a normal attendee):
   * If the meeting is running, redirects the user to the meeting as an attendee.
   * Otherwise:
-    * <tt>join</tt> redirects to <tt>join_wait</tt>, to wait for a moderator before joining the conference. The page will continuously pool the server to check if the meeting is running. When it starts, it redirects the user to the conference.
+    * <tt>join</tt> renders the join view, to wait for a moderator before joining the conference. The page will continuously pool the server to check if the meeting is running. When it starts, it redirects the user to the conference.
     * <tt>invite</tt> renders the invite view again and shows a warning informing that the meeting is not running. The user must re-submit the form to try again.
 
 == Development

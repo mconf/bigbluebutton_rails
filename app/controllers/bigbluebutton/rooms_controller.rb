@@ -110,7 +110,6 @@ class Bigbluebutton::RoomsController < ApplicationController
     else
       join_internal(bigbluebutton_user.name, role, :join)
     end
-
   end
 
   # Used to join private rooms or to invited anonymous users (not logged)
@@ -177,6 +176,12 @@ class Bigbluebutton::RoomsController < ApplicationController
       redirect_to(bigbluebutton_server_room_path(@server, @room), :notice => message)
     end
 
+  end
+
+  def join_mobile
+    @room = BigbluebuttonRoom.find(params[:id])
+    @join_url = @room.join_url(bigbluebutton_user.name, bigbluebutton_role(@room))
+    @join_url.gsub!("http://", "bigbluebutton://")
   end
 
   protected

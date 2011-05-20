@@ -21,6 +21,7 @@ describe Bigbluebutton::RoomsController do
     it { should respond_with(:success) }
     it { should assign_to(:server).with(server) }
     it { should assign_to(:rooms).with(BigbluebuttonRoom.all) }
+    it { should render_template(:index) }
   end
 
   describe "#show" do
@@ -28,6 +29,7 @@ describe Bigbluebutton::RoomsController do
     it { should respond_with(:success) }
     it { should assign_to(:server).with(server) }
     it { should assign_to(:room).with(room) }
+    it { should render_template(:show) }
   end
 
   describe "#new" do
@@ -35,6 +37,7 @@ describe Bigbluebutton::RoomsController do
     it { should respond_with(:success) }
     it { should assign_to(:server).with(server) }
     it { should assign_to(:room).with_kind_of(BigbluebuttonRoom) }
+    it { should render_template(:new) }
   end
 
   describe "#edit" do
@@ -42,6 +45,25 @@ describe Bigbluebutton::RoomsController do
     it { should respond_with(:success) }
     it { should assign_to(:server).with(server) }
     it { should assign_to(:room).with(room) }
+    it { should render_template(:edit) }
+  end
+
+  describe "#join_mobile" do
+    let(:user) { Factory.build(:user) }
+    before {
+      mock_server_and_api
+      controller.stub(:bigbluebutton_user) { user }
+      controller.should_receive(:bigbluebutton_role).and_return(:moderator)
+      mocked_api.should_receive(:join_meeting_url).
+        with(room.meetingid, user.name, room.moderator_password).
+        and_return("http://join_url")
+    }
+    before(:each) { get :join_mobile, :server_id => mocked_server.to_param, :id => room.to_param }
+    it { should respond_with(:success) }
+    it { should assign_to(:server).with(mocked_server) }
+    it { should assign_to(:room).with(room) }
+    it { should assign_to(:join_url).with("bigbluebutton://join_url") }
+    it { should render_template(:join_mobile) }
   end
 
   describe "#create" do
@@ -369,7 +391,7 @@ describe Bigbluebutton::RoomsController do
 
     context "for an anonymous user" do
       before { controller.stub(:bigbluebutton_user).and_return(nil) }
-      
+
       context "with a role defined" do
         before { controller.stub(:bigbluebutton_role).and_return(:attendee) }
         before(:each) { get :invite, :server_id => mocked_server.to_param, :id => room.to_param }

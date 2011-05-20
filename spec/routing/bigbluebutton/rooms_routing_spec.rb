@@ -37,6 +37,10 @@ describe Bigbluebutton::RoomsController do
         should route_to(:controller => "bigbluebutton/rooms", :action => "join", :server_id => "1", :id => "1")
       }
       it {
+        {:get => "/#{prefix}/servers/1/rooms/1/join_mobile"}.
+        should route_to(:controller => "bigbluebutton/rooms", :action => "join_mobile", :server_id => "1", :id => "1")
+      }
+      it {
         {:get => "/#{prefix}/servers/1/rooms/1/running"}.
         should route_to(:controller => "bigbluebutton/rooms", :action => "running", :server_id => "1", :id => "1")
       }
@@ -65,6 +69,10 @@ describe Bigbluebutton::RoomsController do
         to(:action => :join, :user_id => "1", :id => "1")
     }
     it {
+      should route(:get, "/users/1/room/1/join_mobile").
+        to(:action => :join_mobile, :user_id => "1", :id => "1")
+    }
+    it {
       should route(:get, "/users/1/room/1/running").
         to(:action => :running, :user_id => "1", :id => "1")
     }
@@ -90,6 +98,10 @@ describe Bigbluebutton::RoomsController do
     it {
       { :get => "/users/1/spaces/2/room/3/join" }.
       should route_to(:controller => "bigbluebutton/rooms", :action => "join", :user_id => "1", :space_id => "2", :id => "3")
+    }
+    it {
+      { :get => "/users/1/spaces/2/room/3/join_mobile" }.
+      should route_to(:controller => "bigbluebutton/rooms", :action => "join_mobile", :user_id => "1", :space_id => "2", :id => "3")
     }
     it {
       { :get => "/users/1/spaces/2/room/3/running" }.

@@ -1,3 +1,5 @@
+* New action "join_mobile" that rendes a QR code to join the conference using the protocol "bigbluebutton://".
+
 == 0.0.4
 
 * A random voice_bridge with 5 digits (recommended) is set when a room is created.

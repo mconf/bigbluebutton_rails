@@ -52,18 +52,20 @@ module ActionDispatch::Routing
     #
     # The routes generated are:
     #
-    #   user_room          GET  /users/:user_id/room/:id(.:format)
-    #                           { :controller=>"bigbluebutton/rooms", :action=>"show" }
-    #   user_join_room     GET  /users/:user_id/room/:id/join(.:format)
-    #                           { :controller=>"bigbluebutton/rooms", :action=>"join" }
-    #   user_auth_room     POST /users/:user_id/room/:id/join(.:format)
-    #                           { :controller=>"bigbluebutton/rooms", :action=>"auth" }
-    #   user_running_room  GET  /users/:user_id/room/:id/running(.:format)
-    #                           { :controller=>"bigbluebutton/rooms", :action=>"running" }
-    #   user_end_room      GET  /users/:user_id/room/:id/end(.:format)
-    #                           { :controller=>"bigbluebutton/rooms", :action=>"end" }
-    #   user_invite_room   GET  /users/:user_id/room/:id/invite(.:format)
-    #                           { :controller=>"bigbluebutton/rooms", :action=>"invite" }
+    #   user_room               GET  /users/:user_id/room/:id(.:format)
+    #                                { :controller=>"bigbluebutton/rooms", :action=>"show" }
+    #   user_join_room          GET  /users/:user_id/room/:id/join(.:format)
+    #                                { :controller=>"bigbluebutton/rooms", :action=>"join" }
+    #   user_join_mobile_room   GET  /users/:user_id/room/:id/invite(.:format)
+    #                                { :controller=>"bigbluebutton/rooms", :action=>"invite" }
+    #   user_auth_room          POST /users/:user_id/room/:id/join(.:format)
+    #                                { :controller=>"bigbluebutton/rooms", :action=>"auth" }
+    #   user_running_room       GET  /users/:user_id/room/:id/running(.:format)
+    #                                { :controller=>"bigbluebutton/rooms", :action=>"running" }
+    #   user_end_room           GET  /users/:user_id/room/:id/end(.:format)
+    #                                { :controller=>"bigbluebutton/rooms", :action=>"end" }
+    #   user_invite_room        GET  /users/:user_id/room/:id/invite(.:format)
+    #                                { :controller=>"bigbluebutton/rooms", :action=>"invite" }
     #
     def bigbluebutton_routes(*params)
       options = params.extract_options!
@@ -84,6 +86,7 @@ module ActionDispatch::Routing
             get :running, :on => :member
             get :end, :on => :member
             get :invite, :on => :member
+            get :join_mobile, :on => :member
             post :join, :on => :member, :action => :auth
           end
         end
@@ -94,6 +97,7 @@ module ActionDispatch::Routing
       # TODO This is generating helpers like "user_running_room" instead of "running_user_room"
       get 'room/:id' => "#{BigbluebuttonRails.controllers[:rooms]}#show", :as => 'room'
       get 'room/:id/join' => "#{BigbluebuttonRails.controllers[:rooms]}#join", :as => 'join_room'
+      get 'room/:id/join_mobile' => "#{BigbluebuttonRails.controllers[:rooms]}#join_mobile", :as => 'join_mobile_room'
       post 'room/:id/join' => "#{BigbluebuttonRails.controllers[:rooms]}#auth", :as => 'join_room'
       get 'room/:id/running' => "#{BigbluebuttonRails.controllers[:rooms]}#running", :as => 'running_room'
       get 'room/:id/end' => "#{BigbluebuttonRails.controllers[:rooms]}#end", :as => 'end_room'
