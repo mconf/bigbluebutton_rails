@@ -213,7 +213,7 @@ class Bigbluebutton::RoomsController < ApplicationController
           join_url = @room.join_url(username, role)
           redirect_to(join_url)
         else
-          flash[:error] = t('bigbluebutton_rails.rooms.error.not_running')
+          flash[:error] = t('bigbluebutton_rails.rooms.error.auth.not_running')
           render :action => wait_action
         end
       end
