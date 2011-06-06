@@ -4,7 +4,7 @@ class Bigbluebutton::RoomsController < ApplicationController
 
   before_filter :find_server
   respond_to :html, :except => :running
-  respond_to :json, :only => :running
+  respond_to :json, :only => [:running, :show, :new, :index, :create, :update, :end, :destroy]
 
   def index
     # TODO restrict to rooms belonging to the selected server
@@ -35,11 +35,12 @@ class Bigbluebutton::RoomsController < ApplicationController
 
     respond_with @room do |format|
       if @room.save
+        message = t('bigbluebutton_rails.rooms.notice.create.success')
         format.html {
-          message = t('bigbluebutton_rails.rooms.notice.create.success')
           params[:redir_url] ||= bigbluebutton_server_room_path(@server, @room)
           redirect_to params[:redir_url], :notice => message
         }
+        format.json { render :json => @room, :status => :created }
       else
         format.html {
           unless params[:redir_url].blank?
@@ -49,6 +50,7 @@ class Bigbluebutton::RoomsController < ApplicationController
             render :action => "new"
           end
         }
+        format.json { render :json => @room.errors, :status => :unprocessable_entity }
       end
     end
   end
@@ -68,6 +70,7 @@ class Bigbluebutton::RoomsController < ApplicationController
           params[:redir_url] ||= bigbluebutton_server_room_path(@server, @room)
           redirect_to params[:redir_url], :notice => message
         }
+        format.json { head :ok }
       else
         format.html {
           unless params[:redir_url].blank?
@@ -77,6 +80,7 @@ class Bigbluebutton::RoomsController < ApplicationController
             render :action => "edit"
           end
         }
+        format.json { render :json => @room.errors, :status => :unprocessable_entity }
       end
     end
   end
@@ -86,17 +90,30 @@ class Bigbluebutton::RoomsController < ApplicationController
 
     # TODO Destroy the room record even if end_meeting failed?
 
+    error = false
     begin
       @room.fetch_is_running?
       @room.send_end if @room.is_running?
     rescue BigBlueButton::BigBlueButtonException => e
-      flash[:error] = e.to_s
+      error = true
+      message = e.to_s
       # TODO Better error message: "Room destroyed in DB, but not in BBB..."
     end
 
     @room.destroy
-    params[:redir_url] ||= bigbluebutton_server_rooms_url
-    redirect_to params[:redir_url]
+
+    respond_with do |format|
+      format.html {
+        flash[:error] = message if error
+        params[:redir_url] ||= bigbluebutton_server_rooms_url
+        redirect_to params[:redir_url]
+      }
+      if error
+        format.json { render :json => message, :status => :error }
+      else
+        format.json { head :ok }
+      end
+    end
   end
 
   # Used to join public rooms with a logged user.
@@ -161,19 +178,36 @@ class Bigbluebutton::RoomsController < ApplicationController
   def end
     @room = BigbluebuttonRoom.find(params[:id])
 
+    error = false
     begin
       @room.fetch_is_running?
       if @room.is_running?
         @room.send_end
         message = t('bigbluebutton_rails.rooms.notice.end.success')
       else
+        error = true
         message = t('bigbluebutton_rails.rooms.notice.end.not_running')
       end
     rescue BigBlueButton::BigBlueButtonException => e
-      flash[:error] = e.to_s
-      redirect_to request.referer
+      error = true
+      message = e.to_s
+    end
+
+    if error
+      respond_with do |format|
+        format.html {
+          flash[:error] = message
+          redirect_to request.referer
+        }
+        format.json { render :json => message, :status => :error }
+      end
     else
-      redirect_to(bigbluebutton_server_room_path(@server, @room), :notice => message)
+      respond_with do |format|
+        format.html {
+          redirect_to(bigbluebutton_server_room_path(@server, @room), :notice => message)
+        }
+        format.json { head :ok }
+      end
     end
 
   end

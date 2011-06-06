@@ -134,7 +134,7 @@ describe Bigbluebutton::RoomsController do
 
   describe "#update" do
     let(:new_room) { Factory.build(:bigbluebutton_room) }
-    before { @room = room }
+    before { @room = room } # need this to trigger let(:room) and actually create the room
 
     context "on success" do
       before :each do
@@ -381,6 +381,7 @@ describe Bigbluebutton::RoomsController do
     context "room is not running" do
       before { mocked_api.should_receive(:is_meeting_running?).and_return(false) }
       before(:each) { get :end, :server_id => mocked_server.to_param, :id => room.to_param }
+      it { should respond_with(:redirect) }
       it { should set_the_flash.to(I18n.t('bigbluebutton_rails.rooms.notice.end.not_running')) }
     end
   end
@@ -567,6 +568,7 @@ describe Bigbluebutton::RoomsController do
     it { should assign_to(:server).with(server) }
   end
 
+  # make sure that the exceptions thrown by bigbluebutton-api-ruby are treated by the controller
   context "exception handling" do
     let(:bbb_error_msg) { "err msg" }
     let(:bbb_error) { BigBlueButton::BigBlueButtonException.new(bbb_error_msg) }
@@ -672,6 +674,154 @@ describe Bigbluebutton::RoomsController do
     end # #join
 
   end # exception handling
+
+  # verify all JSON responses
+  context "json responses for " do
+    describe "#show" do
+      before(:each) { get :show, :server_id => server.to_param, :id => room.to_param, :format => 'json' }
+      it { should respond_with(:success) }
+      it { should respond_with_content_type(:json) }
+      it { response.body.should == room.to_json }
+    end
+
+    describe "#new" do
+      before(:each) { get :new, :server_id => server.to_param, :format => 'json' }
+      it { should respond_with(:success) }
+      it { should respond_with_content_type(:json) }
+      it {
+        # we ignore all values bc a BigbluebuttonRoom is generated with some
+        # random values (meetingid, voice_bridge)
+        should respond_with_json(BigbluebuttonRoom.new.to_json).ignoring_values
+      }
+    end
+
+    describe "#index" do
+      before do
+        @room1 = Factory.create(:bigbluebutton_room, :server => server)
+        @room2 = Factory.create(:bigbluebutton_room, :server => server)
+      end
+      before(:each) { get :index, :server_id => server.to_param, :format => 'json' }
+      it { should respond_with(:success) }
+      it { should respond_with_content_type(:json) }
+      it { should respond_with_json([@room1, @room2].to_json) }
+    end
+
+    describe "#create" do
+      let(:new_room) { Factory.build(:bigbluebutton_room, :server => server) }
+
+      context "on success" do
+        before(:each) {
+          post :create, :server_id => server.to_param, :bigbluebutton_room => new_room.attributes, :format => 'json'
+        }
+        it { should respond_with(:created) }
+        it { should respond_with_content_type(:json) }
+        it { should respond_with_json(new_room.to_json).ignoring_attributes }
+      end
+
+      context "on failure" do
+        before(:each) {
+          new_room.name = nil # invalid
+          post :create, :server_id => server.to_param, :bigbluebutton_room => new_room.attributes, :format => 'json'
+        }
+        it { should respond_with(:unprocessable_entity) }
+        it { should respond_with_content_type(:json) }
+        it {
+          new_room.save # should fail
+          should respond_with_json(new_room.errors.to_json)
+        }
+      end
+    end
+
+    describe "#update" do
+      let(:new_room) { Factory.build(:bigbluebutton_room) }
+      before { @room = room }
+
+      context "on success" do
+        before(:each) {
+          put :update, :server_id => server.to_param, :id => @room.to_param, :bigbluebutton_room => new_room.attributes, :format => 'json'
+        }
+        it { should respond_with(:success) }
+        it { should respond_with_content_type(:json) }
+      end
+
+      context "on failure" do
+        before(:each) {
+          new_room.name = nil # invalid
+          put :update, :server_id => server.to_param, :id => @room.to_param, :bigbluebutton_room => new_room.attributes, :format => 'json'
+        }
+        it { should respond_with(:unprocessable_entity) }
+        it { should respond_with_content_type(:json) }
+        it {
+          new_room.save # should fail
+          should respond_with_json(new_room.errors.to_json)
+        }
+      end
+    end
+
+    describe "#end" do
+      before { mock_server_and_api }
+
+      context "room is running" do
+        before {
+          mocked_api.should_receive(:is_meeting_running?).and_return(true)
+          mocked_api.should_receive(:end_meeting).with(room.meetingid, room.moderator_password)
+        }
+        before(:each) { get :end, :server_id => mocked_server.to_param, :id => room.to_param, :format => 'json' }
+        it { should respond_with(:success) }
+        it { should respond_with_content_type(:json) }
+      end
+
+      context "room is not running" do
+        before { mocked_api.should_receive(:is_meeting_running?).and_return(false) }
+        before(:each) { get :end, :server_id => mocked_server.to_param, :id => room.to_param, :format => 'json' }
+        it { should respond_with(:error) }
+        it { should respond_with_content_type(:json) }
+        it { should respond_with_json(I18n.t('bigbluebutton_rails.rooms.notice.end.not_running')) }
+      end
+
+      context "throwing an exception" do
+        let(:msg) { "any error message" }
+        before {
+          mocked_api.should_receive(:is_meeting_running?).and_return{ raise BigBlueButton::BigBlueButtonException.new(msg) }
+        }
+        before(:each) { get :end, :server_id => mocked_server.to_param, :id => room.to_param, :format => 'json' }
+        it { should respond_with(:error) }
+        it { should respond_with_content_type(:json) }
+        it { should respond_with_json(msg) }
+      end
+
+    end
+
+    describe "#destroy" do
+      before { mock_server_and_api }
+
+      context "on success" do
+        before {
+          mocked_api.should_receive(:is_meeting_running?).and_return(true)
+          mocked_api.should_receive(:end_meeting)
+        }
+        before(:each) {
+          delete :destroy, :server_id => mocked_server.to_param, :id => room.to_param, :format => 'json'
+        }
+        it { should respond_with(:success) }
+        it { should respond_with_content_type(:json) }
+      end
+
+      context "throwing error" do
+        let(:msg) { "any error message" }
+        before {
+          mocked_api.should_receive(:is_meeting_running?).and_return{ raise BigBlueButton::BigBlueButtonException.new(msg) }
+        }
+        before(:each) {
+          delete :destroy, :server_id => mocked_server.to_param, :id => room.to_param, :format => 'json'
+        }
+        it { should respond_with(:error) }
+        it { should respond_with_content_type(:json) }
+        it { should respond_with_json(msg) }
+      end
+    end
+
+  end # json responses
 
 end
 
