@@ -510,7 +510,7 @@ describe Bigbluebutton::RoomsController do
           post :auth, :server_id => mocked_server.to_param, :id => room.to_param, :user => hash
           should respond_with(:success)
           should render_template(:invite)
-          should set_the_flash.to(I18n.t('bigbluebutton_rails.rooms.error.not_running'))
+          should set_the_flash.to(I18n.t('bigbluebutton_rails.rooms.error.auth.not_running'))
         end
       end
 
