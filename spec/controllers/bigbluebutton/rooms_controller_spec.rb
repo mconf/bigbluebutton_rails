@@ -677,11 +677,15 @@ describe Bigbluebutton::RoomsController do
 
   # verify all JSON responses
   context "json responses for " do
-    describe "#show" do
-      before(:each) { get :show, :server_id => server.to_param, :id => room.to_param, :format => 'json' }
+    describe "#index" do
+      before do
+        @room1 = Factory.create(:bigbluebutton_room, :server => server)
+        @room2 = Factory.create(:bigbluebutton_room, :server => server)
+      end
+      before(:each) { get :index, :server_id => server.to_param, :format => 'json' }
       it { should respond_with(:success) }
       it { should respond_with_content_type(:json) }
-      it { response.body.should == room.to_json }
+      it { should respond_with_json([@room1, @room2].to_json) }
     end
 
     describe "#new" do
@@ -695,15 +699,11 @@ describe Bigbluebutton::RoomsController do
       }
     end
 
-    describe "#index" do
-      before do
-        @room1 = Factory.create(:bigbluebutton_room, :server => server)
-        @room2 = Factory.create(:bigbluebutton_room, :server => server)
-      end
-      before(:each) { get :index, :server_id => server.to_param, :format => 'json' }
+    describe "#show" do
+      before(:each) { get :show, :server_id => server.to_param, :id => room.to_param, :format => 'json' }
       it { should respond_with(:success) }
       it { should respond_with_content_type(:json) }
-      it { should respond_with_json([@room1, @room2].to_json) }
+      it { should respond_with_json(room.to_json) }
     end
 
     describe "#create" do
