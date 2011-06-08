@@ -1,6 +1,7 @@
 class Bigbluebutton::ServersController < ApplicationController
 
   respond_to :html
+  respond_to :json, :only => [:index, :show, :new, :create, :update, :destroy]
 
   def index
     respond_with(@servers = BigbluebuttonServer.all)
@@ -27,8 +28,10 @@ class Bigbluebutton::ServersController < ApplicationController
           message = t('bigbluebutton_rails.servers.notice.create.success')
           redirect_to(@server, :notice => message)
         }
+        format.json { render :json => @server, :status => :created }
       else
         format.html { render :action => "new" }
+        format.json { render :json => @server.errors, :status => :unprocessable_entity }
       end
     end
   end
@@ -42,8 +45,10 @@ class Bigbluebutton::ServersController < ApplicationController
           message = t('bigbluebutton_rails.servers.notice.update.success')
           redirect_to(@server, :notice => message)
         }
+        format.json { head :ok }
       else
         format.html { render :action => "edit" }
+        format.json { render :json => @server.errors, :status => :unprocessable_entity }
       end
     end
   end
@@ -51,6 +56,10 @@ class Bigbluebutton::ServersController < ApplicationController
   def destroy
     @server = BigbluebuttonServer.find(params[:id])
     @server.destroy
-    redirect_to(bigbluebutton_servers_url)
+
+    respond_with do |format|
+      format.html { redirect_to(bigbluebutton_servers_url) }
+      format.json { head :ok }
+    end
   end
 end
