@@ -47,7 +47,8 @@ describe BigbluebuttonRoom do
     it { should validate_presence_of(:meetingid) }
     it { should validate_presence_of(:voice_bridge) }
     it { should validate_presence_of(:name) }
-
+    
+    
     it { should be_boolean(:private) }
     it { should be_boolean(:randomize_meetingid) }
 
@@ -400,6 +401,25 @@ describe BigbluebuttonRoom do
 
     end
 
-  end
+    context "validation of passwords" do
+      #private
+      let (:pvtroom) {Factory.build(:bigbluebutton_room, :private => true)} 
+      
+      it {pvtroom.moderator_password = ''
+          pvtroom.should_not be_valid}
+      it {pvtroom.attendee_password = '' 
+          pvtroom.should_not be_valid}
+      
+      let(:publicroom) {Factory.build(:bigbluebutton_room, :private => false)}    
+      
+      it {publicroom.moderator_password = ''
+        publicroom.should be_valid}
+      it {publicroom.attendee_password = '' 
+        publicroom.should be_valid}
 
+
+    end
+
+  end
+  
 end

@@ -16,6 +16,8 @@ class BigbluebuttonRoom < ActiveRecord::Base
 
   # Passwords are 16 character strings
   # See http://groups.google.com/group/bigbluebutton-dev/browse_thread/thread/9be5aae1648bcab?pli=1
+  validates :attendee_password, :presence => true, :if => :private?
+  validates :moderator_password, :presence => true, :if => :private?
   validates :attendee_password, :length => { :maximum => 16 }
   validates :moderator_password, :length => { :maximum => 16 }
 
