@@ -715,7 +715,7 @@ describe Bigbluebutton::RoomsController do
         }
         it { should respond_with(:created) }
         it { should respond_with_content_type(:json) }
-        it { should respond_with_json(new_room.to_json).ignoring_attributes }
+        it { should respond_with_json(I18n.t('bigbluebutton_rails.rooms.notice.create.success')) }
       end
 
       context "on failure" do
@@ -742,6 +742,7 @@ describe Bigbluebutton::RoomsController do
         }
         it { should respond_with(:success) }
         it { should respond_with_content_type(:json) }
+        it { should respond_with_json(I18n.t('bigbluebutton_rails.rooms.notice.update.success')) }
       end
 
       context "on failure" do
@@ -769,6 +770,7 @@ describe Bigbluebutton::RoomsController do
         before(:each) { get :end, :server_id => mocked_server.to_param, :id => room.to_param, :format => 'json' }
         it { should respond_with(:success) }
         it { should respond_with_content_type(:json) }
+        it { should respond_with_json(I18n.t('bigbluebutton_rails.rooms.notice.end.success')) }
       end
 
       context "room is not running" do
@@ -805,6 +807,7 @@ describe Bigbluebutton::RoomsController do
         }
         it { should respond_with(:success) }
         it { should respond_with_content_type(:json) }
+        it { should respond_with_json(I18n.t('bigbluebutton_rails.rooms.notice.destroy.success')) }
       end
 
       context "throwing error" do

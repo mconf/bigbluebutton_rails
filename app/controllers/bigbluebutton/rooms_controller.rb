@@ -40,7 +40,7 @@ class Bigbluebutton::RoomsController < ApplicationController
           params[:redir_url] ||= bigbluebutton_server_room_path(@server, @room)
           redirect_to params[:redir_url], :notice => message
         }
-        format.json { render :json => @room, :status => :created }
+        format.json { render :json => message, :status => :created }
       else
         format.html {
           unless params[:redir_url].blank?
@@ -65,12 +65,12 @@ class Bigbluebutton::RoomsController < ApplicationController
 
     respond_with @room do |format|
       if @room.update_attributes(params[:bigbluebutton_room])
+        message = t('bigbluebutton_rails.rooms.notice.update.success')
         format.html {
-          message = t('bigbluebutton_rails.rooms.notice.update.success')
           params[:redir_url] ||= bigbluebutton_server_room_path(@server, @room)
           redirect_to params[:redir_url], :notice => message
         }
-        format.json { head :ok }
+        format.json { render :json => message }
       else
         format.html {
           unless params[:redir_url].blank?
@@ -111,7 +111,8 @@ class Bigbluebutton::RoomsController < ApplicationController
       if error
         format.json { render :json => message, :status => :error }
       else
-        format.json { head :ok }
+        message = t('bigbluebutton_rails.rooms.notice.destroy.success')
+        format.json { render :json => message }
       end
     end
   end
@@ -206,7 +207,7 @@ class Bigbluebutton::RoomsController < ApplicationController
         format.html {
           redirect_to(bigbluebutton_server_room_path(@server, @room), :notice => message)
         }
-        format.json { head :ok }
+        format.json { render :json => message }
       end
     end
 
