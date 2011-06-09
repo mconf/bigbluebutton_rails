@@ -123,7 +123,7 @@ describe Bigbluebutton::ServersController do
         it { should respond_with_content_type(:json) }
         it {
           new_server.save # should fail
-          should respond_with_json(new_server.errors.to_json)
+          should respond_with_json(new_server.errors.full_messages.to_json)
         }
       end
     end
@@ -149,7 +149,7 @@ describe Bigbluebutton::ServersController do
         it { should respond_with_content_type(:json) }
         it {
           new_server.save # should fail
-          should respond_with_json(new_server.errors.to_json)
+          should respond_with_json(new_server.errors.full_messages.to_json)
         }
       end
     end

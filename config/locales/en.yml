@@ -7,6 +7,8 @@ en:
           success: "Your server was successfully created."
         update:
           success: "Your server was successfully updated."
+      errors:
+        url_format: 'should use the pattern http://<server>/bigbluebutton/api'
     rooms:
       notice:
         create:
@@ -27,7 +29,7 @@ en:
     models:
       bigbluebutton_server: "BigBlueButton Server"
       bigbluebutton_room: "BigBlueButton Room"
-    attributes: 
+    attributes:
       bigbluebutton_server:
         name: "Name"
         url: "URL"

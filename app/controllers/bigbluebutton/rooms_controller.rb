@@ -50,7 +50,7 @@ class Bigbluebutton::RoomsController < ApplicationController
             render :action => "new"
           end
         }
-        format.json { render :json => @room.errors, :status => :unprocessable_entity }
+        format.json { render :json => @room.errors.full_messages, :status => :unprocessable_entity }
       end
     end
   end
@@ -80,7 +80,7 @@ class Bigbluebutton::RoomsController < ApplicationController
             render :action => "edit"
           end
         }
-        format.json { render :json => @room.errors, :status => :unprocessable_entity }
+        format.json { render :json => @room.errors.full_messages, :status => :unprocessable_entity }
       end
     end
   end

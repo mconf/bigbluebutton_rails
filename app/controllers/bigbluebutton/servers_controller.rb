@@ -31,7 +31,7 @@ class Bigbluebutton::ServersController < ApplicationController
         format.json { render :json => @server, :status => :created }
       else
         format.html { render :action => "new" }
-        format.json { render :json => @server.errors, :status => :unprocessable_entity }
+        format.json { render :json => @server.errors.full_messages, :status => :unprocessable_entity }
       end
     end
   end
@@ -48,7 +48,7 @@ class Bigbluebutton::ServersController < ApplicationController
         format.json { head :ok }
       else
         format.html { render :action => "edit" }
-        format.json { render :json => @server.errors, :status => :unprocessable_entity }
+        format.json { render :json => @server.errors.full_messages, :status => :unprocessable_entity }
       end
     end
   end

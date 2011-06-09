@@ -8,7 +8,7 @@ class BigbluebuttonServer < ActiveRecord::Base
 
   validates :url, :presence => true, :uniqueness => true, :length => { :maximum => 500 }
   validates :url, :format => { :with => /http:\/\/.*\/bigbluebutton\/api/,
-    :message => 'URL should have the pattern http://<server>/bigbluebutton/api' }
+            :message => I18n.t('bigbluebutton_rails.servers.errors.url_format') }
 
   validates :salt, :presence => true, :length => { :minimum => 1, :maximum => 500 }
 

@@ -727,7 +727,7 @@ describe Bigbluebutton::RoomsController do
         it { should respond_with_content_type(:json) }
         it {
           new_room.save # should fail
-          should respond_with_json(new_room.errors.to_json)
+          should respond_with_json(new_room.errors.full_messages.to_json)
         }
       end
     end
@@ -753,7 +753,7 @@ describe Bigbluebutton::RoomsController do
         it { should respond_with_content_type(:json) }
         it {
           new_room.save # should fail
-          should respond_with_json(new_room.errors.to_json)
+          should respond_with_json(new_room.errors.full_messages.to_json)
         }
       end
     end
