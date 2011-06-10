@@ -757,7 +757,10 @@ describe Bigbluebutton::RoomsController do
         }
         it { should respond_with(:created) }
         it { should respond_with_content_type(:json) }
-        it { should respond_with_json(I18n.t('bigbluebutton_rails.rooms.notice.create.success')) }
+        it {
+          json = { :message => I18n.t('bigbluebutton_rails.rooms.notice.create.success') }.to_json
+          should respond_with_json(json)
+        }
       end
 
       context "on failure" do
@@ -784,7 +787,10 @@ describe Bigbluebutton::RoomsController do
         }
         it { should respond_with(:success) }
         it { should respond_with_content_type(:json) }
-        it { should respond_with_json(I18n.t('bigbluebutton_rails.rooms.notice.update.success')) }
+        it {
+          json = { :message => I18n.t('bigbluebutton_rails.rooms.notice.update.success') }.to_json
+          should respond_with_json(json)
+        }
       end
 
       context "on failure" do
@@ -849,7 +855,10 @@ describe Bigbluebutton::RoomsController do
         }
         it { should respond_with(:success) }
         it { should respond_with_content_type(:json) }
-        it { should respond_with_json(I18n.t('bigbluebutton_rails.rooms.notice.destroy.success')) }
+        it {
+          json = { :message => I18n.t('bigbluebutton_rails.rooms.notice.destroy.success') }.to_json
+          should respond_with_json(json)
+        }
       end
 
       context "throwing error" do
@@ -862,7 +871,7 @@ describe Bigbluebutton::RoomsController do
         }
         it { should respond_with(:error) }
         it { should respond_with_content_type(:json) }
-        it { should respond_with_json(msg) }
+        it { should respond_with_json({ :message => msg }.to_json) }
       end
     end
 
