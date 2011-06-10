@@ -117,14 +117,18 @@ class Bigbluebutton::RoomsController < ApplicationController
     end
   end
 
-  # Used to join public rooms with a logged user.
+  # Used by logged users to join public rooms.
   def join
     @room = BigbluebuttonRoom.find(params[:id])
 
-    # anonymous users or users without a role join through #invite
     role = bigbluebutton_role(@room)
-    if bigbluebutton_user.nil? or role.nil?
+    if role.nil?
+      raise BigbluebuttonRails::RoomAccessDenied.new
+
+    # anonymous users or users with the role :password join through #invite
+    elsif bigbluebutton_user.nil? or role == :password
       redirect_to :action => :invite
+
     else
       join_internal(bigbluebutton_user.name, role, :join)
     end
@@ -136,9 +140,14 @@ class Bigbluebutton::RoomsController < ApplicationController
 
     respond_with @room do |format|
 
+      role = bigbluebutton_role(@room)
+      if role.nil?
+        raise BigbluebuttonRails::RoomAccessDenied.new
+
       # if there's already a logged user with a role in the room, join through #join
-      unless bigbluebutton_user.nil? or bigbluebutton_role(@room).nil?
+      elsif !bigbluebutton_user.nil? and role != :password
         format.html { redirect_to :action => :join }
+
       else
         format.html
       end
@@ -149,6 +158,8 @@ class Bigbluebutton::RoomsController < ApplicationController
   # Authenticates an user using name and password passed in the params from #invite
   def auth
     @room = BigbluebuttonRoom.find(params[:id])
+
+    raise BigbluebuttonRails::RoomAccessDenied.new if bigbluebutton_role(@room).nil?
 
     # if there's a user logged, use his name instead of the name in the params
     name = bigbluebutton_user.nil? ? params[:user][:name] : bigbluebutton_user.name

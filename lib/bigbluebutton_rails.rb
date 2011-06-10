@@ -6,6 +6,7 @@ module BigbluebuttonRails
   require 'bigbluebutton_rails/rails'
   require 'bigbluebutton_rails/controller_methods'
   require 'bigbluebutton_rails/rails/routes'
+  require 'bigbluebutton_rails/exceptions'
 
   # Default controllers to generate the routes
   mattr_accessor :controllers

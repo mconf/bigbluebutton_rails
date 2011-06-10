@@ -262,14 +262,24 @@ describe Bigbluebutton::RoomsController do
       }
     end
 
-    context "for a user without a role" do
+    context "when the user's role" do
       before { controller.stub(:bigbluebutton_user) { user } }
-      before { controller.stub(:bigbluebutton_role) { nil } }
-      before(:each) { get :join, :server_id => mocked_server.to_param, :id => room.to_param }
-      it {
-        should respond_with(:redirect)
-        should redirect_to(invite_bigbluebutton_server_room_path(mocked_server, room))
-      }
+
+      context "should be defined with a password" do
+        before { controller.stub(:bigbluebutton_role) { :password } }
+        before(:each) { get :join, :server_id => mocked_server.to_param, :id => room.to_param }
+        it { should respond_with(:redirect) }
+        it { should redirect_to(invite_bigbluebutton_server_room_path(mocked_server, room)) }
+      end
+
+      context "is undefined, the access should be blocked" do
+        before { controller.stub(:bigbluebutton_role) { nil } }
+        it {
+          lambda {
+            get :join, :server_id => mocked_server.to_param, :id => room.to_param
+          }.should raise_error(BigbluebuttonRails::RoomAccessDenied)
+        }
+      end
     end
 
     context do
@@ -401,12 +411,23 @@ describe Bigbluebutton::RoomsController do
         it { should assign_to(:room).with(room) }
       end
 
-      context "without a role" do
-        before { controller.stub(:bigbluebutton_role).and_return(nil) }
-        before(:each) { get :invite, :server_id => mocked_server.to_param, :id => room.to_param }
-        it { should respond_with(:success) }
-        it { should render_template(:invite) }
-        it { should assign_to(:room).with(room) }
+      context "when the user's role" do
+        context "should be defined with a password" do
+          before { controller.stub(:bigbluebutton_role) { :password } }
+          before(:each) { get :invite, :server_id => mocked_server.to_param, :id => room.to_param }
+          it { should respond_with(:success) }
+          it { should render_template(:invite) }
+          it { should assign_to(:room).with(room) }
+        end
+
+        context "is undefined, the access should be blocked" do
+          before { controller.stub(:bigbluebutton_role) { nil } }
+          it {
+            lambda {
+              get :invite, :server_id => mocked_server.to_param, :id => room.to_param
+            }.should raise_error(BigbluebuttonRails::RoomAccessDenied)
+          }
+        end
       end
     end
 
@@ -420,12 +441,23 @@ describe Bigbluebutton::RoomsController do
         it { should redirect_to(join_bigbluebutton_server_room_path(mocked_server, room)) }
       end
 
-      context "without a role" do
-        before { controller.stub(:bigbluebutton_role).and_return(nil) }
-        before(:each) { get :invite, :server_id => mocked_server.to_param, :id => room.to_param }
-        it { should respond_with(:success) }
-        it { should render_template(:invite) }
-        it { should assign_to(:room).with(room) }
+      context "when the user's role" do
+        context "should be defined with a password" do
+          before { controller.stub(:bigbluebutton_role) { :password } }
+          before(:each) { get :invite, :server_id => mocked_server.to_param, :id => room.to_param }
+          it { should respond_with(:success) }
+          it { should render_template(:invite) }
+          it { should assign_to(:room).with(room) }
+        end
+
+        context "is undefined, the access should be blocked" do
+          before { controller.stub(:bigbluebutton_role) { nil } }
+          it {
+            lambda {
+              get :invite, :server_id => mocked_server.to_param, :id => room.to_param
+            }.should raise_error(BigbluebuttonRails::RoomAccessDenied)
+          }
+        end
       end
     end
 
@@ -437,6 +469,16 @@ describe Bigbluebutton::RoomsController do
       mock_server_and_api
       controller.stub(:bigbluebutton_user).and_return(nil)
     }
+
+    context "block access if bigbluebutton_role returns nil" do
+      let(:hash) { { :name => "Elftor", :password => room.attendee_password } }
+      before { controller.stub(:bigbluebutton_role) { nil } }
+      it {
+        lambda {
+          post :auth, :server_id => mocked_server.to_param, :id => room.to_param, :user => hash
+        }.should raise_error(BigbluebuttonRails::RoomAccessDenied)
+      }
+    end
 
     context "if there's a user logged, should use it's name" do
       let(:hash) { { :name => "Elftor", :password => room.attendee_password } }

@@ -1,3 +1,6 @@
+* New return values for bigbluebutton_role: :password and nil.
+* Private rooms now require a password to be valid.
+* Added json responses for most of the actions.
 * New action "join_mobile" that rendes a QR code to join the conference using the protocol "bigbluebutton://".
 
 == 0.0.4
