@@ -100,8 +100,8 @@ describe BigbluebuttonServer do
 
     context "fetching info from bbb" do
       let(:server) { Factory.create(:bigbluebutton_server) }
-      let(:room1) { Factory.create(:bigbluebutton_room, :server => server, :meetingid => "room1") }
-      let(:room2) { Factory.create(:bigbluebutton_room, :server => server, :meetingid => "room2") }
+      let(:room1) { Factory.create(:bigbluebutton_room, :server => server, :meetingid => "room1", :randomize_meetingid => true) }
+      let(:room2) { Factory.create(:bigbluebutton_room, :server => server, :meetingid => "room2", :randomize_meetingid => true) }
       before {
         @api_mock = mock(BigBlueButton::BigBlueButtonApi)
         server.stub(:api).and_return(@api_mock)
@@ -136,6 +136,7 @@ describe BigbluebuttonServer do
         server.meetings[0].running.should == true
         server.meetings[0].new_record?.should be_false
         server.meetings[0].external.should be_false
+        server.meetings[0].randomize_meetingid.should be_true
 
         server.meetings[1].should == room2
         server.meetings[1].attendee_password.should == "pass"
@@ -143,6 +144,7 @@ describe BigbluebuttonServer do
         server.meetings[1].running.should == false
         server.meetings[1].new_record?.should be_false
         server.meetings[1].external.should be_false
+        server.meetings[1].randomize_meetingid.should be_true
 
         server.meetings[2].meetingid.should == "im not in the db"
         server.meetings[2].server.should == server
@@ -151,6 +153,7 @@ describe BigbluebuttonServer do
         server.meetings[2].running.should == true
         server.meetings[2].new_record?.should be_false
         server.meetings[2].external.should be_true
+        server.meetings[2].randomize_meetingid.should be_false
       end
 
     end
