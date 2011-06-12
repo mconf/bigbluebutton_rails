@@ -110,9 +110,9 @@ describe BigbluebuttonServer do
       # the hashes should be exactly as returned by bigbluebutton-api-ruby to be sure we are testing it right
       let(:meetings) {
         [
-         { :meetingID => room1.meetingid, :attendeePW=>"ap", :moderatorPW=>"mp", :hasBeenForciblyEnded => false, :running => true},
-         { :meetingID => room2.meetingid, :attendeePW=>"pass", :moderatorPW=>"pass", :hasBeenForciblyEnded => true, :running => false},
-         { :meetingID => "im not in the db", :attendeePW=>"pass", :moderatorPW=>"pass", :hasBeenForciblyEnded => true, :running => true}
+         { :meetingID => room1.meetingid, :attendeePW => "ap", :moderatorPW => "mp", :hasBeenForciblyEnded => false, :running => true},
+         { :meetingID => room2.meetingid, :attendeePW => "pass", :moderatorPW => "pass", :hasBeenForciblyEnded => true, :running => false},
+         { :meetingID => "im not in the db", :attendeePW => "pass", :moderatorPW => "pass", :hasBeenForciblyEnded => true, :running => true}
         ]
       }
       let(:hash) {
@@ -134,18 +134,23 @@ describe BigbluebuttonServer do
         server.meetings[0].attendee_password.should == "ap"
         server.meetings[0].moderator_password.should == "mp"
         server.meetings[0].running.should == true
+        server.meetings[0].new_record?.should be_false
+        server.meetings[0].external.should be_false
 
         server.meetings[1].should == room2
         server.meetings[1].attendee_password.should == "pass"
         server.meetings[1].moderator_password.should == "pass"
         server.meetings[1].running.should == false
+        server.meetings[1].new_record?.should be_false
+        server.meetings[1].external.should be_false
 
         server.meetings[2].meetingid.should == "im not in the db"
         server.meetings[2].server.should == server
-        server.meetings[2].new_record?.should be_true
         server.meetings[2].attendee_password.should == "pass"
         server.meetings[2].moderator_password.should == "pass"
         server.meetings[2].running.should == true
+        server.meetings[2].new_record?.should be_false
+        server.meetings[2].external.should be_true
       end
 
     end

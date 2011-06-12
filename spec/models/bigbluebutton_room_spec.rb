@@ -21,17 +21,16 @@ describe BigbluebuttonRoom do
     it { should have_db_column(:max_participants).of_type(:integer) }
     it { should have_db_column(:private).of_type(:boolean) }
     it { should have_db_column(:randomize_meetingid).of_type(:boolean) }
+    it { should have_db_column(:external).of_type(:boolean) }
     it { should have_db_index(:server_id) }
     it { should have_db_index(:meetingid).unique(true) }
     it { should have_db_index(:voice_bridge).unique(true) }
-    it {
+    it "default values" do
       room = BigbluebuttonRoom.new
       room.private.should be_false
-    }
-    it {
-      room = BigbluebuttonRoom.new
       room.randomize_meetingid.should be_true
-    }
+      room.external.should be_false
+    end
   end
 
   context do
@@ -47,7 +46,6 @@ describe BigbluebuttonRoom do
     it { should validate_presence_of(:meetingid) }
     it { should validate_presence_of(:voice_bridge) }
     it { should validate_presence_of(:name) }
-    
     
     it { should be_boolean(:private) }
     it { should be_boolean(:randomize_meetingid) }
@@ -77,7 +75,7 @@ describe BigbluebuttonRoom do
 
     # attr_accessors
     [:running, :participant_count, :moderator_count, :attendees,
-     :has_been_forcibly_ended, :start_time, :end_time].each do |attr|
+     :has_been_forcibly_ended, :start_time, :end_time, :external].each do |attr|
       it { should respond_to(attr) }
       it { should respond_to("#{attr}=") }
     end

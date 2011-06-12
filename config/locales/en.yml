@@ -50,4 +50,5 @@ en:
         dial_number: "Dial Number"
         voice_bridge: "Voice Bridge"
         max_participants: "Maximum Number of Participants"
+        external: "Creted by another system"
 

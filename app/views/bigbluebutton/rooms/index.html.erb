@@ -14,6 +14,7 @@
     <th><%= BigbluebuttonRoom.human_attribute_name(:dial_number) %></th>
     <th><%= BigbluebuttonRoom.human_attribute_name(:voice_bridge) %></th>
     <th><%= BigbluebuttonRoom.human_attribute_name(:max_participants) %></th>
+    <th><%= BigbluebuttonRoom.human_attribute_name(:external) %></th>
     <th></th>
     <th></th>
     <th></th>
@@ -33,6 +34,7 @@
     <td><%= room.dial_number %></td>
     <td><%= room.voice_bridge %></td>
     <td><%= room.max_participants %></td>
+    <td><%= room.external %></td>
     <td><%= link_to 'Show', bigbluebutton_server_room_path(@server, room) %></td>
     <td><%= link_to 'Edit', edit_bigbluebutton_server_room_path(@server, room) %></td>
     <td><%= link_to 'Destroy', bigbluebutton_server_room_path(@server, room), :confirm => 'Are you sure?', :method => :delete %></td>

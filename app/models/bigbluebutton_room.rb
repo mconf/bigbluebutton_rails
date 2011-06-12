@@ -23,7 +23,8 @@ class BigbluebuttonRoom < ActiveRecord::Base
 
   attr_accessible :name, :server_id, :meetingid, :attendee_password, :moderator_password,
                   :welcome_msg, :owner, :server, :private, :logout_url, :dial_number,
-                  :voice_bridge, :max_participants, :owner_id, :owner_type, :randomize_meetingid
+                  :voice_bridge, :max_participants, :owner_id, :owner_type, :randomize_meetingid,
+                  :external
 
   # Note: these params need to be fetched from the server before being accessed
   attr_accessor :running, :participant_count, :moderator_count, :attendees,
