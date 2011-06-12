@@ -19,6 +19,30 @@ class Bigbluebutton::ServersController < ApplicationController
     respond_with(@server = BigbluebuttonServer.find(params[:id]))
   end
 
+  def activity
+    @server = BigbluebuttonServer.find(params[:id])
+    # @new_meetings = @server.rooms
+    @server.fetch_meetings
+    # @new_meetings = @server.meetings.reject{ |r|
+    #  i = @new_meetings.index(r)
+    #  i.nil? ? false : r.attr_equal?(@new_meetings[i])
+    #}
+    @server.meetings.each do |meeting|
+      meeting.fetch_meeting_info
+    end
+
+    # TODO catch exceptions
+
+    if params[:update_list]
+      render :partial => 'activity_list'
+      return
+    end
+
+    # TODO json response
+
+    respond_with(@server)
+  end
+
   def create
     @server = BigbluebuttonServer.new(params[:bigbluebutton_server])
 

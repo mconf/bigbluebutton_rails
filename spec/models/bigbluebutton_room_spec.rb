@@ -92,6 +92,42 @@ describe BigbluebuttonRoom do
       it { room.user_role({ :not_password => "any" }).should == nil }
     end
 
+    describe "#instance_variables_compare" do
+      let(:room) { Factory.create(:bigbluebutton_room) }
+      let(:room2) { BigbluebuttonRoom.last }
+      it { should respond_to(:instance_variables_compare) }
+      it { room.instance_variables_compare(room2).should be_empty }
+      it "compares instance variables" do
+        room2.running = !room.running
+        room.instance_variables_compare(room2).should_not be_empty
+        room.instance_variables_compare(room2).should include(:@running)
+      end
+      it "ignores attributes" do
+        room2.private = !room.private
+        room.instance_variables_compare(room2).should be_empty
+      end
+    end
+
+    describe "#attr_equal?" do
+      before { Factory.create(:bigbluebutton_room) }
+      let(:room) { BigbluebuttonRoom.last }
+      let(:room2) { BigbluebuttonRoom.last }
+      it { should respond_to(:attr_equal?) }
+      it { room.attr_equal?(room2).should be_true }
+      it "compares instance variables" do
+        room2.running = !room.running
+        room.attr_equal?(room2).should be_false
+      end
+      it "compares attributes" do
+        room2.private = !room.private
+        room.attr_equal?(room2).should be_false
+      end
+      it "compares objects" do
+        room2 = room.clone
+        room.attr_equal?(room2).should be_false
+      end
+    end
+
     context "initializes" do
       let(:room) { BigbluebuttonRoom.new }
 

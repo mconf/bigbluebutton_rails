@@ -158,6 +158,26 @@ class BigbluebuttonRoom < ActiveRecord::Base
     role
   end
 
+  # Compare the instance variables of two models to define if they are equal
+  # Returns a hash with the variables with different values or an empty hash
+  # if they are have all equal values.
+  # From: http://alicebobandmallory.com/articles/2009/11/02/comparing-instance-variables-in-ruby
+  def instance_variables_compare(o)
+    vars = [ :@running, :@participant_count, :@moderator_count, :@attendees,
+             :@has_been_forcibly_ended, :@start_time, :@end_time ]
+    Hash[*vars.map { |v|
+           self.instance_variable_get(v)!=o.instance_variable_get(v) ?
+           [v,o.instance_variable_get(v)] : []}.flatten]
+  end
+
+  # A more complete equal? method, comparing also the attibutes and
+  # the instance variables
+  def attr_equal?(o)
+    self == o and
+      self.instance_variables_compare(o).empty? and
+      self.attributes == o.attributes
+  end
+
   protected
 
   def init
