@@ -15,7 +15,7 @@ Gem::Specification.new do |s|
   s.test_files    = `git ls-files -- {test,spec,features}/*`.split("\n")
   s.require_paths = ["lib"]
 
-  s.add_runtime_dependency("rails", "~> 3.0.3")
+  s.add_runtime_dependency("rails", ">= 3.0.3")
   s.add_runtime_dependency("bigbluebutton-api-ruby", "~> 0.0.10")
 
   s.add_development_dependency("rspec-rails", "~> 2.5.0")
