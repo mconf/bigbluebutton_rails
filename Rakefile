@@ -6,8 +6,8 @@ require 'rake/gempackagetask'
 require 'cucumber'
 require 'cucumber/rake/task'
 
-desc 'Default: run tests.'
-task :default => :spec
+desc 'Default: run specs and features.'
+task :default => [:spec, :cucumber]
 
 RSpec::Core::RakeTask.new(:spec)
 
@@ -40,5 +40,10 @@ namespace "setup" do
 end
 
 task :cucumber do
-  sh %{ cucumber features/ }
+  if File.exists? "features/"
+    puts "* Gem features"
+    sh %{ cucumber features/ }
+  end
+  puts "* Dummy app features"
+  sh %{ cd spec/rails_app; cucumber features/ }
 end
