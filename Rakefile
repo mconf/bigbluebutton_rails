@@ -30,12 +30,18 @@ end
 desc 'Setup RailsApp used in tests.'
 namespace "setup" do
   task :rails_app do |app|
-    cd 'spec/rails_app/'
-    sh "rake db:drop ENV=test"
+    cd "spec/rails_app/"
+    # base
     sh "rails destroy bigbluebutton_rails:install"
     sh "rails generate bigbluebutton_rails:install"
-    sh "rake db:migrate ENV=test"
-    sh "rake db:test:prepare"
+    sh "rake db:drop:all"
+    sh "rake db:create:all"
+    # test
+    sh "rake db:migrate RAILS_ENV=test"
+    sh "rake db:test:prepare RAILS_ENV=test"
+    # development
+    sh "rake db:migrate RAILS_ENV=development"
+    sh "rake db:seed RAILS_ENV=development"
   end
 end
 

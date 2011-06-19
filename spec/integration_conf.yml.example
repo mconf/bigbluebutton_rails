@@ -1,4 +1,5 @@
 server:
+  name: 'Default'
   url: 'http://myserver/bigbluebutton/api'
   salt: 'mysalt'
   version: '0.7'
