@@ -4,3 +4,4 @@ pkg
 *.sqlite3
 log
 *.gem
+spec/integration_conf.yml
