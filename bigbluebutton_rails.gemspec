@@ -24,4 +24,6 @@ Gem::Specification.new do |s|
   s.add_development_dependency("generator_spec", "~> 0.8.2")
   s.add_development_dependency("shoulda-matchers", "~> 1.0.0.beta")
   s.add_development_dependency("forgery", "~> 0.3.7")
+  s.add_development_dependency("cucumber-rails", "~> 0.5.2")
+  s.add_development_dependency("database_cleaner")
 end

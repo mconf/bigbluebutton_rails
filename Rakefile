@@ -3,6 +3,8 @@ require 'bundler/setup'
 require 'rake/rdoctask'
 require 'rspec/core/rake_task'
 require 'rake/gempackagetask'
+require 'cucumber'
+require 'cucumber/rake/task'
 
 desc 'Default: run tests.'
 task :default => :spec
@@ -35,4 +37,8 @@ namespace "setup" do
     sh "rake db:migrate ENV=test"
     sh "rake db:test:prepare"
   end
+end
+
+task :cucumber do
+  sh %{ cucumber features/ }
 end
