@@ -1,5 +1,5 @@
-file = File.join(File.dirname(__FILE__), "..", "..", "integration_conf.yml")
-config = YAML.load_file(file)["server"]
+IntegrationConf.load
+config = IntegrationConf.config["server"]
 
 Factory.define :bigbluebutton_server_integration, :parent => :bigbluebutton_server do |s|
   s.sequence(:name) { |n| "Server #{n}" }
