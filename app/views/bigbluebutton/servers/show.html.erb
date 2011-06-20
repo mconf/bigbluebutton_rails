@@ -22,6 +22,11 @@
   <%= @server.version %>
 </p>
 
+<p>
+  <b><%= BigbluebuttonServer.human_attribute_name(:param) %>:</b>
+  <%= @server.param %>
+</p>
+
 
 <%= link_to 'Edit', edit_bigbluebutton_server_path(@server) %> |
 <%= link_to 'Back', bigbluebutton_servers_path %>

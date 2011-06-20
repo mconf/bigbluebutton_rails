@@ -14,23 +14,32 @@ class BigbluebuttonRoom < ActiveRecord::Base
   validates :randomize_meetingid, :inclusion => { :in => [true, false] }
   validates :voice_bridge, :presence => true, :uniqueness => true
 
+  validates :param,
+            :presence => true,
+            :uniqueness => true,
+            :length => { :minimum => 3 },
+            :format => { :with => /^[a-zA-Z\d_]+[a-zA-Z\d_-]*[a-zA-Z\d_]+$/,
+                         :message => I18n.t('bigbluebutton_rails.rooms.errors.param_format') }
+
   # Passwords are 16 character strings
   # See http://groups.google.com/group/bigbluebutton-dev/browse_thread/thread/9be5aae1648bcab?pli=1
-  validates :attendee_password, :presence => true, :if => :private?
-  validates :moderator_password, :presence => true, :if => :private?
   validates :attendee_password, :length => { :maximum => 16 }
   validates :moderator_password, :length => { :maximum => 16 }
+
+  validates :attendee_password, :presence => true, :if => :private?
+  validates :moderator_password, :presence => true, :if => :private?
 
   attr_accessible :name, :server_id, :meetingid, :attendee_password, :moderator_password,
                   :welcome_msg, :owner, :server, :private, :logout_url, :dial_number,
                   :voice_bridge, :max_participants, :owner_id, :owner_type, :randomize_meetingid,
-                  :external
+                  :external, :param
 
   # Note: these params need to be fetched from the server before being accessed
   attr_accessor :running, :participant_count, :moderator_count, :attendees,
                 :has_been_forcibly_ended, :start_time, :end_time
 
   after_initialize :init
+  before_validation :set_param
 
   # Convenience method to access the attribute <tt>running</tt>
   def is_running?
@@ -218,6 +227,11 @@ class BigbluebuttonRoom < ActiveRecord::Base
     self.server.api.create_meeting(self.name, self.meetingid, self.moderator_password,
                                    self.attendee_password, self.welcome_msg, self.dial_number,
                                    self.logout_url, self.max_participants, self.voice_bridge)
+  end
+
+  # if :param wasn't set, sets it as :name downcase and parameterized
+  def set_param
+    self.param ||= self.name.parameterize.downcase unless self.name.nil?
   end
 
 end

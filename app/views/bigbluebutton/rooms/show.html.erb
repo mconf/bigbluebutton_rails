@@ -54,6 +54,10 @@
   <b><%= BigbluebuttonRoom.human_attribute_name(:external) %>:</b>
   <%= @room.external %>
 </p>
+<p>
+  <b><%= BigbluebuttonRoom.human_attribute_name(:param) %>:</b>
+  <%= @room.param %>
+</p>
 
 <%= link_to 'Edit', edit_bigbluebutton_server_room_path(@room.server, @room) %> |
 <%= link_to 'Back', bigbluebutton_server_rooms_path(@room.server) %>

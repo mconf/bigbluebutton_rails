@@ -7,4 +7,5 @@ Factory.define :bigbluebutton_room do |r|
   r.welcome_msg { Forgery(:lorem_ipsum).sentences(2) }
   r.private false
   r.randomize_meetingid false
+  r.sequence(:param) { |n| "meeting-#{n}" }
 end

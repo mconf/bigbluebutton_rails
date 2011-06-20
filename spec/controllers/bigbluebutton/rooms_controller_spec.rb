@@ -534,7 +534,7 @@ describe Bigbluebutton::RoomsController do
         it { should respond_with(:unauthorized) }
         it { should assign_to(:room).with(room) }
         it { should render_template(:invite) }
-        it { should set_the_flash.to(I18n.t('bigbluebutton_rails.rooms.error.auth.failure')) }
+        it { should set_the_flash.to(I18n.t('bigbluebutton_rails.rooms.errors.auth.failure')) }
       end
 
       context "the password is wrong" do
@@ -543,7 +543,7 @@ describe Bigbluebutton::RoomsController do
         it { should respond_with(:unauthorized) }
         it { should assign_to(:room).with(room) }
         it { should render_template(:invite) }
-        it { should set_the_flash.to(I18n.t('bigbluebutton_rails.rooms.error.auth.failure')) }
+        it { should set_the_flash.to(I18n.t('bigbluebutton_rails.rooms.errors.auth.failure')) }
       end
 
     end
@@ -584,7 +584,7 @@ describe Bigbluebutton::RoomsController do
           post :auth, :server_id => mocked_server.to_param, :id => room.to_param, :user => hash
           should respond_with(:success)
           should render_template(:invite)
-          should set_the_flash.to(I18n.t('bigbluebutton_rails.rooms.error.auth.not_running'))
+          should set_the_flash.to(I18n.t('bigbluebutton_rails.rooms.errors.auth.not_running'))
         end
       end
 

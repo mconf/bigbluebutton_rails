@@ -1,3 +1,4 @@
+# -*- coding: utf-8 -*-
 require 'spec_helper'
 
 describe BigbluebuttonRoom do
@@ -22,6 +23,7 @@ describe BigbluebuttonRoom do
     it { should have_db_column(:private).of_type(:boolean) }
     it { should have_db_column(:randomize_meetingid).of_type(:boolean) }
     it { should have_db_column(:external).of_type(:boolean) }
+    it { should have_db_column(:param).of_type(:string) }
     it { should have_db_index(:server_id) }
     it { should have_db_index(:meetingid).unique(true) }
     it { should have_db_index(:voice_bridge).unique(true) }
@@ -34,7 +36,6 @@ describe BigbluebuttonRoom do
   end
 
   context do
-
     before { Factory.create(:bigbluebutton_room) }
 
     it { should belong_to(:server) }
@@ -46,13 +47,15 @@ describe BigbluebuttonRoom do
     it { should validate_presence_of(:meetingid) }
     it { should validate_presence_of(:voice_bridge) }
     it { should validate_presence_of(:name) }
+    it { should validate_presence_of(:param) }
 
     it { should be_boolean(:private) }
     it { should be_boolean(:randomize_meetingid) }
 
     [:name, :server_id, :meetingid, :attendee_password, :moderator_password,
      :welcome_msg, :owner, :server, :private, :logout_url, :dial_number,
-     :voice_bridge, :max_participants, :owner_id, :owner_type, :randomize_meetingid].
+     :voice_bridge, :max_participants, :owner_id, :owner_type,
+     :randomize_meetingid, :param].
       each do |attribute|
       it { should allow_mass_assignment_of(attribute) }
     end
@@ -61,6 +64,7 @@ describe BigbluebuttonRoom do
     it { should validate_uniqueness_of(:meetingid) }
     it { should validate_uniqueness_of(:name) }
     it { should validate_uniqueness_of(:voice_bridge) }
+    it { should validate_uniqueness_of(:param) }
 
     it {
       room = Factory.create(:bigbluebutton_room)
@@ -72,6 +76,7 @@ describe BigbluebuttonRoom do
     it { should ensure_length_of(:attendee_password).is_at_most(16) }
     it { should ensure_length_of(:moderator_password).is_at_most(16) }
     it { should ensure_length_of(:welcome_msg).is_at_most(250) }
+    it { should ensure_length_of(:param).is_at_least(3) }
 
     # attr_accessors
     [:running, :participant_count, :moderator_count, :attendees,
@@ -158,6 +163,31 @@ describe BigbluebuttonRoom do
           b.voice_bridge.should == "user defined"
         }
       end
+    end
+
+    context "param format" do
+      let(:msg) { I18n.t('bigbluebutton_rails.rooms.errors.param_format') }
+      it { should validate_format_of(:param).not_with("123 321").with_message(msg) }
+      it { should validate_format_of(:param).not_with("").with_message(msg) }
+      it { should validate_format_of(:param).not_with("ab@c").with_message(msg) }
+      it { should validate_format_of(:param).not_with("ab#c").with_message(msg) }
+      it { should validate_format_of(:param).not_with("ab$c").with_message(msg) }
+      it { should validate_format_of(:param).not_with("ab%c").with_message(msg) }
+      it { should validate_format_of(:param).not_with("ábcd").with_message(msg) }
+      it { should validate_format_of(:param).not_with("-abc").with_message(msg) }
+      it { should validate_format_of(:param).not_with("abc-").with_message(msg) }
+      it { should validate_format_of(:param).with("_abc").with_message(msg) }
+      it { should validate_format_of(:param).with("abc_").with_message(msg) }
+      it { should validate_format_of(:param).with("abc") }
+      it { should validate_format_of(:param).with("123") }
+      it { should validate_format_of(:param).with("abc-123_d5") }
+    end
+
+    it "sets param as the downcased parameterized name" do
+      room = Factory.build(:bigbluebutton_room, :param => nil,
+                           :name => "-My Name@ _Is Odd_-")
+      room.save.should be_true
+      room.param.should == room.name.downcase.parameterize
     end
 
     context "using the api" do

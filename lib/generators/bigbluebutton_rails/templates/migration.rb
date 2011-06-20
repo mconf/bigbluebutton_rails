@@ -6,6 +6,7 @@ class CreateBigbluebuttonRails < ActiveRecord::Migration
       t.string :url
       t.string :salt
       t.string :version
+      t.string :param
       t.timestamps
     end
     create_table :bigbluebutton_rooms do |t|
@@ -24,6 +25,7 @@ class CreateBigbluebuttonRails < ActiveRecord::Migration
       t.boolean :private, :default => false
       t.boolean :randomize_meetingid, :default => true
       t.boolean :external, :default => false
+      t.string :param
       t.timestamps
     end
     add_index :bigbluebutton_rooms, :server_id

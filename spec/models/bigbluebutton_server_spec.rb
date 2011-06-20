@@ -1,3 +1,4 @@
+# -*- coding: utf-8 -*-
 require 'spec_helper'
 
 describe BigbluebuttonServer do
@@ -11,6 +12,7 @@ describe BigbluebuttonServer do
     it { should have_db_column(:url).of_type(:string) }
     it { should have_db_column(:salt).of_type(:string) }
     it { should have_db_column(:version).of_type(:string) }
+    it { should have_db_column(:param).of_type(:string) }
   end
 
   context do
@@ -21,15 +23,20 @@ describe BigbluebuttonServer do
     it { should validate_presence_of(:url) }
     it { should validate_presence_of(:salt) }
     it { should validate_presence_of(:version) }
+    it { should validate_presence_of(:param) }
 
     it { should allow_mass_assignment_of(:name) }
     it { should allow_mass_assignment_of(:url) }
     it { should allow_mass_assignment_of(:salt) }
+    it { should allow_mass_assignment_of(:version) }
+    it { should allow_mass_assignment_of(:param) }
 
-    it {
-      Factory.create(:bigbluebutton_server)
-      should validate_uniqueness_of(:url)
-    }
+    context "uniqueness of" do
+      before(:each) { Factory.create(:bigbluebutton_server) }
+      it { should validate_uniqueness_of(:url) }
+      it { should validate_uniqueness_of(:name) }
+      it { should validate_uniqueness_of(:param) }
+    end
 
     it "has associated rooms" do
       server = Factory.create(:bigbluebutton_server)
@@ -54,17 +61,47 @@ describe BigbluebuttonServer do
     it { should ensure_length_of(:name).is_at_least(1).is_at_most(500) }
     it { should ensure_length_of(:url).is_at_most(500) }
     it { should ensure_length_of(:salt).is_at_least(1).is_at_most(500) }
+    it { should ensure_length_of(:param).is_at_least(3) }
 
-    it { should allow_value('http://demo.bigbluebutton.org/bigbluebutton/api').for(:url) }
-    it { should_not allow_value('').for(:url) }
-    it { should_not allow_value('http://demo.bigbluebutton.org').for(:url) }
-    it { should_not allow_value('demo.bigbluebutton.org/bigbluebutton/api').for(:url) }
+    context "url format" do
+      it { should allow_value('http://demo.bigbluebutton.org/bigbluebutton/api').for(:url) }
+      it { should_not allow_value('').for(:url) }
+      it { should_not allow_value('http://demo.bigbluebutton.org').for(:url) }
+      it { should_not allow_value('demo.bigbluebutton.org/bigbluebutton/api').for(:url) }
+    end
 
-    it { should allow_value('0.64').for(:version) }
-    it { should allow_value('0.7').for(:version) }
-    it { should_not allow_value('').for(:version) }
-    it { should_not allow_value('0.8').for(:version) }
-    it { should_not allow_value('0.6').for(:version) }
+    context "supported versions" do
+      it { should allow_value('0.64').for(:version) }
+      it { should allow_value('0.7').for(:version) }
+      it { should_not allow_value('').for(:version) }
+      it { should_not allow_value('0.8').for(:version) }
+      it { should_not allow_value('0.6').for(:version) }
+    end
+
+    context "param format" do
+      let(:msg) { I18n.t('bigbluebutton_rails.servers.errors.param_format') }
+      it { should validate_format_of(:param).not_with("123 321").with_message(msg) }
+      it { should validate_format_of(:param).not_with("").with_message(msg) }
+      it { should validate_format_of(:param).not_with("ab@c").with_message(msg) }
+      it { should validate_format_of(:param).not_with("ab#c").with_message(msg) }
+      it { should validate_format_of(:param).not_with("ab$c").with_message(msg) }
+      it { should validate_format_of(:param).not_with("ab%c").with_message(msg) }
+      it { should validate_format_of(:param).not_with("ábcd").with_message(msg) }
+      it { should validate_format_of(:param).not_with("-abc").with_message(msg) }
+      it { should validate_format_of(:param).not_with("abc-").with_message(msg) }
+      it { should validate_format_of(:param).with("_abc").with_message(msg) }
+      it { should validate_format_of(:param).with("abc_").with_message(msg) }
+      it { should validate_format_of(:param).with("abc") }
+      it { should validate_format_of(:param).with("123") }
+      it { should validate_format_of(:param).with("abc-123_d5") }
+    end
+
+    it "sets param as the downcased parameterized name" do
+      server = Factory.build(:bigbluebutton_server, :param => nil,
+                             :name => "-My Name@ _Is Odd_-")
+      server.save.should be_true
+      server.param.should == server.name.downcase.parameterize
+    end
 
     context "has an api object" do
       let(:server) { server = Factory.build(:bigbluebutton_server) }

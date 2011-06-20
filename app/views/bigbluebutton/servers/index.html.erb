@@ -11,6 +11,7 @@
       <div><label><%= BigbluebuttonServer.human_attribute_name(:url) %></label> <%= server.url %></div>
       <div><label><%= BigbluebuttonServer.human_attribute_name(:salt) %></label> <%= server.salt %></div>
       <div><label><%= BigbluebuttonServer.human_attribute_name(:version) %></label> <%= server.version %></div>
+      <div><label><%= BigbluebuttonServer.human_attribute_name(:param) %></label> <%= server.param %></div>
       <div><label>Access</label>
         <%= link_to 'Show', server %> |
         <%= link_to 'View rooms', bigbluebutton_server_rooms_path(server) %> |

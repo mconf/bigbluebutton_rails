@@ -12,6 +12,8 @@ module NavigationHelpers
       '/'
     when /the new bigbluebutton server/i
       new_bigbluebutton_server_path
+    when /the new bigbluebutton room/i
+      new_bigbluebutton_server_room_path(@server)
 
 
     # Add more mappings here.

@@ -22,6 +22,7 @@
       <div class="field"><label><%= BigbluebuttonRoom.human_attribute_name(:voice_bridge) %></label> <%= room.voice_bridge %></div>
       <div class="field"><label><%= BigbluebuttonRoom.human_attribute_name(:max_participants) %></label> <%= room.max_participants %></div>
       <div class="field"><label><%= BigbluebuttonRoom.human_attribute_name(:external) %></label> <%= room.external %></div>
+      <div class="field"><label><%= BigbluebuttonRoom.human_attribute_name(:param) %></label> <%= room.param %></div>
       <div class="field"><label>Access</label>
         <%= link_to 'Show', bigbluebutton_server_room_path(@server, room) %> |
         <%= link_to 'Join', join_bigbluebutton_server_room_path(@server, room) %> |
