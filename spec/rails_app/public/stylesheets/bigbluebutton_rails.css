@@ -59,3 +59,80 @@
   width: 180px;
   padding: 3px;
 }
+
+
+/*
+ * Used in bigbluebutton_servers/index
+ */
+
+#bbbrails_servers_list {
+  list-style-type: none;
+  margin: 0;
+  padding: 0;
+}
+
+#bbbrails_servers_links {
+  margin-bottom: 5px;
+  padding-bottom: 5px;
+  border-bottom: 1px solid #ddd;
+}
+
+#bbbrails_servers_list li {
+  margin-bottom: 5px;
+  padding-bottom: 5px;
+  border-bottom: 1px solid #ddd;
+  clear: both;
+}
+
+#bbbrails_servers_list div.field {
+  margin: 0;
+  padding: 0;
+  clear: both;
+}
+
+#bbbrails_servers_list label {
+  font-weight: bold;
+  width: 150px;
+  float: left;
+  text-align: right;
+  margin-right: 10px;
+  clear: both;
+}
+
+/*
+ * Used in bigbluebutton_rooms/index
+ */
+
+#bbbrails_rooms_list {
+  list-style-type: none;
+  margin: 0;
+  padding: 0;
+}
+
+#bbbrails_rooms_links {
+  margin-bottom: 5px;
+  padding-bottom: 5px;
+  border-bottom: 1px solid #ddd;
+}
+
+#bbbrails_rooms_list li {
+  margin-bottom: 5px;
+  padding-bottom: 5px;
+  border-bottom: 1px solid #ddd;
+  clear: both;
+}
+
+#bbbrails_rooms_list div.field {
+  margin: 0;
+  padding: 0;
+  clear: both;
+}
+
+#bbbrails_rooms_list label {
+  font-weight: bold;
+  width: 300px;
+  float: left;
+  text-align: right;
+  margin-right: 10px;
+  clear: both;
+}

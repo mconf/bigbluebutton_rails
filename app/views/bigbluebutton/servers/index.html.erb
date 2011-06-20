@@ -1,29 +1,24 @@
 <h1>Listing <%= BigbluebuttonServer.model_name.human %>:</h1>
 
-<table>
-  <tr>
-    <th><%= BigbluebuttonServer.human_attribute_name(:name) %></th>
-    <th><%= BigbluebuttonServer.human_attribute_name(:url) %></th>
-    <th><%= BigbluebuttonServer.human_attribute_name(:salt) %></th>
-    <th><%= BigbluebuttonServer.human_attribute_name(:version) %></th>
-    <th></th>
-    <th></th>
-    <th></th>
-  </tr>
+<div id="bbbrails_servers_links">
+  <%= link_to 'New server', new_bigbluebutton_server_path %>
+</div>
 
-<% @servers.each do |server| %>
-  <tr>
-    <td><%= server.name %></td>
-    <td><%= server.url %></td>
-    <td><%= server.salt %></td>
-    <td><%= server.version %></td>
-    <td><%= link_to 'Show', server %></td>
-    <td><%= link_to 'Edit', edit_bigbluebutton_server_path(server) %></td>
-    <td><%= link_to 'Destroy', server, :confirm => 'Are you sure?', :method => :delete %></td>
-  </tr>
-<% end %>
-</table>
+<ul id="bbbrails_servers_list">
+  <% @servers.each do |server| %>
+    <li>
+      <div><label><%= BigbluebuttonServer.human_attribute_name(:name) %></label> <%= server.name %></div>
+      <div><label><%= BigbluebuttonServer.human_attribute_name(:url) %></label> <%= server.url %></div>
+      <div><label><%= BigbluebuttonServer.human_attribute_name(:salt) %></label> <%= server.salt %></div>
+      <div><label><%= BigbluebuttonServer.human_attribute_name(:version) %></label> <%= server.version %></div>
+      <div><label>Access</label>
+        <%= link_to 'Show', server %> |
+        <%= link_to 'View rooms', bigbluebutton_server_rooms_path(server) %> |
+        <%= link_to 'Activity monitor', activity_bigbluebutton_server_path(server) %> |
+        <%= link_to 'Edit', edit_bigbluebutton_server_path(server) %> |
+        <%= link_to 'Destroy', server, :confirm => 'Are you sure?', :method => :delete %>
+      </div>
+    </li>
+  <% end %>
+</ul>
 
-<br />
-
-<%= link_to 'New Server', new_bigbluebutton_server_path %>
