@@ -321,6 +321,38 @@ describe Bigbluebutton::RoomsController do
                    room.logout_url, room.max_participants, room.voice_bridge)
             get :join, :server_id => mocked_server.to_param, :id => room.to_param
           end
+
+          context "adds the protocol/domain to logout_url" do
+            after :each do
+              get :join, :server_id => mocked_server.to_param, :id => room.to_param
+            end
+
+            it "when it doesn't have protocol neither domain" do
+              room.update_attributes(:logout_url => "/incomplete/url")
+              full_logout_url = "http://test.host" + room.logout_url
+
+              mocked_api.should_receive(:create_meeting).
+                with(anything, anything, anything, anything, anything, anything,
+                     full_logout_url, anything, anything)
+            end
+
+            it "when it doesn't have protocol only" do
+              room.update_attributes(:logout_url => "www.host.com/incomplete/url")
+              full_logout_url = "http://" + room.logout_url
+
+              mocked_api.should_receive(:create_meeting).
+                with(anything, anything, anything, anything, anything, anything,
+                     full_logout_url, anything, anything)
+            end
+
+            it "but not when it has a protocol defined" do
+              room.update_attributes(:logout_url => "http://with/protocol")
+              mocked_api.should_receive(:create_meeting).
+                with(anything, anything, anything, anything, anything, anything,
+                     room.logout_url, anything, anything)
+            end
+          end
+
         end
 
       end

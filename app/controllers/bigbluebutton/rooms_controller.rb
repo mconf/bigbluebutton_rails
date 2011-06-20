@@ -248,6 +248,9 @@ class Bigbluebutton::RoomsController < ApplicationController
       # if the current user is a moderator, create the room (if needed)
       # and join it
       if role == :moderator
+
+        add_domain_to_logout_url(@room, request.protocol, request.host)
+
         @room.send_create unless @room.is_running?
         join_url = @room.join_url(username, role)
         redirect_to(join_url)
@@ -267,6 +270,15 @@ class Bigbluebutton::RoomsController < ApplicationController
     rescue BigBlueButton::BigBlueButtonException => e
       flash[:error] = e.to_s
       redirect_to request.referer
+    end
+  end
+
+  def add_domain_to_logout_url(room, protocol, host)
+    unless @room.logout_url.nil? or @room.logout_url =~ /^[a-z]+:\/\//  # matches the protocol
+      unless @room.logout_url =~ /^[a-z0-9]+([\-\.]{ 1}[a-z0-9]+)*/     # matches the host domain
+        @room.logout_url = host + @room.logout_url
+      end
+      @room.logout_url = protocol + @room.logout_url
     end
   end
 

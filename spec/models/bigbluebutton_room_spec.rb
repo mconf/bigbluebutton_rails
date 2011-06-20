@@ -160,64 +160,6 @@ describe BigbluebuttonRoom do
       end
     end
 
-
-
-=begin
-        context "randomizes meetingid" do
-          let(:fail_hash) { { :returncode => true, :meetingID => "new id",
-                              :messageKey => "duplicateWarning" } }
-          let(:success_hash) { { :returncode => true, :meetingID => "new id",
-                                 :messageKey => "" } }
-          let(:new_id) { "new id" }
-          before {
-            room.randomize_meetingid = true
-            room.server = mocked_server
-          }
-
-          it "before calling create" do
-            room.should_receive(:random_meetingid).and_return(new_id)
-            mocked_api.should_receive(:create_meeting).
-              with(room.name, new_id, room.moderator_password,
-                   room.attendee_password, room.welcome_msg, room.dial_number,
-                   room.logout_url, room.max_participants, room.voice_bridge)
-            room.send_create
-          end
-
-          it "and tries again on error" do
-            # fails twice and them succeds
-            room.should_receive(:random_meetingid).exactly(3).times.and_return(new_id)
-            mocked_api.should_receive(:create_meeting).
-              with(room.name, new_id, room.moderator_password,
-                   room.attendee_password, room.welcome_msg, room.dial_number,
-                   room.logout_url, room.max_participants, room.voice_bridge).
-              twice.
-              and_return(fail_hash)
-            mocked_api.should_receive(:create_meeting).
-              with(room.name, new_id, room.moderator_password,
-                   room.attendee_password, room.welcome_msg, room.dial_number,
-                   room.logout_url, room.max_participants, room.voice_bridge).
-              once.
-              and_return(success_hash)
-            room.send_create
-          end
-
-          it "and limits to 10 tries" do
-            room.should_receive(:random_meetingid).exactly(11).times.and_return(new_id)
-            mocked_api.should_receive(:create_meeting).
-              with(room.name, new_id, room.moderator_password,
-                   room.attendee_password, room.welcome_msg, room.dial_number,
-                   room.logout_url, room.max_participants, room.voice_bridge).
-              exactly(10).times.
-              and_return(fail_hash)
-            room.send_create
-          end
-        end
-
-      end
-=end
-
-
-
     context "using the api" do
       before { mock_server_and_api }
       let(:room) { Factory.create(:bigbluebutton_room) }
@@ -332,15 +274,6 @@ describe BigbluebuttonRoom do
         }
 
         it { should respond_to(:send_create) }
-
-        it "send create_meeting" do
-          mocked_api.should_receive(:create_meeting).
-            with(room.name, room.meetingid, room.moderator_password,
-                 room.attendee_password, room.welcome_msg, room.dial_number,
-                 room.logout_url, room.max_participants, room.voice_bridge)
-          room.server = mocked_server
-          room.send_create
-        end
 
         it "send create_meeting" do
           mocked_api.should_receive(:create_meeting).

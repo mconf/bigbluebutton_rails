@@ -59,3 +59,7 @@ task :cucumber do
   puts "* Dummy app features"
   sh %{ cd spec/rails_app; cucumber features/ }
 end
+
+task :notes do
+  puts `grep -r 'OPTIMIZE\\|FIXME\\|TODO' app/ public/ spec/`
+end
