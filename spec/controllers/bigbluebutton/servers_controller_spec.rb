@@ -51,8 +51,9 @@ describe Bigbluebutton::ServersController do
       }.not_to change{ BigbluebuttonServer.count }
     end
     it {
+      saved = BigbluebuttonServer.find(@server)
       should respond_with(:redirect)
-      should redirect_to(bigbluebutton_server_path(@server))
+      should redirect_to(bigbluebutton_server_path(saved))
     }
     it {
       saved = BigbluebuttonServer.find(@server)

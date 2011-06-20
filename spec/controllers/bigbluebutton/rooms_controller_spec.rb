@@ -143,8 +143,9 @@ describe Bigbluebutton::RoomsController do
         }.not_to change{ BigbluebuttonRoom.count }
       end
       it {
+        saved = BigbluebuttonRoom.find(@room)
         should respond_with(:redirect)
-        should redirect_to bigbluebutton_server_room_path(server, @room)
+        should redirect_to bigbluebutton_server_room_path(server, saved)
       }
       it {
         saved = BigbluebuttonRoom.find(@room)

@@ -12,7 +12,7 @@ class Bigbluebutton::RoomsController < ApplicationController
   end
 
   def show
-    respond_with(@room = BigbluebuttonRoom.find(params[:id]))
+    respond_with(@room = BigbluebuttonRoom.find_by_param(params[:id]))
   end
 
   def new
@@ -20,7 +20,7 @@ class Bigbluebutton::RoomsController < ApplicationController
   end
 
   def edit
-    respond_with(@room = BigbluebuttonRoom.find(params[:id]))
+    respond_with(@room = BigbluebuttonRoom.find_by_param(params[:id]))
   end
 
   def create
@@ -56,7 +56,7 @@ class Bigbluebutton::RoomsController < ApplicationController
   end
 
   def update
-    @room = BigbluebuttonRoom.find(params[:id])
+    @room = BigbluebuttonRoom.find_by_param(params[:id])
 
     if !params[:bigbluebutton_room].has_key?(:meetingid) or
         params[:bigbluebutton_room][:meetingid].blank?
@@ -86,7 +86,7 @@ class Bigbluebutton::RoomsController < ApplicationController
   end
 
   def destroy
-    @room = BigbluebuttonRoom.find(params[:id])
+    @room = BigbluebuttonRoom.find_by_param(params[:id])
 
     # TODO Destroy the room record even if end_meeting failed?
 
@@ -119,7 +119,7 @@ class Bigbluebutton::RoomsController < ApplicationController
 
   # Used by logged users to join public rooms.
   def join
-    @room = BigbluebuttonRoom.find(params[:id])
+    @room = BigbluebuttonRoom.find_by_param(params[:id])
 
     role = bigbluebutton_role(@room)
     if role.nil?
@@ -136,7 +136,7 @@ class Bigbluebutton::RoomsController < ApplicationController
 
   # Used to join private rooms or to invited anonymous users (not logged)
   def invite
-    @room = BigbluebuttonRoom.find(params[:id])
+    @room = BigbluebuttonRoom.find_by_param(params[:id])
 
     respond_with @room do |format|
 
@@ -157,7 +157,7 @@ class Bigbluebutton::RoomsController < ApplicationController
 
   # Authenticates an user using name and password passed in the params from #invite
   def auth
-    @room = BigbluebuttonRoom.find(params[:id])
+    @room = BigbluebuttonRoom.find_by_param(params[:id])
 
     raise BigbluebuttonRails::RoomAccessDenied.new if bigbluebutton_role(@room).nil?
 
@@ -174,7 +174,7 @@ class Bigbluebutton::RoomsController < ApplicationController
   end
 
   def running
-    @room = BigbluebuttonRoom.find(params[:id])
+    @room = BigbluebuttonRoom.find_by_param(params[:id])
 
     begin
       @room.fetch_is_running?
@@ -188,7 +188,7 @@ class Bigbluebutton::RoomsController < ApplicationController
   end
 
   def end
-    @room = BigbluebuttonRoom.find(params[:id])
+    @room = BigbluebuttonRoom.find_by_param(params[:id])
 
     error = false
     begin
@@ -225,7 +225,7 @@ class Bigbluebutton::RoomsController < ApplicationController
   end
 
   def join_mobile
-    @room = BigbluebuttonRoom.find(params[:id])
+    @room = BigbluebuttonRoom.find_by_param(params[:id])
     @join_url = @room.join_url(bigbluebutton_user.name, bigbluebutton_role(@room))
     @join_url.gsub!("http://", "bigbluebutton://")
   end
@@ -234,7 +234,7 @@ class Bigbluebutton::RoomsController < ApplicationController
 
   def find_server
     if params.has_key?(:server_id)
-      @server = BigbluebuttonServer.find(params[:server_id])
+      @server = BigbluebuttonServer.find_by_param(params[:server_id])
     else
       @server = BigbluebuttonServer.first
     end

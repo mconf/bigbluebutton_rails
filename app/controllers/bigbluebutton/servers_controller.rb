@@ -8,7 +8,7 @@ class Bigbluebutton::ServersController < ApplicationController
   end
 
   def show
-    respond_with(@server = BigbluebuttonServer.find(params[:id]))
+    respond_with(@server = BigbluebuttonServer.find_by_param(params[:id]))
   end
 
   def new
@@ -16,11 +16,11 @@ class Bigbluebutton::ServersController < ApplicationController
   end
 
   def edit
-    respond_with(@server = BigbluebuttonServer.find(params[:id]))
+    respond_with(@server = BigbluebuttonServer.find_by_param(params[:id]))
   end
 
   def activity
-    @server = BigbluebuttonServer.find(params[:id])
+    @server = BigbluebuttonServer.find_by_param(params[:id])
     # @new_meetings = @server.rooms
     @server.fetch_meetings
     # @new_meetings = @server.meetings.reject{ |r|
@@ -61,7 +61,7 @@ class Bigbluebutton::ServersController < ApplicationController
   end
 
   def update
-    @server = BigbluebuttonServer.find(params[:id])
+    @server = BigbluebuttonServer.find_by_param(params[:id])
 
     respond_with @server do |format|
       if @server.update_attributes(params[:bigbluebutton_server])
@@ -78,7 +78,7 @@ class Bigbluebutton::ServersController < ApplicationController
   end
 
   def destroy
-    @server = BigbluebuttonServer.find(params[:id])
+    @server = BigbluebuttonServer.find_by_param(params[:id])
     @server.destroy
 
     respond_with do |format|

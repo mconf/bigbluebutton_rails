@@ -85,6 +85,14 @@ describe BigbluebuttonRoom do
       it { should respond_to("#{attr}=") }
     end
 
+    context ".to_param" do
+      it { should respond_to(:to_param) }
+      it {
+        r = Factory.create(:bigbluebutton_room)
+        r.to_param.should be(r.param)
+      }
+    end
+
     it { should respond_to(:is_running?) }
 
     describe "#user_role" do
@@ -183,11 +191,19 @@ describe BigbluebuttonRoom do
       it { should validate_format_of(:param).with("abc-123_d5") }
     end
 
-    it "sets param as the downcased parameterized name" do
-      room = Factory.build(:bigbluebutton_room, :param => nil,
-                           :name => "-My Name@ _Is Odd_-")
-      room.save.should be_true
-      room.param.should == room.name.downcase.parameterize
+    context "sets param as the downcased parameterized name if param is" do
+      after :each do
+        @room.save.should be_true
+        @room.param.should == @room.name.downcase.parameterize
+      end
+      it "nil" do
+        @room = Factory.build(:bigbluebutton_room, :param => nil,
+                              :name => "-My Name@ _Is Odd_-")
+      end
+      it "empty" do
+        @room = Factory.build(:bigbluebutton_room, :param => "",
+                              :name => "-My Name@ _Is Odd_-")
+      end
     end
 
     context "using the api" do

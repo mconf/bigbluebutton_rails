@@ -187,6 +187,10 @@ class BigbluebuttonRoom < ActiveRecord::Base
       self.attributes == o.attributes
   end
 
+  def to_param
+    self.param
+  end
+
   protected
 
   def init
@@ -231,7 +235,9 @@ class BigbluebuttonRoom < ActiveRecord::Base
 
   # if :param wasn't set, sets it as :name downcase and parameterized
   def set_param
-    self.param ||= self.name.parameterize.downcase unless self.name.nil?
+    if self.param.blank?
+      self.param = self.name.parameterize.downcase unless self.name.nil?
+    end
   end
 
 end

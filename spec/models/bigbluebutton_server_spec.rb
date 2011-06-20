@@ -63,6 +63,14 @@ describe BigbluebuttonServer do
     it { should ensure_length_of(:salt).is_at_least(1).is_at_most(500) }
     it { should ensure_length_of(:param).is_at_least(3) }
 
+    context ".to_param" do
+      it { should respond_to(:to_param) }
+      it {
+        s = Factory.create(:bigbluebutton_server)
+        s.to_param.should be(s.param)
+      }
+    end
+
     context "url format" do
       it { should allow_value('http://demo.bigbluebutton.org/bigbluebutton/api').for(:url) }
       it { should_not allow_value('').for(:url) }
@@ -96,11 +104,19 @@ describe BigbluebuttonServer do
       it { should validate_format_of(:param).with("abc-123_d5") }
     end
 
-    it "sets param as the downcased parameterized name" do
-      server = Factory.build(:bigbluebutton_server, :param => nil,
-                             :name => "-My Name@ _Is Odd_-")
-      server.save.should be_true
-      server.param.should == server.name.downcase.parameterize
+    context "sets param as the downcased parameterized name if param is" do
+      after :each do
+        @server.save.should be_true
+        @server.param.should == @server.name.downcase.parameterize
+      end
+      it "nil" do
+        @server = Factory.build(:bigbluebutton_server, :param => nil,
+                                :name => "-My Name@ _Is Odd_-")
+      end
+      it "empty" do
+        @server = Factory.build(:bigbluebutton_server, :param => "",
+                                :name => "-My Name@ _Is Odd_-")
+      end
     end
 
     context "has an api object" do
