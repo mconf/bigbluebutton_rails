@@ -33,7 +33,6 @@ namespace "setup" do
     cd "spec/rails_app/"
     sh "rails destroy bigbluebutton_rails:install"
     sh "rails generate bigbluebutton_rails:install"
-    sh "rails generate bigbluebutton_rails:public -f"
   end
 
   namespace :rails_app do |app|

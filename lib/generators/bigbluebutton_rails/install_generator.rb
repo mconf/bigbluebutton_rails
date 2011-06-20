@@ -6,18 +6,18 @@ module BigbluebuttonRails
       include Rails::Generators::Migration
       argument :migrate_to_version, :type => :string, :default => "", :description => "Generate migration to this version"
       class_option :locale, :type => :boolean, :default => true, :description => "Generate locale file"
-      class_option :stylesheet, :type => :boolean, :default => true, :description => "Generate stylesheet"
       source_root File.expand_path("../templates", __FILE__)
 
       desc "Creates the migrations and locale files. Also used to create migrations when updating the gem version."
 
       def copy_locale
-        # uses a fullpath to avoid using the local application en.yml
         copy_file "#{root_path}/config/locales/en.yml", "config/locales/bigbluebutton_rails.en.yml" if options.locale?
       end
 
-      def copy_stylesheet
-        copy_file "#{root_path}public/stylesheets/bigbluebutton_rails.css", "public/stylesheets/bigbluebutton_rails.css" if options.stylesheet?
+      def copy_public_files
+        copy_file "#{root_path}/public/javascripts/jquery.min.js", "public/javascripts/jquery.min.js"
+        copy_file "#{root_path}/public/images/loading.gif", "public/images/loading.gif"
+        copy_file "#{root_path}/public/stylesheets/bigbluebutton_rails.css", "public/stylesheets/bigbluebutton_rails.css"
       end
 
       def self.next_migration_number(dirname)
@@ -34,8 +34,9 @@ module BigbluebuttonRails
 
       protected
 
+      # defines a fullpath to avoid using the local application files
       def root_path
-        "../../../../../bigbluebutton_rails/"
+        File.expand_path("../../../../../bigbluebutton_rails", __FILE__)
       end
 
       def version_filename

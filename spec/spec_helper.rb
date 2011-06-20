@@ -34,4 +34,3 @@ end
 require "generator_spec/test_case"
 require "generators/bigbluebutton_rails/install_generator"
 require "generators/bigbluebutton_rails/views_generator"
-require "generators/bigbluebutton_rails/public_generator"

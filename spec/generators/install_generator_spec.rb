@@ -15,6 +15,8 @@ describe BigbluebuttonRails::Generators::InstallGenerator do
       assert_migration "db/migrate/create_bigbluebutton_rails.rb"
       assert_file "config/locales/bigbluebutton_rails.en.yml"
       assert_file "public/stylesheets/bigbluebutton_rails.css"
+      assert_file "public/javascripts/jquery.min.js"
+      assert_file "public/images/loading.gif"
     end
 
     it "all files are properly destroyed" do
@@ -22,6 +24,8 @@ describe BigbluebuttonRails::Generators::InstallGenerator do
       assert_no_file "config/locales/bigbluebutton_rails.en.yml"
       assert_no_migration "db/migrate/create_bigbluebutton_rails.rb"
       assert_no_file "public/stylesheets/bigbluebutton_rails.css"
+      assert_no_file "public/javascripts/jquery.min.js"
+      assert_no_file "public/images/loading.gif"
     end
   end
 
@@ -33,17 +37,6 @@ describe BigbluebuttonRails::Generators::InstallGenerator do
 
     it "the locale is not created" do
       assert_no_file "config/locales/bigbluebutton_rails.en.yml"
-    end
-  end
-
-  context "without stylesheet" do
-    before(:all) do
-      prepare_destination
-      run_generator %w{ --skip-stylesheet }
-    end
-
-    it "the stylesheet is not created" do
-      assert_no_file "public/stylesheets/bigbluebutton_rails.css"
     end
   end
 
