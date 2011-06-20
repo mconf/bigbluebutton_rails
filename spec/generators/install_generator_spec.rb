@@ -29,21 +29,25 @@ describe BigbluebuttonRails::Generators::InstallGenerator do
     end
   end
 
-  context "without locale" do
+  context "setting migration-only" do
     before(:all) do
       prepare_destination
-      run_generator %w{ --skip-locale }
+      run_generator %w{ --migration-only }
     end
 
-    it "the locale is not created" do
+    it "only the migration is created" do
+      assert_migration "db/migrate/create_bigbluebutton_rails.rb"
       assert_no_file "config/locales/bigbluebutton_rails.en.yml"
+      assert_no_file "public/stylesheets/bigbluebutton_rails.css"
+      assert_no_file "public/javascripts/jquery.min.js"
+      assert_no_file "public/images/loading.gif"
     end
   end
 
   context "migrating to version" do
     before { prepare_destination }
 
-    ["0.0.5"].each do |version|
+    ["0.0.4", "0.0.5"].each do |version|
       context "#{version}" do
         before { run_generator [ version ] }
 

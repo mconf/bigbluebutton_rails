@@ -1,7 +1,12 @@
+* URLs for both servers and rooms are now defined with a string attribute (called "param") instead of the model ID.
 * New return values for bigbluebutton_role: :password and nil.
 * Private rooms now require a password to be valid.
+* New action "join_mobile" for rooms that renders a QR code to join the conference using the protocol "bigbluebutton://".
+* New action "activity" for servers that shows a view to monitors a BBB server.
 * Added json responses for most of the actions.
-* New action "join_mobile" that rendes a QR code to join the conference using the protocol "bigbluebutton://".
+* logout_url can be an incomplete url and it will be completed with the current domain/protocol when a room is created in the BBB server.
+* The generator bigbluebutton_rails:public was removed. It's features are now inside bigbluebutton_rails:install.
+* After fetch_meetings all rooms are automatically stored in the DB if they are not there yet.
 
 == 0.0.4
 

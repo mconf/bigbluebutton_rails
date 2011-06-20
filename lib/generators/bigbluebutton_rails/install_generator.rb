@@ -5,19 +5,21 @@ module BigbluebuttonRails
     class InstallGenerator < Rails::Generators::Base
       include Rails::Generators::Migration
       argument :migrate_to_version, :type => :string, :default => "", :description => "Generate migration to this version"
-      class_option :locale, :type => :boolean, :default => true, :description => "Generate locale file"
+      class_option :migration_only, :type => :boolean, :default => false, :description => "Generate only the migration file"
       source_root File.expand_path("../templates", __FILE__)
 
       desc "Creates the migrations and locale files. Also used to create migrations when updating the gem version."
 
       def copy_locale
-        copy_file "#{root_path}/config/locales/en.yml", "config/locales/bigbluebutton_rails.en.yml" if options.locale?
+        copy_file "#{root_path}/config/locales/en.yml", "config/locales/bigbluebutton_rails.en.yml" unless options.migration_only?
       end
 
       def copy_public_files
-        copy_file "#{root_path}/public/javascripts/jquery.min.js", "public/javascripts/jquery.min.js"
-        copy_file "#{root_path}/public/images/loading.gif", "public/images/loading.gif"
-        copy_file "#{root_path}/public/stylesheets/bigbluebutton_rails.css", "public/stylesheets/bigbluebutton_rails.css"
+        unless options.migration_only?
+          copy_file "#{root_path}/public/javascripts/jquery.min.js", "public/javascripts/jquery.min.js"
+          copy_file "#{root_path}/public/images/loading.gif", "public/images/loading.gif"
+          copy_file "#{root_path}/public/stylesheets/bigbluebutton_rails.css", "public/stylesheets/bigbluebutton_rails.css"
+        end
       end
 
       def self.next_migration_number(dirname)
