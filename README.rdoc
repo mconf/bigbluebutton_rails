@@ -4,7 +4,7 @@
 
 Features:
 * Allows multiple servers and multiple conference rooms
-* Full API access using bigbluebutton-api-ruby (https://github.com/mconf/bigbluebutton-api-ruby)
+* Full API access using {bigbluebutton-api-ruby}[https://github.com/mconf/bigbluebutton-api-ruby]
 * Easy way to join conferences: simply create a room and call the "join" action
 * Easy integration with authentication and authorization mechanisms, such as Devise and CanCan
 * Possibility to create private rooms, that require a password to join
@@ -13,7 +13,7 @@ Features:
 * Server activity monitor
 
 Planned features:
-* Friendly URLs (e.g. http://somewhere.com/my-server/my-room)
+* Friendly URLs (e.g. http://somewhere.com/my-server/my-room) (half way done)
 * Limit the number of users per room and rooms per server
 * Server administration (modify config.xml, use bbb-conf, etc.)
 * Load balancing
@@ -61,8 +61,8 @@ The first line generates the default routes. You need to call it at least once t
 It generates routes scoped with 'bigbluebutton'. These routes look like:
 
   /bigbluebutton/servers
-  /bigbluebutton/servers/1/rooms/2
-  /bigbluebutton/servers/2/rooms/3/join
+  /bigbluebutton/servers/default-server/rooms/my-room
+  /bigbluebutton/servers/default-server/rooms/his-room/join
 
 You can customize the scope name and also make the routes point to custom controllers.
 
@@ -79,10 +79,13 @@ You may also want shorter routes to access conference rooms. For that, use the o
 It creates routes to the actions used to access the conference room: "show", "join", "auth", "running", "end", "invite", and "join_mobile".
 So you can allow access to webconference rooms using URLs such as:
 
-  http://myserver.com/user-10/room-5/join
-  http://myserver.com/zaphod/public-room/join
+  http://myserver.com/server-name/room-name/join
+  http://myserver.com/user-name/public-room/join
+  http://myserver.com/ziltoid-room/join
 
-Obs: BigbluebuttonRails does not allows the room access using IDs such as "room-5" or "public-room" yet, but soon you it will.
+Obs: The URLs are not yet exactly like these, but soon they will be. But you can of course implement this in your application. Today they are like:
+
+  http://myserver.com/bigblugbutton/server-name/rooms/room-name/join
 
 === User authorization, permissions and assumptions
 

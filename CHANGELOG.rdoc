@@ -1,3 +1,5 @@
+== 0.0.5
+
 * URLs for both servers and rooms are now defined with a string attribute (called "param") instead of the model ID.
 * New return values for bigbluebutton_role: :password and nil.
 * Private rooms now require a password to be valid.

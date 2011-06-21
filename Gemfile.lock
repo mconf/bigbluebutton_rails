@@ -1,7 +1,7 @@
 PATH
   remote: .
   specs:
-    bigbluebutton_rails (0.0.4)
+    bigbluebutton_rails (0.0.5)
       bigbluebutton-api-ruby (~> 0.0.10)
       rails (>= 3.0.3)
 
