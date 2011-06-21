@@ -28,7 +28,7 @@ module BigbluebuttonRails
 
       def create_migration_file
         if migrate_to_version.blank?
-          migration_template '#{migration_path}/migration.rb', 'db/migrate/create_bigbluebutton_rails.rb'
+          migration_template "#{migration_path}/migration.rb", "db/migrate/create_bigbluebutton_rails.rb"
         else
           migration_template "#{migration_path}/migration_#{version_filename}.rb", "db/migrate/bigbluebutton_rails_to_#{version_filename}.rb"
         end
