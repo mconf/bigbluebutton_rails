@@ -21,6 +21,10 @@ describe Bigbluebutton::RoomsController do
         should route_to(:controller => "bigbluebutton/rooms", :action => "external", :server_id => "1")
       }
       it {
+        {:post => "/#{prefix}/servers/1/rooms/external"}.
+        should route_to(:controller => "bigbluebutton/rooms", :action => "external_auth", :server_id => "1")
+      }
+      it {
         {:get => "/#{prefix}/servers/1/rooms/1/edit"}.
         should route_to(:controller => "bigbluebutton/rooms", :action => "edit", :server_id => "1", :id => "1")
       }

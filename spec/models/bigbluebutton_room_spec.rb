@@ -409,6 +409,13 @@ describe BigbluebuttonRoom do
           room.server = mocked_server
           room.join_url(username, :attendee)
         end
+
+        it "without a role" do
+          mocked_api.should_receive(:join_meeting_url).
+            with(room.meetingid, username, 'pass')
+          room.server = mocked_server
+          room.join_url(username, nil, 'pass')
+        end
       end
 
     end

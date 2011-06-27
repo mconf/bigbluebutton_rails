@@ -27,7 +27,6 @@ class Bigbluebutton::RoomsController < ApplicationController
     @room = BigbluebuttonRoom.new(params[:bigbluebutton_room])
     @room.server = @server
 
-    # TODO Generate a random meetingid everytime a room is created
     if !params[:bigbluebutton_room].has_key?(:meetingid) or
         params[:bigbluebutton_room][:meetingid].blank?
       @room.meetingid = @room.name
@@ -231,9 +230,80 @@ class Bigbluebutton::RoomsController < ApplicationController
   end
 
   def external
-    # TODO: error if params[:meeting].nil?
-
+    if params[:meeting].blank?
+      message = t('bigbluebutton_rails.rooms.errors.external.blank_meetingid')
+      params[:redir_url] ||= bigbluebutton_server_rooms_path(@server)
+      redirect_to params[:redir_url], :notice => message
+    end
     @room = BigbluebuttonRoom.new(:meetingid => params[:meeting])
+  end
+
+  def external_auth
+=begin
+    unless params[:id].blank?
+      @room = BigbluebuttonRoom.find_by_param(params[:id])
+    else # params[:meeting].blank?
+      message = t('bigbluebutton_rails.rooms.errors.external.blank_meetingid')
+      params[:redir_url] ||= bigbluebutton_server_rooms_path(@server)
+      redirect_to params[:redir_url], :notice => message
+
+      # TODO: check params[:user][:username], params[:user][:password]
+
+      @server.fetch_meetings
+      @room = @server.meetings.select{ |r| r.meetingid == params[:meeting] }.first
+      if room.nil?
+        # TODO: error
+      end
+
+    end
+
+    raise BigbluebuttonRails::RoomAccessDenied.new if bigbluebutton_role(@room).nil?
+
+    # if there's a user logged, use his name instead of the name in the params
+    name = bigbluebutton_user.nil? ? params[:user][:name] : bigbluebutton_user.name
+    role = @room.user_role(params[:user])
+
+    unless role.nil? or name.nil?
+      join_internal(name, role, :invite)
+      # TODO: join_internal(name, role, :external)
+    else
+      flash[:error] = t('bigbluebutton_rails.rooms.errors.auth.failure')
+      render :action => "invite", :status => :unauthorized
+      # TODO: render :action => "external", :status => :unauthorized
+    end
+=end
+
+=begin
+    if params[:meeting].blank?
+      message = t('bigbluebutton_rails.rooms.errors.external.blank_meetingid')
+      params[:redir_url] ||= bigbluebutton_server_rooms_path(@server)
+      redirect_to params[:redir_url], :notice => message
+    end
+
+    # TODO: check params[:user][:username], params[:user][:password]
+
+    @server.fetch_meetings
+    @room = @server.meetings.select{ |r| r.meetingid == params[:meeting] }.first
+
+    if room.nil?
+      # TODO: no room, no join
+    else
+
+      raise BigbluebuttonRails::RoomAccessDenied.new if bigbluebutton_role(@room).nil?
+
+      # if there's a user logged, use his name instead of the name in the params
+      name = bigbluebutton_user.nil? ? params[:user][:name] : bigbluebutton_user.name
+      role = @room.user_role(params[:user])
+
+      unless role.nil? or name.nil?
+        join_internal(name, role, :external)
+      else
+        flash[:error] = t('bigbluebutton_rails.rooms.errors.external_auth.failure')
+        render :action => "external", :status => :unauthorized
+      end
+    end
+=end
+
   end
 
   protected

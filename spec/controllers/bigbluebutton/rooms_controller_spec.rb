@@ -912,17 +912,43 @@ describe Bigbluebutton::RoomsController do
 
   describe "#external" do
     before { mock_server_and_api }
-    let(:user) { Factory.build(:user) }
     let(:new_room) { BigbluebuttonRoom.new(:meetingid => 'my-meeting-id') }
 
-    context "for an anonymous user" do
+    context "on success" do
       before { controller.stub(:bigbluebutton_user).and_return(nil) }
       before(:each) { get :external, :server_id => mocked_server.to_param, :meeting => new_room.meetingid }
+      it { should assign_to(:server).with(mocked_server) }
       it { should respond_with(:success) }
       it { should render_template(:external) }
       it { should assign_to(:room).with_kind_of(BigbluebuttonRoom) }
       it { assigns(:room).meetingid.should be(new_room.meetingid) }
     end
+
+    context "when params[:meeting].blank?" do
+      before { controller.stub(:bigbluebutton_user).and_return(nil) }
+
+      context "without params[:redir_url]" do
+        before(:each) { get :external, :server_id => mocked_server.to_param }
+        it { should respond_with(:redirect) }
+        it { should redirect_to bigbluebutton_server_rooms_path(mocked_server) }
+        it { should set_the_flash.to(I18n.t('bigbluebutton_rails.rooms.errors.external.blank_meetingid')) }
+      end
+
+      context "with params[:redir_url]" do
+        before(:each) { get :external, :server_id => mocked_server.to_param, :redir_url => '/'}
+        it { should redirect_to '/' }
+      end
+    end
+  end
+
+  describe "#external_auth" do
+    before { mock_server_and_api }
+    let(:new_room) { BigbluebuttonRoom.new(:meetingid => 'my-meeting-id') }
+
+    before { controller.stub(:bigbluebutton_user).and_return(nil) }
+    before(:each) { post :external, :server_id => mocked_server.to_param, :meeting => new_room.meetingid }
+
+    it { should assign_to(:server).with(mocked_server) }
   end
 
 end
