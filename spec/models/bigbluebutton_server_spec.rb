@@ -204,7 +204,7 @@ describe BigbluebuttonServer do
         server.meetings[2].attendee_password.should == "pass"
         server.meetings[2].moderator_password.should == "pass"
         server.meetings[2].running.should == true
-        server.meetings[2].new_record?.should be_false
+        server.meetings[2].new_record?.should be_true
         server.meetings[2].external.should be_true
         server.meetings[2].randomize_meetingid.should be_false
       end

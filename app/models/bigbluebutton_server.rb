@@ -65,17 +65,15 @@ class BigbluebuttonServer < ActiveRecord::Base
     response[:meetings].each do |attr|
       room = BigbluebuttonRoom.find_by_server_id_and_meetingid(self.id, attr[:meetingID])
       if room.nil?
-        room = BigbluebuttonRoom.create(:server => self, :meetingid => attr[:meetingID],
-                                        :name => attr[:meetingID], :attendee_password => attr[:attendeePW],
-                                        :moderator_password => attr[:moderatorPW], :external => true,
-                                        :randomize_meetingid => false)
+        room = BigbluebuttonRoom.new(:server => self, :meetingid => attr[:meetingID],
+                                     :name => attr[:meetingID], :attendee_password => attr[:attendeePW],
+                                     :moderator_password => attr[:moderatorPW], :external => true,
+                                     :randomize_meetingid => false)
       else
         room.update_attributes(:attendee_password => attr[:attendeePW],
                                :moderator_password => attr[:moderatorPW])
       end
       room.running = attr[:running]
-
-      # TODO What if the update/save above fails?
 
       @meetings << room
     end

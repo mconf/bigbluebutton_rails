@@ -230,6 +230,12 @@ class Bigbluebutton::RoomsController < ApplicationController
     @join_url.gsub!("http://", "bigbluebutton://")
   end
 
+  def external
+    # TODO: error if params[:meeting].nil?
+
+    @room = BigbluebuttonRoom.new(:meetingid => params[:meeting])
+  end
+
   protected
 
   def find_server

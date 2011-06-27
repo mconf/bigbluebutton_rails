@@ -83,6 +83,7 @@ module ActionDispatch::Routing
         resources :servers, :controller => BigbluebuttonRails.controllers[:servers] do
           get :activity, :on => :member
           resources :rooms, :controller => BigbluebuttonRails.controllers[:rooms] do
+            get :external, :on => :collection
             get :join, :on => :member
             get :running, :on => :member
             get :end, :on => :member

@@ -910,5 +910,20 @@ describe Bigbluebutton::RoomsController do
 
   end # json responses
 
+  describe "#external" do
+    before { mock_server_and_api }
+    let(:user) { Factory.build(:user) }
+    let(:new_room) { BigbluebuttonRoom.new(:meetingid => 'my-meeting-id') }
+
+    context "for an anonymous user" do
+      before { controller.stub(:bigbluebutton_user).and_return(nil) }
+      before(:each) { get :external, :server_id => mocked_server.to_param, :meeting => new_room.meetingid }
+      it { should respond_with(:success) }
+      it { should render_template(:external) }
+      it { should assign_to(:room).with_kind_of(BigbluebuttonRoom) }
+      it { assigns(:room).meetingid.should be(new_room.meetingid) }
+    end
+  end
+
 end
 
