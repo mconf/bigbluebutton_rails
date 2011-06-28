@@ -283,124 +283,22 @@ describe Bigbluebutton::RoomsController do
       end
     end
 
-    context do
+    # verify the behaviour of .join_internal
+    # see support/shared_examples/rooms_controller.rb
+    context "calling .join_internal" do
+      let(:request) { get :join, :server_id => mocked_server.to_param, :id => room.to_param }
+      let(:template) { :join }
       before { controller.stub(:bigbluebutton_user) { user } }
 
-      context "if the user is a moderator" do
-        before {
-          controller.should_receive(:bigbluebutton_role).with(room).and_return(:moderator)
-          mocked_api.should_receive(:join_meeting_url).with(room.meetingid, user.name, room.moderator_password).
-            and_return("http://test.com/mod/join")
-        }
-
-        context "and the conference is running" do
-          before {
-            mocked_api.should_receive(:is_meeting_running?).and_return(true)
-          }
-
-          it "assigns server" do
-            get :join, :server_id => mocked_server.to_param, :id => room.to_param
-            should assign_to(:server).with(mocked_server)
-          end
-
-          it "redirects to the moderator join url" do
-            get :join, :server_id => mocked_server.to_param, :id => room.to_param
-            should respond_with(:redirect)
-            should redirect_to("http://test.com/mod/join")
-          end
-        end
-
-        context "and the conference is NOT running" do
-          before {
-            mocked_api.should_receive(:is_meeting_running?).and_return(false)
-          }
-
-          it "creates the conference" do
-            mocked_api.should_receive(:create_meeting).
-              with(room.name, room.meetingid, room.moderator_password,
-                   room.attendee_password, room.welcome_msg, room.dial_number,
-                   room.logout_url, room.max_participants, room.voice_bridge)
-            get :join, :server_id => mocked_server.to_param, :id => room.to_param
-          end
-
-          context "adds the protocol/domain to logout_url" do
-            after :each do
-              get :join, :server_id => mocked_server.to_param, :id => room.to_param
-            end
-
-            it "when it doesn't have protocol neither domain" do
-              room.update_attributes(:logout_url => "/incomplete/url")
-              full_logout_url = "http://test.host" + room.logout_url
-
-              mocked_api.should_receive(:create_meeting).
-                with(anything, anything, anything, anything, anything, anything,
-                     full_logout_url, anything, anything)
-            end
-
-            it "when it doesn't have protocol only" do
-              room.update_attributes(:logout_url => "www.host.com/incomplete/url")
-              full_logout_url = "http://" + room.logout_url
-
-              mocked_api.should_receive(:create_meeting).
-                with(anything, anything, anything, anything, anything, anything,
-                     full_logout_url, anything, anything)
-            end
-
-            it "but not when it has a protocol defined" do
-              room.update_attributes(:logout_url => "http://with/protocol")
-              mocked_api.should_receive(:create_meeting).
-                with(anything, anything, anything, anything, anything, anything,
-                     room.logout_url, anything, anything)
-            end
-          end
-
-        end
-
+      context "as moderator:" do
+        before { controller.should_receive(:bigbluebutton_role).with(room).and_return(:moderator) }
+        it_should_behave_like "internal join caller (moderator)"
       end
 
-      context "if the user is an attendee" do
-        before {
-          controller.should_receive(:bigbluebutton_role).with(room).and_return(:attendee)
-        }
-
-        context "and the conference is running" do
-          before {
-            mocked_api.should_receive(:is_meeting_running?).and_return(true)
-            mocked_api.should_receive(:join_meeting_url).with(room.meetingid, user.name, room.attendee_password).
-              and_return("http://test.com/attendee/join")
-          }
-
-          it "assigns server" do
-            get :join, :server_id => mocked_server.to_param, :id => room.to_param
-            should assign_to(:server).with(mocked_server)
-          end
-
-          it "redirects to the attendee join url" do
-            get :join, :server_id => mocked_server.to_param, :id => room.to_param
-            should respond_with(:redirect)
-            should redirect_to("http://test.com/attendee/join")
-          end
-        end
-
-        context "and the conference is NOT running" do
-          before {
-            mocked_api.should_receive(:is_meeting_running?).and_return(false)
-          }
-
-          it "do not try to create the conference" do
-            mocked_api.should_not_receive(:create_meeting)
-            get :join, :server_id => mocked_server.to_param, :id => room.to_param
-          end
-
-          it "renders #join to wait for a moderator" do
-            get :join, :server_id => mocked_server.to_param, :id => room.to_param
-            should respond_with(:success)
-            should render_template(:join)
-          end
-        end
-
+      context "as attendee:" do
+        before { controller.should_receive(:bigbluebutton_role).with(room).and_return(:attendee) }
+        it_should_behave_like "internal join caller (attendee)"
       end
-
     end
 
   end
@@ -549,88 +447,24 @@ describe Bigbluebutton::RoomsController do
 
     end
 
-    context "entering the attendee password" do
-      let(:hash) { { :name => "Elftor", :password => room.attendee_password } }
+    # verify the behaviour of .join_internal
+    # see support/shared_examples/rooms_controller.rb
+    context "calling .join_internal" do
+      let(:template) { :invite }
 
-      # OPTMIZE Almost the same tests as in #join. Can they be integrated somehow?
-      context "and the conference is running" do
-        before {
-          mocked_api.should_receive(:is_meeting_running?).and_return(true)
-          mocked_api.should_receive(:join_meeting_url).and_return("http://test.com/attendee/join")
-        }
-
-        it "assigns server" do
-          post :auth, :server_id => mocked_server.to_param, :id => room.to_param, :user => hash
-          should assign_to(:server).with(mocked_server)
-        end
-
-        it "redirects to the attendee join url" do
-          post :auth, :server_id => mocked_server.to_param, :id => room.to_param, :user => hash
-          should respond_with(:redirect)
-          should redirect_to("http://test.com/attendee/join")
-        end
+      context "as moderator:" do
+        let(:hash) { { :name => "Elftor", :password => room.moderator_password } }
+        let(:request) { post :auth, :server_id => mocked_server.to_param, :id => room.to_param, :user => hash }
+        it_should_behave_like "internal join caller (moderator)"
       end
 
-      context "and the conference is NOT running" do
-        before {
-          mocked_api.should_receive(:is_meeting_running?).and_return(false)
-        }
-
-        it "do not try to create the conference" do
-          mocked_api.should_not_receive(:create_meeting)
-          post :auth, :server_id => mocked_server.to_param, :id => room.to_param, :user => hash
-        end
-
-        it "renders #invite" do
-          post :auth, :server_id => mocked_server.to_param, :id => room.to_param, :user => hash
-          should respond_with(:success)
-          should render_template(:invite)
-          should set_the_flash.to(I18n.t('bigbluebutton_rails.rooms.errors.auth.not_running'))
-        end
+      context "as attendee:" do
+        let(:hash) { { :name => "Elftor", :password => room.attendee_password } }
+        let(:request) { post :auth, :server_id => mocked_server.to_param, :id => room.to_param, :user => hash }
+        it_should_behave_like "internal join caller (attendee)"
       end
-
     end
 
-    context "entering the moderator password" do
-      let(:hash) { { :name => "Elftor", :password => room.moderator_password } }
-
-      # OPTMIZE Almost the same tests as in #join. Can they be integrated somehow?
-      before {
-        mocked_api.should_receive(:join_meeting_url).and_return("http://test.com/mod/join")
-      }
-
-      context "and the conference is running" do
-        before {
-          mocked_api.should_receive(:is_meeting_running?).and_return(true)
-        }
-
-        it "assigns server" do
-          post :auth, :server_id => mocked_server.to_param, :id => room.to_param, :user => hash
-          should assign_to(:server).with(mocked_server)
-        end
-
-        it "redirects to the moderator join url" do
-          post :auth, :server_id => mocked_server.to_param, :id => room.to_param, :user => hash
-          should respond_with(:redirect)
-          should redirect_to("http://test.com/mod/join")
-        end
-      end
-
-      context "and the conference is NOT running" do
-        before {
-          mocked_api.should_receive(:is_meeting_running?).and_return(false)
-        }
-
-        it "creates the conference" do
-          mocked_api.should_receive(:create_meeting).
-            with(room.name, room.meetingid, room.moderator_password,
-                 room.attendee_password, room.welcome_msg, room.dial_number,
-                 room.logout_url, room.max_participants, room.voice_bridge)
-          post :auth, :server_id => mocked_server.to_param, :id => room.to_param, :user => hash
-        end
-      end
-
-    end
   end
 
   # can be used when matching rooms inside some resource other than servers
