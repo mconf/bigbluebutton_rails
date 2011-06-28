@@ -154,9 +154,16 @@ class Bigbluebutton::RoomsController < ApplicationController
     end
   end
 
-  # Authenticates an user using name and password passed in the params from #invite
+  # Authenticates an user using name and password passed in the params from #invite or #external
+  # If params[:id] is set, assumes that came from #invite and uses it to get the room
+  # Otherwise tries to get the room from params[:meeting] and assumes that came from #external
   def auth
-    @room = BigbluebuttonRoom.find_by_param(params[:id])
+    @room, view = auth_find_room
+    if @room.nil?
+      message = t('bigbluebutton_rails.rooms.errors.auth.wrong_params')
+      redirect_to request.referer, :notice => message
+      return
+    end
 
     raise BigbluebuttonRails::RoomAccessDenied.new if bigbluebutton_role(@room).nil?
 
@@ -165,10 +172,10 @@ class Bigbluebutton::RoomsController < ApplicationController
     role = @room.user_role(params[:user])
 
     unless role.nil? or name.nil?
-      join_internal(name, role, :invite)
+      join_internal(name, role, view)
     else
       flash[:error] = t('bigbluebutton_rails.rooms.errors.auth.failure')
-      render :action => "invite", :status => :unauthorized
+      render :action => view, :status => :unauthorized
     end
   end
 
@@ -238,75 +245,19 @@ class Bigbluebutton::RoomsController < ApplicationController
     @room = BigbluebuttonRoom.new(:meetingid => params[:meeting])
   end
 
-  def external_auth
-=begin
-    unless params[:id].blank?
-      @room = BigbluebuttonRoom.find_by_param(params[:id])
-    else # params[:meeting].blank?
-      message = t('bigbluebutton_rails.rooms.errors.external.blank_meetingid')
-      params[:redir_url] ||= bigbluebutton_server_rooms_path(@server)
-      redirect_to params[:redir_url], :notice => message
-
-      # TODO: check params[:user][:username], params[:user][:password]
-
-      @server.fetch_meetings
-      @room = @server.meetings.select{ |r| r.meetingid == params[:meeting] }.first
-      if room.nil?
-        # TODO: error
-      end
-
-    end
-
-    raise BigbluebuttonRails::RoomAccessDenied.new if bigbluebutton_role(@room).nil?
-
-    # if there's a user logged, use his name instead of the name in the params
-    name = bigbluebutton_user.nil? ? params[:user][:name] : bigbluebutton_user.name
-    role = @room.user_role(params[:user])
-
-    unless role.nil? or name.nil?
-      join_internal(name, role, :invite)
-      # TODO: join_internal(name, role, :external)
-    else
-      flash[:error] = t('bigbluebutton_rails.rooms.errors.auth.failure')
-      render :action => "invite", :status => :unauthorized
-      # TODO: render :action => "external", :status => :unauthorized
-    end
-=end
-
-=begin
-    if params[:meeting].blank?
-      message = t('bigbluebutton_rails.rooms.errors.external.blank_meetingid')
-      params[:redir_url] ||= bigbluebutton_server_rooms_path(@server)
-      redirect_to params[:redir_url], :notice => message
-    end
-
-    # TODO: check params[:user][:username], params[:user][:password]
-
-    @server.fetch_meetings
-    @room = @server.meetings.select{ |r| r.meetingid == params[:meeting] }.first
-
-    if room.nil?
-      # TODO: no room, no join
-    else
-
-      raise BigbluebuttonRails::RoomAccessDenied.new if bigbluebutton_role(@room).nil?
-
-      # if there's a user logged, use his name instead of the name in the params
-      name = bigbluebutton_user.nil? ? params[:user][:name] : bigbluebutton_user.name
-      role = @room.user_role(params[:user])
-
-      unless role.nil? or name.nil?
-        join_internal(name, role, :external)
-      else
-        flash[:error] = t('bigbluebutton_rails.rooms.errors.external_auth.failure')
-        render :action => "external", :status => :unauthorized
-      end
-    end
-=end
-
-  end
-
   protected
+
+  def auth_find_room
+    if !params[:id].blank?
+      view = :invite
+      room = BigbluebuttonRoom.find_by_param(params[:id])
+    elsif !params[:meeting].blank? && !params[:user].blank?
+      view = :external
+      @server.fetch_meetings
+      room = @server.meetings.select{ |r| r.meetingid == params[:meeting] }.first
+    end
+    [ room, view ]
+  end
 
   def find_server
     if params.has_key?(:server_id)

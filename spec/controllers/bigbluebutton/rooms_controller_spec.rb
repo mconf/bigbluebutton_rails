@@ -395,11 +395,64 @@ describe Bigbluebutton::RoomsController do
   end
 
   describe "#auth" do
+
+    pending "renders the view :external in case of errors when params[:meeting] is set"
+
     let(:user) { Factory.build(:user) }
     before {
       mock_server_and_api
       controller.stub(:bigbluebutton_user).and_return(nil)
     }
+
+    context "assigns @room" do
+      let(:user_hash) { { :name => "Elftor", :password => room.attendee_password } }
+      let(:meetingid) { "my-meeting-id" }
+      let(:http_referer) { bigbluebutton_server_path(mocked_server) }
+      before {
+        mocked_api.stub!(:is_meeting_running?)
+        request.env["HTTP_REFERER"] = http_referer
+      }
+
+      context "if params[:id]" do
+        before(:each) { post :auth, :server_id => mocked_server.to_param, :id => room.to_param,
+          :meeting => meetingid, :user => user_hash }
+        it { should assign_to(:room).with(room) }
+      end
+
+      context "if params[:meeting]" do
+        let(:target_meeting) { BigbluebuttonRoom.new(:meetingid => meetingid) }
+        let(:meetings) {
+          [ room, target_meeting, BigbluebuttonRoom.new(:meetingid => "anything", :name => meetingid) ]
+        }
+        before do
+          mocked_server.should_receive(:fetch_meetings)
+          mocked_server.should_receive(:meetings).and_return(meetings)
+        end
+
+        it {
+          post :auth, :server_id => mocked_server.to_param, :id => nil,
+                      :meeting => meetingid, :user => user_hash
+          should assign_to(:room).with(target_meeting)
+        }
+      end
+
+      context "if !params[:id] and (!params[:meeting] or !params[:user])" do
+        let(:message) { I18n.t('bigbluebutton_rails.rooms.errors.auth.wrong_params') }
+
+        [ { :meeting => nil, :user => { :any => "any" } },
+          { :meeting => "any", :user => nil } ].each do |data|
+
+          before :each do
+            post :auth, :server_id => mocked_server.to_param, :id => nil,
+                        :meeting => data[:meeting], :user => data[:user]
+          end
+          it { should assign_to(:room).with(nil) }
+          it { should respond_with(:redirect) }
+          it { should redirect_to(http_referer) }
+          it { should set_the_flash.to(message) }
+        end
+      end
+    end
 
     context "block access if bigbluebutton_role returns nil" do
       let(:hash) { { :name => "Elftor", :password => room.attendee_password } }
@@ -775,6 +828,7 @@ describe Bigbluebutton::RoomsController do
     end
   end
 
+  # TODO: remove external_auth
   describe "#external_auth" do
     before { mock_server_and_api }
     let(:new_room) { BigbluebuttonRoom.new(:meetingid => 'my-meeting-id') }

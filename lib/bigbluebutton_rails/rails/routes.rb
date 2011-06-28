@@ -85,7 +85,7 @@ module ActionDispatch::Routing
           resources :rooms, :controller => BigbluebuttonRails.controllers[:rooms] do
             collection do
               get :external
-              post :external, :action => :external_auth
+              post :external, :action => :auth
             end
             member do
               get :join
