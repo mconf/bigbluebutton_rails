@@ -1,6 +1,12 @@
 # Checks calls to RoomsController.join_internal method when the user
 # is an ATTENDEE (it can be the role of the current user or can be defined
 # by the password the user typed)
+#
+# Arguments:
+#   room      # the target BigbluebuttonRoom
+#   request   # the http request to be executed
+#   template  # the template that should be rendered
+#
 shared_examples_for "internal join caller (attendee)" do
   context "when the conference is running" do
     before {

@@ -20,20 +20,20 @@ describe Bigbluebutton::ServersController do
         should route_to(:controller => "bigbluebutton/servers", :action => "new")
       }
       it {
-        {:get => "/#{prefix}/servers/1/edit"}.
-        should route_to(:controller => "bigbluebutton/servers", :action => "edit", :id => "1")
+        {:get => "/#{prefix}/servers/server-1/edit"}.
+        should route_to(:controller => "bigbluebutton/servers", :action => "edit", :id => "server-1")
       }
       it {
-        {:get => "/#{prefix}/servers/1"}.
-        should route_to(:controller => "bigbluebutton/servers", :action => "show", :id => "1")
+        {:get => "/#{prefix}/servers/server-1"}.
+        should route_to(:controller => "bigbluebutton/servers", :action => "show", :id => "server-1")
       }
       it {
-        {:put => "/#{prefix}/servers/1"}.
-        should route_to(:controller => "bigbluebutton/servers", :action => "update", :id => "1")
+        {:put => "/#{prefix}/servers/server-1"}.
+        should route_to(:controller => "bigbluebutton/servers", :action => "update", :id => "server-1")
       }
       it {
-        {:delete => "/#{prefix}/servers/1"}.
-        should route_to(:controller => "bigbluebutton/servers", :action => "destroy", :id => "1")
+        {:delete => "/#{prefix}/servers/server-1"}.
+        should route_to(:controller => "bigbluebutton/servers", :action => "destroy", :id => "server-1")
       }
     end
 

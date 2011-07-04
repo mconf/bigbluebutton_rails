@@ -154,11 +154,10 @@ class Bigbluebutton::RoomsController < ApplicationController
     end
   end
 
-  # Authenticates an user using name and password passed in the params from #invite or #external
-  # If params[:id] is set, assumes that came from #invite and uses it to get the room
-  # Otherwise tries to get the room from params[:meeting] and assumes that came from #external
+  # Authenticates an user using name and password passed in the params from #invite
+  # Uses params[:id] to get the target room
   def auth
-    @room, view = auth_find_room
+    @room = BigbluebuttonRoom.find_by_param(params[:id]) if !params[:id].blank?
     if @room.nil?
       message = t('bigbluebutton_rails.rooms.errors.auth.wrong_params')
       redirect_to request.referer, :notice => message
@@ -172,10 +171,44 @@ class Bigbluebutton::RoomsController < ApplicationController
     role = @room.user_role(params[:user])
 
     unless role.nil? or name.nil?
-      join_internal(name, role, view)
+      join_internal(name, role, :invite)
     else
       flash[:error] = t('bigbluebutton_rails.rooms.errors.auth.failure')
-      render :action => view, :status => :unauthorized
+      render :action => :invite, :status => :unauthorized
+    end
+  end
+
+  # Authenticates an user using name and password passed in the params from #external
+  # Uses params[:id] to get the target room
+  def external_auth
+    @room = nil
+    if !params[:meeting].blank? && !params[:user].blank?
+      @server.fetch_meetings
+      @room = @server.meetings.select{ |r| r.meetingid == params[:meeting] }.first
+    else
+      message = t('bigbluebutton_rails.rooms.errors.auth.wrong_params')
+      redirect_to request.referer, :notice => message
+      return
+    end
+
+    raise BigbluebuttonRails::RoomAccessDenied.new if bigbluebutton_role(@room).nil?
+
+    # if there's a user logged, use his name instead of the name in the params
+    name = bigbluebutton_user.nil? ? params[:user][:name] : bigbluebutton_user.name
+    role = @room.user_role(params[:user])
+
+    unless role.nil? or name.nil?
+      @room.fetch_meeting_info
+      if @room.is_running?
+        join_url = @room.join_url(name, role)
+        redirect_to(join_url)
+      else
+        flash[:error] = t('bigbluebutton_rails.rooms.errors.auth.not_running')
+        render :action => :external
+      end
+    else
+      flash[:error] = t('bigbluebutton_rails.rooms.errors.auth.failure')
+      render :action => :external, :status => :unauthorized
     end
   end
 
@@ -247,6 +280,8 @@ class Bigbluebutton::RoomsController < ApplicationController
 
   protected
 
+ # TODO: remove function
+=begin
   def auth_find_room
     if !params[:id].blank?
       view = :invite
@@ -258,6 +293,7 @@ class Bigbluebutton::RoomsController < ApplicationController
     end
     [ room, view ]
   end
+=end
 
   def find_server
     if params.has_key?(:server_id)

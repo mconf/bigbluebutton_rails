@@ -131,7 +131,7 @@ class BigbluebuttonRoom < ActiveRecord::Base
     unless response.nil?
       self.attendee_password = response[:attendeePW]
       self.moderator_password = response[:moderatorPW]
-      self.save
+      self.save unless self.new_record?
     end
 
     response

@@ -321,22 +321,39 @@ describe BigbluebuttonRoom do
 
         it { should respond_to(:send_create) }
 
-        it "send create_meeting" do
-          mocked_api.should_receive(:create_meeting).
-            with(room.name, room.meetingid, room.moderator_password,
-                 room.attendee_password, room.welcome_msg, room.dial_number,
-                 room.logout_url, room.max_participants, room.voice_bridge).
-            and_return(hash_create)
-          room.server = mocked_server
-          room.send_create
+        context "send create_meeting" do
 
-          room.attendee_password.should == attendee_password
-          room.moderator_password.should == moderator_password
+          context "for a stored room" do
+            before do
+              mocked_api.should_receive(:create_meeting).
+                with(room.name, room.meetingid, room.moderator_password,
+                     room.attendee_password, room.welcome_msg, room.dial_number,
+                     room.logout_url, room.max_participants, room.voice_bridge).
+                and_return(hash_create)
+              room.server = mocked_server
+              room.send_create
+            end
+            it { room.attendee_password.should be(attendee_password) }
+            it { room.moderator_password.should be(moderator_password) }
+            it { room.changed?.should be_false }
+          end
 
-          # to be sure that the model was saved
-          saved = BigbluebuttonRoom.find(room.id)
-          saved.attendee_password.should == attendee_password
-          saved.moderator_password.should == moderator_password
+          context "for a new_record" do
+            let(:new_room) { Factory.build(:bigbluebutton_room) }
+            before do
+              mocked_api.should_receive(:create_meeting).
+                with(new_room.name, new_room.meetingid, new_room.moderator_password,
+                     new_room.attendee_password, new_room.welcome_msg, new_room.dial_number,
+                     new_room.logout_url, new_room.max_participants, new_room.voice_bridge).
+                and_return(hash_create)
+              new_room.server = mocked_server
+              new_room.send_create
+            end
+            it { new_room.attendee_password.should be(attendee_password) }
+            it { new_room.moderator_password.should be(moderator_password) }
+            it("do not save the record") { new_room.new_record?.should be_true }
+          end
+
         end
 
         context "randomizes meetingid" do
