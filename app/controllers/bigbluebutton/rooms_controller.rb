@@ -178,6 +178,15 @@ class Bigbluebutton::RoomsController < ApplicationController
     end
   end
 
+  def external
+    if params[:meeting].blank?
+      message = t('bigbluebutton_rails.rooms.errors.external.blank_meetingid')
+      params[:redir_url] ||= bigbluebutton_server_rooms_path(@server)
+      redirect_to params[:redir_url], :notice => message
+    end
+    @room = BigbluebuttonRoom.new(:meetingid => params[:meeting])
+  end
+
   # Authenticates an user using name and password passed in the params from #external
   # Uses params[:id] to get the target room
   def external_auth
@@ -269,31 +278,7 @@ class Bigbluebutton::RoomsController < ApplicationController
     @join_url.gsub!("http://", "bigbluebutton://")
   end
 
-  def external
-    if params[:meeting].blank?
-      message = t('bigbluebutton_rails.rooms.errors.external.blank_meetingid')
-      params[:redir_url] ||= bigbluebutton_server_rooms_path(@server)
-      redirect_to params[:redir_url], :notice => message
-    end
-    @room = BigbluebuttonRoom.new(:meetingid => params[:meeting])
-  end
-
   protected
-
- # TODO: remove function
-=begin
-  def auth_find_room
-    if !params[:id].blank?
-      view = :invite
-      room = BigbluebuttonRoom.find_by_param(params[:id])
-    elsif !params[:meeting].blank? && !params[:user].blank?
-      view = :external
-      @server.fetch_meetings
-      room = @server.meetings.select{ |r| r.meetingid == params[:meeting] }.first
-    end
-    [ room, view ]
-  end
-=end
 
   def find_server
     if params.has_key?(:server_id)
