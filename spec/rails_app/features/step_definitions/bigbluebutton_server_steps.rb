@@ -1,9 +1,4 @@
-Given /a user named "(.+)"/i do |username|
-  @username = username
-  # TODO useless for now
-end
-
-And /^registers a new BigBlueButton server$/i do
+When /^registers a new server$/i do
   attrs = Factory.attributes_for(:bigbluebutton_server_integration)
   fill_in("bigbluebutton_server[name]", :with => attrs[:name])
   fill_in("bigbluebutton_server[url]", :with => attrs[:url])
@@ -13,7 +8,7 @@ And /^registers a new BigBlueButton server$/i do
   click_button("Create")
 end
 
-Then /(?:|I ) should see the information about this server/ do
+When /(?:|I ) should see the information about this server/ do
   server = BigbluebuttonServer.last
   page_has_content(server.name)
   page_has_content(server.url)

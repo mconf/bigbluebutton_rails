@@ -4,6 +4,6 @@ Feature: Manage BigBlueButton servers
 
   Scenario: Register a new BigBlueButton server
     Given a user named "test user"
-    When he goes to the new BigBlueButton server page
-      And registers a new BigBlueButton server
+    When he goes to the new server page
+      And registers a new server
     Then he should see the information about this server

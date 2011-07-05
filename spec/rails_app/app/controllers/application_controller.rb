@@ -1,9 +1,10 @@
 class ApplicationController < ActionController::Base
   protect_from_forgery
 
-#  def bigbluebutton_user
-#    User.new
-#  end
+  # TODO: return a real user (use devise?)
+  def bigbluebutton_user
+    @user ||= User.new
+  end
 
 end
 

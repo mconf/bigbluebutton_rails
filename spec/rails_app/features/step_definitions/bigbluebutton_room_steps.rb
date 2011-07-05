@@ -1,8 +1,8 @@
-Given /a BigBlueButton server/i do
+When /a server/i do
   @server = Factory.create(:bigbluebutton_server_integration)
 end
 
-And /^registers a new BigBlueButton room$/i do
+When /^registers a new room$/i do
   attrs = Factory.attributes_for(:bigbluebutton_room, :server => @server)
   fill_in("bigbluebutton_room[name]", :with => attrs[:name])
   fill_in("bigbluebutton_room[meetingid]", :with => attrs[:meetingid])
@@ -20,7 +20,7 @@ And /^registers a new BigBlueButton room$/i do
   click_button("Create")
 end
 
-Then /(?:|I ) should see the information about this room/ do
+When /(?:|I ) should see the information about this room/i do
   room = BigbluebuttonRoom.last
   page_has_content(room.name)
   page_has_content(room.meetingid)
@@ -35,4 +35,23 @@ Then /(?:|I ) should see the information about this room/ do
   page_has_content(room.max_participants)
   page_has_content(room.external)
   page_has_content(room.param)
+end
+
+When /^an external room called "(.+)"$/i do |name|
+  @room = BigbluebuttonRoom.new(:meetingid => name.parameterize.downcase,
+                                :name => name,
+                                :attendee_password => Forgery(:basic).password,
+                                :moderator_password => Forgery(:basic).password,
+                                :external => true,
+                                :server => @server)
+  @params = { :meeting => @room.meetingid } # TODO: may not be the best place to define this
+end
+
+When /(?:|I ) should see a form to join an external room$/i do
+  pending
+  Then "the \"user_name\" field within the page should contain \"aa\""
+end
+
+When /^be able to join the room$/i do
+  pending
 end
