@@ -6,7 +6,7 @@ module NavigationHelpers
   # step definition in web_steps.rb
   #
   def path_to(page_name, params=nil)
-    params = "?" + params.map{ |k,v| "#{k}=#{v}" }.join("&") if params
+    params = "?" + params.map{ |k,v| "#{k}=#{CGI::escape(v)}" }.join("&") if params
 
     case page_name
 

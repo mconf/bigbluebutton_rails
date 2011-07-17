@@ -188,7 +188,7 @@ class Bigbluebutton::RoomsController < ApplicationController
   end
 
   # Authenticates an user using name and password passed in the params from #external
-  # Uses params[:id] to get the target room
+  # Uses params[:meeting] to get the meetingID of the target room
   def external_auth
     @room = nil
     if !params[:meeting].blank? && !params[:user].blank?
@@ -200,6 +200,7 @@ class Bigbluebutton::RoomsController < ApplicationController
       return
     end
 
+    # This is just to check if the room is not blocked, not to get the actual role
     raise BigbluebuttonRails::RoomAccessDenied.new if bigbluebutton_role(@room).nil?
 
     # if there's a user logged, use his name instead of the name in the params

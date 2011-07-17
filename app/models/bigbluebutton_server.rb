@@ -68,7 +68,7 @@ class BigbluebuttonServer < ActiveRecord::Base
         room = BigbluebuttonRoom.new(:server => self, :meetingid => attr[:meetingID],
                                      :name => attr[:meetingID], :attendee_password => attr[:attendeePW],
                                      :moderator_password => attr[:moderatorPW], :external => true,
-                                     :randomize_meetingid => false)
+                                     :randomize_meetingid => false, :private => true)
       else
         room.update_attributes(:attendee_password => attr[:attendeePW],
                                :moderator_password => attr[:moderatorPW])

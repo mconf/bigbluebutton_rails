@@ -24,6 +24,7 @@ require 'cgi'
 require File.expand_path(File.join(File.dirname(__FILE__), "..", "support", "paths"))
 require File.expand_path(File.join(File.dirname(__FILE__), "..", "support", "selectors"))
 
+=begin
 module WithinHelpers
   def with_scope(locator)
     locator ? within(*selector_for(locator)) { yield } : yield
@@ -31,7 +32,6 @@ module WithinHelpers
 end
 World(WithinHelpers)
 
-=begin
 # Single-line step scoper
 When /^(.*) within (.*[^:])$/ do |step, parent|
   with_scope(parent) { When step }
@@ -41,7 +41,6 @@ end
 When /^(.*) within (.*[^:]):$/ do |step, parent, table_or_string|
   with_scope(parent) { When "#{step}:", table_or_string }
 end
-=end
 
 Given /^(?:|I )am on (.+)$/ do |page_name|
   visit path_to(page_name)
@@ -50,6 +49,7 @@ end
 When /^(?:|I )go to (.+)$/ do |page_name|
   visit path_to(page_name)
 end
+=end
 
 When /^(?:|I )press "([^"]*)"$/ do |button|
   click_button(button)
@@ -104,6 +104,7 @@ When /^(?:|I )attach the file "([^"]*)" to "([^"]*)"$/ do |path, field|
   attach_file(field, File.expand_path(path))
 end
 
+=begin
 Then /^(?:|I )should see "([^"]*)"$/ do |text|
   if page.respond_to? :should
     page.should have_content(text)
@@ -139,6 +140,7 @@ Then /^(?:|I )should not see \/([^\/]*)\/$/ do |regexp|
     assert page.has_no_xpath?('//*', :text => regexp)
   end
 end
+=end
 
 Then /^the "([^"]*)" field(?: within (.*))? should contain "([^"]*)"$/ do |field, parent, value|
   with_scope(parent) do

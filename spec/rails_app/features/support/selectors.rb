@@ -1,4 +1,61 @@
 module HtmlSelectorsHelpers
+
+  # Creates a selector (a string) using xpath or css selectors (default)
+  def make_selector(element, attrs={}, method=:css)
+    case method
+    when :xpath
+      # TODO: test xpath with multiple attrs
+      "//#{element}" + attrs.map{ |k,v| "[@#{k.to_s}='#{v.to_s}']" }.join
+    else # :css
+      "#{element}" + attrs.map{ |k,v| "[#{k.to_s}='#{v.to_s}']" }.join
+    end
+  end
+
+  # Ensures the page has certain element with certain attributes
+  # Same as has_element but for the entire page
+  def page_has_element(element, attrs={}, method=:css)
+    selector = make_selector(element, attrs, method)
+    if page.respond_to? :should
+      case method
+      when :xpath
+        page.should have_xpath(selector)
+      else # :css
+        page.should have_selector(selector)
+      end
+    else
+      case method
+      when :xpath
+        assert page.has_xpath?(selector)
+      else # :css
+        assert page.has_selector?(selector)
+      end
+    end
+  end
+
+  # Ensures there is a certain element with certain attributes
+  # Used inside "within" blocks
+  # Exemples (both will have the same result):
+  #   has_element("input", { :name => 'meeting', :type => 'hidden', :value => 'my-value' })
+  #   has_element("input[name='meeting'][type='hidden'][value='my-value']")
+  def has_element(element, attrs={}, method=:css)
+    selector = make_selector(element, attrs, method)
+    if respond_to? :should
+      case method
+      when :xpath
+        should have_xpath(selector)
+      else # :css
+        should have_selector(selector)
+      end
+    else
+      case method
+      when :xpath
+        assert has_xpath?(selector)
+      else # :css
+        assert has_xpath?(selector)
+      end
+    end
+  end
+
   # Maps a name to a selector. Used primarily by the
   #
   #   When /^(.+) within (.+)$/ do |step, scope|

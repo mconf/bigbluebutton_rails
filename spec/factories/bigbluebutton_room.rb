@@ -8,4 +8,5 @@ Factory.define :bigbluebutton_room do |r|
   r.private false
   r.randomize_meetingid false
   r.sequence(:param) { |n| "meeting-#{n}" }
+  r.external false
 end

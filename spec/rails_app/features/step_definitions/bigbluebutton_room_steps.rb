@@ -37,21 +37,28 @@ When /(?:|I ) should see the information about this room/i do
   page_has_content(room.param)
 end
 
-When /^an external room called "(.+)"$/i do |name|
-  @room = BigbluebuttonRoom.new(:meetingid => name.parameterize.downcase,
-                                :name => name,
-                                :attendee_password => Forgery(:basic).password,
-                                :moderator_password => Forgery(:basic).password,
-                                :external => true,
-                                :server => @server)
-  @params = { :meeting => @room.meetingid } # TODO: may not be the best place to define this
+When /^an external room$/i do
+  @room = Factory.build(:bigbluebutton_room, :server => @server, :external => true)
+  @room.send_create
 end
 
-When /(?:|I ) should see a form to join an external room$/i do
-  pending
-  Then "the \"user_name\" field within the page should contain \"aa\""
+When /(?:|I ) should see a form to join the external room$/i do
+  within(form_selector(external_bigbluebutton_server_rooms_path(@server), 'post')) do
+    has_element("input", { :name => 'meeting', :type => 'hidden', :value => @room.meetingid })
+    has_element("input", { :name => 'user[name]', :type => 'text' })
+    has_element("input", { :name => 'user[password]', :type => 'password' })
+  end
+end
+
+When /his name should be in the appropriate input$/i do
+  within(form_selector(external_bigbluebutton_server_rooms_path(@server), 'post')) do
+    has_element("input", { :name => 'user[name]', :type => 'text', :value => @user.name })
+  end
 end
 
 When /^be able to join the room$/i do
-  pending
+  fill_in("user[name]", :with => @user.name)
+  fill_in("user[password]", :with => @room.moderator_password)
+  click_button("Submit")
+  # TODO: check current_url to ensure it is inside the conference
 end
