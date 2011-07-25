@@ -1,7 +1,7 @@
 class Bigbluebutton::ServersController < ApplicationController
 
   respond_to :html
-  respond_to :json, :only => [:index, :show, :new, :create, :update, :destroy]
+  respond_to :json, :only => [:index, :show, :new, :create, :update, :destroy, :activity]
 
   def index
     respond_with(@servers = BigbluebuttonServer.all)
@@ -21,26 +21,40 @@ class Bigbluebutton::ServersController < ApplicationController
 
   def activity
     @server = BigbluebuttonServer.find_by_param(params[:id])
-    # @new_meetings = @server.rooms
-    @server.fetch_meetings
-    # @new_meetings = @server.meetings.reject{ |r|
-    #  i = @new_meetings.index(r)
-    #  i.nil? ? false : r.attr_equal?(@new_meetings[i])
-    #}
-    @server.meetings.each do |meeting|
-      meeting.fetch_meeting_info
+
+    error = false
+    begin
+      @server.fetch_meetings
+      @server.meetings.each do |meeting|
+        meeting.fetch_meeting_info
+      end
+    rescue BigBlueButton::BigBlueButtonException => e
+      error = true
+      message = e.to_s
     end
 
-    # TODO catch exceptions
-
-    if params[:update_list]
+    # update_list works only for html
+    if params[:update_list] && params[:format] == "html"
       render :partial => 'activity_list'
       return
     end
 
-    # TODO json response
-
-    respond_with(@server)
+    respond_with @server.meetings do |format|
+      # we return/render the fetched meetings even in case of error
+      # but we set the error message in the response
+      if error
+        flash[:error] = message
+        format.html { render :action => "activity" }
+        format.json {
+          array = @server.meetings
+          array.insert(0, { :message => message })
+          render :json => array, :status => :error
+        }
+      else
+        format.html
+        format.json
+      end
+    end
   end
 
   def create
