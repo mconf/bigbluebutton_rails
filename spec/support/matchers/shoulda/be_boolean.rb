@@ -1,6 +1,6 @@
 module Shoulda
   module Matchers
-    module ActiveRecord # :nodoc
+    module ActiveModel # :nodoc
 
       # Usage example: be_boolean(:private)
       def be_boolean(attribute)

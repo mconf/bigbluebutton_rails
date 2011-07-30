@@ -88,3 +88,10 @@ namespace :spec do
     sh "rails destroy bigbluebutton_rails:install 0.0.4"
   end
 end
+
+task :best_practices do |app|
+  sh "rails_best_practices -f html --spec &>/dev/null"
+  puts
+  puts "Output will be in the file rails_best_practices_output.html"
+  puts
+end

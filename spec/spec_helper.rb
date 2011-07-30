@@ -1,6 +1,9 @@
 # Configure Rails Envinronment
 ENV["RAILS_ENV"] = "test"
 
+require 'simplecov'
+SimpleCov.start 'rails'
+
 require "rails_app/config/environment"
 require "rails/test_help"
 require "rspec/rails"
