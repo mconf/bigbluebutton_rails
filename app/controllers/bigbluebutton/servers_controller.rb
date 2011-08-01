@@ -2,13 +2,14 @@ class Bigbluebutton::ServersController < ApplicationController
 
   respond_to :html
   respond_to :json, :only => [:index, :show, :new, :create, :update, :destroy, :activity]
+  before_filter :find_server, :only => [:show, :edit, :activity, :update, :destroy]
 
   def index
     respond_with(@servers = BigbluebuttonServer.all)
   end
 
   def show
-    respond_with(@server = BigbluebuttonServer.find_by_param(params[:id]))
+    respond_with(@server)
   end
 
   def new
@@ -16,12 +17,10 @@ class Bigbluebutton::ServersController < ApplicationController
   end
 
   def edit
-    respond_with(@server = BigbluebuttonServer.find_by_param(params[:id]))
+    respond_with(@server)
   end
 
   def activity
-    @server = BigbluebuttonServer.find_by_param(params[:id])
-
     error = false
     begin
       @server.fetch_meetings
@@ -35,7 +34,7 @@ class Bigbluebutton::ServersController < ApplicationController
 
     # update_list works only for html
     if params[:update_list] && params[:format] == "html"
-      render :partial => 'activity_list'
+      render 'activity_list', :server => @server
       return
     end
 
@@ -44,7 +43,7 @@ class Bigbluebutton::ServersController < ApplicationController
       # but we set the error message in the response
       if error
         flash[:error] = message
-        format.html { render :action => "activity" }
+        format.html { render :activity }
         format.json {
           array = @server.meetings
           array.insert(0, { :message => message })
@@ -68,15 +67,13 @@ class Bigbluebutton::ServersController < ApplicationController
         }
         format.json { render :json => @server, :status => :created }
       else
-        format.html { render :action => "new" }
+        format.html { render :new }
         format.json { render :json => @server.errors.full_messages, :status => :unprocessable_entity }
       end
     end
   end
 
   def update
-    @server = BigbluebuttonServer.find_by_param(params[:id])
-
     respond_with @server do |format|
       if @server.update_attributes(params[:bigbluebutton_server])
         format.html {
@@ -85,14 +82,13 @@ class Bigbluebutton::ServersController < ApplicationController
         }
         format.json { head :ok }
       else
-        format.html { render :action => "edit" }
+        format.html { render :edit }
         format.json { render :json => @server.errors.full_messages, :status => :unprocessable_entity }
       end
     end
   end
 
   def destroy
-    @server = BigbluebuttonServer.find_by_param(params[:id])
     @server.destroy
 
     respond_with do |format|
@@ -100,4 +96,11 @@ class Bigbluebutton::ServersController < ApplicationController
       format.json { head :ok }
     end
   end
+
+  protected
+
+  def find_server
+    @server = BigbluebuttonServer.find_by_param(params[:id])
+  end
+
 end
