@@ -5,6 +5,5 @@ pkg
 log
 *.gem
 spec/integration_conf.yml
-Gemfile.lock
 coverage/
 rails_best_practices_output.html

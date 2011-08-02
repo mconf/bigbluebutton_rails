@@ -33,8 +33,8 @@ class Bigbluebutton::ServersController < ApplicationController
     end
 
     # update_list works only for html
-    if params[:update_list] && params[:format] == "html"
-      render 'activity_list', :server => @server
+    if params[:update_list] && (params[:format].nil? || params[:format].to_s == "html")
+      render :html => 'activity_list', :server => @server
       return
     end
 

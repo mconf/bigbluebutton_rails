@@ -90,7 +90,7 @@ describe Bigbluebutton::ServersController do
     context "standard behaviour" do
 
       before do
-        # we have to mock calls that trigger BBB API calls
+        # mock some methods that trigger BBB API calls
         server.should_receive(:fetch_meetings).and_return({ })
         server.should_receive(:meetings).at_least(:once).and_return([room1, room2])
         room1.should_receive(:fetch_meeting_info)
@@ -105,13 +105,19 @@ describe Bigbluebutton::ServersController do
       end
 
       context "with params[:update_list]" do
-        before(:each) { get :activity, :id => server.to_param, :update_list => true }
-        it { should render_template(:activity_list) }
+        context "and :format nil" do
+          before(:each) { get :activity, :id => server.to_param, :update_list => true }
+          it { should render_template(:activity_list) }
+        end
+        context "and :format = 'html'" do
+          before(:each) { get :activity, :id => server.to_param, :update_list => true, :format => "html" }
+          it { should render_template(:activity_list) }
+        end
       end
 
     end
 
-   context "exception handling" do
+    context "exception handling" do
       let(:bbb_error_msg) { "err msg" }
       let(:bbb_error) { BigBlueButton::BigBlueButtonException.new(bbb_error_msg) }
 
@@ -132,7 +138,7 @@ describe Bigbluebutton::ServersController do
       end
     end
 
-  end
+  end # #activity
 
 end
 
