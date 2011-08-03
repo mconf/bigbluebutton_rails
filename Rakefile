@@ -30,23 +30,25 @@ end
 desc 'Setup RailsApp used in tests.'
 namespace :setup do
   task :rails_app do |app|
-    cd "spec/rails_app/"
+    cd File.join(File.dirname(__FILE__), "spec", "rails_app")
     sh "rails destroy bigbluebutton_rails:install"
     sh "rails generate bigbluebutton_rails:install"
+    cd File.dirname(__FILE__)
   end
 
   namespace :rails_app do |app|
     task :db do
+      cd File.join(File.dirname(__FILE__), "spec", "rails_app")
       # base
-      cd "spec/rails_app/"
       sh "rake db:drop:all"
       sh "rake db:create:all"
-      # test
-      sh "rake db:migrate RAILS_ENV=test"
-      sh "rake db:test:prepare RAILS_ENV=test"
       # development
       sh "rake db:migrate RAILS_ENV=development"
       sh "rake db:seed RAILS_ENV=development"
+      # test
+      sh "rake db:migrate RAILS_ENV=test"
+      sh "rake db:test:prepare RAILS_ENV=test"
+      cd File.dirname(__FILE__)
     end
   end
 end
@@ -57,7 +59,9 @@ task :cucumber do
     sh %{ cucumber features/ }
   end
   puts "* Dummy app features"
-  sh %{ cd spec/rails_app; cucumber features/ }
+  cd File.join(File.dirname(__FILE__), "spec", "rails_app")
+  sh "cucumber features/"
+  cd File.dirname(__FILE__)
 end
 
 task :notes do
