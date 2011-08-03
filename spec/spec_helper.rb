@@ -1,8 +1,10 @@
 # Configure Rails Envinronment
 ENV["RAILS_ENV"] = "test"
 
-require 'simplecov'
-SimpleCov.start 'rails'
+if RUBY_VERSION >= "1.9"
+  require 'simplecov'
+  SimpleCov.start 'rails'
+end
 
 require "rails_app/config/environment"
 require "rails/test_help"

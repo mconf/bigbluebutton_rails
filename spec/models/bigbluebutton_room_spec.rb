@@ -163,13 +163,21 @@ describe BigbluebuttonRoom do
       end
 
       context "voice_bridge" do
-        it { room.voice_bridge.should_not be_nil }
-        it { room.voice_bridge.length.should == 5 }
-        it { room.voice_bridge[0].should == '7' }
         it {
           b = BigbluebuttonRoom.new(:voice_bridge => "user defined")
           b.voice_bridge.should == "user defined"
         }
+        context "with a random value" do
+          it { room.voice_bridge.should_not be_nil }
+          it { room.voice_bridge.should =~ /7[0-9]{4}/ }
+          it "tries to randomize 10 times if voice_bridge already exists" do
+            room = Factory.create(:bigbluebutton_room, :voice_bridge => "70000")
+            BigbluebuttonRoom.stub!(:find_by_voice_bridge).and_return(room)
+            ActiveSupport::SecureRandom.should_receive(:random_number).exactly(10).and_return(0000)
+            room2 = BigbluebuttonRoom.new # triggers the random_number calls
+            room2.voice_bridge.should == "70000"
+          end
+        end
       end
     end
 

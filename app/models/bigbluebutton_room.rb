@@ -223,7 +223,7 @@ class BigbluebuttonRoom < ActiveRecord::Base
 
   def random_voice_bridge
     value = (70000 + ActiveSupport::SecureRandom.random_number(9999)).to_s
-    count = 0
+    count = 1
     while not BigbluebuttonRoom.find_by_voice_bridge(value).nil? and count < 10
       count += 1
       value = (70000 + ActiveSupport::SecureRandom.random_number(9999)).to_s

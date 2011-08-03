@@ -16,5 +16,7 @@ group :development, :test do
 end
 
 group :test do
-  gem 'simplecov', '>= 0.4.0', :require => false
+  if RUBY_VERSION >= "1.9"
+    gem 'simplecov', '>= 0.4.0', :require => false
+  end
 end

@@ -315,7 +315,7 @@ class Bigbluebutton::RoomsController < ApplicationController
 
   def add_domain_to_logout_url(room, protocol, host)
     unless @room.logout_url.nil? or @room.logout_url =~ /^[a-z]+:\/\//  # matches the protocol
-      unless @room.logout_url =~ /^[a-z0-9]+([\-\.]{ 1}[a-z0-9]+)*/     # matches the host domain
+      unless @room.logout_url =~ /^[a-z0-9]+([\-\.]{1}[a-z0-9]+)*/      # matches the host domain
         @room.logout_url = host + @room.logout_url
       end
       @room.logout_url = protocol + @room.logout_url
