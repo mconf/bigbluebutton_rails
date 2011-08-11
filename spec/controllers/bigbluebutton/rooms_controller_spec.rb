@@ -279,19 +279,10 @@ describe Bigbluebutton::RoomsController do
     # verify the behaviour of .join_internal
     # see support/shared_examples/rooms_controller.rb
     context "calling .join_internal" do
-      let(:request) { get :join, :server_id => mocked_server.to_param, :id => room.to_param }
       let(:template) { :join }
-      before { controller.stub(:bigbluebutton_user) { user } }
-
-      context "as moderator:" do
-        before { controller.should_receive(:bigbluebutton_role).with(room).and_return(:moderator) }
-        it_should_behave_like "internal join caller (moderator)"
-      end
-
-      context "as attendee:" do
-        before { controller.should_receive(:bigbluebutton_role).with(room).and_return(:attendee) }
-        it_should_behave_like "internal join caller (attendee)"
-      end
+      let(:request) { get :join, :server_id => mocked_server.to_param, :id => room.to_param }
+      before { controller.stub(:bigbluebutton_user).and_return(user) }
+      it_should_behave_like "internal join caller"
     end
 
   end
@@ -470,19 +461,11 @@ describe Bigbluebutton::RoomsController do
     # verify the behaviour of .join_internal
     # see support/shared_examples/rooms_controller.rb
     context "calling .join_internal" do
-      # set the variables for the shared example
       let(:template) { :invite }
+      let(:hash) { { :name => user.name, :password => room.attendee_password } }
       let(:request) { post :auth, :server_id => mocked_server.to_param, :id => room.to_param, :user => hash }
-
-      context "as moderator:" do
-        let(:hash) { { :name => "Elftor", :password => room.moderator_password } }
-        it_should_behave_like "internal join caller (moderator)"
-      end
-
-      context "as attendee:" do
-        let(:hash) { { :name => "Elftor", :password => room.attendee_password } }
-        it_should_behave_like "internal join caller (attendee)"
-      end
+      before { controller.stub(:bigbluebutton_user).and_return(nil) }
+      it_should_behave_like "internal join caller"
     end
   end
 

@@ -459,6 +459,98 @@ describe BigbluebuttonRoom do
       end
     end
 
+    describe "#add_domain_to_logout_url" do
+      context "when logout_url has a path only" do
+        let(:room) { Factory.create(:bigbluebutton_room, :logout_url => '/only/path') }
+        before(:each) { room.add_domain_to_logout_url("HTTP://", "test.com") }
+        it { room.logout_url.should == "http://test.com/only/path" }
+      end
+
+      context "when logout_url has a path and domain" do
+        let(:room) { Factory.create(:bigbluebutton_room, :logout_url => 'other.com/only/path') }
+        before(:each) { room.add_domain_to_logout_url("HTTP://", "test.com") }
+        it { room.logout_url.should == "http://other.com/only/path" }
+      end
+
+      context "when logout_url has a path, domain and protocol" do
+        let(:room) { Factory.create(:bigbluebutton_room, :logout_url => 'HTTPS://other.com/only/path') }
+        before(:each) { room.add_domain_to_logout_url("HTTP://", "test.com") }
+        it { room.logout_url.should == "https://other.com/only/path" }
+      end
+
+      context "does nothing if logout_url is nil" do
+        let(:room) { Factory.create(:bigbluebutton_room, :logout_url => nil) }
+        before(:each) { room.add_domain_to_logout_url("HTTP://", "test.com") }
+        it { room.logout_url.should == nil }
+      end
+    end
+
+    describe "#perform_join" do
+      let(:room) { Factory.create(:bigbluebutton_room) }
+      let(:user) { Factory.build(:user) }
+
+      context "for an attendee" do
+        before { room.should_receive(:fetch_is_running?) }
+
+        context "when the conference is running" do
+          before {
+            room.should_receive(:is_running?).and_return(true)
+            room.should_receive(:join_url).with(user.name, :attendee).
+              and_return("http://test.com/attendee/join")
+          }
+          subject { room.perform_join(user.name, :attendee) }
+          it { should == "http://test.com/attendee/join" }
+        end
+
+        context "when the conference is not running" do
+          before { room.should_receive(:is_running?).and_return(false) }
+          subject { room.perform_join(user.name, :attendee) }
+          it { should be_nil }
+        end
+      end
+
+      context "for a moderator" do
+        before { room.should_receive(:fetch_is_running?) }
+
+        context "when the conference is running" do
+          before {
+            room.should_receive(:is_running?).and_return(true)
+            room.should_receive(:join_url).with(user.name, :moderator).
+              and_return("http://test.com/moderator/join")
+          }
+          subject { room.perform_join(user.name, :moderator) }
+          it { should == "http://test.com/moderator/join" }
+        end
+
+        context "when the conference is not running" do
+          before {
+            room.should_receive(:is_running?).and_return(false)
+            room.should_receive(:send_create)
+            room.should_receive(:join_url).with(user.name, :moderator).
+              and_return("http://test.com/moderator/join")
+          }
+          subject { room.perform_join(user.name, :moderator) }
+          it { should == "http://test.com/moderator/join" }
+        end
+
+        context "when the arg 'request' is informed" do
+          let(:request) { stub(ActionController::Request) }
+          before {
+            request.stub!(:protocol).and_return("HTTP://")
+            request.stub!(:host).and_return("test.com")
+            room.should_receive(:add_domain_to_logout_url).with("HTTP://", "test.com")
+            room.should_receive(:is_running?).and_return(true)
+            room.should_receive(:join_url).with(user.name, :moderator).
+              and_return("http://test.com/moderator/join")
+          }
+          subject { room.perform_join(user.name, :moderator, request) }
+          it { should == "http://test.com/moderator/join" }
+        end
+
+      end
+
+    end
+
   end
 
 end

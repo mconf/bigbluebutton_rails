@@ -195,6 +195,42 @@ class BigbluebuttonRoom < ActiveRecord::Base
     self.param
   end
 
+  # The join logic
+  # A moderator can create the meeting and join
+  # An attendee can only join if the meeting is running
+  def perform_join(username, role, request=nil)
+    fetch_is_running?
+
+    # if the current user is a moderator, create the room (if needed)
+    # and join it
+    if role == :moderator
+      add_domain_to_logout_url(request.protocol, request.host) unless request.nil?
+      send_create unless is_running?
+      ret = join_url(username, role)
+
+    # normal user only joins if the conference is running
+    # if it's not, wait for a moderator to create the conference
+    else
+      ret = join_url(username, role) if is_running?
+    end
+
+    ret
+  end
+
+  # add a domain name and/or protocol to the logout_url if needed
+  def add_domain_to_logout_url(protocol, host)
+    unless logout_url.nil?
+      url = logout_url.downcase
+      unless url.nil? or url =~ /^[a-z]+:\/\//           # matches the protocol
+        unless url =~ /^[a-z0-9]+([\-\.]{1}[a-z0-9]+)*/  # matches the host domain
+          url = host + url
+        end
+        url = protocol + url
+      end
+      update_attributes(:logout_url => url.downcase)
+    end
+  end
+
   protected
 
   def init

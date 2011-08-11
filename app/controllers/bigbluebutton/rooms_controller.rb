@@ -6,6 +6,7 @@ class Bigbluebutton::RoomsController < ApplicationController
   before_filter :find_room, :only => [:show, :edit, :update, :destroy, :join, :invite, :running, :end, :destroy, :end, :join_mobile]
   respond_to :html, :except => :running
   respond_to :json, :only => [:running, :show, :new, :index, :create, :update]
+  #respond_to :mobile, :only => [:join]
 
   def index
     # TODO restrict to rooms belonging to the selected server
@@ -281,44 +282,17 @@ class Bigbluebutton::RoomsController < ApplicationController
   end
 
   def join_internal(username, role, wait_action)
-
     begin
-      @room.fetch_is_running?
-
-      # if the current user is a moderator, create the room (if needed)
-      # and join it
-      if role == :moderator
-
-        add_domain_to_logout_url(@room, request.protocol, request.host)
-
-        @room.send_create unless @room.is_running?
-        join_url = @room.join_url(username, role)
-        redirect_to(join_url)
-
-      # normal user only joins if the conference is running
-      # if it's not, wait for a moderator to create the conference
+      url = @room.perform_join(username, role, request)
+      unless url.nil?
+        redirect_to(url)
       else
-        if @room.is_running?
-          join_url = @room.join_url(username, role)
-          redirect_to(join_url)
-        else
-          flash[:error] = t('bigbluebutton_rails.rooms.errors.auth.not_running')
-          render wait_action
-        end
+        flash[:error] = t('bigbluebutton_rails.rooms.errors.auth.not_running')
+        render wait_action
       end
-
     rescue BigBlueButton::BigBlueButtonException => e
       flash[:error] = e.to_s
       redirect_to request.referer
-    end
-  end
-
-  def add_domain_to_logout_url(room, protocol, host)
-    unless @room.logout_url.nil? or @room.logout_url =~ /^[a-z]+:\/\//  # matches the protocol
-      unless @room.logout_url =~ /^[a-z0-9]+([\-\.]{1}[a-z0-9]+)*/      # matches the host domain
-        @room.logout_url = host + @room.logout_url
-      end
-      @room.logout_url = protocol + @room.logout_url
     end
   end
 
