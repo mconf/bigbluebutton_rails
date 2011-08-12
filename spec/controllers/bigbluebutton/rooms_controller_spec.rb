@@ -42,20 +42,17 @@ describe Bigbluebutton::RoomsController do
   end
 
   describe "#join_mobile" do
-    let(:user) { Factory.build(:user) }
+    let(:server) { Factory.create(:bigbluebutton_server) }
+    let(:room) { Factory.create(:bigbluebutton_room, :server => server) }
     before {
-      mock_server_and_api
-      controller.stub(:bigbluebutton_user) { user }
-      controller.should_receive(:bigbluebutton_role).and_return(:moderator)
-      mocked_api.should_receive(:join_meeting_url).
-        with(room.meetingid, user.name, room.moderator_password).
-        and_return("http://join_url")
+      controller.should_receive(:join_bigbluebutton_server_room_path).
+        with(server, room, :mobile => '1').and_return("http://test.com/join/url?mobile=1")
     }
-    before(:each) { get :join_mobile, :server_id => mocked_server.to_param, :id => room.to_param }
+    before(:each) { get :join_mobile, :server_id => server.to_param, :id => room.to_param }
     it { should respond_with(:success) }
-    it { should assign_to(:server).with(mocked_server) }
+    it { should assign_to(:server).with(server) }
     it { should assign_to(:room).with(room) }
-    it { should assign_to(:join_url).with("bigbluebutton://join_url") }
+    it { should assign_to(:join_url).with("bigbluebutton://test.com/join/url?mobile=1") }
     it { should render_template(:join_mobile) }
   end
 
@@ -283,6 +280,19 @@ describe Bigbluebutton::RoomsController do
       let(:request) { get :join, :server_id => mocked_server.to_param, :id => room.to_param }
       before { controller.stub(:bigbluebutton_user).and_return(user) }
       it_should_behave_like "internal join caller"
+    end
+
+    context "when :mobile => true" do
+      before {
+        controller.stub(:bigbluebutton_user) { user }
+        controller.stub(:bigbluebutton_role) { :moderator }
+        BigbluebuttonRoom.stub(:find_by_param).and_return(room)
+        room.should_receive(:perform_join).and_return("http://test.com/join/url")
+      }
+      before(:each) {
+        get :join, :server_id => mocked_server.to_param, :id => room.to_param, :mobile => "1"
+      }
+      it { should redirect_to("bigbluebutton://test.com/join/url") }
     end
 
   end

@@ -17,7 +17,7 @@ shared_examples_for "internal join caller" do
   context "when the user has permission to join" do
     before {
       room.should_receive(:perform_join).with(user.name, :attendee, controller.request).
-      and_return("http://test.com/join/url")
+        and_return("http://test.com/join/url")
     }
     before(:each) { request }
     it { should respond_with(:redirect) }
@@ -27,7 +27,7 @@ shared_examples_for "internal join caller" do
   context "when the user doesn't have permission to join" do
     before {
       room.should_receive(:perform_join).with(user.name, :attendee, controller.request).
-      and_return(nil)
+        and_return(nil)
     }
     before(:each) { request }
     it { should respond_with(:success) }

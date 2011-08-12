@@ -6,7 +6,6 @@ class Bigbluebutton::RoomsController < ApplicationController
   before_filter :find_room, :only => [:show, :edit, :update, :destroy, :join, :invite, :running, :end, :destroy, :end, :join_mobile]
   respond_to :html, :except => :running
   respond_to :json, :only => [:running, :show, :new, :index, :create, :update]
-  #respond_to :mobile, :only => [:join]
 
   def index
     # TODO restrict to rooms belonging to the selected server
@@ -263,8 +262,8 @@ class Bigbluebutton::RoomsController < ApplicationController
   end
 
   def join_mobile
-    @join_url = @room.join_url(bigbluebutton_user.name, bigbluebutton_role(@room))
-    @join_url.gsub!("http://", "bigbluebutton://")
+    @join_url = join_bigbluebutton_server_room_path(@server, @room, :mobile => '1')
+    @join_url.gsub!(/http:\/\//i, "bigbluebutton://")
   end
 
   protected
@@ -285,6 +284,7 @@ class Bigbluebutton::RoomsController < ApplicationController
     begin
       url = @room.perform_join(username, role, request)
       unless url.nil?
+        url.gsub!(/http:\/\//i, "bigbluebutton://") if BigbluebuttonRails::value_to_boolean(params[:mobile])
         redirect_to(url)
       else
         flash[:error] = t('bigbluebutton_rails.rooms.errors.auth.not_running')
