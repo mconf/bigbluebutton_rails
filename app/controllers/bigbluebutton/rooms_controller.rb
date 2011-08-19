@@ -166,8 +166,13 @@ class Bigbluebutton::RoomsController < ApplicationController
     unless role.nil? or name.nil?
       join_internal(name, role, :invite)
     else
-      flash[:error] = t('bigbluebutton_rails.rooms.errors.auth.failure')
-      render :invite, :status => :unauthorized
+      role = bigbluebutton_role(@room)
+      unless role.nil?
+        join_internal(name, role, :invite)
+      else
+        flash[:error] = t('bigbluebutton_rails.rooms.errors.auth.failure')
+        render :invite, :status => :unauthorized
+      end
     end
   end
 
