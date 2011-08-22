@@ -448,12 +448,14 @@ describe Bigbluebutton::RoomsController do
       should respond_with(:redirect)
       should redirect_to("http://test.com/attendee/join")
     end
-
-    it "when password is blank and role is attendee should redirects to the correct join_url" do
+      
+    it "use bigbluebutton_role when the return is diferent of password" do
       controller.stub(:bigbluebutton_role) { :attendee }
       hash = { :name => "Elftor", :password => nil }
       mocked_api.should_receive(:is_meeting_running?).and_return(true)
-      mocked_api.should_receive(:join_meeting_url).and_return("http://test.com/attendee/join")
+      mocked_api.should_receive(:join_meeting_url).
+        with(anything, anything, room.attendee_password).
+        and_return("http://test.com/attendee/join")
       post :auth, :server_id => mocked_server.to_param, :id => room.to_param, :user => hash
       should respond_with(:redirect)
       should redirect_to("http://test.com/attendee/join")
