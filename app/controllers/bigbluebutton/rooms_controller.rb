@@ -157,22 +157,19 @@ class Bigbluebutton::RoomsController < ApplicationController
       return
     end
 
-    raise BigbluebuttonRails::RoomAccessDenied.new if bigbluebutton_role(@room).nil?
-
-    # if there's a user logged, use his name instead of the name in the params
     name = bigbluebutton_user.nil? ? params[:user][:name] : bigbluebutton_user.name
-    role = @room.user_role(params[:user])
+    role = bigbluebutton_role(@room)
+    if role.nil?
+      raise BigbluebuttonRails::RoomAccessDenied.new
+    elsif role == :password
+      role = @room.user_role(params[:user])
+    end
 
     unless role.nil? or name.nil?
       join_internal(name, role, :invite)
     else
-      role = bigbluebutton_role(@room)
-      unless role.nil?
-        join_internal(name, role, :invite)
-      else
-        flash[:error] = t('bigbluebutton_rails.rooms.errors.auth.failure')
-        render :invite, :status => :unauthorized
-      end
+      flash[:error] = t('bigbluebutton_rails.rooms.errors.auth.failure')
+      render :invite, :status => :unauthorized
     end
   end
 

@@ -430,6 +430,7 @@ describe Bigbluebutton::RoomsController do
     end
 
     it "if there's a user logged, should use his name" do
+      controller.stub(:bigbluebutton_role) { :password }
       hash = { :name => "Elftor", :password => room.attendee_password }
       controller.stub(:bigbluebutton_user).and_return(user)
       mocked_api.should_receive(:is_meeting_running?).and_return(true)
@@ -448,7 +449,18 @@ describe Bigbluebutton::RoomsController do
       should redirect_to("http://test.com/attendee/join")
     end
 
+    it "when password is blank and role is attendee should redirects to the correct join_url" do
+      controller.stub(:bigbluebutton_role) { :attendee }
+      hash = { :name => "Elftor", :password => nil }
+      mocked_api.should_receive(:is_meeting_running?).and_return(true)
+      mocked_api.should_receive(:join_meeting_url).and_return("http://test.com/attendee/join")
+      post :auth, :server_id => mocked_server.to_param, :id => room.to_param, :user => hash
+      should respond_with(:redirect)
+      should redirect_to("http://test.com/attendee/join")
+    end
+
     context "validates user input and shows error" do
+      before { controller.should_receive(:bigbluebutton_role).once { :password } }
       before(:each) { post :auth, :server_id => mocked_server.to_param, :id => room.to_param, :user => user_hash }
 
       context "when name is not set" do
