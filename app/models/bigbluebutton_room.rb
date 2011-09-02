@@ -204,7 +204,7 @@ class BigbluebuttonRoom < ActiveRecord::Base
     # if the current user is a moderator, create the room (if needed)
     # and join it
     if role == :moderator
-      add_domain_to_logout_url(request.protocol, request.host) unless request.nil?
+      add_domain_to_logout_url(request.protocol, request.host_with_port) unless request.nil?
       send_create unless is_running?
       ret = join_url(username, role)
 

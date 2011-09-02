@@ -462,25 +462,25 @@ describe BigbluebuttonRoom do
     describe "#add_domain_to_logout_url" do
       context "when logout_url has a path only" do
         let(:room) { Factory.create(:bigbluebutton_room, :logout_url => '/only/path') }
-        before(:each) { room.add_domain_to_logout_url("HTTP://", "test.com") }
-        it { room.logout_url.should == "http://test.com/only/path" }
+        before(:each) { room.add_domain_to_logout_url("HTTP://", "test.com:80") }
+        it { room.logout_url.should == "http://test.com:80/only/path" }
       end
 
       context "when logout_url has a path and domain" do
         let(:room) { Factory.create(:bigbluebutton_room, :logout_url => 'other.com/only/path') }
-        before(:each) { room.add_domain_to_logout_url("HTTP://", "test.com") }
+        before(:each) { room.add_domain_to_logout_url("HTTP://", "test.com:80") }
         it { room.logout_url.should == "http://other.com/only/path" }
       end
 
       context "when logout_url has a path, domain and protocol" do
         let(:room) { Factory.create(:bigbluebutton_room, :logout_url => 'HTTPS://other.com/only/path') }
-        before(:each) { room.add_domain_to_logout_url("HTTP://", "test.com") }
+        before(:each) { room.add_domain_to_logout_url("HTTP://", "test.com:80") }
         it { room.logout_url.should == "https://other.com/only/path" }
       end
 
       context "does nothing if logout_url is nil" do
         let(:room) { Factory.create(:bigbluebutton_room, :logout_url => nil) }
-        before(:each) { room.add_domain_to_logout_url("HTTP://", "test.com") }
+        before(:each) { room.add_domain_to_logout_url("HTTP://", "test.com:80") }
         it { room.logout_url.should == nil }
       end
     end
@@ -537,8 +537,8 @@ describe BigbluebuttonRoom do
           let(:request) { stub(ActionController::Request) }
           before {
             request.stub!(:protocol).and_return("HTTP://")
-            request.stub!(:host).and_return("test.com")
-            room.should_receive(:add_domain_to_logout_url).with("HTTP://", "test.com")
+            request.stub!(:host_with_port).and_return("test.com:80")
+            room.should_receive(:add_domain_to_logout_url).with("HTTP://", "test.com:80")
             room.should_receive(:is_running?).and_return(true)
             room.should_receive(:join_url).with(user.name, :moderator).
               and_return("http://test.com/moderator/join")
