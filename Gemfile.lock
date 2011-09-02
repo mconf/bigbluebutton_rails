@@ -2,7 +2,7 @@ PATH
   remote: .
   specs:
     bigbluebutton_rails (0.0.5)
-      bigbluebutton-api-ruby (~> 0.0.10)
+      bigbluebutton-api-ruby (~> 0.0.11)
       rails (>= 3.0.3)
 
 GEM
@@ -36,7 +36,7 @@ GEM
       activesupport (= 3.0.9)
     activesupport (3.0.9)
     arel (2.0.10)
-    bigbluebutton-api-ruby (0.0.10)
+    bigbluebutton-api-ruby (0.0.11)
       nokogiri (~> 1.4.0)
     builder (2.1.2)
     capybara (1.0.0)

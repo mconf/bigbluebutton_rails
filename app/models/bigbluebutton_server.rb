@@ -1,4 +1,4 @@
-require 'bigbluebutton-api'
+require 'bigbluebutton_api'
 
 class BigbluebuttonServer < ActiveRecord::Base
   has_many :rooms,

@@ -1,5 +1,5 @@
 require 'spec_helper'
-require 'bigbluebutton-api'
+require 'bigbluebutton_api'
 
 # Some tests mock the server and its API object
 # We don't want to trigger real API calls here (this is done in the integration tests)
