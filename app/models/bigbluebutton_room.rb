@@ -41,6 +41,9 @@ class BigbluebuttonRoom < ActiveRecord::Base
   after_initialize :init
   before_validation :set_param
 
+  # the full logout_url used when logout_url is a relative path
+  attr_accessor :full_logout_url
+
   # Convenience method to access the attribute <tt>running</tt>
   def is_running?
     @running
@@ -218,6 +221,7 @@ class BigbluebuttonRoom < ActiveRecord::Base
   end
 
   # add a domain name and/or protocol to the logout_url if needed
+  # it doesn't save in the db, just updates the instance
   def add_domain_to_logout_url(protocol, host)
     unless logout_url.nil?
       url = logout_url.downcase
@@ -227,7 +231,7 @@ class BigbluebuttonRoom < ActiveRecord::Base
         end
         url = protocol + url
       end
-      update_attributes(:logout_url => url.downcase)
+      self.full_logout_url = url.downcase
     end
   end
 
@@ -270,7 +274,8 @@ class BigbluebuttonRoom < ActiveRecord::Base
   def do_create_meeting
     self.server.api.create_meeting(self.name, self.meetingid, self.moderator_password,
                                    self.attendee_password, self.welcome_msg, self.dial_number,
-                                   self.logout_url, self.max_participants, self.voice_bridge)
+                                   self.full_logout_url || self.logout_url,
+                                   self.max_participants, self.voice_bridge)
   end
 
   # if :param wasn't set, sets it as :name downcase and parameterized
