@@ -1,3 +1,5 @@
+== 0.0.6
+
 * After fetch_meetings, the rooms that are not found in the DB are *not* saved by default anymore.
 * New action to join external rooms (rooms that are not in the DB but exist in the BBB server).
 * Fixed some errors and warnings for Ruby 1.8.
