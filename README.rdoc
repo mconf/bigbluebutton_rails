@@ -182,6 +182,28 @@ Run the tests:
   rake spec
   rake cucumber
 
+Or simply:
+
+  rake
+
 Develop. :)
 
 If you want your code to be integrated in this repository, please create a branch with your modifications and submit a pull request.
+
+=== Test Coverage
+
+Coverage is analyzed by default when you run:
+
+  rake spec
+
+Run it and look at the file <tt>coverage/index.html</tt>.
+
+=== Best Practices
+
+We use the gem <tt>rails_best_practices</tt> to get some nice tips on how to improve the code.
+
+Run:
+
+  rake best_practices
+
+And look at the file <tt>rails_best_practices_output.html</tt> to see the tips.

@@ -1,5 +1,9 @@
 * After fetch_meetings, the rooms that are not found in the DB are *not* saved by default anymore.
 * New action to join external rooms (rooms that are not in the DB but exist in the BBB server).
+* Fixed some errors and warnings for Ruby 1.8.
+* Some changes in the logic of RoomsController#auth to enable a user to join a room that has a blank password.
+* Improvements in the mobile_join view to show a link that includes user authentication. But the QR code is still a bare link to the BBB server.
+* Made some improvements based on tips by rails_best_practices and increased the test coverage to 100% for almost all classes.
 
 == 0.0.5
 
