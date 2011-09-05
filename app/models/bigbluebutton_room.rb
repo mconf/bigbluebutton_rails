@@ -1,5 +1,3 @@
-require 'active_support/secure_random'
-
 class BigbluebuttonRoom < ActiveRecord::Base
   belongs_to :server, :class_name => 'BigbluebuttonServer'
   belongs_to :owner, :polymorphic => true
@@ -252,21 +250,20 @@ class BigbluebuttonRoom < ActiveRecord::Base
   end
 
   def random_meetingid
-    #ActiveSupport::SecureRandom.hex(16)
     # TODO temporarily using the name to get a friendlier meetingid
     if self[:name].blank?
-      ActiveSupport::SecureRandom.hex(8)
+      SecureRandom.hex(8)
     else
-      self[:name] + '-' + ActiveSupport::SecureRandom.random_number(9999).to_s
+      self[:name] + '-' + SecureRandom.random_number(9999).to_s
     end
   end
 
   def random_voice_bridge
-    value = (70000 + ActiveSupport::SecureRandom.random_number(9999)).to_s
+    value = (70000 + SecureRandom.random_number(9999)).to_s
     count = 1
     while not BigbluebuttonRoom.find_by_voice_bridge(value).nil? and count < 10
       count += 1
-      value = (70000 + ActiveSupport::SecureRandom.random_number(9999)).to_s
+      value = (70000 + SecureRandom.random_number(9999)).to_s
     end
     value
   end
