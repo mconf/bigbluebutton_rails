@@ -2,6 +2,8 @@ source 'http://rubygems.org'
 
 gemspec
 
+gem 'bigbluebutton-api-ruby', '~> 0.1.0.rc1'
+
 group :development, :test do
   gem "rspec-rails"
   gem "factory_girl"

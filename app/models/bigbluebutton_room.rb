@@ -269,10 +269,11 @@ class BigbluebuttonRoom < ActiveRecord::Base
   end
 
   def do_create_meeting
-    self.server.api.create_meeting(self.name, self.meetingid, self.moderator_password,
-                                   self.attendee_password, self.welcome_msg, self.dial_number,
-                                   self.full_logout_url || self.logout_url,
-                                   self.max_participants, self.voice_bridge)
+    opts = { :moderatorPW => self.moderator_password, :attendeePW => self.attendee_password,
+      :welcome => self.welcome_msg, :dialNumber => self.dial_number,
+      :logoutURL => self.full_logout_url || self.logout_url,
+      :maxParticipants => self.max_participants, :voiceBridge => self.voice_bridge }
+    self.server.api.create_meeting(self.name, self.meetingid, opts)
   end
 
   # if :param wasn't set, sets it as :name downcase and parameterized

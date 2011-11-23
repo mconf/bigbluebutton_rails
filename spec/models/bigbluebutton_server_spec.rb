@@ -68,10 +68,10 @@ describe BigbluebuttonServer do
   end
 
   context "supported versions" do
-    it { should allow_value('0.64').for(:version) }
     it { should allow_value('0.7').for(:version) }
+    it { should allow_value('0.8').for(:version) }
     it { should_not allow_value('').for(:version) }
-    it { should_not allow_value('0.8').for(:version) }
+    it { should_not allow_value('0.64').for(:version) }
     it { should_not allow_value('0.6').for(:version) }
   end
 
@@ -122,9 +122,8 @@ describe BigbluebuttonServer do
       it { server.api.should == api }
 
       # updating any of these attributes should update the api
-      # FIXME: can't test the version updated bc only 0.7 is supported right now
       { :url => 'http://anotherurl.com/bigbluebutton/api',
-        :salt => '12345-abcde-67890-fghijk', :version => '0.7' }.each do |k,v|
+        :salt => '12345-abcde-67890-fghijk', :version => '0.8' }.each do |k,v|
         it {
           server.send("#{k}=", v)
           server.api.send(k).should == v

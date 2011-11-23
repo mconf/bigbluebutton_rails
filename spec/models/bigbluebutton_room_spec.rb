@@ -303,11 +303,12 @@ describe BigbluebuttonRoom do
 
         context "for a stored room" do
           before do
+            hash = hash_including(:moderatorPW => room.moderator_password, :attendeePW => room.attendee_password,
+                                  :welcome  => room.welcome_msg, :dialNumber => room.dial_number,
+                                  :logoutURL => room.logout_url, :maxParticipants => room.max_participants,
+                                  :voiceBridge => room.voice_bridge)
             mocked_api.should_receive(:create_meeting).
-              with(room.name, room.meetingid, room.moderator_password,
-                   room.attendee_password, room.welcome_msg, room.dial_number,
-                   room.logout_url, room.max_participants, room.voice_bridge).
-              and_return(hash_create)
+              with(room.name, room.meetingid, hash).and_return(hash_create)
             room.server = mocked_server
             room.send_create
           end
@@ -316,20 +317,21 @@ describe BigbluebuttonRoom do
           it { room.changed?.should be_false }
         end
 
-        context "for a new_record" do
+        context "for a new record" do
           let(:new_room) { Factory.build(:bigbluebutton_room) }
           before do
+            hash = hash_including(:moderatorPW => new_room.moderator_password, :attendeePW => new_room.attendee_password,
+                                  :welcome  => new_room.welcome_msg, :dialNumber => new_room.dial_number,
+                                  :logoutURL => new_room.logout_url, :maxParticipants => new_room.max_participants,
+                                  :voiceBridge => new_room.voice_bridge)
             mocked_api.should_receive(:create_meeting).
-              with(new_room.name, new_room.meetingid, new_room.moderator_password,
-                   new_room.attendee_password, new_room.welcome_msg, new_room.dial_number,
-                   new_room.logout_url, new_room.max_participants, new_room.voice_bridge).
-              and_return(hash_create)
+              with(new_room.name, new_room.meetingid, hash).and_return(hash_create)
             new_room.server = mocked_server
             new_room.send_create
           end
           it { new_room.attendee_password.should be(attendee_password) }
           it { new_room.moderator_password.should be(moderator_password) }
-          it("do not save the record") { new_room.new_record?.should be_true }
+          it("and do not save the record") { new_room.new_record?.should be_true }
         end
 
       end
@@ -347,39 +349,36 @@ describe BigbluebuttonRoom do
 
         it "before calling create" do
           room.should_receive(:random_meetingid).and_return(new_id)
-          mocked_api.should_receive(:create_meeting).
-            with(room.name, new_id, room.moderator_password,
-                 room.attendee_password, room.welcome_msg, room.dial_number,
-                 room.logout_url, room.max_participants, room.voice_bridge)
+          hash = hash_including(:moderatorPW => room.moderator_password, :attendeePW => room.attendee_password,
+                                :welcome  => room.welcome_msg, :dialNumber => room.dial_number,
+                                :logoutURL => room.logout_url, :maxParticipants => room.max_participants,
+                                :voiceBridge => room.voice_bridge)
+          mocked_api.should_receive(:create_meeting).with(room.name, new_id, hash)
           room.send_create
         end
 
         it "and tries again on error" do
           # fails twice and them succeds
           room.should_receive(:random_meetingid).exactly(3).times.and_return(new_id)
+          hash = hash_including(:moderatorPW => room.moderator_password, :attendeePW => room.attendee_password,
+                                :welcome  => room.welcome_msg, :dialNumber => room.dial_number,
+                                :logoutURL => room.logout_url, :maxParticipants => room.max_participants,
+                                :voiceBridge => room.voice_bridge)
           mocked_api.should_receive(:create_meeting).
-            with(room.name, new_id, room.moderator_password,
-                 room.attendee_password, room.welcome_msg, room.dial_number,
-                 room.logout_url, room.max_participants, room.voice_bridge).
-            twice.
-            and_return(fail_hash)
+            with(room.name, new_id, hash).twice.and_return(fail_hash)
           mocked_api.should_receive(:create_meeting).
-            with(room.name, new_id, room.moderator_password,
-                 room.attendee_password, room.welcome_msg, room.dial_number,
-                 room.logout_url, room.max_participants, room.voice_bridge).
-            once.
-            and_return(success_hash)
+            with(room.name, new_id, hash).once.and_return(success_hash)
           room.send_create
         end
 
         it "and limits to 10 tries" do
           room.should_receive(:random_meetingid).exactly(11).times.and_return(new_id)
+          hash = hash_including(:moderatorPW => room.moderator_password, :attendeePW => room.attendee_password,
+                                :welcome  => room.welcome_msg, :dialNumber => room.dial_number,
+                                :logoutURL => room.logout_url, :maxParticipants => room.max_participants,
+                                :voiceBridge => room.voice_bridge)
           mocked_api.should_receive(:create_meeting).
-            with(room.name, new_id, room.moderator_password,
-                 room.attendee_password, room.welcome_msg, room.dial_number,
-                 room.logout_url, room.max_participants, room.voice_bridge).
-            exactly(10).times.
-            and_return(fail_hash)
+            with(room.name, new_id, hash).exactly(10).times.and_return(fail_hash)
           room.send_create
         end
       end
@@ -387,11 +386,12 @@ describe BigbluebuttonRoom do
       context "uses #full_logout_url when set" do
         before do
           room.full_logout_url = "full-version-of-logout-url"
+          hash = hash_including(:moderatorPW => room.moderator_password, :attendeePW => room.attendee_password,
+                                :welcome  => room.welcome_msg, :dialNumber => room.dial_number,
+                                :logoutURL => "full-version-of-logout-url", :maxParticipants => room.max_participants,
+                                :voiceBridge => room.voice_bridge)
           mocked_api.should_receive(:create_meeting).
-            with(room.name, room.meetingid, room.moderator_password,
-                 room.attendee_password, room.welcome_msg, room.dial_number,
-                 "full-version-of-logout-url", room.max_participants, room.voice_bridge).
-            and_return(hash_create)
+            with(room.name, room.meetingid, hash).and_return(hash_create)
           room.server = mocked_server
         end
         it { room.send_create }

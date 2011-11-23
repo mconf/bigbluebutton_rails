@@ -31,7 +31,7 @@ class BigbluebuttonServer < ActiveRecord::Base
 
   validates :version,
             :presence => true,
-            :inclusion => { :in => ['0.64', '0.7'] }
+            :inclusion => { :in => ['0.7', '0.8'] }
 
   attr_accessible :name, :url, :version, :salt, :param
 
