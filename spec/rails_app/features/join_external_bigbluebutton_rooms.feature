@@ -2,7 +2,7 @@ Feature: Join External BigBlueButton Rooms
   In order to join webconferences that were created from another application
   One needs to enter his name and a password
 
-  Scenario: Joining an external BigBlueButton room
+  Scenario: Joining an external room as moderator (a room that is not in the database)
     Given a user named "test user"
       And a server
       And an external room
@@ -10,7 +10,9 @@ Feature: Join External BigBlueButton Rooms
     Then he should see a form to join the external room
       And be able to join the room
 
-  Scenario: Uses the user name as the default to join a room
+  Scenario: Joining an external room as attendee
+
+  Scenario: Uses the logged user's name as the default name to join an external room
     Given a user named "test user"
       And a server
       And an external room

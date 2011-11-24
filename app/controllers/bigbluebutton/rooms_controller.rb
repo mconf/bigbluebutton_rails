@@ -202,11 +202,11 @@ class Bigbluebutton::RoomsController < ApplicationController
     name = bigbluebutton_user.nil? ? params[:user][:name] : bigbluebutton_user.name
     role = @room.user_role(params[:user])
 
+    # FIXME: use internal_join ?
     unless role.nil? or name.nil?
-      @room.fetch_meeting_info
-      if @room.is_running?
-        join_url = @room.join_url(name, role)
-        redirect_to(join_url)
+      url = @room.perform_join(name, role, request)
+      unless url.nil?
+        redirect_to(url)
       else
         flash[:error] = t('bigbluebutton_rails.rooms.errors.auth.not_running')
         render :external

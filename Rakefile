@@ -56,8 +56,9 @@ end
 task :cucumber do
   if File.exists? "features/"
     puts "* Gem features"
-    sh %{ cucumber features/ }
+    sh "cucumber features/"
   end
+
   puts "* Dummy app features"
   cd File.join(File.dirname(__FILE__), "spec", "rails_app")
   sh "cucumber features/"

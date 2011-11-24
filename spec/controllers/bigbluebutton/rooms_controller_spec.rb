@@ -535,7 +535,7 @@ describe Bigbluebutton::RoomsController do
 
   describe "#external_auth" do
     let(:user) { Factory.build(:user) }
-    let(:user_hash) { { :name => "Elftor", :password => new_room.attendee_password } }
+    let(:user_hash) { { :name => user.name, :password => new_room.attendee_password } }
     let(:meetingid) { "my-meeting-id" }
     let(:new_room) { BigbluebuttonRoom.new(:meetingid => meetingid,
                                            :attendee_password => Forgery(:basic).password,
@@ -554,7 +554,7 @@ describe Bigbluebutton::RoomsController do
         before { # TODO: this block is being repeated several times, put it in a method or something
           mocked_server.should_receive(:fetch_meetings)
           mocked_server.should_receive(:meetings).and_return(meetings)
-          new_room.should_receive(:fetch_meeting_info)
+          new_room.should_receive(:perform_join)
         }
         before(:each) { post :external_auth, :server_id => mocked_server.to_param, :meeting => new_room.meetingid, :user => user_hash }
         it { should assign_to(:room).with(new_room) }
@@ -592,11 +592,6 @@ describe Bigbluebutton::RoomsController do
         }.should raise_error(BigbluebuttonRails::RoomAccessDenied)
       end
 
-      it "fetches meeting info" do
-        new_room.should_receive(:fetch_meeting_info)
-        post :external_auth, :server_id => mocked_server.to_param, :meeting => new_room.meetingid, :user => user_hash
-      end
-
       context "validates user input and shows error" do
         before(:each) { post :external_auth, :server_id => mocked_server.to_param, :meeting => new_room.meetingid, :user => user_hash }
 
@@ -617,39 +612,34 @@ describe Bigbluebutton::RoomsController do
         end
       end
 
-      context "and the meeting is running" do
-        before {
-          new_room.should_receive(:fetch_meeting_info)
-          new_room.running = true
-        }
-
-        it "if there's a user logged, should use his name" do
-          controller.stub(:bigbluebutton_user).and_return(user)
-          mocked_api.should_receive(:join_meeting_url).
-            with(new_room.meetingid, user.name, new_room.attendee_password). # here's the validation
-            and_return("http://test.com/attendee/join")
-          post :external_auth, :server_id => mocked_server.to_param, :meeting => new_room.meetingid, :user => user_hash
+      context "calls room#perform_join" do
+        context "and redirects to the url received" do
+          before {
+            new_room.should_receive(:perform_join).with(user.name, :attendee, request).
+              and_return("http://test.com/attendee/join")
+          }
+          before(:each) { post :external_auth, :server_id => mocked_server.to_param, :meeting => new_room.meetingid, :user => user_hash }
+          it { should respond_with(:redirect) }
+          it { should redirect_to("http://test.com/attendee/join") }
         end
 
-        it "redirects to the correct join_url" do
-          controller.stub(:bigbluebutton_user).and_return(user)
-          mocked_api.should_receive(:join_meeting_url).
-            and_return("http://test.com/attendee/join")
-          post :external_auth, :server_id => mocked_server.to_param, :meeting => new_room.meetingid, :user => user_hash
-          should respond_with(:redirect)
-          should redirect_to("http://test.com/attendee/join")
+        context "and shows error if it returns nil" do
+          before {
+            new_room.should_receive(:perform_join).with(user.name, :attendee, request).and_return(nil)
+          }
+          before(:each) { post :external_auth, :server_id => mocked_server.to_param, :meeting => new_room.meetingid, :user => user_hash }
+          it { should respond_with(:success) }
+          it { should render_template(:external) }
+          it { should set_the_flash.to(I18n.t('bigbluebutton_rails.rooms.errors.auth.not_running')) }
         end
       end
 
-      context "and the meeting is not running" do
-        before {
-          new_room.should_receive(:fetch_meeting_info)
-          new_room.running = false
-        }
-        before(:each) { post :external_auth, :server_id => mocked_server.to_param, :meeting => new_room.meetingid, :user => user_hash }
-        it { should respond_with(:success) }
-        it { should render_template(:external) }
-        it { should set_the_flash.to(I18n.t('bigbluebutton_rails.rooms.errors.auth.not_running')) }
+      pending "if there's a user logged, should use his name" do
+        controller.stub(:bigbluebutton_user).and_return(user)
+        mocked_api.should_receive(:join_meeting_url).
+          with(new_room.meetingid, user.name, new_room.attendee_password). # here's the validation
+          and_return("http://test.com/attendee/join")
+        post :external_auth, :server_id => mocked_server.to_param, :meeting => new_room.meetingid, :user => user_hash
       end
 
     end
