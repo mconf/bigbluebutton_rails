@@ -534,8 +534,7 @@ describe Bigbluebutton::RoomsController do
   end # #external
 
   describe "#external_auth" do
-    let(:user) { Factory.build(:user) }
-    let(:user_hash) { { :name => user.name, :password => new_room.attendee_password } }
+    let(:user_hash) { { :name => "Any Name", :password => new_room.attendee_password } }
     let(:meetingid) { "my-meeting-id" }
     let(:new_room) { BigbluebuttonRoom.new(:meetingid => meetingid,
                                            :attendee_password => Forgery(:basic).password,
@@ -615,7 +614,7 @@ describe Bigbluebutton::RoomsController do
       context "calls room#perform_join" do
         context "and redirects to the url received" do
           before {
-            new_room.should_receive(:perform_join).with(user.name, :attendee, request).
+            new_room.should_receive(:perform_join).with(anything, :attendee, request).
               and_return("http://test.com/attendee/join")
           }
           before(:each) { post :external_auth, :server_id => mocked_server.to_param, :meeting => new_room.meetingid, :user => user_hash }
@@ -625,7 +624,7 @@ describe Bigbluebutton::RoomsController do
 
         context "and shows error if it returns nil" do
           before {
-            new_room.should_receive(:perform_join).with(user.name, :attendee, request).and_return(nil)
+            new_room.should_receive(:perform_join).with(user_hash[:name], :attendee, request).and_return(nil)
           }
           before(:each) { post :external_auth, :server_id => mocked_server.to_param, :meeting => new_room.meetingid, :user => user_hash }
           it { should respond_with(:success) }
@@ -634,10 +633,10 @@ describe Bigbluebutton::RoomsController do
         end
       end
 
-      pending "if there's a user logged, should use his name" do
+      it "if there's a user logged, should use his name" do
+        user = Factory.build(:user)
         controller.stub(:bigbluebutton_user).and_return(user)
-        mocked_api.should_receive(:join_meeting_url).
-          with(new_room.meetingid, user.name, new_room.attendee_password). # here's the validation
+        new_room.should_receive(:perform_join).with(user.name, anything, anything). # here's the validation
           and_return("http://test.com/attendee/join")
         post :external_auth, :server_id => mocked_server.to_param, :meeting => new_room.meetingid, :user => user_hash
       end

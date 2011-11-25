@@ -22,7 +22,7 @@ class FeaturesConfig
       end
       server = self.server['servers'][ENV['SERVER']]
     else
-      server = self.server['servers'][self.server['servers'].keys.first]
+      server = self.server['servers'].first[1]
     end
     server['version'] = '0.7' unless server.has_key?('version')
     server['name'] = URI.parse(server['url']).host

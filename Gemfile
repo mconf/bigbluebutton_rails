@@ -2,8 +2,6 @@ source 'http://rubygems.org'
 
 gemspec
 
-gem 'bigbluebutton-api-ruby', '~> 0.1.0.rc1'
-
 group :development do
   gem "sqlite3-ruby"
   gem "forgery"
