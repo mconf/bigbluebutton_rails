@@ -4,15 +4,9 @@ gemspec
 
 gem 'bigbluebutton-api-ruby', '~> 0.1.0.rc1'
 
-group :development, :test do
-  gem "rspec-rails"
-  gem "factory_girl"
+group :development do
   gem "sqlite3-ruby"
-  gem "generator_spec"
-  gem "shoulda-matchers"
   gem "forgery"
-  gem "cucumber-rails"
-  gem "database_cleaner"
   gem "rdoc"
   gem "rails_best_practices"
 end
@@ -21,4 +15,14 @@ group :test do
   if RUBY_VERSION >= "1.9"
     gem 'simplecov', '>= 0.4.0', :require => false
   end
+
+  gem "cucumber-rails"
+  gem "database_cleaner"
+  gem "shoulda-matchers"
+  gem "factory_girl"
+  gem "generator_spec"
+  gem "rspec-rails"
+
+  gem "capybara-mechanize", "0.3.0.rc3" # allows remote requests
+  # gem "capybara-webkit" # best option found for js
 end

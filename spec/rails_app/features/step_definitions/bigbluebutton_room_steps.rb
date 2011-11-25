@@ -60,7 +60,6 @@ end
 When /^be able to join the room$/i do
   fill_in("user[name]", :with => @user.name)
   fill_in("user[password]", :with => @room.moderator_password)
-  # click_button("Submit")
-  # TODO: how to get the meeting running? bot?
-  # TODO: check current_url to ensure it is inside the conference
+  click_button("Submit")
+  current_url.should match(/\/client\/BigBlueButton\.html/) # BBB client page
 end

@@ -185,11 +185,11 @@ class Bigbluebutton::RoomsController < ApplicationController
   # Authenticates an user using name and password passed in the params from #external
   # Uses params[:meeting] to get the meetingID of the target room
   def external_auth
-    @room = nil
     if !params[:meeting].blank? && !params[:user].blank?
       @server.fetch_meetings
       @room = @server.meetings.select{ |r| r.meetingid == params[:meeting] }.first
     else
+      @room = nil
       message = t('bigbluebutton_rails.rooms.errors.auth.wrong_params')
       redirect_to request.referer, :notice => message
       return
