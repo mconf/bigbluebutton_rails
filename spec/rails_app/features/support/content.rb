@@ -8,11 +8,11 @@ module ContentHelpers
     end
   end
 
-  def page_has_content(text)
-    if page.respond_to? :should
-      page.should have_content(text)
+  def has_content(text)
+    if respond_to? :should
+      should have_content(text)
     else
-      assert page.has_content?(text)
+      assert has_content?(text)
     end
   end
 

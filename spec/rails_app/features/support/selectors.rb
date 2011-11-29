@@ -56,6 +56,13 @@ module HtmlSelectorsHelpers
     end
   end
 
+  # Creates a css selector to match a form with certain action, method and possibly other attribues
+  def form_selector(action, method='post', attrs={})
+    attrs[:action] = action
+    attrs[:method] = method
+    make_selector("form", attrs)
+  end
+
   # Maps a name to a selector. Used primarily by the
   #
   #   When /^(.+) within (.+)$/ do |step, scope|

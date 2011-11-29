@@ -48,7 +48,7 @@ $(document).ready(function(){
     <% if @room.private %>
       <%= password_field_tag "user[password]", "" %>
     <% else %>
-      <%= password_field_tag "user[password]", @room.attendee_password %>
+      <%= hidden_field_tag "user[password]", @room.attendee_password %>
     <% end %>
   </div>
 
