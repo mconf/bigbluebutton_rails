@@ -26,14 +26,3 @@ When /(?:|I ) should see the information about this server/ do
   page_has_content(server.version)
   page_has_content(server.param)
 end
-
-When /^see an error in the field (.+)$/i do |field_name|
-  within(make_selector("#error_explanation")) do
-    has_content("1 error prohibited this bigbluebutton_server from being saved")
-    has_content("URL")
-  end
-  within(make_selector("div.field_with_errors:last")) do
-    has_element("input", { :name => 'bigbluebutton_server[url]', :type => 'text' })
-  end
-  # TODO check label
-end

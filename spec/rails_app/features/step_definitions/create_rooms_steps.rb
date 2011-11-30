@@ -1,7 +1,3 @@
-When /a server/i do
-  @server = Factory.create(:bigbluebutton_server_integration)
-end
-
 When /^registers a new room$/i do
   attrs = Factory.attributes_for(:bigbluebutton_room, :server => @server)
   fill_in("bigbluebutton_room[name]", :with => attrs[:name])
@@ -35,31 +31,4 @@ When /(?:|I ) should see the information about this room/i do
   page_has_content(room.max_participants)
   page_has_content(room.external)
   page_has_content(room.param)
-end
-
-When /^an external room$/i do
-  @room = Factory.build(:bigbluebutton_room, :server => @server, :external => true)
-  @room.meetingid << "-" + SecureRandom.hex(4) # to avoid failures due to duplicated meeting_id's
-  @room.send_create
-end
-
-When /(?:|I ) should see a form to join the external room$/i do
-  within(form_selector(external_bigbluebutton_server_rooms_path(@server), 'post')) do
-    has_element("input", { :name => 'meeting', :type => 'hidden', :value => @room.meetingid })
-    has_element("input", { :name => 'user[name]', :type => 'text' })
-    has_element("input", { :name => 'user[password]', :type => 'password' })
-  end
-end
-
-When /his name should be in the appropriate input$/i do
-  within(form_selector(external_bigbluebutton_server_rooms_path(@server), 'post')) do
-    has_element("input", { :name => 'user[name]', :type => 'text', :value => @user.name })
-  end
-end
-
-When /^be able to join the room$/i do
-  fill_in("user[name]", :with => @user.name)
-  fill_in("user[password]", :with => @room.moderator_password)
-  click_button("Submit")
-  current_url.should match(/\/client\/BigBlueButton\.html/) # BBB client page
 end

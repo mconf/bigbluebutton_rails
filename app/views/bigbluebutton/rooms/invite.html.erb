@@ -28,7 +28,7 @@ $(document).ready(function(){
 
 <h1>Invite to the meeting <%= @room.name %></h1>
 
-<p id="error"><%= flash[:error] %></p>
+<div id="error_explanation"><%= flash[:error] %></div>
 
 <p>Meeting status: <span id="meeting_status">-</span> (<a href="javascript:ajax_request();">refresh</a>)</p>
 <p><%= @room.name %> requires a name and/or password to join:</p>

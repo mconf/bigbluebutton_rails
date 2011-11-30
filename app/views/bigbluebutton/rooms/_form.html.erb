@@ -7,7 +7,7 @@
 <%= form_for [@server, @room], :url => url do |f| %>
   <% if @room.errors.any? %>
     <div id="error_explanation">
-      <h2><%= pluralize(@room.errors.count, "error") %> prohibited this bigbluebutton_room from being saved:</h2>
+      <h2><%= pluralize(@room.errors.count, "error") %>:</h2>
       <ul>
       <% @room.errors.full_messages.each do |msg| %>
         <li><%= msg %></li>

@@ -14,4 +14,4 @@ Feature: Create webconference servers
       And registers a new server with a wrong URL
     Then he should be at the create server URL
       And see the new server page
-      And see an error in the field URL
+      And see 1 error in the field "bigbluebutton_server[url]"

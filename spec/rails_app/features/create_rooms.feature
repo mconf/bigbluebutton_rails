@@ -1,6 +1,6 @@
-Feature: Manage BigBlueButton rooms
+Feature: Create webconference rooms
   In order to held webconferences
-  One needs to be able to create and manage BigBlueButton rooms
+  One needs to create and configure webconference rooms
 
   Scenario: Register a new BigBlueButton room
     Given a server

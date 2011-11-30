@@ -203,7 +203,7 @@ class Bigbluebutton::RoomsController < ApplicationController
     role = @room.user_role(params[:user])
 
     # FIXME: use internal_join ?
-    unless role.nil? or name.nil?
+    unless role.nil? or name.nil? or name.empty?
       url = @room.perform_join(name, role, request)
       unless url.nil?
         redirect_to(url)
