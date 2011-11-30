@@ -19,10 +19,5 @@ When /^registers a new server with a wrong URL$/i do
 end
 
 When /(?:|I ) should see the information about this server/ do
-  server = BigbluebuttonServer.last
-  page_has_content(server.name)
-  page_has_content(server.url)
-  page_has_content(server.salt)
-  page_has_content(server.version)
-  page_has_content(server.param)
+  steps %Q{ When see the show server page }
 end

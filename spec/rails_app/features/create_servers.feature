@@ -8,7 +8,7 @@ Feature: Create webconference servers
       And registers a new server
     Then he should see the information about this server
 
-  Scenario: Register a BigBlueButton server with errors
+  Scenario: Try to register a BigBlueButton server with errors
     Given an anonymous user
     When he goes to the new server page
       And registers a new server with a wrong URL

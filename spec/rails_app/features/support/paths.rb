@@ -19,6 +19,9 @@ module NavigationHelpers
       p = bigbluebutton_servers_path
     when /new room/i
       p = new_bigbluebutton_server_room_path(@server)
+    when /rooms index/i
+    when /create room/i
+      p = bigbluebutton_server_rooms_path(@server)
     when /join external room/i
       p = external_bigbluebutton_server_rooms_path(@server)
 

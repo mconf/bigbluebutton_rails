@@ -7,3 +7,11 @@ Feature: Create webconference rooms
     When the user goes to the new room page
       And registers a new room
     Then he should see the information about this room
+
+  Scenario: Try to register a new BigBlueButton room with errors
+    Given a server
+    When the user goes to the new room page
+      And registers a new room with wrong parameters
+    Then he should be at the create room URL
+      And see the new room page
+      And see 2 errors in the field "bigbluebutton_room[name]"

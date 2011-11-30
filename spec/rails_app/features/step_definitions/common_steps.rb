@@ -40,7 +40,7 @@ When /^(he )?should see an error message with the message "(.+)"$/i do |_, msg|
   end
 end
 
-When /^see (\d+) error in the field "(.+)"$/i do |errors, field_name|
+When /^see (\d+) error(s)? in the field "(.+)"$/i do |errors, _, field_name|
   within(make_selector("#error_explanation")) do
     errors.to_i == 1 ? has_content("1 error:") : has_content("#{errors} errors:")
   end
