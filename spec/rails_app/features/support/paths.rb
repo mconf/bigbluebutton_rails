@@ -16,12 +16,24 @@ module NavigationHelpers
       p = new_bigbluebutton_server_path
     when /servers index/i, /create server/i
       p = bigbluebutton_servers_path
+    when /show server/i
+      p = bigbluebutton_server_path(@server)
+    when /edit server/i
+      p = edit_bigbluebutton_server_path(@server)
+    when /update server/i
+      p = bigbluebutton_server_path(@server)
     when /new room/i
       p = new_bigbluebutton_server_room_path(@server)
     when /rooms index/i, /create room/i
       p = bigbluebutton_server_rooms_path(@server)
     when /join external room/i
       p = external_bigbluebutton_server_rooms_path(@server)
+    when /show room/i
+      p = bigbluebutton_server_room_path(@server, @room)
+    when /edit room/i
+      p = edit_bigbluebutton_server_room_path(@server, @room)
+    when /update room/i
+      p = bigbluebutton_server_room_path(@server, @room)
 
     else
       begin

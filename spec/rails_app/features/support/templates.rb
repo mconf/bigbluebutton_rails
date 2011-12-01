@@ -15,69 +15,93 @@ module TemplateHelpers
   # servers/new
   def check_new_server
     within(form_selector(bigbluebutton_servers_path, 'post')) do
-      has_element("input#bigbluebutton_server_name",
-                  { :name => 'bigbluebutton_server[name]', :type => 'text' })
-      has_element("input#bigbluebutton_server_url",
-                  { :name => 'bigbluebutton_server[url]', :type => 'text' })
-      has_element("input#bigbluebutton_server_salt",
-                  { :name => 'bigbluebutton_server[salt]', :type => 'text' })
-      has_element("input#bigbluebutton_server_version",
-                  { :name => 'bigbluebutton_server[version]', :type => 'text' })
-      has_element("input#bigbluebutton_server_param",
-                  { :name => 'bigbluebutton_server[param]', :type => 'text' })
-      has_element("label", { :for => 'bigbluebutton_server_name' })
-      has_element("label", { :for => 'bigbluebutton_server_url' })
-      has_element("label", { :for => 'bigbluebutton_server_salt' })
-      has_element("label", { :for => 'bigbluebutton_server_version' })
-      has_element("label", { :for => 'bigbluebutton_server_param' })
-      has_element("input", { :name => 'commit', :type => 'submit' })
+      check_server_form
     end
+  end
+
+  # server/:id/edit
+  def check_edit_server
+    within(form_selector(bigbluebutton_server_path(@server), 'post')) do
+      check_server_form
+    end
+  end
+
+  # internal form in servers/new and server/:id/edit
+  def check_server_form
+    has_element("input#bigbluebutton_server_name",
+                { :name => 'bigbluebutton_server[name]', :type => 'text' })
+    has_element("input#bigbluebutton_server_url",
+                { :name => 'bigbluebutton_server[url]', :type => 'text' })
+    has_element("input#bigbluebutton_server_salt",
+                { :name => 'bigbluebutton_server[salt]', :type => 'text' })
+    has_element("input#bigbluebutton_server_version",
+                { :name => 'bigbluebutton_server[version]', :type => 'text' })
+    has_element("input#bigbluebutton_server_param",
+                { :name => 'bigbluebutton_server[param]', :type => 'text' })
+    has_element("label", { :for => 'bigbluebutton_server_name' })
+    has_element("label", { :for => 'bigbluebutton_server_url' })
+    has_element("label", { :for => 'bigbluebutton_server_salt' })
+    has_element("label", { :for => 'bigbluebutton_server_version' })
+    has_element("label", { :for => 'bigbluebutton_server_param' })
+    has_element("input", { :name => 'commit', :type => 'submit' })
   end
 
   # servers/new
   def check_new_room
     within(form_selector(bigbluebutton_server_rooms_path(@server), 'post')) do
-      has_element("input#bigbluebutton_room_name",
-                  { :name => 'bigbluebutton_room[name]', :type => 'text' })
-      has_element("input#bigbluebutton_room_meetingid",
-                  { :name => 'bigbluebutton_room[meetingid]', :type => 'text' })
-      has_element("input#bigbluebutton_room_randomize_meetingid",
-                  { :name => 'bigbluebutton_room[randomize_meetingid]', :type => 'checkbox' })
-      has_element("input#bigbluebutton_room_private",
-                  { :name => 'bigbluebutton_room[private]', :type => 'checkbox' })
-      has_element("input#bigbluebutton_room_attendee_password",
-                  { :name => 'bigbluebutton_room[attendee_password]', :type => 'password' })
-      has_element("input#bigbluebutton_room_moderator_password",
-                  { :name => 'bigbluebutton_room[moderator_password]', :type => 'password' })
-      has_element("input#bigbluebutton_room_welcome_msg",
-                  { :name => 'bigbluebutton_room[welcome_msg]', :type => 'text' })
-      has_element("input#bigbluebutton_room_logout_url",
-                  { :name => 'bigbluebutton_room[logout_url]', :type => 'text' })
-      has_element("input#bigbluebutton_room_dial_number",
-                  { :name => 'bigbluebutton_room[dial_number]', :type => 'text' })
-      has_element("input#bigbluebutton_room_max_participants",
-                  { :name => 'bigbluebutton_room[max_participants]', :type => 'text' })
-      has_element("input#bigbluebutton_room_external",
-                  { :name => 'bigbluebutton_room[external]', :type => 'checkbox' })
-      has_element("input#bigbluebutton_room_param",
-                  { :name => 'bigbluebutton_room[param]', :type => 'text' })
-      has_element("input#bigbluebutton_room_voice_bridge",
-                  { :name => 'bigbluebutton_room[voice_bridge]', :type => 'text' })
-      has_element("label", { :for => 'bigbluebutton_room_name' })
-      has_element("label", { :for => 'bigbluebutton_room_meetingid' })
-      has_element("label", { :for => 'bigbluebutton_room_randomize_meetingid' })
-      has_element("label", { :for => 'bigbluebutton_room_private' })
-      has_element("label", { :for => 'bigbluebutton_room_attendee_password' })
-      has_element("label", { :for => 'bigbluebutton_room_moderator_password' })
-      has_element("label", { :for => 'bigbluebutton_room_welcome_msg' })
-      has_element("label", { :for => 'bigbluebutton_room_logout_url' })
-      has_element("label", { :for => 'bigbluebutton_room_dial_number' })
-      has_element("label", { :for => 'bigbluebutton_room_max_participants' })
-      has_element("label", { :for => 'bigbluebutton_room_external' })
-      has_element("label", { :for => 'bigbluebutton_room_param' })
-      has_element("label", { :for => 'bigbluebutton_room_voice_bridge' })
-      has_element("input", { :name => 'commit', :type => 'submit' })
+      check_room_form
     end
+  end
+
+  # room/:id/edit
+  def check_edit_room
+    within(form_selector(bigbluebutton_server_room_path(@server, @room), 'post')) do
+      check_room_form
+    end
+  end
+
+  # internal form in rooms/new and room/:id/edit
+  def check_room_form
+    has_element("input#bigbluebutton_room_name",
+                { :name => 'bigbluebutton_room[name]', :type => 'text' })
+    has_element("input#bigbluebutton_room_meetingid",
+                { :name => 'bigbluebutton_room[meetingid]', :type => 'text' })
+    has_element("input#bigbluebutton_room_randomize_meetingid",
+                { :name => 'bigbluebutton_room[randomize_meetingid]', :type => 'checkbox' })
+    has_element("input#bigbluebutton_room_private",
+                { :name => 'bigbluebutton_room[private]', :type => 'checkbox' })
+    has_element("input#bigbluebutton_room_attendee_password",
+                { :name => 'bigbluebutton_room[attendee_password]', :type => 'password' })
+    has_element("input#bigbluebutton_room_moderator_password",
+                { :name => 'bigbluebutton_room[moderator_password]', :type => 'password' })
+    has_element("input#bigbluebutton_room_welcome_msg",
+                { :name => 'bigbluebutton_room[welcome_msg]', :type => 'text' })
+    has_element("input#bigbluebutton_room_logout_url",
+                { :name => 'bigbluebutton_room[logout_url]', :type => 'text' })
+    has_element("input#bigbluebutton_room_dial_number",
+                { :name => 'bigbluebutton_room[dial_number]', :type => 'text' })
+    has_element("input#bigbluebutton_room_max_participants",
+                { :name => 'bigbluebutton_room[max_participants]', :type => 'text' })
+    has_element("input#bigbluebutton_room_external",
+                { :name => 'bigbluebutton_room[external]', :type => 'checkbox' })
+    has_element("input#bigbluebutton_room_param",
+                { :name => 'bigbluebutton_room[param]', :type => 'text' })
+    has_element("input#bigbluebutton_room_voice_bridge",
+                { :name => 'bigbluebutton_room[voice_bridge]', :type => 'text' })
+    has_element("label", { :for => 'bigbluebutton_room_name' })
+    has_element("label", { :for => 'bigbluebutton_room_meetingid' })
+    has_element("label", { :for => 'bigbluebutton_room_randomize_meetingid' })
+    has_element("label", { :for => 'bigbluebutton_room_private' })
+    has_element("label", { :for => 'bigbluebutton_room_attendee_password' })
+    has_element("label", { :for => 'bigbluebutton_room_moderator_password' })
+    has_element("label", { :for => 'bigbluebutton_room_welcome_msg' })
+    has_element("label", { :for => 'bigbluebutton_room_logout_url' })
+    has_element("label", { :for => 'bigbluebutton_room_dial_number' })
+    has_element("label", { :for => 'bigbluebutton_room_max_participants' })
+    has_element("label", { :for => 'bigbluebutton_room_external' })
+    has_element("label", { :for => 'bigbluebutton_room_param' })
+    has_element("label", { :for => 'bigbluebutton_room_voice_bridge' })
+    has_element("input", { :name => 'commit', :type => 'submit' })
   end
 
   # room/:id/show
