@@ -118,6 +118,59 @@ module TemplateHelpers
       has_element("label", { :for => 'user_password' })
     end
   end
+
+  # rooms/
+  def check_rooms_index
+    has_element("a", { :href => new_bigbluebutton_server_room_path(@server) }) # new room link
+    n = 1
+    BigbluebuttonRoom.all.each do |room|
+      within(make_selector("ul#bbbrails_rooms_list>li:nth(#{n})")) do
+        # room data
+        has_content(room.name)
+        has_content(room.meetingid)
+        has_content(room.attendee_password)
+        has_content(room.moderator_password)
+        has_content(room.logout_url)
+        has_content(room.dial_number)
+        has_content(room.voice_bridge)
+        has_content(room.param)
+        # action links
+        has_element("a", { :href => bigbluebutton_server_room_path(@server, room) }) # show
+        has_element("a", { :href => join_bigbluebutton_server_room_path(@server, room) }) # join
+        has_element("a", { :href => invite_bigbluebutton_server_room_path(@server, room) }) # invite
+        has_element("a", { :href => join_mobile_bigbluebutton_server_room_path(@server, room) }) # join_mobile
+        has_element("a", { :href => edit_bigbluebutton_server_room_path(@server, room) }) # edit
+        has_element("a", { :href => end_bigbluebutton_server_room_path(@server, room) }) # end
+        has_element("a", { :href => bigbluebutton_server_room_path(@server, room), :"data-method" => 'delete' }) # destroy
+      end
+      n += 1
+    end
+  end
+
+  # servers/
+  def check_servers_index
+    has_element("a", { :href => new_bigbluebutton_server_path }) # new server link
+    n = 1
+    BigbluebuttonServer.all.each do |server|
+      within(make_selector("ul#bbbrails_servers_list>li:nth(#{n})")) do
+        # server data
+        has_content(server.name)
+        has_content(server.url)
+        has_content(server.salt)
+        has_content(server.version)
+        has_content(server.param)
+        has_content(server.url)
+        # action links
+        has_element("a", { :href => bigbluebutton_server_path(server) }) # show
+        has_element("a", { :href => bigbluebutton_server_rooms_path(server) }) # index
+        has_element("a", { :href => activity_bigbluebutton_server_path(server) }) # activity
+        has_element("a", { :href => edit_bigbluebutton_server_path(server) }) # edit
+        has_element("a", { :href => bigbluebutton_server_path(server), :"data-method" => 'delete' }) # destroy
+      end
+      n += 1
+    end
+  end
+
 end
 
 World(TemplateHelpers)

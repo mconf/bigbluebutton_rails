@@ -14,13 +14,11 @@ module NavigationHelpers
       p = '/'
     when /new server/i
       p = new_bigbluebutton_server_path
-    when /servers index/i
-    when /create server/i
+    when /servers index/i, /create server/i
       p = bigbluebutton_servers_path
     when /new room/i
       p = new_bigbluebutton_server_room_path(@server)
-    when /rooms index/i
-    when /create room/i
+    when /rooms index/i, /create room/i
       p = bigbluebutton_server_rooms_path(@server)
     when /join external room/i
       p = external_bigbluebutton_server_rooms_path(@server)

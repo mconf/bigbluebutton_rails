@@ -2,8 +2,19 @@ When /a server/i do
   @server = Factory.create(:bigbluebutton_server_integration)
 end
 
+When /^a(n external)? room$/i do |external|
+  if external.nil?
+    @room = Factory.create(:bigbluebutton_room, :server => @server)
+  else
+    @room = Factory.build(:bigbluebutton_room, :server => @server, :external => true)
+  end
+  @room.meetingid << "-" + SecureRandom.hex(4) # to avoid failures due to duplicated meeting_id's
+  @room.send_create
+end
+
 When /(?:|I ) go(es)? to the (.+) page$/i do |_, page_name|
   visit path_to(page_name, @params)
+  check_template(page_name)
 end
 
 When /(?:|I ) go(es)? to the (.+) page for (.+)$/i do |_, page_name, param|
@@ -12,6 +23,10 @@ When /(?:|I ) go(es)? to the (.+) page for (.+)$/i do |_, page_name, param|
     @params = { :meeting => @room.meetingid }
   end
   visit path_to(page_name, @params)
+  check_template(page_name)
+end
+
+When /see the (.+) page$/i do |page_name|
   check_template(page_name)
 end
 
@@ -27,10 +42,6 @@ end
 
 When /(?:|I ) should be at the (.+) URL$/i do |page_name|
   current_url.should match(/#{path_to(page_name)}/)
-end
-
-When /see the (.+) page$/i do |page_name|
-  check_template(page_name)
 end
 
 When /^(he )?should see an error message with the message "(.+)"$/i do |_, msg|

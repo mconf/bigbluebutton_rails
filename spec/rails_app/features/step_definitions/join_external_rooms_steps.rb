@@ -1,9 +1,3 @@
-When /^an external room$/i do
-  @room = Factory.build(:bigbluebutton_room, :server => @server, :external => true)
-  @room.meetingid << "-" + SecureRandom.hex(4) # to avoid failures due to duplicated meeting_id's
-  @room.send_create
-end
-
 When /^he should see a form to join the external room$/i do
   within(form_selector(external_bigbluebutton_server_rooms_path(@server), 'post')) do
     has_element("input", { :name => 'meeting', :type => 'hidden', :value => @room.meetingid })
