@@ -130,6 +130,7 @@ module TemplateHelpers
     page_has_content(server.salt)
     page_has_content(server.version)
     page_has_content(server.param)
+    has_element("a", { :href => new_bigbluebutton_server_room_path(server) }) # new room link
   end
 
   # rooms/external

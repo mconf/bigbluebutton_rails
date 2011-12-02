@@ -5,25 +5,26 @@ Feature: Join external webconference rooms
   @mechanize
   Scenario: Joining an external room as moderator (a room that is not in the database)
     Given an anonymous user
-      And a server
-      And an external room
+      And a real server
+      And an external room in this server
     When the user goes to the join external room page for this room
       And enters his name and the moderator password
     Then he should be able to join the room
 
   Scenario: Joining an external room that is NOT running as attendee
     Given an anonymous user
-      And a server
-      And an external room
+      And a real server
+      And an external room in this server
     When the user goes to the join external room page for this room
       And enters his name and the attendee password
     Then he should NOT be able to join the room
       And should see an error message with the message "The meeting is not running"
 
+  # TODO to implement
   @wip @mechanize
   Scenario: Joining an external room that is running as attendee
     Given an anonymous user
-      And a server
+      And a real server
       And an external room with a running meeting
     When the user goes to the join external room page for this room
       And enters his name and the attendee password
@@ -31,8 +32,8 @@ Feature: Join external webconference rooms
 
   Scenario: Joining an external room without entering a user name
     Given an anonymous user
-      And a server
-      And an external room
+      And a real server
+      And an external room in this server
     When the user goes to the join external room page for this room
       And enters only the moderator password
     Then he should NOT be able to join the room
@@ -40,8 +41,8 @@ Feature: Join external webconference rooms
 
   Scenario: Joining an external room without entering a password (wrong password)
     Given an anonymous user
-      And a server
-      And an external room
+      And a real server
+      And an external room in this server
     When the user goes to the join external room page for this room
       And enters only the user name
     Then he should NOT be able to join the room
@@ -49,7 +50,7 @@ Feature: Join external webconference rooms
 
   Scenario: Uses the current user's name as the default name to join an external room
     Given a user named "test user"
-      And a server
-      And an external room
+      And a real server
+      And an external room in this server
     When the user goes to the join external room page for this room
     Then he should see his name should be in the user name input

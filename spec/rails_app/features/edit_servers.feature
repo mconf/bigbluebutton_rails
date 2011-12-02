@@ -4,7 +4,7 @@ Feature: Edit webconference servers
 
   Scenario: Edit data in a BigBlueButton server
     Given an anonymous user
-      And a server
+      And a real server
     When he goes to the edit server page
       And change the server URL to "http://test.com/bigbluebutton/api"
       And click in the button to save the server
@@ -13,7 +13,7 @@ Feature: Edit webconference servers
 
   Scenario: Try to edit data in a BigBlueButton server with incorrect values
     Given an anonymous user
-      And a server
+      And a real server
     When he goes to the edit server page
       And change the server URL to "http://test.com/"
       And click in the button to save the server

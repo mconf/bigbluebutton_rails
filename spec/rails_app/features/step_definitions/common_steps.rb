@@ -1,15 +1,30 @@
-When /a server/i do
+When /^a real server$/i do
   @server = Factory.create(:bigbluebutton_server_integration)
 end
 
-When /^a(n external)? room$/i do |external|
+When /^(\d+) server(s)?$/i do |count, _|
+  # Note: these servers are not real, it will NOT be possible to make api requests
+  #       for a real server use :bigbluebutton_server_integration
+  # Use "a real server" whenever possible
+  count.to_i.times do
+    Factory.create(:bigbluebutton_server)
+  end
+end
+
+When /^a(n external)? room in this server$/i do |external|
   if external.nil?
     @room = Factory.create(:bigbluebutton_room, :server => @server)
   else
     @room = Factory.build(:bigbluebutton_room, :server => @server, :external => true)
   end
-  @room.meetingid << "-" + SecureRandom.hex(4) # to avoid failures due to duplicated meeting_id's
   @room.send_create
+end
+
+When /^(\d+) room(s)? in this server$/i do |count, _|
+  count.to_i.times do
+    @room = Factory.create(:bigbluebutton_room, :server => @server)
+    @room.send_create
+  end
 end
 
 When /(?:|I ) go(es)? to the (.+) page$/i do |_, page_name|

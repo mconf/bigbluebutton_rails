@@ -4,8 +4,8 @@ Feature: Edit webconference rooms
 
   Scenario: Edit data in a BigBlueButton room
     Given an anonymous user
-      And a server
-      And a room
+      And a real server
+      And a room in this server
     When he goes to the edit room page
       And change the room name to "Anything different"
       And click in the button to save the room
@@ -14,8 +14,8 @@ Feature: Edit webconference rooms
 
   Scenario: Try to edit data in a BigBlueButton room with incorrect values
     Given an anonymous user
-      And a server
-      And a room
+      And a real server
+      And a room in this server
     When he goes to the edit room page
       And change the room name to ""
       And click in the button to save the room

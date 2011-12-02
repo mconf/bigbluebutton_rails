@@ -4,7 +4,7 @@ Feature: Destroy webconference servers
 
   Scenario: Destroy a stored BigBlueButton server
     Given an anonymous user
-      And a server
+      And a real server
     When he goes to the servers index page
       And clicks in the link to remove the first server
     Then he should be at the servers index URL

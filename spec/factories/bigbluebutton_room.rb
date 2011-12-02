@@ -1,6 +1,8 @@
 Factory.define :bigbluebutton_room do |r|
+  # meetingid with a random factor to avoid duplicated ids in consecutive test runs
+  r.sequence(:meetingid) { |n| "meeting-#{n}-" + SecureRandom.hex(4) }
+
   r.association :server, :factory => :bigbluebutton_server
-  r.sequence(:meetingid) { |n| "MeetingID#{n}" }
   r.sequence(:name) { |n| "Name#{n}" }
   r.attendee_password { Forgery(:basic).password :at_least => 10, :at_most => 16 }
   r.moderator_password { Forgery(:basic).password :at_least => 10, :at_most => 16 }

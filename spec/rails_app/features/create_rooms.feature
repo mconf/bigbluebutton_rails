@@ -3,13 +3,13 @@ Feature: Create webconference rooms
   One needs to create and configure webconference rooms
 
   Scenario: Register a new BigBlueButton room
-    Given a server
+    Given a real server
     When the user goes to the new room page
       And registers a new room
     Then he should see the information about this room
 
   Scenario: Try to register a new BigBlueButton room with errors
-    Given a server
+    Given a real server
     When the user goes to the new room page
       And registers a new room with wrong parameters
     Then he should be at the create room URL
