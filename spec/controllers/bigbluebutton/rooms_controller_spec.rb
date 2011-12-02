@@ -482,6 +482,14 @@ describe Bigbluebutton::RoomsController do
         it { should set_the_flash.to(I18n.t('bigbluebutton_rails.rooms.errors.auth.failure')) }
       end
 
+      context "when name is set but empty" do
+        let(:user_hash) { { :password => room.moderator_password, :name => "" } }
+        it { should respond_with(:unauthorized) }
+        it { should assign_to(:room).with(room) }
+        it { should render_template(:invite) }
+        it { should set_the_flash.to(I18n.t('bigbluebutton_rails.rooms.errors.auth.failure')) }
+      end
+
       context "when the password is wrong" do
         let(:user_hash) { { :name => "Elftor", :password => nil } }
         it { should respond_with(:unauthorized) }

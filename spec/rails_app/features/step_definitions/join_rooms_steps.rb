@@ -6,14 +6,19 @@ When /^he should see a form to join the external room$/i do
   end
 end
 
-When /^he should see his name should be in the user name input$/i do
-  within(form_selector(external_bigbluebutton_server_rooms_path(@server), 'post')) do
+When /^he should see his name in the user name input$/i do
+  case current_url
+  when /\/invite$/          # normal rooms
+    form = form_selector(join_bigbluebutton_server_room_path(@server, @room), 'post')
+  when /\/external(\?.*)?/  # external rooms
+    form = form_selector(external_bigbluebutton_server_rooms_path(@server), 'post')
+  end
+  within(form) do
     has_element("input", { :name => 'user[name]', :type => 'text', :value => @user.name })
   end
 end
 
-When /^he should( not)? be able to join the room$/i do |negate|
-  click_button("Submit")
+When /^he should( not)? join the conference room$/i do |negate|
   if negate.nil?
     current_url.should match(/\/client\/BigBlueButton\.html/) # BBB client page
   else
@@ -37,4 +42,8 @@ end
 When /^enters only the user name$/ do
   name = @user.nil? ? "Anonymous" : @user.name
   fill_in("user[name]", :with => name)
+end
+
+When /^the password field was pre-filled with the attendee password$/ do
+  has_element("input", { :name => 'user[password]', :type => 'password', :value => @room.attendee_password })
 end

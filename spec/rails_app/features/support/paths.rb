@@ -34,6 +34,10 @@ module NavigationHelpers
       p = edit_bigbluebutton_server_room_path(@server, @room)
     when /update room/i
       p = bigbluebutton_server_room_path(@server, @room)
+    when /join room/i
+      p = join_bigbluebutton_server_room_path(@server, @room)
+    when /invite room/i
+      p = invite_bigbluebutton_server_room_path(@server, @room)
 
     else
       begin

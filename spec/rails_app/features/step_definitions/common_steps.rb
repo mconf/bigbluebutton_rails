@@ -20,25 +20,31 @@ When /^a(n external)? room in this server$/i do |external|
   @room.send_create
 end
 
+When /^a public room in this server$/i do
+  steps %Q{ When a room in this server }
+  @room.update_attributes(:private => false)
+end
+
+When /^a private room in this server$/i do
+  steps %Q{ When a room in this server }
+  @room.update_attributes(:private => true)
+end
+
 When /^(\d+) room(s)? in this server$/i do |count, _|
   count.to_i.times do
-    @room = Factory.create(:bigbluebutton_room, :server => @server)
-    @room.send_create
+    steps %Q{ When a room in this server }
   end
 end
 
-When /(?:|I ) go(es)? to the (.+) page$/i do |_, page_name|
-  visit path_to(page_name, @params)
-  check_template(page_name)
-end
-
-When /(?:|I ) go(es)? to the (.+) page for (.+)$/i do |_, page_name, param|
+# Some paths will just redirect to other paths instead of rendering a view
+# So we can set "(no view check)" and the view won't be verified
+When /(?:|I ) go(es)? to the (.+) page( \(no view check\))?$/i do |_, page_name, not_check|
   case page_name
   when /join external room/i
     @params = { :meeting => @room.meetingid }
   end
   visit path_to(page_name, @params)
-  check_template(page_name)
+  check_template(page_name) if not_check.nil?
 end
 
 When /see the (.+) page$/i do |page_name|
@@ -59,6 +65,10 @@ When /(?:|I ) should be at the (.+) URL$/i do |page_name|
   current_url.should match(/#{path_to(page_name)}/)
 end
 
+When /^he should be redirected to the (.+) URL$/ do |page|
+  steps %Q{ When he should be at the #{page} URL }
+end
+
 When /^(he )?should see an error message with the message "(.+)"$/i do |_, msg|
   key = message_to_locale_key(msg)
   within(make_selector("div#error_explanation")) do
@@ -75,6 +85,18 @@ When /^see (\d+) error(s)? in the field "(.+)"$/i do |errors, _, field_name|
   has_element("div.field_with_errors > input##{id}", { :name => field_name })
 end
 
+When /^clicks in the button "(.+)"$/i do |button|
+  click_button(button)
+end
+
+
+# helpers for development
+
 When /is pending/i do
   pending
+end
+
+When /puts the page/i do
+  puts current_url
+  puts body.inspect
 end

@@ -36,7 +36,7 @@ $(document).ready(function(){
 <%= form_tag join_bigbluebutton_server_room_path(@server, @room) do %>
 
   <div class="field">
-    Name:<br />
+    <label for="user_name">Name:</label><br />
     <% if bigbluebutton_user.nil? %>
       <%= text_field_tag "user[name]", "" %>
     <% else %>
@@ -44,11 +44,11 @@ $(document).ready(function(){
     <% end %>
   </div>
   <div class="field">
-    Password:<br />
+    <label for="user_password">Password:</label><br />
     <% if @room.private %>
       <%= password_field_tag "user[password]", "" %>
     <% else %>
-      <%= hidden_field_tag "user[password]", @room.attendee_password %>
+      <%= password_field_tag "user[password]", @room.attendee_password %>
     <% end %>
   </div>
 

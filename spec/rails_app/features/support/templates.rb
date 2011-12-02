@@ -6,7 +6,7 @@ module TemplateHelpers
     begin
       method = ("check " + page_name).split(" ").join('_').to_sym
       self.send(method)
-    rescue NoMethodError, ArgumentError
+    rescue NoMethodError
       raise "Can't find method to check the template for \"#{page_name}\"\n" +
             "Now, go and add the method \"#{method}\" in #{__FILE__}"
     end
@@ -52,6 +52,45 @@ module TemplateHelpers
       check_room_form
     end
   end
+
+  # server/:id/show
+  def check_show_server
+    server = BigbluebuttonServer.last
+    page_has_content(server.name)
+    page_has_content(server.url)
+    page_has_content(server.salt)
+    page_has_content(server.version)
+    page_has_content(server.param)
+    has_element("a", { :href => new_bigbluebutton_server_room_path(server) }) # new room link
+  end
+
+  # servers/
+  def check_servers_index
+    has_element("a", { :href => new_bigbluebutton_server_path }) # new server link
+    n = 1
+    BigbluebuttonServer.all.each do |server|
+      within(make_selector("ul#bbbrails_servers_list>li:nth(#{n})")) do
+        # server data
+        has_content(server.name)
+        has_content(server.url)
+        has_content(server.salt)
+        has_content(server.version)
+        has_content(server.param)
+        has_content(server.url)
+        # action links
+        has_element("a", { :href => bigbluebutton_server_path(server) }) # show
+        has_element("a", { :href => bigbluebutton_server_rooms_path(server) }) # index
+        has_element("a", { :href => activity_bigbluebutton_server_path(server) }) # activity
+        has_element("a", { :href => edit_bigbluebutton_server_path(server) }) # edit
+        has_element("a", { :href => bigbluebutton_server_path(server), :"data-method" => 'delete' }) # destroy
+      end
+      n += 1
+    end
+  end
+
+
+
+
 
   # room/:id/edit
   def check_edit_room
@@ -122,17 +161,6 @@ module TemplateHelpers
     page_has_content(room.param)
   end
 
-  # server/:id/show
-  def check_show_server
-    server = BigbluebuttonServer.last
-    page_has_content(server.name)
-    page_has_content(server.url)
-    page_has_content(server.salt)
-    page_has_content(server.version)
-    page_has_content(server.param)
-    has_element("a", { :href => new_bigbluebutton_server_room_path(server) }) # new room link
-  end
-
   # rooms/external
   def check_join_external_room
     within(form_selector(external_bigbluebutton_server_rooms_path(@server), 'post')) do
@@ -141,6 +169,18 @@ module TemplateHelpers
       has_element("input#user_password", { :name => 'user[password]', :type => 'password' })
       has_element("label", { :for => 'user_name' })
       has_element("label", { :for => 'user_password' })
+      has_element("input", { :name => 'commit', :type => 'submit' })
+    end
+  end
+
+  # rooms/:id/invite
+  def check_invite_room
+    within(form_selector(join_bigbluebutton_server_room_path(@server, @room), 'post')) do
+      has_element("input#user_name", { :name => 'user[name]', :type => 'text' })
+      has_element("input#user_password", { :name => 'user[password]', :type => 'password' })
+      has_element("label", { :for => 'user_name' })
+      has_element("label", { :for => 'user_password' })
+      has_element("input", { :name => 'commit', :type => 'submit' })
     end
   end
 
@@ -172,28 +212,7 @@ module TemplateHelpers
     end
   end
 
-  # servers/
-  def check_servers_index
-    has_element("a", { :href => new_bigbluebutton_server_path }) # new server link
-    n = 1
-    BigbluebuttonServer.all.each do |server|
-      within(make_selector("ul#bbbrails_servers_list>li:nth(#{n})")) do
-        # server data
-        has_content(server.name)
-        has_content(server.url)
-        has_content(server.salt)
-        has_content(server.version)
-        has_content(server.param)
-        has_content(server.url)
-        # action links
-        has_element("a", { :href => bigbluebutton_server_path(server) }) # show
-        has_element("a", { :href => bigbluebutton_server_rooms_path(server) }) # index
-        has_element("a", { :href => activity_bigbluebutton_server_path(server) }) # activity
-        has_element("a", { :href => edit_bigbluebutton_server_path(server) }) # edit
-        has_element("a", { :href => bigbluebutton_server_path(server), :"data-method" => 'delete' }) # destroy
-      end
-      n += 1
-    end
+  def check_join_room # nothing to check, it only redirects to the BBB client
   end
 
 end
