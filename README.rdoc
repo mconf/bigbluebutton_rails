@@ -14,7 +14,7 @@ Features:
 * Server activity monitor
 
 Planned features:
-* Friendly URLs (e.g. http://somewhere.com/my-server/my-room) (half way done)
+* Friendly URLs (e.g. http://somewhere.com/my-server/my-room)
 * Limit the number of users per room and rooms per server
 * Server administration (modify config.xml, use bbb-conf, etc.)
 * Load balancing
@@ -48,18 +48,7 @@ The routes to BigbluebuttonRails can be generated with the helper <tt>bigbluebut
 
   bigbluebutton_routes :default
 
-  resources :users do
-    bigbluebutton_routes :room_matchers
-    resources :spaces do
-      bigbluebutton_routes :room_matchers
-    end
-  end
-
-The first line generates the default routes. You need to call it at least once to generate the following routes:
-
-  bigbluebutton_routes :default
-
-It generates routes scoped with 'bigbluebutton'. These routes look like:
+It will generate the default routes. You need to call it at least once and the routes will be scoped with 'bigbluebutton'. They will look like:
 
   /bigbluebutton/servers
   /bigbluebutton/servers/default-server/rooms/my-room
@@ -70,23 +59,23 @@ You can customize the scope name and also make the routes point to custom contro
   bigbluebutton_routes :default, :scope => 'webconference', :controllers => { :servers => 'custom_servers', :rooms => 'custom_rooms' }
   bigbluebutton_routes :default, :scope => '' # to remove the scope
 
-If you customize the controllers as in the first line in the example above, be warned that every route generated after this will
-be using these controllers!
-
 You may also want shorter routes to access conference rooms. For that, use the option <tt>room_matchers</tt>:
 
   bigbluebutton_routes :room_matchers
 
-It creates routes to the actions used to access the conference room: "show", "join", "auth", "running", "end", "invite", and "join_mobile".
-So you can allow access to webconference rooms using URLs such as:
+  resources :users do
+    bigbluebutton_routes :room_matchers
+  end
+
+It creates routes to the actions used to access the conference room, so you can allow access to webconference rooms using URLs such as:
 
   http://myserver.com/server-name/room-name/join
   http://myserver.com/user-name/public-room/join
   http://myserver.com/ziltoid-room/join
 
-Obs: The URLs are not yet exactly like these, but soon they will be. But you can of course implement this in your application. Today they are like:
+For more information see:
 
-  http://myserver.com/bigblugbutton/server-name/rooms/room-name/join
+* {How to: Routes}[https://github.com/mconf/bigbluebutton_rails/wiki/How-to:-Routes]
 
 === User authorization, permissions and assumptions
 
@@ -106,71 +95,13 @@ and you can reimplement them in your application controller to change their beha
 * {How to: Integrate with Devise}[https://github.com/mconf/bigbluebutton_rails/wiki/How-to:-Integrate-with-Devise]
 * {How to: Integrate with CanCan}[https://github.com/mconf/bigbluebutton_rails/wiki/How-to:-Integrate-with-CanCan]
 
-== How it works
-
-=== Overview
-
-BigbluebuttonRails has two entities: servers and rooms. Servers can have multiple rooms, that belong to a server and can also belong to any other model.
-You can make a room belong to a user, for example.
-
-Every server has an associated API object (using the gem bigbluebutton-api-ruby) used to access the BigBlueButton server.
-The server controller has only the standard CRUD actions defined by Rails.
-
-The rooms controller also have the CRUD actions, plus some specific actions to join, end, and check if a meeting is currently running in the room.
-These extra actions will be explained bellow.
-
-A room model has methods to fetch and send information to the BBB server. They are simple API calls, but the "fetch" methods check the response and store
-data from it, while the "send" methods just make the API call. You can, for example, use <tt>fetch_meeting_info</tt> to get information about the meeting
-(will trigger the API call <tt>getMeetingInfo</tt>). The data parsed from the response wil be stored in the model and can be accessed using it's attributes.
-
-All methods in the models that trigger any API call are documented with "Triggers API call" and the API functions that are called. Be aware that they
-can throw a BigBlueButtonException.
-
-=== RoomsController
-
-==== <tt>running</tt> and <tt>end</tt>
-
-These are pretty simple actions. <tt>running</tt> returns a json indicating if the conference is running or not, while <tt>end</tt> ends the meeting.
-
-==== <tt>join_mobile</tt>
-
-This is an action that simply renders a view with a {QR code}[http://code.google.com/apis/chart/image/docs/gallery/qr_codes.html] and a link to join the
-conference from a mobile device. The link and the QR code point to links using the protocol "bigbluebutton://", so it can be associated with a native mobile
-application that will open the conference (such as the {Android client for BigBlueButton}[https://github.com/mconf/mconf-mobile]).
-
-==== <tt>join</tt>, <tt>invite</tt> and <tt>auth</tt>
-
-The actions used to redirect a user to join a room are <tt>join</tt> and <tt>invite</tt>, while <tt>auth</tt> is used by <tt>invite</tt> to authenticate
-the user. Basic differences:
-
-* <tt>invite</tt> renders a view to ask for a user name and a password. It is used to enable <b>anonymous users</b> to join a room or
-  to define the user role using the <b>room password</b> instead of the <tt>bigbluebutton_role</tt> method.
-  * It first checks <tt>bigbluebutton_role</tt> to see if the current user already has a role in the target room.
-    * In case it has (see {controller_methods.rb}[https://github.com/mconf/bigbluebutton_rails/blob/master/lib/bigbluebutton_rails/controller_methods.rb] for more info), redirects to <tt>join</tt>.
-    * Otherwise:
-      * If there is a user logged, uses <tt>bigbluebutton_user().name</tt> as the user name. Otherwise, ask the user to type a name.
-* <tt>join</tt> requires a <b>logged user</b> and uses <tt>bigbluebutton_role</tt> to get the role for this user
-  * It redirects the user straight to the meeting if the join is successful.
-  * In case there's no role associated with the current user, falls back to <tt>invite</tt> to ask for a password.
-
-Internally, they use the same algorithm:
-
-* If the user is a moderator:
-  * If the room is not created yet, creates it.
-  * Redirects the user to the meeting as a moderator.
-* If the user is not a moderator (a normal attendee):
-  * If the meeting is running, redirects the user to the meeting as an attendee.
-  * Otherwise:
-    * <tt>join</tt> renders the join view, to wait for a moderator before joining the conference. The page will continuously pool the server to check if the meeting is running. When it starts, it redirects the user to the conference.
-    * <tt>invite</tt> renders the invite view again and shows a warning informing that the meeting is not running. The user must re-submit the form to try again.
-
 == Contributing/Development
 
 Fork this repository, clone your fork and start by installing the dependencies:
 
   bundle install
 
-Edit <tt>spec/integration_conf.yml.example</tt> and set values for an existent BigBlueButton server. Save it as <tt>spec/integration_conf.yml</tt>. You will need it to run the integration tests.
+Edit <tt>spec/rails_app/features/integration_conf.yml.example</tt> and set values for an existent BigBlueButton server. Save it as <tt>spec/integration_conf.yml</tt>. You will need it to run the integration tests. For more information see the page [Testing](https://github.com/mconf/bigbluebutton_rails/wiki/Testing) in our wiki.
 
 Prepare the rails_app used for tests:
 
