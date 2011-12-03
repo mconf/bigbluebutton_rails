@@ -20,6 +20,7 @@ group :test do
   gem "factory_girl"
   gem "generator_spec"
   gem "rspec-rails"
+  gem "bbbot-ruby", :git => "git://github.com/mconf/bbbot-ruby.git"
 
   gem "capybara-mechanize", "0.3.0.rc3" # allows remote requests
   # gem "capybara-webkit" # best option found for js

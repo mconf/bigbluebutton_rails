@@ -1,5 +1,6 @@
 # require 'capybara-webkit'
 require 'capybara/mechanize/cucumber'
+require 'bigbluebutton_bot'
 
 # Load the environment in the gem folders, not in the rails_app
 # Load the factories in the gem spec/factories folder

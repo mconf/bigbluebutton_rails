@@ -1,4 +1,6 @@
-debug: false
+# maximum wait until the bot starts (secs)
+timeout_bot_start: 60
+
 servers:
   bbb-dev-07:
     salt: 'your-salt'

@@ -2,3 +2,4 @@ config/locales/bigbluebutton_rails.en.yml
 db/migrate/*bigbluebutton_rails.rb
 db/schema.rb
 tmp/
+logs/

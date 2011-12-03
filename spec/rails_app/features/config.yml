@@ -1,0 +1,27 @@
+# maximum wait until the bot starts (secs)
+timeout_bot_start: 60
+
+servers:
+  mconf-dev:
+    salt: '9465875d2c443fa2988e2293fb535eaf'
+    url: 'http://mconfdev.inf.ufrgs.br/bigbluebutton/api'
+    version: '0.7'
+  mconf:
+    salt: 'b192bb995dfb23c169e940834bb6aa7a'
+    url: 'http://mconf.org:8888/bigbluebutton/api'
+    version: '0.7'
+  test-install:
+    salt: '8cd8ef52e8e101574e400365b55e11a6'
+    url: 'http://test-install.blindsidenetworks.com/bigbluebutton/api'
+    version: '0.8'
+    mobile_salt: '03b07' # needed for >= 0.8
+  local-bbb071a:
+    salt: '698f9d010ee91eaf6d5ab7cabbc5c3dd'
+    url: 'http://192.168.0.102/bigbluebutton/api'
+    version: '0.7'
+  local-bbb08:
+    salt: '698f9d010ee91eaf6d5ab7cabbc5c3ee'
+    url: 'http://192.168.0.106/bigbluebutton/api'
+    version: '0.8'
+    mobile_salt: '03b07' # needed for >= 0.8
+

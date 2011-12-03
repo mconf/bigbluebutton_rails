@@ -89,6 +89,16 @@ When /^clicks in the button "(.+)"$/i do |button|
   click_button(button)
 end
 
+When /^a meeting is running in this room$/ do
+  steps %Q{ When a meeting is running in this room with 1 attendees }
+end
+
+When /^a meeting is running in this room with (\d+) attendees$/ do |count|
+  msalt = FeaturesConfig.server.has_key?('mobile_salt') ? FeaturesConfig.server['mobile_salt'] : ""
+  BigBlueButtonBot.new(@server.api, @room.meetingid, msalt,
+                       count.to_i, FeaturesConfig.root['timeout_bot_start'])
+end
+
 
 # helpers for development
 

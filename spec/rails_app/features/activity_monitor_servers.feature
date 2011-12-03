@@ -10,7 +10,7 @@ Feature: Monitor the active in the webconference servers
     When he goes to the server activity monitor page
     Then he should see the 2 meetings that are running
 
-  @wip @scratch
+  @wip @need-bot
   Scenario: View the list of meetings running in a server with no meetings running
     Given an anonymous user
       And a real server with no meetings running

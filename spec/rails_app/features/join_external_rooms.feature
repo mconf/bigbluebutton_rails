@@ -22,12 +22,12 @@ Feature: Join external webconference rooms
     Then he should NOT join the conference room
       And should see an error message with the message "The meeting is not running"
 
-  # TODO to join as attendee the meeting must be running already
-  @wip @mechanize
+  @mechanize @need-bot
   Scenario: Joining an external room that is running as attendee
     Given an anonymous user
       And a real server
-      And an external room with a running meeting
+      And an external room in this server
+      And a meeting is running in this room
     When the user goes to the join external room page
       And enters his name and the attendee password
       And clicks in the button "Submit"
