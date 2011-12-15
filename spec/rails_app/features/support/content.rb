@@ -1,34 +1,38 @@
 module ContentHelpers
 
-  def page_has_content(text)
-    if page.respond_to? :should
+  # Passing the xpath in the methods below is useful to check for
+  # content in any item of a list, for example
+  # page_has_content("Hi", './/li[@id="my-element"]'
+
+  def page_has_content(text, xpath=nil)
+    if xpath.nil?
       page.should have_content(text)
     else
-      assert page.has_content?(text)
+      page.should_not have_xpath(text, :text => text)
     end
   end
 
-  def page_doesnt_have_content(text)
-    if page.respond_to? :should
+  def page_doesnt_have_content(text, xpath=nil)
+    if xpath.nil?
       page.should_not have_content(text)
     else
-      assert !page.has_content?(text)
+      page.should_not have_xpath(text, :text => text)
     end
   end
 
-  def has_content(text)
-    if respond_to? :should
+  def has_content(text, xpath=nil)
+    if xpath.nil?
       should have_content(text)
     else
-      assert has_content?(text)
+      should have_xpath(text, :text => text)
     end
   end
 
-  def doesnt_have_content(text)
-    if respond_to? :should
+  def doesnt_have_content(text, xpath=nil)
+    if xpath.nil?
       should_not have_content(text)
     else
-      assert !has_content?(text)
+      should_not have_xpath(text, :text => text)
     end
   end
 

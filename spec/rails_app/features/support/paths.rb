@@ -22,6 +22,8 @@ module NavigationHelpers
       p = edit_bigbluebutton_server_path(@server)
     when /update server/i
       p = bigbluebutton_server_path(@server)
+    when /server activity monitor/i
+      p = activity_bigbluebutton_server_path(@server)
     when /new room/i
       p = new_bigbluebutton_server_room_path(@server)
     when /rooms index/i, /create room/i

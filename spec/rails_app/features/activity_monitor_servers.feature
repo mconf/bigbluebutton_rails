@@ -2,7 +2,7 @@ Feature: Monitor the active in the webconference servers
   To check the current status of a server
   One needs a real-time activity monitor
 
-  @wip @need-bot
+  @need-bot
   Scenario: View the list of meetings running in a server
     Given an anonymous user
       And a real server
@@ -11,7 +11,7 @@ Feature: Monitor the active in the webconference servers
     Then he should see the 2 meetings that are running
 
   @wip @need-bot
-  Scenario: View the list of meetings running in a server with no meetings running
+  Scenario: No meetings are shown in a server with no meetings running
     Given an anonymous user
       And a real server with no meetings running
     When he goes to the server activity monitor page
