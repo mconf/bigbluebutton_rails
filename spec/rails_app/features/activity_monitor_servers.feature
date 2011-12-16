@@ -10,14 +10,7 @@ Feature: Monitor the active in the webconference servers
     When he goes to the server activity monitor page
     Then he should see the 2 meetings that are running
 
-  @wip @need-bot
-  Scenario: No meetings are shown in a server with no meetings running
-    Given an anonymous user
-      And a real server with no meetings running
-    When he goes to the server activity monitor page
-    Then he shouldn't see any meeting in the list
-
-  @wip @need-bot
+  @need-bot
   Scenario: View the list of meetings in progress and meetings recently finished
     Given an anonymous user
       And a real server
@@ -27,7 +20,7 @@ Feature: Monitor the active in the webconference servers
     Then he should see the 2 meetings that are running
       And he should see the 2 recently ended meetings
 
-  @wip @need-bot
+  @need-bot
   Scenario: View externally created meetings (in rooms that are not in the database)
     Given an anonymous user
       And a real server
@@ -35,7 +28,9 @@ Feature: Monitor the active in the webconference servers
     When he goes to the server activity monitor page
     Then he should see the external room in the list
 
-  @wip @need-bot
+  # Note: This will only work for bbb servers with removeMeetingWhenEnded=false
+  # See: http://code.google.com/p/bigbluebutton/issues/detail?id=980
+  @need-bot
   Scenario: Contains a link to partially refresh the meeting list
     Given an anonymous user
       And a real server
@@ -43,8 +38,7 @@ Feature: Monitor the active in the webconference servers
     When he goes to the server activity monitor page
       And the first meeting is ended
       And he clicks in the link to update the meeting list
-    Then he should see 1 meeting running
-      And he should see 1 meeting not running
+    Then he should see one meeting running and the other meeting not running
 
   @wip @need-bot
   Scenario: Partially refresh the meeting list periodically

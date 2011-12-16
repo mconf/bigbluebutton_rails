@@ -23,5 +23,6 @@ group :test do
   gem "bbbot-ruby", :git => "git://github.com/mconf/bbbot-ruby.git"
 
   gem "capybara-mechanize", "0.3.0.rc3" # allows remote requests
+  gem "launchy"
   # gem "capybara-webkit" # best option found for js
 end

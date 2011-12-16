@@ -98,31 +98,6 @@ module TemplateHelpers
     end
     has_element("div#bbbrails_server_activity_meetings")
   end
-  # checks the rooms inside the activity monitor
-  def check_server_activity_monitor_rooms(rooms)
-    # TODO: check the action links
-    within(make_selector("div#bbbrails_server_activity_meetings")) do
-      rooms.each do |room|
-        xpath = './/div[@class="bbbrails_meeting_description"]'
-        has_content(room.name, xpath)
-        has_content(room.meetingid, xpath)
-
-        room.fetch_is_running?
-        if room.is_running?
-          has_content(room.start_time, xpath)
-          has_element("span.running")
-          room.participant_count.times do |i|
-            has_content("Bot #{i}", xpath) # user name
-          end
-        else
-          has_content(room.start_time, xpath)
-          has_content(room.end_time, xpath)
-          has_element("span.not_running")
-        end
-
-      end
-    end
-  end
 
 
 

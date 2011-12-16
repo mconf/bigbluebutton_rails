@@ -1,6 +1,6 @@
 GIT
   remote: git://github.com/mconf/bbbot-ruby.git
-  revision: 47f677291610da475d9872aa3834f4cecdf9e7b7
+  revision: 83f3ccf88aa355260a791eb450a8d73f94049053
   specs:
     bbbot-ruby (0.0.1)
 
@@ -41,6 +41,7 @@ GEM
       activemodel (= 3.0.11)
       activesupport (= 3.0.11)
     activesupport (3.0.11)
+    addressable (2.2.6)
     arel (2.0.10)
     bigbluebutton-api-ruby (0.1.0)
       xml-simple (>= 1.1.1)
@@ -84,6 +85,8 @@ GEM
     i18n (0.5.0)
     json (1.6.1)
     json_pure (1.6.1)
+    launchy (2.0.5)
+      addressable (~> 2.2.6)
     mail (2.2.19)
       activesupport (>= 2.3.6)
       i18n (>= 0.4.0)
@@ -182,6 +185,7 @@ DEPENDENCIES
   factory_girl
   forgery
   generator_spec
+  launchy
   rails_best_practices
   rdoc
   rspec-rails

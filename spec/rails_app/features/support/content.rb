@@ -8,7 +8,7 @@ module ContentHelpers
     if xpath.nil?
       page.should have_content(text)
     else
-      page.should_not have_xpath(text, :text => text)
+      page.should_not have_xpath(xpath, :text => text)
     end
   end
 
@@ -16,7 +16,7 @@ module ContentHelpers
     if xpath.nil?
       page.should_not have_content(text)
     else
-      page.should_not have_xpath(text, :text => text)
+      page.should_not have_xpath(xpath, :text => text)
     end
   end
 
@@ -24,7 +24,7 @@ module ContentHelpers
     if xpath.nil?
       should have_content(text)
     else
-      should have_xpath(text, :text => text)
+      should have_xpath(xpath, :text => text)
     end
   end
 
@@ -32,7 +32,7 @@ module ContentHelpers
     if xpath.nil?
       should_not have_content(text)
     else
-      should_not have_xpath(text, :text => text)
+      should_not have_xpath(xpath, :text => text)
     end
   end
 

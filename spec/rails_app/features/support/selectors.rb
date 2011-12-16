@@ -56,6 +56,25 @@ module HtmlSelectorsHelpers
     end
   end
 
+  def doesnt_have_element(element, attrs={}, method=:css)
+    selector = make_selector(element, attrs, method)
+    if respond_to? :should
+      case method
+      when :xpath
+        should_not have_xpath(selector)
+      else # :css
+        should_not have_selector(selector)
+      end
+    else
+      case method
+      when :xpath
+        assert !has_xpath?(selector)
+      else # :css
+        assert !has_xpath?(selector)
+      end
+    end
+  end
+
   # Creates a css selector to match a form with certain action, method and possibly other attribues
   def form_selector(action, method='post', attrs={})
     attrs[:action] = action
