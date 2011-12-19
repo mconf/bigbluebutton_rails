@@ -264,13 +264,13 @@ class Bigbluebutton::RoomsController < ApplicationController
   end
 
   def join_mobile
-    @join_url = join_bigbluebutton_server_room_path(@server, @room, :mobile => '1')
+    @join_url = join_bigbluebutton_server_room_url(@server, @room, :mobile => '1')
     @join_url.gsub!(/http:\/\//i, "bigbluebutton://")
 
     # TODO: we can't use the mconf url because the mobile client scanning the qrcode is not
     # logged. so we are using the full BBB url for now.
     @qrcode_url = @room.join_url(bigbluebutton_user.name, bigbluebutton_role(@room))
-    @qrcode_url.gsub!("http://", "bigbluebutton://")
+    @qrcode_url.gsub!(/http:\/\//i, "bigbluebutton://")
   end
 
   protected

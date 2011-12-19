@@ -225,6 +225,17 @@ module TemplateHelpers
   def check_join_room # nothing to check, it only redirects to the BBB client
   end
 
+  # rooms/:id/join_mobile
+  def check_mobile_join
+    url = join_bigbluebutton_server_room_url(@server, @room, :mobile => '1')
+    url.gsub!(/http:\/\//i, "bigbluebutton://")
+    has_element("a", { :href => url })
+
+    # a soft check that there's an img from chart.googleapis with the qr-code
+    img = find(make_selector("img"))
+    img[:src].should match(/#{"https://chart.googleapis.com/chart?"}.*/)
+  end
+
 end
 
 World(TemplateHelpers)

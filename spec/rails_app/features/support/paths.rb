@@ -40,6 +40,8 @@ module NavigationHelpers
       p = join_bigbluebutton_server_room_path(@server, @room)
     when /invite room/i
       p = invite_bigbluebutton_server_room_path(@server, @room)
+    when /mobile join/i
+      p = join_mobile_bigbluebutton_server_room_path(@server, @room)
 
     else
       begin

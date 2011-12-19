@@ -64,33 +64,38 @@ end
 def check_server_activity_monitor_rooms(rooms)
   within(make_selector("div#bbbrails_server_activity_meetings")) do
     rooms.each do |room|
+
+      # restrict the search to this room's div
       xpath = './/div[@class="bbbrails_meeting_description"]'
+      element = find(:xpath, xpath, :text => room.meetingid)
+      within(element) do
 
-      # FIXME in bbb 0.7 get_meeting_info didn't return the room's name, only
-      #       the meeting_id, so the name in the obj will be == meeting_id
-      #       See BigbluebuttonServer#fetch_meetings
-      has_content(room.name, xpath) unless room.new_record?
-      has_content(room.meetingid, xpath)
+        # FIXME in bbb 0.7 get_meeting_info didn't return the room's name, only
+        #       the meeting_id, so the name in the obj will be == meeting_id
+        #       See BigbluebuttonServer#fetch_meetings
+        has_content(room.name) unless room.new_record?
+        has_content(room.meetingid)
 
-      method = room.new_record? ? method(:doesnt_have_element) : method(:has_element)
-      method.call("a", { :href => bigbluebutton_server_room_path(@server, room) })
-      method.call("a", { :href => edit_bigbluebutton_server_room_path(@server, room) })
-      method.call("a", { :href => bigbluebutton_server_room_path(@server, room), :"data-method" => :delete })
-      method.call("a", { :href => join_bigbluebutton_server_room_path(@server, room) })
-      method.call("a", { :href => join_mobile_bigbluebutton_server_room_path(@server, room) })
-      method.call("a", { :href => end_bigbluebutton_server_room_path(@server, room) })
+        method = room.new_record? ? method(:doesnt_have_element) : method(:has_element)
+        method.call("a", { :href => bigbluebutton_server_room_path(@server, room) })
+        method.call("a", { :href => edit_bigbluebutton_server_room_path(@server, room) })
+        method.call("a", { :href => bigbluebutton_server_room_path(@server, room), :"data-method" => :delete })
+        method.call("a", { :href => join_bigbluebutton_server_room_path(@server, room) })
+        method.call("a", { :href => join_mobile_bigbluebutton_server_room_path(@server, room) })
+        method.call("a", { :href => end_bigbluebutton_server_room_path(@server, room) })
 
-      room.fetch_is_running?
-      if room.is_running?
-        has_content(room.start_time, xpath)
-        has_element("span.running")
-        room.participant_count.times do |i|
-          has_content("Bot #{i}", xpath) # user name
+        room.fetch_is_running?
+        if room.is_running?
+          has_content(room.start_time)
+          has_element("span.running")
+          room.participant_count.times do |i|
+            has_content("Bot #{i}") # user name
+          end
+        else
+          has_content(room.start_time)
+          has_content(room.end_time)
+          has_element("span.not_running")
         end
-      else
-        has_content(room.start_time, xpath)
-        has_content(room.end_time, xpath)
-        has_element("span.not_running")
       end
 
     end

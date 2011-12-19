@@ -49,7 +49,7 @@ describe Bigbluebutton::RoomsController do
       mock_server_and_api
       controller.stub(:bigbluebutton_user) { user }
       controller.should_receive(:bigbluebutton_role).and_return(:moderator)
-      controller.should_receive(:join_bigbluebutton_server_room_path).
+      controller.should_receive(:join_bigbluebutton_server_room_url).
         with(mocked_server, room, :mobile => '1').
         and_return("http://test.com/join/url?mobile=1")
       mocked_api.should_receive(:join_meeting_url).
