@@ -39,7 +39,7 @@ end
 When /^the first meeting is ended$/ do
   @rooms.first.send_end
   BigBlueButtonBot.finalize(@rooms.first.meetingid)
-  sleep 1
+  sleep 1 # give the bot some time to finish
 end
 
 When /^he clicks in the link to update the meeting list$/ do
@@ -47,9 +47,18 @@ When /^he clicks in the link to update the meeting list$/ do
 end
 
 When /^he should see one meeting running and the other meeting not running$/ do
+  # first was ended, second is running
+  @rooms.first.fetch_is_running?
+  @rooms.first.is_running?.should be_false
+  @rooms.last.fetch_is_running?
+  @rooms.last.is_running?.should be_true
+
   check_server_activity_monitor_rooms(@rooms)
 end
 
+When /^after (\d+) seconds$/ do |count|
+  sleep count.to_i
+end
 
 # checks the rooms inside the activity monitor
 def check_server_activity_monitor_rooms(rooms)

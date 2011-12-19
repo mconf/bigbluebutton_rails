@@ -56,6 +56,8 @@ GEM
     capybara-mechanize (0.3.0.rc3)
       capybara (~> 1.1.0)
       mechanize (~> 2.0.0)
+    capybara-webkit (0.7.2)
+      capybara (>= 1.0.0, < 1.2)
     childprocess (0.2.2)
       ffi (~> 1.0.6)
     colored (1.2)
@@ -180,6 +182,7 @@ DEPENDENCIES
   bbbot-ruby!
   bigbluebutton_rails!
   capybara-mechanize (= 0.3.0.rc3)
+  capybara-webkit
   cucumber-rails
   database_cleaner
   factory_girl

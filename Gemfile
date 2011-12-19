@@ -24,5 +24,5 @@ group :test do
 
   gem "capybara-mechanize", "0.3.0.rc3" # allows remote requests
   gem "launchy"
-  # gem "capybara-webkit" # best option found for js
+  gem "capybara-webkit" # best option found for js
 end

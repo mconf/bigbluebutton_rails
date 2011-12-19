@@ -1,4 +1,4 @@
-# require 'capybara-webkit'
+require 'capybara-webkit'
 require 'capybara/mechanize/cucumber'
 require 'bigbluebutton_bot'
 
@@ -15,7 +15,7 @@ Dir["#{ File.dirname(__FILE__)}/../../../factories/*.rb"].each { |f| require f }
 # fixtures.
 # http://groups.google.com/group/ruby-capybara/browse_thread/thread/248e89ae2acbf603/e5da9e9bfac733e0
 # https://groups.google.com/forum/#!msg/ruby-capybara/JI6JrirL9gM/R6YiXj4gi_UJ
-# Thread.main[:activerecord_connection] = ActiveRecord::Base.retrieve_connection
-# def (ActiveRecord::Base).connection
-#   Thread.main[:activerecord_connection]
-# end
+Thread.main[:activerecord_connection] = ActiveRecord::Base.retrieve_connection
+def (ActiveRecord::Base).connection
+  Thread.main[:activerecord_connection]
+end
