@@ -17,10 +17,25 @@ Planned features:
 * Friendly URLs (e.g. http://somewhere.com/my-server/my-room)
 * Limit the number of users per room and rooms per server
 * Server administration (modify config.xml, use bbb-conf, etc.)
-* Load balancing
 * Decouple servers-rooms to allow server selection on-the-fly
+* Load balancing
 
 For more future features and issues check {our google code page}[http://code.google.com/p/mconf/issues/list?can=2&q=label%3AComponent%20label%3ABigBlueButtonRails].
+
+== Supported BigBlueButton versions
+
+The current version of this gem supports *all* the following versions of BigBlueButton:
+
+* 0.8: Currently in the beta3 stage. It can be used with BBB 0.8 but not all features are supported yet, such as pre-upload of slides and anything related to recordings. See {TODO_08}[https://github.com/mconf/bigbluebutton_rails/blob/api-0.8/TODO_08].
+* 0.7: Including 0.7, 0.71 and 0.71a.
+
+== Supported ruby versions
+
+Tested in rubies:
+
+* ruby-1.8.7
+* ruby-1.9.2
+* ree-1.8.7
 
 == Installation
 
