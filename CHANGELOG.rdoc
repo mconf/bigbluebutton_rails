@@ -1,3 +1,11 @@
+== 0.1.0
+
+* First version with support to BigBlueButton 0.8:
+  * The support is still very basic: you can use the gem with BBB 0.8 but not all features are supported yet, such as pre-upload of slides and anything related to recordings.
+  * Updated bigbluebutton-api-ruby to 0.1.0 to support BBB 0.8.
+  * Added several integration tests.
+* Several small bug fixes
+
 == 0.0.6
 
 * After fetch_meetings, the rooms that are not found in the DB are *not* saved by default anymore.

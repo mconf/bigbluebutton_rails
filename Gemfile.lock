@@ -7,9 +7,9 @@ GIT
 PATH
   remote: .
   specs:
-    bigbluebutton_rails (0.0.6)
+    bigbluebutton_rails (0.1.0)
       bigbluebutton-api-ruby (~> 0.1.0)
-      rails (~> 3.0.0)
+      rails (>= 3.0.0)
 
 GEM
   remote: http://rubygems.org/
