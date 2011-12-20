@@ -40,6 +40,8 @@ Feature: Monitor the active in the webconference servers
       And he clicks in the link to update the meeting list
     Then he should see one meeting running and the other meeting not running
 
+  # Note: This will only work for bbb servers with removeMeetingWhenEnded=false
+  #       Also defaultMeetingExpireDuration should be >= 2
   @need-bot @webkit
   Scenario: Partially refresh the meeting list periodically
     Given an anonymous user
@@ -47,5 +49,5 @@ Feature: Monitor the active in the webconference servers
       And 2 meetings running in this server
     When he goes to the server activity monitor page
       And the first meeting is ended
-    Then after 35 seconds
+    Then after 31 seconds
       And he should see one meeting running and the other meeting not running

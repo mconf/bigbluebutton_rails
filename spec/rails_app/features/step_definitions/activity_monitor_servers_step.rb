@@ -66,9 +66,8 @@ def check_server_activity_monitor_rooms(rooms)
     rooms.each do |room|
 
       # restrict the search to this room's div
-      xpath = './/div[@class="bbbrails_meeting_description"]'
-      element = find(:xpath, xpath, :text => room.meetingid)
-      within(element) do
+      xpath = ".//div[@class=\"bbbrails_meeting_description\" and contains(., \"#{room.meetingid}\")]"
+      within(find(:xpath, xpath)) do
 
         # FIXME in bbb 0.7 get_meeting_info didn't return the room's name, only
         #       the meeting_id, so the name in the obj will be == meeting_id
