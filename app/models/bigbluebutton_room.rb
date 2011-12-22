@@ -1,8 +1,6 @@
 class BigbluebuttonRoom < ActiveRecord::Base
-  belongs_to :server, :class_name => 'BigbluebuttonServer'
   belongs_to :owner, :polymorphic => true
 
-  validates :server_id, :presence => true
   validates :meetingid, :presence => true, :uniqueness => true,
     :length => { :minimum => 1, :maximum => 100 }
   validates :name, :presence => true, :uniqueness => true,
@@ -27,7 +25,7 @@ class BigbluebuttonRoom < ActiveRecord::Base
   validates :attendee_password, :presence => true, :if => :private?
   validates :moderator_password, :presence => true, :if => :private?
 
-  attr_accessible :name, :server_id, :meetingid, :attendee_password, :moderator_password,
+  attr_accessible :name, :meetingid, :attendee_password, :moderator_password,
                   :welcome_msg, :owner, :server, :private, :logout_url, :dial_number,
                   :voice_bridge, :max_participants, :owner_id, :owner_type, :randomize_meetingid,
                   :external, :param
@@ -41,6 +39,14 @@ class BigbluebuttonRoom < ActiveRecord::Base
 
   # the full logout_url used when logout_url is a relative path
   attr_accessor :full_logout_url
+
+  # Every room needs a server to be used.
+  # The server of a room can change during the room's lifespan, but
+  # it should not change if the room is running or if it was created
+  # but not yet ended.
+  def server
+    # TODO
+  end
 
   # Convenience method to access the attribute <tt>running</tt>
   def is_running?

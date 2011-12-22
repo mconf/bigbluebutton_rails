@@ -1,3 +1,5 @@
+* "bigbluebutton_routes :room_matchers" now generates all routes available for rooms, not only a selected set as before.
+
 == 0.1.0
 
 * First version with support to BigBlueButton 0.8:

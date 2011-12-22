@@ -8,12 +8,10 @@ describe BigbluebuttonRoom do
 
   before { Factory.create(:bigbluebutton_room) }
 
-  it { should belong_to(:server) }
   it { should belong_to(:owner) }
   it { should_not validate_presence_of(:owner_id) }
   it { should_not validate_presence_of(:owner_type) }
 
-  it { should validate_presence_of(:server_id) }
   it { should validate_presence_of(:meetingid) }
   it { should validate_presence_of(:voice_bridge) }
   it { should validate_presence_of(:name) }
@@ -22,7 +20,7 @@ describe BigbluebuttonRoom do
   it { should be_boolean(:private) }
   it { should be_boolean(:randomize_meetingid) }
 
-  [:name, :server_id, :meetingid, :attendee_password, :moderator_password,
+  [:name, :meetingid, :attendee_password, :moderator_password,
    :welcome_msg, :owner, :server, :private, :logout_url, :dial_number,
    :voice_bridge, :max_participants, :owner_id, :owner_type,
    :randomize_meetingid, :param].

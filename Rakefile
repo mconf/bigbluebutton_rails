@@ -69,7 +69,6 @@ task :notes do
   puts `grep -r 'OPTIMIZE\\|FIXME\\|TODO' app/ public/ spec/`
 end
 
-# FIXME: not the best way to test these migrations, but works for now
 desc 'Setup the rails_app using the migration files created when upgrading the gem
       version, run all tests and destroys the generated files.'
 namespace :spec do
@@ -78,6 +77,7 @@ namespace :spec do
     sh "rails destroy bigbluebutton_rails:install"
     sh "rails generate bigbluebutton_rails:install 0.0.4"
     sh "rails generate bigbluebutton_rails:install 0.0.5 --migration-only"
+    sh "rails generate bigbluebutton_rails:install 0.1.1 --migration-only"
 
     sh "rake db:drop RAILS_ENV=test"
     sh "rake db:create RAILS_ENV=test"
@@ -89,6 +89,7 @@ namespace :spec do
     Rake::Task["cucumber"].invoke
 
     cd "spec/rails_app/"
+    sh "rails destroy bigbluebutton_rails:install 0.1.1 --migration-only"
     sh "rails destroy bigbluebutton_rails:install 0.0.5 --migration-only"
     sh "rails destroy bigbluebutton_rails:install 0.0.4"
   end

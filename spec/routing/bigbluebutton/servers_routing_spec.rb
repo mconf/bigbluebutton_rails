@@ -5,7 +5,7 @@ describe Bigbluebutton::ServersController do
 
   describe "routing" do
 
-    # normal and scoped routes
+    # default and scoped routes
     ['bigbluebutton', 'webconference'].each do |prefix|
       it {
         {:get => "/#{prefix}/servers"}.
@@ -34,6 +34,10 @@ describe Bigbluebutton::ServersController do
       it {
         {:delete => "/#{prefix}/servers/server-1"}.
         should route_to(:controller => "bigbluebutton/servers", :action => "destroy", :id => "server-1")
+      }
+      it {
+        {:get => "/#{prefix}/servers/server-1/activity"}.
+        should route_to(:controller => "bigbluebutton/servers", :action => "activity", :id => "server-1")
       }
     end
 

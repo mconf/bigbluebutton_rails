@@ -34,51 +34,67 @@ describe ActionController do
       {:delete => "/custom/servers/1"}.
       should route_to(:controller => "custom_servers", :action => "destroy", :id => "1")
     }
+    it {
+      {:get => "/custom/servers/1/activity"}.
+      should route_to(:controller => "custom_servers", :action => "activity", :id => "1")
+    }
 
     # custom controllers - rooms
     it {
-      {:get => "/custom/servers/1/rooms"}.
-      should route_to(:controller => "custom_rooms", :action => "index", :server_id => "1")
+      {:get => "/custom/rooms"}.
+      should route_to(:controller => "custom_rooms", :action => "index")
     }
     it {
-      {:get => "/custom/servers/1/rooms/new"}.
-      should route_to(:controller => "custom_rooms", :action => "new", :server_id => "1")
+      {:get => "/custom/rooms/new"}.
+      should route_to(:controller => "custom_rooms", :action => "new")
     }
     it {
-      {:get => "/custom/servers/1/rooms/1/edit"}.
-      should route_to(:controller => "custom_rooms", :action => "edit", :server_id => "1", :id => "1")
+      {:get => "/custom/rooms/1"}.
+      should route_to(:controller => "custom_rooms", :action => "show", :id => "1")
     }
     it {
-      {:get => "/custom/servers/1/rooms/1"}.
-      should route_to(:controller => "custom_rooms", :action => "show", :server_id => "1", :id => "1")
+      {:get => "/custom/rooms/1/edit"}.
+      should route_to(:controller => "custom_rooms", :action => "edit", :id => "1")
     }
     it {
-      {:put => "/custom/servers/1/rooms/1"}.
-      should route_to(:controller => "custom_rooms", :action => "update", :server_id => "1", :id => "1")
+      {:put => "/custom/rooms/1"}.
+      should route_to(:controller => "custom_rooms", :action => "update", :id => "1")
     }
     it {
-      {:delete => "/custom/servers/1/rooms/1"}.
-      should route_to(:controller => "custom_rooms", :action => "destroy", :server_id => "1", :id => "1")
+      {:delete => "/custom/rooms/1"}.
+      should route_to(:controller => "custom_rooms", :action => "destroy", :id => "1")
     }
     it {
-      {:get => "/custom/servers/1/rooms/1/join"}.
-      should route_to(:controller => "custom_rooms", :action => "join", :server_id => "1", :id => "1")
+      {:get => "/custom/rooms/external"}.
+      should route_to(:controller => "custom_rooms", :action => "external")
     }
     it {
-      {:get => "/custom/servers/1/rooms/1/running"}.
-      should route_to(:controller => "custom_rooms", :action => "running", :server_id => "1", :id => "1")
+      {:post => "/custom/rooms/external"}.
+      should route_to(:controller => "custom_rooms", :action => "external_auth")
     }
     it {
-      {:get => "/custom/servers/1/rooms/1/end"}.
-      should route_to(:controller => "custom_rooms", :action => "end", :server_id => "1", :id => "1")
+      {:get => "/custom/rooms/1/join"}.
+      should route_to(:controller => "custom_rooms", :action => "join", :id => "1")
     }
     it {
-      {:get => "/custom/servers/1/rooms/1/invite"}.
-      should route_to(:controller => "custom_rooms", :action => "invite", :server_id => "1", :id => "1")
+      {:get => "/custom/rooms/1/join_mobile"}.
+      should route_to(:controller => "custom_rooms", :action => "join_mobile" ,:id => "1")
     }
     it {
-      {:post => "/custom/servers/1/rooms/1/join"}.
-      should route_to(:controller => "custom_rooms", :action => "auth", :server_id => "1", :id => "1")
+      {:get => "/custom/rooms/1/running"}.
+      should route_to(:controller => "custom_rooms", :action => "running", :id => "1")
+    }
+    it {
+      {:get => "/custom/rooms/1/end"}.
+      should route_to(:controller => "custom_rooms", :action => "end", :id => "1")
+    }
+    it {
+      {:get => "/custom/rooms/1/invite"}.
+      should route_to(:controller => "custom_rooms", :action => "invite", :id => "1")
+    }
+    it {
+      {:post => "/custom/rooms/1/join"}.
+      should route_to(:controller => "custom_rooms", :action => "auth", :id => "1")
     }
 
   end
