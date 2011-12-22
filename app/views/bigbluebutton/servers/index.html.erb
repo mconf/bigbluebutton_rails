@@ -14,7 +14,7 @@
       <div><label><%= BigbluebuttonServer.human_attribute_name(:param) %></label> <%= server.param %></div>
       <div><label>Access</label>
         <%= link_to 'Show', server %> |
-        <%= link_to 'View rooms', bigbluebutton_server_rooms_path(server) %> |
+        <%= link_to 'View rooms', bigbluebutton_rooms_path %> |
         <%= link_to 'Activity monitor', activity_bigbluebutton_server_path(server) %> |
         <%= link_to 'Edit', edit_bigbluebutton_server_path(server) %> |
         <%= link_to 'Destroy', server, :confirm => 'Are you sure?', :method => :delete %>

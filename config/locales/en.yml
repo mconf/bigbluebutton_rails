@@ -31,6 +31,8 @@ en:
         external:
           blank_meetingid: "You must specify the meetingid of the meeting you want to join"
         param_format: 'you can only use letters, numbers and the symbols "-" or "_" (not at the begin or end)'
+        server:
+          nil: "Your room must be associated to a server to execute this operation."
 
   activerecord:
     models:

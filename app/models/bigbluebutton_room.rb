@@ -1,4 +1,5 @@
 class BigbluebuttonRoom < ActiveRecord::Base
+  belongs_to :server, :class_name => 'BigbluebuttonServer'
   belongs_to :owner, :polymorphic => true
 
   validates :meetingid, :presence => true, :uniqueness => true,
@@ -25,7 +26,7 @@ class BigbluebuttonRoom < ActiveRecord::Base
   validates :attendee_password, :presence => true, :if => :private?
   validates :moderator_password, :presence => true, :if => :private?
 
-  attr_accessible :name, :meetingid, :attendee_password, :moderator_password,
+  attr_accessible :name, :server_id, :meetingid, :attendee_password, :moderator_password,
                   :welcome_msg, :owner, :server, :private, :logout_url, :dial_number,
                   :voice_bridge, :max_participants, :owner_id, :owner_type, :randomize_meetingid,
                   :external, :param
@@ -37,16 +38,16 @@ class BigbluebuttonRoom < ActiveRecord::Base
   after_initialize :init
   before_validation :set_param
 
-  # the full logout_url used when logout_url is a relative path
-  attr_accessor :full_logout_url
-
   # Every room needs a server to be used.
   # The server of a room can change during the room's lifespan, but
   # it should not change if the room is running or if it was created
   # but not yet ended.
-  def server
-    # TODO
-  end
+  # Any action that requires a server should call 'require_server' before
+  # anything else.
+  after_initialize :select_server
+
+  # the full logout_url used when logout_url is a relative path
+  attr_accessor :full_logout_url
 
   # Convenience method to access the attribute <tt>running</tt>
   def is_running?
@@ -70,6 +71,8 @@ class BigbluebuttonRoom < ActiveRecord::Base
   #
   # Triggers API call: <tt>get_meeting_info</tt>.
   def fetch_meeting_info
+    require_server
+
     response = self.server.api.get_meeting_info(self.meetingid, self.moderator_password)
 
     @participant_count = response[:participantCount]
@@ -92,6 +95,7 @@ class BigbluebuttonRoom < ActiveRecord::Base
   #
   # Triggers API call: <tt>is_meeting_running</tt>.
   def fetch_is_running?
+    require_server
     @running = self.server.api.is_meeting_running?(self.meetingid)
   end
 
@@ -99,7 +103,10 @@ class BigbluebuttonRoom < ActiveRecord::Base
   #
   # Triggers API call: <tt>end_meeting</tt>.
   def send_end
-    self.server.api.end_meeting(self.meetingid, self.moderator_password)
+    require_server
+    response = self.server.api.end_meeting(self.meetingid, self.moderator_password)
+    self.server = nil # to select another server if created again
+    response
   end
 
   # Sends a call to the BBB server to create the meeting.
@@ -110,6 +117,7 @@ class BigbluebuttonRoom < ActiveRecord::Base
   #
   # Triggers API call: <tt>create_meeting</tt>.
   def send_create
+    require_server
 
     unless self.randomize_meetingid
       response = do_create_meeting
@@ -151,6 +159,8 @@ class BigbluebuttonRoom < ActiveRecord::Base
   #
   # Uses the API but does not require a request to the server.
   def join_url(username, role, password=nil)
+    require_server
+
     case role
     when :moderator
       self.server.api.join_meeting_url(self.meetingid, username, self.moderator_password)
@@ -240,6 +250,20 @@ class BigbluebuttonRoom < ActiveRecord::Base
 
   protected
 
+  def require_server
+    select_server if self.server.nil?
+    if self.server.nil?
+      raise Exception.new('bigbluebutton_rails.rooms.errors.server.nil')
+    end
+  end
+
+  def select_server
+    if self.server.nil?
+      # TODO: select the server with less rooms
+      self.server = BigbluebuttonServer.first
+    end
+  end
+
   def init
     self[:meetingid] ||= random_meetingid
     self[:voice_bridge] ||= random_voice_bridge
@@ -274,6 +298,8 @@ class BigbluebuttonRoom < ActiveRecord::Base
   end
 
   def do_create_meeting
+    require_server
+
     opts = { :moderatorPW => self.moderator_password, :attendeePW => self.attendee_password,
       :welcome => self.welcome_msg, :dialNumber => self.dial_number,
       :logoutURL => self.full_logout_url || self.logout_url,

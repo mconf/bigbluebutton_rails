@@ -3,7 +3,7 @@
 <div id="bbbrails_rooms_links">
   <%= link_to 'Back to server', bigbluebutton_server_path(@server) %> |
   <%= link_to 'Back to server list', bigbluebutton_servers_path %><br/>
-  <%= link_to 'New room', new_bigbluebutton_server_room_path %>
+  <%= link_to 'New room', new_bigbluebutton_room_path %>
 </div>
 
 <ul id="bbbrails_rooms_list">
@@ -24,13 +24,13 @@
       <div class="field"><label><%= BigbluebuttonRoom.human_attribute_name(:external) %></label> <%= room.external %></div>
       <div class="field"><label><%= BigbluebuttonRoom.human_attribute_name(:param) %></label> <%= room.param %></div>
       <div class="field"><label>Access</label>
-        <%= link_to 'Show', bigbluebutton_server_room_path(@server, room) %> |
-        <%= link_to 'Join', join_bigbluebutton_server_room_path(@server, room) %> |
-        <%= link_to 'Invite', invite_bigbluebutton_server_room_path(@server, room) %> |
-        <%= link_to 'Mobile Join', join_mobile_bigbluebutton_server_room_path(@server, room) %> |
-        <%= link_to 'Edit', edit_bigbluebutton_server_room_path(@server, room) %> |
-        <%= link_to 'End', end_bigbluebutton_server_room_path(@server, room), :confirm => 'Are you sure?' %> |
-        <%= link_to 'Destroy', bigbluebutton_server_room_path(@server, room), :confirm => 'Are you sure?', :method => :delete %>
+        <%= link_to 'Show', bigbluebutton_room_path(room) %> |
+        <%= link_to 'Join', join_bigbluebutton_room_path(room) %> |
+        <%= link_to 'Invite', invite_bigbluebutton_room_path(room) %> |
+        <%= link_to 'Mobile Join', join_mobile_bigbluebutton_room_path(room) %> |
+        <%= link_to 'Edit', edit_bigbluebutton_room_path(room) %> |
+        <%= link_to 'End', end_bigbluebutton_room_path(room), :confirm => 'Are you sure?' %> |
+        <%= link_to 'Destroy', bigbluebutton_room_path(room), :confirm => 'Are you sure?', :method => :delete %>
       </div>
     </li>
   <% end %>

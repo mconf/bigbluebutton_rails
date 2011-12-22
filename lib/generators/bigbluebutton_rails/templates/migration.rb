@@ -10,6 +10,7 @@ class CreateBigbluebuttonRails < ActiveRecord::Migration
       t.timestamps
     end
     create_table :bigbluebutton_rooms do |t|
+      t.integer :server_id
       t.integer :owner_id
       t.string :owner_type
       t.string :meetingid
@@ -27,6 +28,7 @@ class CreateBigbluebuttonRails < ActiveRecord::Migration
       t.string :param
       t.timestamps
     end
+    add_index :bigbluebutton_rooms, :server_id
     add_index :bigbluebutton_rooms, :meetingid, :unique => true
     add_index :bigbluebutton_rooms, :voice_bridge, :unique => true
   end

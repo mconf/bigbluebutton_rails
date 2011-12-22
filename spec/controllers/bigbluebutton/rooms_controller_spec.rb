@@ -43,20 +43,20 @@ describe Bigbluebutton::RoomsController do
 
   describe "#join_mobile" do
     let(:user) { Factory.build(:user) }
-    let(:server) { Factory.create(:bigbluebutton_server) }
-    let(:room) { Factory.create(:bigbluebutton_room, :server => server) }
+    let(:room) { Factory.create(:bigbluebutton_room) }
     before {
       mock_server_and_api
+      room.server = mocked_server
       controller.stub(:bigbluebutton_user) { user }
       controller.should_receive(:bigbluebutton_role).and_return(:moderator)
-      controller.should_receive(:join_bigbluebutton_server_room_url).
+      controller.should_receive(:join_bigbluebutton_room_url).
         with(mocked_server, room, :mobile => '1').
         and_return("http://test.com/join/url?mobile=1")
       mocked_api.should_receive(:join_meeting_url).
         with(room.meetingid, user.name, room.moderator_password).
         and_return("bigbluebutton://test.com/open/url/for/qrcode")
     }
-    before(:each) { get :join_mobile, :server_id => mocked_server.to_param, :id => room.to_param }
+    before(:each) { get :join_mobile, :id => room.to_param }
     it { should respond_with(:success) }
     it { should assign_to(:server).with(mocked_server) }
     it { should assign_to(:room).with(room) }
@@ -76,7 +76,7 @@ describe Bigbluebutton::RoomsController do
       end
       it {
         should respond_with(:redirect)
-        should redirect_to bigbluebutton_server_room_path(server, BigbluebuttonRoom.last)
+        should redirect_to bigbluebutton_room_path(BigbluebuttonRoom.last)
       }
       it { should set_the_flash.to(I18n.t('bigbluebutton_rails.rooms.notice.create.success')) }
       it { should assign_to(:server).with(server) }
@@ -144,7 +144,7 @@ describe Bigbluebutton::RoomsController do
       it {
         saved = BigbluebuttonRoom.find(@room)
         should respond_with(:redirect)
-        should redirect_to bigbluebutton_server_room_path(server, saved)
+        should redirect_to bigbluebutton_room_path(saved)
       }
       it {
         saved = BigbluebuttonRoom.find(@room)
@@ -211,7 +211,7 @@ describe Bigbluebutton::RoomsController do
       end
       it {
         should respond_with(:redirect)
-        should redirect_to bigbluebutton_server_rooms_url
+        should redirect_to bigbluebutton_rooms_url
       }
       it { should assign_to(:server).with(mocked_server) }
     end
@@ -258,7 +258,7 @@ describe Bigbluebutton::RoomsController do
       before(:each) { get :join, :server_id => mocked_server.to_param, :id => room.to_param }
       it {
         should respond_with(:redirect)
-        should redirect_to(invite_bigbluebutton_server_room_path(mocked_server, room))
+        should redirect_to(invite_bigbluebutton_room_path(room))
       }
     end
 
@@ -269,7 +269,7 @@ describe Bigbluebutton::RoomsController do
         before { controller.stub(:bigbluebutton_role) { :password } }
         before(:each) { get :join, :server_id => mocked_server.to_param, :id => room.to_param }
         it { should respond_with(:redirect) }
-        it { should redirect_to(invite_bigbluebutton_server_room_path(mocked_server, room)) }
+        it { should redirect_to(invite_bigbluebutton_room_path(room)) }
       end
 
       context "is undefined, the access should be blocked" do
@@ -316,7 +316,7 @@ describe Bigbluebutton::RoomsController do
       }
       before(:each) { get :end, :server_id => mocked_server.to_param, :id => room.to_param }
       it { should respond_with(:redirect) }
-      it { should redirect_to(bigbluebutton_server_room_path(mocked_server, room)) }
+      it { should redirect_to(bigbluebutton_room_path(room)) }
       it { should assign_to(:server).with(mocked_server) }
       it { should assign_to(:room).with(room) }
       it { should set_the_flash.to(I18n.t('bigbluebutton_rails.rooms.notice.end.success')) }
@@ -372,7 +372,7 @@ describe Bigbluebutton::RoomsController do
         before { controller.stub(:bigbluebutton_role).and_return(:attendee) }
         before(:each) { get :invite, :server_id => mocked_server.to_param, :id => room.to_param }
         it { should respond_with(:redirect) }
-        it { should redirect_to(join_bigbluebutton_server_room_path(mocked_server, room)) }
+        it { should redirect_to(join_bigbluebutton_room_path(room)) }
       end
 
       context "when the user's role" do
@@ -530,7 +530,7 @@ describe Bigbluebutton::RoomsController do
       context "without params[:redir_url]" do
         before(:each) { get :external, :server_id => mocked_server.to_param }
         it { should respond_with(:redirect) }
-        it { should redirect_to bigbluebutton_server_rooms_path(mocked_server) }
+        it { should redirect_to bigbluebutton_rooms_path }
         it { should set_the_flash.to(I18n.t('bigbluebutton_rails.rooms.errors.external.blank_meetingid')) }
       end
 

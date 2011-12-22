@@ -8,10 +8,12 @@ describe BigbluebuttonRoom do
 
   before { Factory.create(:bigbluebutton_room) }
 
+  it { should belong_to(:server) }
   it { should belong_to(:owner) }
   it { should_not validate_presence_of(:owner_id) }
   it { should_not validate_presence_of(:owner_type) }
 
+  it { should_not validate_presence_of(:server_id) }
   it { should validate_presence_of(:meetingid) }
   it { should validate_presence_of(:voice_bridge) }
   it { should validate_presence_of(:name) }
@@ -20,10 +22,10 @@ describe BigbluebuttonRoom do
   it { should be_boolean(:private) }
   it { should be_boolean(:randomize_meetingid) }
 
-  [:name, :meetingid, :attendee_password, :moderator_password,
-   :welcome_msg, :owner, :server, :private, :logout_url, :dial_number,
-   :voice_bridge, :max_participants, :owner_id, :owner_type,
-   :randomize_meetingid, :param].
+  [:name, :server_id, :meetingid, :attendee_password,
+   :moderator_password, :welcome_msg, :owner, :private, :logout_url,
+   :dial_number, :voice_bridge, :max_participants, :owner_id,
+   :owner_type, :randomize_meetingid, :param].
     each do |attribute|
     it { should allow_mass_assignment_of(attribute) }
   end
@@ -34,11 +36,6 @@ describe BigbluebuttonRoom do
   it { should validate_uniqueness_of(:voice_bridge) }
   it { should validate_uniqueness_of(:param) }
 
-  it {
-    room = Factory.create(:bigbluebutton_room)
-    room.server.should_not be_nil
-  }
-
   it { should ensure_length_of(:meetingid).is_at_least(1).is_at_most(100) }
   it { should ensure_length_of(:name).is_at_least(1).is_at_most(150) }
   it { should ensure_length_of(:attendee_password).is_at_most(16) }
@@ -48,7 +45,8 @@ describe BigbluebuttonRoom do
 
   # attr_accessors
   [:running, :participant_count, :moderator_count, :attendees,
-   :has_been_forcibly_ended, :start_time, :end_time, :external].each do |attr|
+   :has_been_forcibly_ended, :start_time, :end_time,
+   :external, :server].each do |attr|
     it { should respond_to(attr) }
     it { should respond_to("#{attr}=") }
   end
@@ -273,7 +271,6 @@ describe BigbluebuttonRoom do
     end
 
     describe "#send_end" do
-
       it { should respond_to(:send_end) }
 
       it "send end_meeting" do
@@ -281,7 +278,6 @@ describe BigbluebuttonRoom do
         room.server = mocked_server
         room.send_end
       end
-
     end
 
     describe "#send_create" do

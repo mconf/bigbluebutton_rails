@@ -25,23 +25,23 @@ module NavigationHelpers
     when /server activity monitor/i
       p = activity_bigbluebutton_server_path(@server)
     when /new room/i
-      p = new_bigbluebutton_server_room_path(@server)
+      p = new_bigbluebutton_room_path
     when /rooms index/i, /create room/i
-      p = bigbluebutton_server_rooms_path(@server)
+      p = bigbluebutton_rooms_path
     when /join external room/i
-      p = external_bigbluebutton_server_rooms_path(@server)
+      p = external_bigbluebutton_rooms_path
     when /show room/i
-      p = bigbluebutton_server_room_path(@server, @room)
+      p = bigbluebutton_room_path(@room)
     when /edit room/i
-      p = edit_bigbluebutton_server_room_path(@server, @room)
+      p = edit_bigbluebutton_room_path(@room)
     when /update room/i
-      p = bigbluebutton_server_room_path(@server, @room)
+      p = bigbluebutton_room_path(@room)
     when /join room/i
-      p = join_bigbluebutton_server_room_path(@server, @room)
+      p = join_bigbluebutton_room_path(@room)
     when /invite room/i
-      p = invite_bigbluebutton_server_room_path(@server, @room)
+      p = invite_bigbluebutton_room_path(@room)
     when /mobile join/i
-      p = join_mobile_bigbluebutton_server_room_path(@server, @room)
+      p = join_mobile_bigbluebutton_room_path(@room)
 
     else
       begin

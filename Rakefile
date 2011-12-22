@@ -77,7 +77,6 @@ namespace :spec do
     sh "rails destroy bigbluebutton_rails:install"
     sh "rails generate bigbluebutton_rails:install 0.0.4"
     sh "rails generate bigbluebutton_rails:install 0.0.5 --migration-only"
-    sh "rails generate bigbluebutton_rails:install 0.1.1 --migration-only"
 
     sh "rake db:drop RAILS_ENV=test"
     sh "rake db:create RAILS_ENV=test"
@@ -89,7 +88,6 @@ namespace :spec do
     Rake::Task["cucumber"].invoke
 
     cd "spec/rails_app/"
-    sh "rails destroy bigbluebutton_rails:install 0.1.1 --migration-only"
     sh "rails destroy bigbluebutton_rails:install 0.0.5 --migration-only"
     sh "rails destroy bigbluebutton_rails:install 0.0.4"
   end

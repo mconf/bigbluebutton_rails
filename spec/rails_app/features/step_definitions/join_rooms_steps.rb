@@ -1,5 +1,5 @@
 When /^he should see a form to join the external room$/i do
-  within(form_selector(external_bigbluebutton_server_rooms_path(@server), 'post')) do
+  within(form_selector(external_bigbluebutton_rooms_path, 'post')) do
     has_element("input", { :name => 'meeting', :type => 'hidden', :value => @room.meetingid })
     has_element("input", { :name => 'user[name]', :type => 'text' })
     has_element("input", { :name => 'user[password]', :type => 'password' })
@@ -9,9 +9,9 @@ end
 When /^he should see his name in the user name input$/i do
   case current_url
   when /\/invite$/          # normal rooms
-    form = form_selector(join_bigbluebutton_server_room_path(@server, @room), 'post')
+    form = form_selector(join_bigbluebutton_room_path(@room), 'post')
   when /\/external(\?.*)?/  # external rooms
-    form = form_selector(external_bigbluebutton_server_rooms_path(@server), 'post')
+    form = form_selector(external_bigbluebutton_rooms_path, 'post')
   end
   within(form) do
     has_element("input", { :name => 'user[name]', :type => 'text', :value => @user.name })

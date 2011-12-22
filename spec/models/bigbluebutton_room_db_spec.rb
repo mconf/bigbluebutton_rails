@@ -4,6 +4,7 @@ describe BigbluebuttonRoom do
 
   # to ensure that the migration is correct
   context "db" do
+    it { should have_db_column(:server_id).of_type(:integer) }
     it { should have_db_column(:owner_id).of_type(:integer) }
     it { should have_db_column(:owner_type).of_type(:string) }
     it { should have_db_column(:meetingid).of_type(:string) }
@@ -19,6 +20,7 @@ describe BigbluebuttonRoom do
     it { should have_db_column(:randomize_meetingid).of_type(:boolean) }
     it { should have_db_column(:external).of_type(:boolean) }
     it { should have_db_column(:param).of_type(:string) }
+    it { should have_db_index(:server_id) }
     it { should have_db_index(:meetingid).unique(true) }
     it { should have_db_index(:voice_bridge).unique(true) }
     it "default values" do

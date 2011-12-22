@@ -48,7 +48,7 @@ module TemplateHelpers
 
   # servers/new
   def check_new_room
-    within(form_selector(bigbluebutton_server_rooms_path(@server), 'post')) do
+    within(form_selector(bigbluebutton_rooms_path, 'post')) do
       check_room_form
     end
   end
@@ -61,7 +61,7 @@ module TemplateHelpers
     page_has_content(server.salt)
     page_has_content(server.version)
     page_has_content(server.param)
-    has_element("a", { :href => new_bigbluebutton_server_room_path(server) }) # new room link
+    has_element("a", { :href => new_bigbluebutton_room_path }) # new room link
   end
 
   # servers/
@@ -79,7 +79,7 @@ module TemplateHelpers
         has_content(server.url)
         # action links
         has_element("a", { :href => bigbluebutton_server_path(server) }) # show
-        has_element("a", { :href => bigbluebutton_server_rooms_path(server) }) # index
+        has_element("a", { :href => bigbluebutton_rooms_path }) # index
         has_element("a", { :href => activity_bigbluebutton_server_path(server) }) # activity
         has_element("a", { :href => edit_bigbluebutton_server_path(server) }) # edit
         has_element("a", { :href => bigbluebutton_server_path(server), :"data-method" => 'delete' }) # destroy
@@ -104,7 +104,7 @@ module TemplateHelpers
 
   # room/:id/edit
   def check_edit_room
-    within(form_selector(bigbluebutton_server_room_path(@server, @room), 'post')) do
+    within(form_selector(bigbluebutton_room_path(@room), 'post')) do
       check_room_form
     end
   end
@@ -173,7 +173,7 @@ module TemplateHelpers
 
   # rooms/external
   def check_join_external_room
-    within(form_selector(external_bigbluebutton_server_rooms_path(@server), 'post')) do
+    within(form_selector(external_bigbluebutton_rooms_path, 'post')) do
       has_element("input#meeting", { :name => 'meeting', :type => 'hidden', :value => @room.meetingid })
       has_element("input#user_name", { :name => 'user[name]', :type => 'text' })
       has_element("input#user_password", { :name => 'user[password]', :type => 'password' })
@@ -185,7 +185,7 @@ module TemplateHelpers
 
   # rooms/:id/invite
   def check_invite_room
-    within(form_selector(join_bigbluebutton_server_room_path(@server, @room), 'post')) do
+    within(form_selector(join_bigbluebutton_room_path(@room), 'post')) do
       has_element("input#user_name", { :name => 'user[name]', :type => 'text' })
       has_element("input#user_password", { :name => 'user[password]', :type => 'password' })
       has_element("label", { :for => 'user_name' })
@@ -196,7 +196,7 @@ module TemplateHelpers
 
   # rooms/
   def check_rooms_index
-    has_element("a", { :href => new_bigbluebutton_server_room_path(@server) }) # new room link
+    has_element("a", { :href => new_bigbluebutton_room_path }) # new room link
     n = 1
     BigbluebuttonRoom.all.each do |room|
       within(make_selector("ul#bbbrails_rooms_list>li:nth(#{n})")) do
@@ -210,13 +210,13 @@ module TemplateHelpers
         has_content(room.voice_bridge)
         has_content(room.param)
         # action links
-        has_element("a", { :href => bigbluebutton_server_room_path(@server, room) }) # show
-        has_element("a", { :href => join_bigbluebutton_server_room_path(@server, room) }) # join
-        has_element("a", { :href => invite_bigbluebutton_server_room_path(@server, room) }) # invite
-        has_element("a", { :href => join_mobile_bigbluebutton_server_room_path(@server, room) }) # join_mobile
-        has_element("a", { :href => edit_bigbluebutton_server_room_path(@server, room) }) # edit
-        has_element("a", { :href => end_bigbluebutton_server_room_path(@server, room) }) # end
-        has_element("a", { :href => bigbluebutton_server_room_path(@server, room), :"data-method" => 'delete' }) # destroy
+        has_element("a", { :href => bigbluebutton_room_path(room) }) # show
+        has_element("a", { :href => join_bigbluebutton_room_path(room) }) # join
+        has_element("a", { :href => invite_bigbluebutton_room_path(room) }) # invite
+        has_element("a", { :href => join_mobile_bigbluebutton_room_path(room) }) # join_mobile
+        has_element("a", { :href => edit_bigbluebutton_room_path(room) }) # edit
+        has_element("a", { :href => end_bigbluebutton_room_path(room) }) # end
+        has_element("a", { :href => bigbluebutton_room_path(room), :"data-method" => 'delete' }) # destroy
       end
       n += 1
     end
@@ -227,7 +227,7 @@ module TemplateHelpers
 
   # rooms/:id/join_mobile
   def check_mobile_join
-    url = join_bigbluebutton_server_room_url(@server, @room, :mobile => '1')
+    url = join_bigbluebutton_room_url(@room, :mobile => '1')
     url.gsub!(/http:\/\//i, "bigbluebutton://")
     has_element("a", { :href => url })
 

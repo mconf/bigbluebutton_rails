@@ -2,13 +2,11 @@ require 'bigbluebutton_api'
 
 class Bigbluebutton::RoomsController < ApplicationController
 
-  before_filter :find_server
   before_filter :find_room, :only => [:show, :edit, :update, :destroy, :join, :invite, :running, :end, :destroy, :end, :join_mobile]
   respond_to :html, :except => :running
   respond_to :json, :only => [:running, :show, :new, :index, :create, :update]
 
   def index
-    # TODO restrict to rooms belonging to the selected server
     respond_with(@rooms = BigbluebuttonRoom.all)
   end
 
@@ -26,7 +24,8 @@ class Bigbluebutton::RoomsController < ApplicationController
 
   def create
     @room = BigbluebuttonRoom.new(params[:bigbluebutton_room])
-    @room.server = @server
+    # TODO: how is it gonna be now? add a server_id to the form?
+    # @room.server = @server
 
     if !params[:bigbluebutton_room].has_key?(:meetingid) or
         params[:bigbluebutton_room][:meetingid].blank?
@@ -37,7 +36,7 @@ class Bigbluebutton::RoomsController < ApplicationController
       if @room.save
         message = t('bigbluebutton_rails.rooms.notice.create.success')
         format.html {
-          params[:redir_url] ||= bigbluebutton_server_room_path(@server, @room)
+          params[:redir_url] ||= bigbluebutton_room_path(@room)
           redirect_to params[:redir_url], :notice => message
         }
         format.json { render :json => { :message => message }, :status => :created }
@@ -65,7 +64,7 @@ class Bigbluebutton::RoomsController < ApplicationController
       if @room.update_attributes(params[:bigbluebutton_room])
         message = t('bigbluebutton_rails.rooms.notice.update.success')
         format.html {
-          params[:redir_url] ||= bigbluebutton_server_room_path(@server, @room)
+          params[:redir_url] ||= bigbluebutton_room_path(@room)
           redirect_to params[:redir_url], :notice => message
         }
         format.json { render :json => { :message => message } }
@@ -101,7 +100,7 @@ class Bigbluebutton::RoomsController < ApplicationController
     respond_with do |format|
       format.html {
         flash[:error] = message if error
-        params[:redir_url] ||= bigbluebutton_server_rooms_url
+        params[:redir_url] ||= bigbluebutton_rooms_url
         redirect_to params[:redir_url]
       }
       if error
@@ -176,7 +175,7 @@ class Bigbluebutton::RoomsController < ApplicationController
   def external
     if params[:meeting].blank?
       message = t('bigbluebutton_rails.rooms.errors.external.blank_meetingid')
-      params[:redir_url] ||= bigbluebutton_server_rooms_path(@server)
+      params[:redir_url] ||= bigbluebutton_rooms_path
       redirect_to params[:redir_url], :notice => message
     end
     @room = BigbluebuttonRoom.new(:meetingid => params[:meeting])
@@ -186,8 +185,8 @@ class Bigbluebutton::RoomsController < ApplicationController
   # Uses params[:meeting] to get the meetingID of the target room
   def external_auth
     if !params[:meeting].blank? && !params[:user].blank?
-      @server.fetch_meetings
-      @room = @server.meetings.select{ |r| r.meetingid == params[:meeting] }.first
+      @room.server.fetch_meetings
+      @room = @room.server.meetings.select{ |r| r.meetingid == params[:meeting] }.first
     else
       @room = nil
       message = t('bigbluebutton_rails.rooms.errors.auth.wrong_params')
@@ -255,7 +254,7 @@ class Bigbluebutton::RoomsController < ApplicationController
     else
       respond_with do |format|
         format.html {
-          redirect_to(bigbluebutton_server_room_path(@server, @room), :notice => message)
+          redirect_to(bigbluebutton_room_path(@room), :notice => message)
         }
         format.json { render :json => message }
       end
@@ -264,7 +263,7 @@ class Bigbluebutton::RoomsController < ApplicationController
   end
 
   def join_mobile
-    @join_url = join_bigbluebutton_server_room_url(@server, @room, :mobile => '1')
+    @join_url = join_bigbluebutton_room_url(@room, :mobile => '1')
     @join_url.gsub!(/http:\/\//i, "bigbluebutton://")
 
     # TODO: we can't use the mconf url because the mobile client scanning the qrcode is not
@@ -277,14 +276,6 @@ class Bigbluebutton::RoomsController < ApplicationController
 
   def find_room
     @room = BigbluebuttonRoom.find_by_param(params[:id])
-  end
-
-  def find_server
-    if params.has_key?(:server_id)
-      @server = BigbluebuttonServer.find_by_param(params[:server_id])
-    else
-      @server = BigbluebuttonServer.first
-    end
   end
 
   def join_internal(username, role, wait_action)

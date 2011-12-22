@@ -47,7 +47,7 @@ describe BigbluebuttonRails::Generators::InstallGenerator do
   context "migrating to version" do
     before { prepare_destination }
 
-    ["0.0.4", "0.0.5", "0.1.1"].each do |version|
+    ["0.0.4", "0.0.5"].each do |version|
       context "#{version}" do
         before { run_generator [ version ] }
 

@@ -1,7 +1,7 @@
 <% if @room.new_record? %>
-  <% url = bigbluebutton_server_rooms_path(@server) %>
+  <% url = bigbluebutton_rooms_path %>
 <% else %>
-  <% url = bigbluebutton_server_room_path(@server, @room) %>
+  <% url = bigbluebutton_room_path(@room) %>
 <% end %>
 
 <%= form_for [@server, @room], :url => url do |f| %>

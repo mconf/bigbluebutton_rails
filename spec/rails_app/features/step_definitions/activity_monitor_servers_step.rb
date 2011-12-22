@@ -76,12 +76,12 @@ def check_server_activity_monitor_rooms(rooms)
         has_content(room.meetingid)
 
         method = room.new_record? ? method(:doesnt_have_element) : method(:has_element)
-        method.call("a", { :href => bigbluebutton_server_room_path(@server, room) })
-        method.call("a", { :href => edit_bigbluebutton_server_room_path(@server, room) })
-        method.call("a", { :href => bigbluebutton_server_room_path(@server, room), :"data-method" => :delete })
-        method.call("a", { :href => join_bigbluebutton_server_room_path(@server, room) })
-        method.call("a", { :href => join_mobile_bigbluebutton_server_room_path(@server, room) })
-        method.call("a", { :href => end_bigbluebutton_server_room_path(@server, room) })
+        method.call("a", { :href => bigbluebutton_room_path(room) })
+        method.call("a", { :href => edit_bigbluebutton_room_path(room) })
+        method.call("a", { :href => bigbluebutton_room_path(room), :"data-method" => :delete })
+        method.call("a", { :href => join_bigbluebutton_room_path(room) })
+        method.call("a", { :href => join_mobile_bigbluebutton_room_path(room) })
+        method.call("a", { :href => end_bigbluebutton_room_path(room) })
 
         room.fetch_is_running?
         if room.is_running?

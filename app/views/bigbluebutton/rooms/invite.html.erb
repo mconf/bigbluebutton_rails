@@ -2,7 +2,7 @@
 
 function ajax_request() {
   $.ajax({
-    url: "<%= running_bigbluebutton_server_room_url(@server, @room, :format => 'json') %>",
+    url: "<%= running_bigbluebutton_room_url(@room, :format => 'json') %>",
     dataType: 'json',
     error: function(xhr_data) {
       $("#meeting_status").html("<request error>.");
@@ -33,7 +33,7 @@ $(document).ready(function(){
 <p>Meeting status: <span id="meeting_status">-</span> (<a href="javascript:ajax_request();">refresh</a>)</p>
 <p><%= @room.name %> requires a name and/or password to join:</p>
 
-<%= form_tag join_bigbluebutton_server_room_path(@server, @room) do %>
+<%= form_tag join_bigbluebutton_room_path(@room) do %>
 
   <div class="field">
     <label for="user_name">Name:</label><br />

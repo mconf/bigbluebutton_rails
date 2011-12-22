@@ -28,7 +28,7 @@ describe Bigbluebutton::RoomsController do
       after :each do
         delete :destroy, :server_id => mocked_server.to_param, :id => room.to_param
         should respond_with(:redirect)
-        should redirect_to bigbluebutton_server_rooms_url
+        should redirect_to bigbluebutton_rooms_url
         should set_the_flash.to(bbb_error_msg)
       end
     end
