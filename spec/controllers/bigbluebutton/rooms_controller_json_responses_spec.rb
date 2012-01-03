@@ -12,14 +12,14 @@ describe Bigbluebutton::RoomsController do
         @room1 = Factory.create(:bigbluebutton_room, :server => server)
         @room2 = Factory.create(:bigbluebutton_room, :server => server)
       end
-      before(:each) { get :index, :server_id => server.to_param, :format => 'json' }
+      before(:each) { get :index, :format => 'json' }
       it { should respond_with(:success) }
       it { should respond_with_content_type(:json) }
       it { should respond_with_json([@room1, @room2].to_json) }
     end
 
     describe "#new" do
-      before(:each) { get :new, :server_id => server.to_param, :format => 'json' }
+      before(:each) { get :new, :format => 'json' }
       it { should respond_with(:success) }
       it { should respond_with_content_type(:json) }
       it {
@@ -30,7 +30,7 @@ describe Bigbluebutton::RoomsController do
     end
 
     describe "#show" do
-      before(:each) { get :show, :server_id => server.to_param, :id => room.to_param, :format => 'json' }
+      before(:each) { get :show, :id => room.to_param, :format => 'json' }
       it { should respond_with(:success) }
       it { should respond_with_content_type(:json) }
       it { should respond_with_json(room.to_json) }
@@ -41,7 +41,7 @@ describe Bigbluebutton::RoomsController do
 
       context "on success" do
         before(:each) {
-          post :create, :server_id => server.to_param, :bigbluebutton_room => new_room.attributes, :format => 'json'
+          post :create, :bigbluebutton_room => new_room.attributes, :format => 'json'
         }
         it { should respond_with(:created) }
         it { should respond_with_content_type(:json) }
@@ -54,7 +54,7 @@ describe Bigbluebutton::RoomsController do
       context "on failure" do
         before(:each) {
           new_room.name = nil # invalid
-          post :create, :server_id => server.to_param, :bigbluebutton_room => new_room.attributes, :format => 'json'
+          post :create, :bigbluebutton_room => new_room.attributes, :format => 'json'
         }
         it { should respond_with(:unprocessable_entity) }
         it { should respond_with_content_type(:json) }
@@ -71,7 +71,7 @@ describe Bigbluebutton::RoomsController do
 
       context "on success" do
         before(:each) {
-          put :update, :server_id => server.to_param, :id => @room.to_param, :bigbluebutton_room => new_room.attributes, :format => 'json'
+          put :update, :id => @room.to_param, :bigbluebutton_room => new_room.attributes, :format => 'json'
         }
         it { should respond_with(:success) }
         it { should respond_with_content_type(:json) }
@@ -84,7 +84,7 @@ describe Bigbluebutton::RoomsController do
       context "on failure" do
         before(:each) {
           new_room.name = nil # invalid
-          put :update, :server_id => server.to_param, :id => @room.to_param, :bigbluebutton_room => new_room.attributes, :format => 'json'
+          put :update, :id => @room.to_param, :bigbluebutton_room => new_room.attributes, :format => 'json'
         }
         it { should respond_with(:unprocessable_entity) }
         it { should respond_with_content_type(:json) }
@@ -103,7 +103,7 @@ describe Bigbluebutton::RoomsController do
           mocked_api.should_receive(:is_meeting_running?).and_return(true)
           mocked_api.should_receive(:end_meeting).with(room.meetingid, room.moderator_password)
         }
-        before(:each) { get :end, :server_id => mocked_server.to_param, :id => room.to_param, :format => 'json' }
+        before(:each) { get :end, :id => room.to_param, :format => 'json' }
         it { should respond_with(:success) }
         it { should respond_with_content_type(:json) }
         it { should respond_with_json(I18n.t('bigbluebutton_rails.rooms.notice.end.success')) }
@@ -111,7 +111,7 @@ describe Bigbluebutton::RoomsController do
 
       context "room is not running" do
         before { mocked_api.should_receive(:is_meeting_running?).and_return(false) }
-        before(:each) { get :end, :server_id => mocked_server.to_param, :id => room.to_param, :format => 'json' }
+        before(:each) { get :end, :id => room.to_param, :format => 'json' }
         it { should respond_with(:error) }
         it { should respond_with_content_type(:json) }
         it { should respond_with_json(I18n.t('bigbluebutton_rails.rooms.notice.end.not_running')) }
@@ -122,7 +122,7 @@ describe Bigbluebutton::RoomsController do
         before {
           mocked_api.should_receive(:is_meeting_running?).and_return{ raise BigBlueButton::BigBlueButtonException.new(msg) }
         }
-        before(:each) { get :end, :server_id => mocked_server.to_param, :id => room.to_param, :format => 'json' }
+        before(:each) { get :end, :id => room.to_param, :format => 'json' }
         it { should respond_with(:error) }
         it { should respond_with_content_type(:json) }
         it { should respond_with_json(msg) }
@@ -139,7 +139,7 @@ describe Bigbluebutton::RoomsController do
           mocked_api.should_receive(:end_meeting)
         }
         before(:each) {
-          delete :destroy, :server_id => mocked_server.to_param, :id => room.to_param, :format => 'json'
+          delete :destroy, :id => room.to_param, :format => 'json'
         }
         it { should respond_with(:success) }
         it { should respond_with_content_type(:json) }
@@ -155,7 +155,7 @@ describe Bigbluebutton::RoomsController do
           mocked_api.should_receive(:is_meeting_running?).and_return{ raise BigBlueButton::BigBlueButtonException.new(msg) }
         }
         before(:each) {
-          delete :destroy, :server_id => mocked_server.to_param, :id => room.to_param, :format => 'json'
+          delete :destroy, :id => room.to_param, :format => 'json'
         }
         it { should respond_with(:error) }
         it { should respond_with_content_type(:json) }

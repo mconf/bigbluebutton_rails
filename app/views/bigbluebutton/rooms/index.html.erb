@@ -1,15 +1,17 @@
 <h1>Listing <%= BigbluebuttonRoom.model_name.human %>:</h1>
 
 <div id="bbbrails_rooms_links">
-  <%= link_to 'Back to server', bigbluebutton_server_path(@server) %> |
-  <%= link_to 'Back to server list', bigbluebutton_servers_path %><br/>
-  <%= link_to 'New room', new_bigbluebutton_room_path %>
+  <%= link_to('View server list', bigbluebutton_servers_path) %><br/>
+  <%= link_to('New room', new_bigbluebutton_room_path) %>
 </div>
 
 <ul id="bbbrails_rooms_list">
   <% @rooms.each do |room| %>
     <li>
-      <div class="field"><label><%= BigbluebuttonRoom.human_attribute_name(:server_id) %></label> <%= room.server_id %></div>
+      <div class="field">
+        <label><%= BigbluebuttonRoom.human_attribute_name(:server_id) %></label> <%= room.server_id %>
+        <%= link_to('(view server)', bigbluebutton_server_path(room.server)) unless room.server.nil? %>
+      </div>
       <div class="field"><label><%= BigbluebuttonRoom.human_attribute_name(:meetingid) %></label> <%= room.meetingid %></div>
       <div class="field"><label><%= BigbluebuttonRoom.human_attribute_name(:randomize_meetingid) %></label> <%= room.randomize_meetingid %></div>
       <div class="field"><label><%= BigbluebuttonRoom.human_attribute_name(:name) %></label> <%= room.name %></div>

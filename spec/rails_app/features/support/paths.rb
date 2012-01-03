@@ -29,7 +29,7 @@ module NavigationHelpers
     when /rooms index/i, /create room/i
       p = bigbluebutton_rooms_path
     when /join external room/i
-      p = external_bigbluebutton_rooms_path
+      p = external_bigbluebutton_rooms_path(:meeting => @room.meetingid, :server => @server.id)
     when /show room/i
       p = bigbluebutton_room_path(@room)
     when /edit room/i

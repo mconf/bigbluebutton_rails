@@ -26,7 +26,7 @@ describe Bigbluebutton::RoomsController do
       end
 
       after :each do
-        delete :destroy, :server_id => mocked_server.to_param, :id => room.to_param
+        delete :destroy, :id => room.to_param
         should respond_with(:redirect)
         should redirect_to bigbluebutton_rooms_url
         should set_the_flash.to(bbb_error_msg)
@@ -35,7 +35,7 @@ describe Bigbluebutton::RoomsController do
 
     describe "#running" do
       before { mocked_api.should_receive(:is_meeting_running?) { raise bbb_error } }
-      before(:each) { get :running, :server_id => mocked_server.to_param, :id => room.to_param }
+      before(:each) { get :running, :id => room.to_param }
       it { should respond_with(:success) }
       it { response.body.should == build_running_json(false, bbb_error_msg) }
       it { should set_the_flash.to(bbb_error_msg) }
@@ -52,7 +52,7 @@ describe Bigbluebutton::RoomsController do
       end
 
       after :each do
-        get :end, :server_id => mocked_server.to_param, :id => room.to_param
+        get :end, :id => room.to_param
         should respond_with(:redirect)
         should redirect_to(http_referer)
         should set_the_flash.to(bbb_error_msg)
@@ -80,7 +80,7 @@ describe Bigbluebutton::RoomsController do
         end
 
         after :each do
-          get :join, :server_id => mocked_server.to_param, :id => room.to_param
+          get :join, :id => room.to_param
           should respond_with(:redirect)
           should redirect_to(http_referer)
           should set_the_flash.to(bbb_error_msg)
@@ -101,7 +101,7 @@ describe Bigbluebutton::RoomsController do
         end
 
         after :each do
-          get :join, :server_id => mocked_server.to_param, :id => room.to_param
+          get :join, :id => room.to_param
           should respond_with(:redirect)
           should redirect_to(http_referer)
           should set_the_flash.to(bbb_error_msg)

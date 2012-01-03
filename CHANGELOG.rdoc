@@ -1,3 +1,4 @@
+* rooms/external now receives a parameter "server_id" to indicate the server in which the external rooms is running.
 * "bigbluebutton_routes :room_matchers" now generates all routes available for rooms, not only a selected set as before.
 
 == 0.1.0

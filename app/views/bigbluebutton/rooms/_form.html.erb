@@ -4,7 +4,7 @@
   <% url = bigbluebutton_room_path(@room) %>
 <% end %>
 
-<%= form_for [@server, @room], :url => url do |f| %>
+<%= form_for @room, :url => url do |f| %>
   <% if @room.errors.any? %>
     <div id="error_explanation">
       <h2><%= pluralize(@room.errors.count, "error") %>:</h2>
@@ -16,6 +16,10 @@
     </div>
   <% end %>
 
+  <div class="field">
+    <%= f.label :server_id %><br />
+    <%= f.text_field :server_id %>
+  </div>
   <div class="field">
     <%= f.label :name %><br />
     <%= f.text_field :name %>

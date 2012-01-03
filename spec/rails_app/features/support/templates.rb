@@ -61,7 +61,6 @@ module TemplateHelpers
     page_has_content(server.salt)
     page_has_content(server.version)
     page_has_content(server.param)
-    has_element("a", { :href => new_bigbluebutton_room_path }) # new room link
   end
 
   # servers/
@@ -111,6 +110,8 @@ module TemplateHelpers
 
   # internal form in rooms/new and room/:id/edit
   def check_room_form
+    has_element("input#bigbluebutton_room_server_id",
+                { :name => 'bigbluebutton_room[server_id]', :type => 'text' })
     has_element("input#bigbluebutton_room_name",
                 { :name => 'bigbluebutton_room[name]', :type => 'text' })
     has_element("input#bigbluebutton_room_meetingid",
@@ -174,6 +175,7 @@ module TemplateHelpers
   # rooms/external
   def check_join_external_room
     within(form_selector(external_bigbluebutton_rooms_path, 'post')) do
+      has_element("input#server_id", { :name => 'server_id', :type => 'hidden', :value => @room.server_id })
       has_element("input#meeting", { :name => 'meeting', :type => 'hidden', :value => @room.meetingid })
       has_element("input#user_name", { :name => 'user[name]', :type => 'text' })
       has_element("input#user_password", { :name => 'user[password]', :type => 'password' })
@@ -201,6 +203,7 @@ module TemplateHelpers
     BigbluebuttonRoom.all.each do |room|
       within(make_selector("ul#bbbrails_rooms_list>li:nth(#{n})")) do
         # room data
+        has_content(room.server_id) unless room.server.nil?
         has_content(room.name)
         has_content(room.meetingid)
         has_content(room.attendee_password)
@@ -210,6 +213,9 @@ module TemplateHelpers
         has_content(room.voice_bridge)
         has_content(room.param)
         # action links
+        unless room.server.nil?
+          has_element("a", { :href => bigbluebutton_server_path(room.server) }) # show server
+        end
         has_element("a", { :href => bigbluebutton_room_path(room) }) # show
         has_element("a", { :href => join_bigbluebutton_room_path(room) }) # join
         has_element("a", { :href => invite_bigbluebutton_room_path(room) }) # invite

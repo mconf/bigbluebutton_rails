@@ -172,24 +172,37 @@ class Bigbluebutton::RoomsController < ApplicationController
     end
   end
 
+  # TODO: before_filter for external and external_auth validations
+
+  # receives :server_id to indicate the server and :meeting to indicate the
+  # MeetingID of the meeting that should be joined
   def external
+    @server = BigbluebuttonServer.find(params[:server])
+
     if params[:meeting].blank?
       message = t('bigbluebutton_rails.rooms.errors.external.blank_meetingid')
       params[:redir_url] ||= bigbluebutton_rooms_path
       redirect_to params[:redir_url], :notice => message
     end
-    @room = BigbluebuttonRoom.new(:meetingid => params[:meeting])
+    @room = BigbluebuttonRoom.new(:server => @server, :meetingid => params[:meeting])
   end
 
   # Authenticates an user using name and password passed in the params from #external
   # Uses params[:meeting] to get the meetingID of the target room
   def external_auth
+    @server = BigbluebuttonServer.find(params[:server])
+
+    # check :meeting and :user
     if !params[:meeting].blank? && !params[:user].blank?
-      @room.server.fetch_meetings
-      @room = @room.server.meetings.select{ |r| r.meetingid == params[:meeting] }.first
+      @server.fetch_meetings
+      @room = @server.meetings.select{ |r| r.meetingid == params[:meeting] }.first
+      message = t('bigbluebutton_rails.rooms.errors.external.inexistent_meeting') if @room.nil?
     else
+      message = t('bigbluebutton_rails.rooms.errors.external.wrong_params')
+    end
+
+    unless message.nil?
       @room = nil
-      message = t('bigbluebutton_rails.rooms.errors.auth.wrong_params')
       redirect_to request.referer, :notice => message
       return
     end
