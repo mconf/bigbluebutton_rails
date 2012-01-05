@@ -34,7 +34,7 @@ en:
           wrong_params: "Wrong parameters in your request."
         param_format: 'you can only use letters, numbers and the symbols "-" or "_" (not at the begin or end).'
         server:
-          nil: "Your room must be associated to a server to execute this operation."
+          not_set: "Your room must be associated to a server to execute this operation."
 
   activerecord:
     models:

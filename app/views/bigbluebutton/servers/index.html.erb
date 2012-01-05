@@ -1,7 +1,8 @@
 <h1>Listing <%= BigbluebuttonServer.model_name.human %>:</h1>
 
 <div id="bbbrails_servers_links">
-  <%= link_to 'New server', new_bigbluebutton_server_path %>
+  <%= link_to('View rooms list', bigbluebutton_rooms_path) %><br/>
+  <%= link_to('New server', new_bigbluebutton_server_path) %>
 </div>
 
 <ul id="bbbrails_servers_list">

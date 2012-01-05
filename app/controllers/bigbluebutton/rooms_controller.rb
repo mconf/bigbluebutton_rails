@@ -24,8 +24,6 @@ class Bigbluebutton::RoomsController < ApplicationController
 
   def create
     @room = BigbluebuttonRoom.new(params[:bigbluebutton_room])
-    # TODO: how is it gonna be now? add a server_id to the form?
-    # @room.server = @server
 
     if !params[:bigbluebutton_room].has_key?(:meetingid) or
         params[:bigbluebutton_room][:meetingid].blank?

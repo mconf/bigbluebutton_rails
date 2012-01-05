@@ -1,5 +1,6 @@
 When /^registers a new room$/i do
   attrs = Factory.attributes_for(:bigbluebutton_room, :server => @server)
+  fill_in("bigbluebutton_room[server_id]", :with => attrs[:server_id])
   fill_in("bigbluebutton_room[name]", :with => attrs[:name])
   fill_in("bigbluebutton_room[meetingid]", :with => attrs[:meetingid])
   check("bigbluebutton_room[randomize_meetingid]") if attrs[:randomize_meetingid]

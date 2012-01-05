@@ -38,14 +38,6 @@ class BigbluebuttonRoom < ActiveRecord::Base
   after_initialize :init
   before_validation :set_param
 
-  # Every room needs a server to be used.
-  # The server of a room can change during the room's lifespan, but
-  # it should not change if the room is running or if it was created
-  # but not yet ended.
-  # Any action that requires a server should call 'require_server' before
-  # anything else.
-  after_initialize :select_server
-
   # the full logout_url used when logout_url is a relative path
   attr_accessor :full_logout_url
 
@@ -104,12 +96,13 @@ class BigbluebuttonRoom < ActiveRecord::Base
   # Triggers API call: <tt>end_meeting</tt>.
   def send_end
     require_server
-    response = self.server.api.end_meeting(self.meetingid, self.moderator_password)
-    self.server = nil # to select another server if created again
-    response
+    self.server.api.end_meeting(self.meetingid, self.moderator_password)
   end
 
   # Sends a call to the BBB server to create the meeting.
+  #
+  # Will trigger 'select_server' to select a server where the meeting
+  # will be created. If a server is selected, the model is saved.
   #
   # With the response, updates the following attributes:
   # * <tt>attendee_password</tt>
@@ -117,6 +110,10 @@ class BigbluebuttonRoom < ActiveRecord::Base
   #
   # Triggers API call: <tt>create_meeting</tt>.
   def send_create
+    # updates the server whenever a meeting will be created
+    # TODO: test this block
+    self.server = select_server
+    self.save unless server.nil? or self.new_record?
     require_server
 
     unless self.randomize_meetingid
@@ -250,18 +247,26 @@ class BigbluebuttonRoom < ActiveRecord::Base
 
   protected
 
+  # Every room needs a server to be used.
+  # The server of a room can change during the room's lifespan, but
+  # it should not change if the room is running or if it was created
+  # but not yet ended.
+  # Any action that requires a server should call 'require_server' before
+  # anything else.
   def require_server
-    select_server if self.server.nil?
     if self.server.nil?
-      raise Exception.new('bigbluebutton_rails.rooms.errors.server.nil')
+      msg = I18n.t('bigbluebutton_rails.rooms.errors.server.not_set')
+      raise BigbluebuttonRails::ServerRequired.new(msg)
     end
   end
 
+  # This method can be overridden to change the way the server is selected
+  # before a room is created
+  # This one selects the server with less rooms in it
   def select_server
-    if self.server.nil?
-      # TODO: select the server with less rooms
-      self.server = BigbluebuttonServer.first
-    end
+    BigbluebuttonServer.
+      select("bigbluebutton_servers.*, count(bigbluebutton_rooms.id) as room_count").
+      joins(:rooms).group(:server_id).order("room_count ASC").first
   end
 
   def init
@@ -298,8 +303,6 @@ class BigbluebuttonRoom < ActiveRecord::Base
   end
 
   def do_create_meeting
-    require_server
-
     opts = { :moderatorPW => self.moderator_password, :attendeePW => self.attendee_password,
       :welcome => self.welcome_msg, :dialNumber => self.dial_number,
       :logoutURL => self.full_logout_url || self.logout_url,

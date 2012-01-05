@@ -46,13 +46,6 @@ module TemplateHelpers
     has_element("input", { :name => 'commit', :type => 'submit' })
   end
 
-  # servers/new
-  def check_new_room
-    within(form_selector(bigbluebutton_rooms_path, 'post')) do
-      check_room_form
-    end
-  end
-
   # server/:id/show
   def check_show_server
     server = BigbluebuttonServer.last
@@ -66,6 +59,7 @@ module TemplateHelpers
   # servers/
   def check_servers_index
     has_element("a", { :href => new_bigbluebutton_server_path }) # new server link
+    has_element("a", { :href => bigbluebutton_rooms_path }) # rooms list
     n = 1
     BigbluebuttonServer.all.each do |server|
       within(make_selector("ul#bbbrails_servers_list>li:nth(#{n})")) do
@@ -100,6 +94,13 @@ module TemplateHelpers
 
 
 
+
+  # rooms/new
+  def check_new_room
+    within(form_selector(bigbluebutton_rooms_path, 'post')) do
+      check_room_form
+    end
+  end
 
   # room/:id/edit
   def check_edit_room
@@ -157,6 +158,7 @@ module TemplateHelpers
   # room/:id/show
   def check_show_room
     room = BigbluebuttonRoom.last
+    page_has_content(room.server_id)
     page_has_content(room.name)
     page_has_content(room.meetingid)
     page_has_content(room.randomize_meetingid)
@@ -170,6 +172,14 @@ module TemplateHelpers
     page_has_content(room.max_participants)
     page_has_content(room.external)
     page_has_content(room.param)
+    # action links
+    has_element("a", { :href => edit_bigbluebutton_room_path(room) }) # edit
+    has_element("a", { :href => bigbluebutton_room_path(room) }) # show
+    has_element("a", { :href => join_bigbluebutton_room_path(room) }) # join
+    has_element("a", { :href => invite_bigbluebutton_room_path(room) }) # invite
+    has_element("a", { :href => join_mobile_bigbluebutton_room_path(room) }) # join_mobile
+    has_element("a", { :href => end_bigbluebutton_room_path(room) }) # end
+    has_element("a", { :href => bigbluebutton_room_path(room), :"data-method" => 'delete' }) # destroy
   end
 
   # rooms/external
@@ -199,6 +209,7 @@ module TemplateHelpers
   # rooms/
   def check_rooms_index
     has_element("a", { :href => new_bigbluebutton_room_path }) # new room link
+    has_element("a", { :href => bigbluebutton_servers_path }) # servers list
     n = 1
     BigbluebuttonRoom.all.each do |room|
       within(make_selector("ul#bbbrails_rooms_list>li:nth(#{n})")) do

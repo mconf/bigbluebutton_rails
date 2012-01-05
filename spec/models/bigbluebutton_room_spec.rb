@@ -188,20 +188,26 @@ describe BigbluebuttonRoom do
 
       it { should respond_to(:fetch_is_running?) }
 
-      it "fetches is_running? when not running" do
-        mocked_api.should_receive(:is_meeting_running?).with(room.meetingid).and_return(false)
-        room.server = mocked_server
-        room.fetch_is_running?
-        room.running.should == false
-        room.is_running?.should == false
+      context "fetches is_running? when not running" do
+        before {
+          mocked_api.should_receive(:is_meeting_running?).with(room.meetingid).and_return(false)
+          room.should_receive(:require_server)
+          room.server = mocked_server
+        }
+        before(:each) { room.fetch_is_running? }
+        it { room.running.should == false }
+        it { room.is_running?.should == false }
       end
 
-      it "fetches is_running? when running" do
-        mocked_api.should_receive(:is_meeting_running?).with(room.meetingid).and_return(true)
-        room.server = mocked_server
-        room.fetch_is_running?
-        room.running.should == true
-        room.is_running?.should == true
+      context "fetches is_running? when running" do
+        before {
+          mocked_api.should_receive(:is_meeting_running?).with(room.meetingid).and_return(true)
+          room.should_receive(:require_server)
+          room.server = mocked_server
+        }
+        before(:each) { room.fetch_is_running? }
+        it { room.running.should == true }
+        it { room.is_running?.should == true }
       end
 
     end
@@ -233,39 +239,44 @@ describe BigbluebuttonRoom do
 
       it { should respond_to(:fetch_meeting_info) }
 
-      it "fetches meeting info when the meeting is not running" do
-        mocked_api.should_receive(:get_meeting_info).
-          with(room.meetingid, room.moderator_password).and_return(hash_info)
-        room.server = mocked_server
-
-        room.fetch_meeting_info
-        room.running.should == false
-        room.has_been_forcibly_ended.should == false
-        room.participant_count.should == 0
-        room.moderator_count.should == 0
-        room.start_time.should == nil
-        room.end_time.should == nil
-        room.attendees.should == []
+      context "fetches meeting info when the meeting is not running" do
+        before {
+          mocked_api.should_receive(:get_meeting_info).
+            with(room.meetingid, room.moderator_password).and_return(hash_info)
+          room.should_receive(:require_server)
+          room.server = mocked_server
+        }
+        before(:each) { room.fetch_meeting_info }
+        it { room.running.should == false }
+        it { room.has_been_forcibly_ended.should == false }
+        it { room.participant_count.should == 0 }
+        it { room.moderator_count.should == 0 }
+        it { room.start_time.should == nil }
+        it { room.end_time.should == nil }
+        it { room.attendees.should == [] }
       end
 
-      it "fetches meeting info when the meeting is running" do
-        mocked_api.should_receive(:get_meeting_info).
-          with(room.meetingid, room.moderator_password).and_return(hash_info2)
-        room.server = mocked_server
-
-        room.fetch_meeting_info
-        room.running.should == true
-        room.has_been_forcibly_ended.should == false
-        room.participant_count.should == 4
-        room.moderator_count.should == 2
-        room.start_time.should == DateTime.parse("Wed Apr 06 17:09:57 UTC 2011")
-        room.end_time.should == nil
-
-        users.each do |att|
-          attendee = BigbluebuttonAttendee.new
-          attendee.from_hash(att)
-          room.attendees.should include(attendee)
-        end
+      context "fetches meeting info when the meeting is running" do
+        before {
+          mocked_api.should_receive(:get_meeting_info).
+            with(room.meetingid, room.moderator_password).and_return(hash_info2)
+          room.should_receive(:require_server)
+          room.server = mocked_server
+        }
+        before(:each) { room.fetch_meeting_info }
+        it { room.running.should == true }
+        it { room.has_been_forcibly_ended.should == false }
+        it { room.participant_count.should == 4 }
+        it { room.moderator_count.should == 2 }
+        it { room.start_time.should == DateTime.parse("Wed Apr 06 17:09:57 UTC 2011") }
+        it { room.end_time.should == nil }
+        it {
+          users.each do |att|
+            attendee = BigbluebuttonAttendee.new
+            attendee.from_hash(att)
+            room.attendees.should include(attendee)
+          end
+        }
       end
 
     end
@@ -275,6 +286,7 @@ describe BigbluebuttonRoom do
 
       it "send end_meeting" do
         mocked_api.should_receive(:end_meeting).with(room.meetingid, room.moderator_password)
+        room.should_receive(:require_server)
         room.server = mocked_server
         room.send_end
       end
@@ -303,6 +315,7 @@ describe BigbluebuttonRoom do
                                   :voiceBridge => room.voice_bridge)
             mocked_api.should_receive(:create_meeting).
               with(room.name, room.meetingid, hash).and_return(hash_create)
+            room.stub(:select_server).and_return(mocked_server)
             room.server = mocked_server
             room.send_create
           end
@@ -320,6 +333,7 @@ describe BigbluebuttonRoom do
                                   :voiceBridge => new_room.voice_bridge)
             mocked_api.should_receive(:create_meeting).
               with(new_room.name, new_room.meetingid, hash).and_return(hash_create)
+            new_room.stub(:select_server).and_return(mocked_server)
             new_room.server = mocked_server
             new_room.send_create
           end
@@ -338,6 +352,7 @@ describe BigbluebuttonRoom do
         let(:new_id) { "new id" }
         before {
           room.randomize_meetingid = true
+          room.stub(:select_server).and_return(mocked_server)
           room.server = mocked_server
         }
 
@@ -386,6 +401,7 @@ describe BigbluebuttonRoom do
                                 :voiceBridge => room.voice_bridge)
           mocked_api.should_receive(:create_meeting).
             with(room.name, room.meetingid, hash).and_return(hash_create)
+          room.stub(:select_server).and_return(mocked_server)
           room.server = mocked_server
         end
         it { room.send_create }
@@ -398,25 +414,29 @@ describe BigbluebuttonRoom do
 
       it { should respond_to(:join_url) }
 
-      it "with moderator role" do
-        mocked_api.should_receive(:join_meeting_url).
-          with(room.meetingid, username, room.moderator_password)
-        room.server = mocked_server
-        room.join_url(username, :moderator)
-      end
+      context do
+        before { room.should_receive(:require_server) }
 
-      it "with attendee role" do
-        mocked_api.should_receive(:join_meeting_url).
-          with(room.meetingid, username, room.attendee_password)
-        room.server = mocked_server
-        room.join_url(username, :attendee)
-      end
+        it "with moderator role" do
+          mocked_api.should_receive(:join_meeting_url).
+            with(room.meetingid, username, room.moderator_password)
+          room.server = mocked_server
+          room.join_url(username, :moderator)
+        end
 
-      it "without a role" do
-        mocked_api.should_receive(:join_meeting_url).
-          with(room.meetingid, username, 'pass')
-        room.server = mocked_server
-        room.join_url(username, nil, 'pass')
+        it "with attendee role" do
+          mocked_api.should_receive(:join_meeting_url).
+            with(room.meetingid, username, room.attendee_password)
+          room.server = mocked_server
+          room.join_url(username, :attendee)
+        end
+
+        it "without a role" do
+          mocked_api.should_receive(:join_meeting_url).
+            with(room.meetingid, username, 'pass')
+          room.server = mocked_server
+          room.join_url(username, nil, 'pass')
+        end
       end
     end
 
@@ -540,6 +560,50 @@ describe BigbluebuttonRoom do
     subject { BigbluebuttonRoom.new }
     it { should respond_to(:full_logout_url) }
     it { should respond_to(:"full_logout_url=") }
+  end
+
+  describe "#require_server" do
+    let(:room) { Factory.create(:bigbluebutton_room) }
+    it { should respond_to(:require_server) }
+
+    context "throws exception when the room has no server associated" do
+      before { room.server = nil }
+      it {
+        lambda {
+          room.send(:require_server)
+        }.should raise_error(BigbluebuttonRails::ServerRequired)
+      }
+    end
+
+    context "does nothing if the room has a server associated" do
+      before { room.server = Factory.create(:bigbluebutton_server) }
+      it {
+        lambda {
+          room.send(:require_server)
+        }.should_not raise_error(BigbluebuttonRails::ServerRequired)
+      }
+    end
+  end
+
+  describe "#select_server" do
+    let(:room) { Factory.create(:bigbluebutton_room, :server => nil) }
+    it { should respond_to(:select_server) }
+
+    context "selects the server with less rooms" do
+      before {
+        BigbluebuttonServer.destroy_all
+        s1 = Factory.create(:bigbluebutton_server)
+        @s2 = Factory.create(:bigbluebutton_server)
+        3.times{ Factory.create(:bigbluebutton_room, :server => s1) }
+        2.times{ Factory.create(:bigbluebutton_room, :server => @s2) }
+      }
+      it { room.send(:select_server).should == @s2 }
+    end
+
+    context "returns nil of there are no servers" do
+      before(:each) { BigbluebuttonServer.destroy_all }
+      it { room.send(:select_server).should == nil }
+    end
   end
 
 end

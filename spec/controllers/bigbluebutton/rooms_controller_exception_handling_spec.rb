@@ -2,14 +2,13 @@ require 'spec_helper'
 
 describe Bigbluebutton::RoomsController do
   render_views
-  let(:server) { Factory.create(:bigbluebutton_server) }
-  let(:room) { Factory.create(:bigbluebutton_room, :server => server) }
 
   # make sure that the exceptions thrown by bigbluebutton-api-ruby are treated by the controller
   context "exception handling" do
     let(:bbb_error_msg) { "err msg" }
     let(:bbb_error) { BigBlueButton::BigBlueButtonException.new(bbb_error_msg) }
     let(:http_referer) { bigbluebutton_server_path(mocked_server) }
+    let(:room) { Factory.create(:bigbluebutton_room, :server => mocked_server) }
     before {
       mock_server_and_api
       request.env["HTTP_REFERER"] = http_referer
@@ -63,7 +62,11 @@ describe Bigbluebutton::RoomsController do
       before { controller.stub(:bigbluebutton_user) { Factory.build(:user) } }
 
       context "as moderator" do
-        before { controller.should_receive(:bigbluebutton_role).with(room).and_return(:moderator) }
+        before {
+          controller.should_receive(:bigbluebutton_role).with(room).and_return(:moderator)
+          room.stub(:select_server).and_return(mocked_server)
+          BigbluebuttonRoom.stub(:find_by_param).and_return(room)
+        }
 
         it "catches exception on is_meeting_running" do
           mocked_api.should_receive(:is_meeting_running?) { raise bbb_error }
@@ -88,7 +91,7 @@ describe Bigbluebutton::RoomsController do
 
       end
 
-      context "as moderator" do
+      context "as attendee" do
         before { controller.should_receive(:bigbluebutton_role).with(room).and_return(:attendee) }
 
         it "catches exception on is_meeting_running" do
