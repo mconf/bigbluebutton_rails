@@ -41,7 +41,7 @@ end
 When /(?:|I ) go(es)? to the (.+) page( \(no view check\))?$/i do |_, page_name, not_check|
   case page_name
   when /join external room/i
-    @params = { :meeting => @room.meetingid }
+    @params = { :meeting => @room.meetingid, :server_id => @server.id }
   end
   visit path_to(page_name, @params)
   check_template(page_name) if not_check.nil?

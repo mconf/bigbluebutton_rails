@@ -177,7 +177,7 @@ class Bigbluebutton::RoomsController < ApplicationController
   # receives :server_id to indicate the server and :meeting to indicate the
   # MeetingID of the meeting that should be joined
   def external
-    @server = BigbluebuttonServer.find(params[:server])
+    @server = BigbluebuttonServer.find(params[:server_id])
 
     if params[:meeting].blank?
       message = t('bigbluebutton_rails.rooms.errors.external.blank_meetingid')
@@ -190,7 +190,7 @@ class Bigbluebutton::RoomsController < ApplicationController
   # Authenticates an user using name and password passed in the params from #external
   # Uses params[:meeting] to get the meetingID of the target room
   def external_auth
-    @server = BigbluebuttonServer.find(params[:server])
+    @server = BigbluebuttonServer.find(params[:server_id])
 
     # check :meeting and :user
     if !params[:meeting].blank? && !params[:user].blank?

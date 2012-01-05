@@ -502,7 +502,7 @@ describe Bigbluebutton::RoomsController do
         controller.stub(:bigbluebutton_user).and_return(nil)
         BigbluebuttonServer.stub(:find).and_return(server)
       }
-      before(:each) { get :external, :meeting => meetingid, :server => server.id }
+      before(:each) { get :external, :meeting => meetingid, :server_id => server.id }
       it { should respond_with(:success) }
       it { should render_template(:external) }
       it { should assign_to(:server).with(server) }
@@ -513,19 +513,19 @@ describe Bigbluebutton::RoomsController do
 
     context "when params[:meeting].blank?" do
       context "without params[:redir_url]" do
-        before(:each) { get :external, :server => server.id }
+        before(:each) { get :external, :server_id => server.id }
         it { should respond_with(:redirect) }
         it { should redirect_to bigbluebutton_rooms_path }
         it { should set_the_flash.to(I18n.t('bigbluebutton_rails.rooms.errors.external.blank_meetingid')) }
       end
 
       context "with params[:redir_url]" do
-        before(:each) { get :external, :server => server.id, :redir_url => '/'}
+        before(:each) { get :external, :server_id => server.id, :redir_url => '/'}
         it { should redirect_to '/' }
       end
     end
 
-    context "when params[:server]" do
+    context "when params[:server_id]" do
       it "is blank" do
         lambda {
             get :external, :meeting => meetingid
@@ -534,7 +534,7 @@ describe Bigbluebutton::RoomsController do
 
       it "is invalid" do
         lambda {
-            get :external, :meeting => meetingid, :server => server.id + 10
+            get :external, :meeting => meetingid, :server_id => server.id + 10
         }.should raise_error(ActiveRecord::RecordNotFound)
       end
     end
@@ -550,21 +550,21 @@ describe Bigbluebutton::RoomsController do
     let(:meetings) { [ new_room ] }
     before { controller.stub(:bigbluebutton_user).and_return(nil) }
 
-    context "assigns @server and @room if params[:meeting] and params[:user] and params[:server]" do
+    context "assigns @server and @room if params[:meeting] and params[:user] and params[:server_id]" do
       before {
         mock_server_and_api
         mocked_server.should_receive(:fetch_meetings)
         mocked_server.should_receive(:meetings).and_return(meetings)
         new_room.should_receive(:perform_join)
       }
-      before(:each) { post :external_auth, :meeting => new_room.meetingid, :server => mocked_server.id, :user => user_hash }
+      before(:each) { post :external_auth, :meeting => new_room.meetingid, :server_id => mocked_server.id, :user => user_hash }
       it { should assign_to(:room).with(new_room) }
       it { should assign_to(:server).with(mocked_server) }
     end
 
-    it "shows error when params[:server] is invalid" do
+    it "shows error when params[:server_id] is invalid" do
       lambda {
-        post :external_auth, :meeting => new_room.meetingid, :server => nil, :user => user_hash
+        post :external_auth, :meeting => new_room.meetingid, :server_id => nil, :user => user_hash
       }.should raise_error(ActiveRecord::RecordNotFound)
     end
 
@@ -577,7 +577,7 @@ describe Bigbluebutton::RoomsController do
 
       context "if not params[:meeting]" do
         let(:message) { I18n.t('bigbluebutton_rails.rooms.errors.external.wrong_params') }
-        before(:each) { post :external_auth, :meeting => nil, :server => mocked_server.id, :user => user_hash }
+        before(:each) { post :external_auth, :meeting => nil, :server_id => mocked_server.id, :user => user_hash }
         it { should assign_to(:room).with(nil) }
         it { should respond_with(:redirect) }
         it { should redirect_to(http_referer) }
@@ -586,7 +586,7 @@ describe Bigbluebutton::RoomsController do
 
       context "if not params[:user]" do
         let(:message) { I18n.t('bigbluebutton_rails.rooms.errors.external.wrong_params') }
-        before(:each) { post :external_auth, :meeting => new_room.meetingid, :server => mocked_server.id, :user => nil }
+        before(:each) { post :external_auth, :meeting => new_room.meetingid, :server_id => mocked_server.id, :user => nil }
         it { should assign_to(:room).with(nil) }
         it { should respond_with(:redirect) }
         it { should redirect_to(http_referer) }
@@ -604,12 +604,12 @@ describe Bigbluebutton::RoomsController do
       it "block access if bigbluebutton_role returns nil" do
         controller.stub(:bigbluebutton_role) { nil }
         lambda {
-          post :external_auth, :meeting => new_room.meetingid, :server => mocked_server.id, :user => user_hash
+          post :external_auth, :meeting => new_room.meetingid, :server_id => mocked_server.id, :user => user_hash
         }.should raise_error(BigbluebuttonRails::RoomAccessDenied)
       end
 
       context "validates user input and shows error" do
-        before(:each) { post :external_auth, :meeting => new_room.meetingid, :server => mocked_server.id, :user => user_hash }
+        before(:each) { post :external_auth, :meeting => new_room.meetingid, :server_id => mocked_server.id, :user => user_hash }
 
         context "when name is not set" do
           let(:user_hash) { { :password => room.moderator_password } }
@@ -642,7 +642,7 @@ describe Bigbluebutton::RoomsController do
             new_room.should_receive(:perform_join).with(anything, :attendee, request).
               and_return("http://test.com/attendee/join")
           }
-          before(:each) { post :external_auth, :meeting => new_room.meetingid, :server => mocked_server.id, :user => user_hash }
+          before(:each) { post :external_auth, :meeting => new_room.meetingid, :server_id => mocked_server.id, :user => user_hash }
           it { should respond_with(:redirect) }
           it { should redirect_to("http://test.com/attendee/join") }
         end
@@ -651,7 +651,7 @@ describe Bigbluebutton::RoomsController do
           before {
             new_room.should_receive(:perform_join).with(user_hash[:name], :attendee, request).and_return(nil)
           }
-          before(:each) { post :external_auth, :meeting => new_room.meetingid, :server => mocked_server.id, :user => user_hash }
+          before(:each) { post :external_auth, :meeting => new_room.meetingid, :server_id => mocked_server.id, :user => user_hash }
           it { should respond_with(:success) }
           it { should render_template(:external) }
           it { should set_the_flash.to(I18n.t('bigbluebutton_rails.rooms.errors.auth.not_running')) }
@@ -663,7 +663,7 @@ describe Bigbluebutton::RoomsController do
         controller.stub(:bigbluebutton_user).and_return(user)
         new_room.should_receive(:perform_join).with(user.name, anything, anything). # here's the validation
           and_return("http://test.com/attendee/join")
-        post :external_auth, :meeting => new_room.meetingid, :server => mocked_server.id, :user => user_hash
+        post :external_auth, :meeting => new_room.meetingid, :server_id => mocked_server.id, :user => user_hash
       end
 
     end

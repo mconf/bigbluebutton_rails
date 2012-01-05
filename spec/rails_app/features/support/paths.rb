@@ -6,7 +6,7 @@ module NavigationHelpers
   # step definition in web_steps.rb
   #
   def path_to(page_name, params=nil)
-    params = "?" + params.map{ |k,v| "#{k}=#{CGI::escape(v)}" }.join("&") if params
+    params = "?" + params.map{ |k,v| "#{k}=#{CGI::escape(v.to_s)}" }.join("&") if params
 
     case page_name
 
@@ -29,7 +29,7 @@ module NavigationHelpers
     when /rooms index/i, /create room/i
       p = bigbluebutton_rooms_path
     when /join external room/i
-      p = external_bigbluebutton_rooms_path(:meeting => @room.meetingid, :server => @server.id)
+      p = external_bigbluebutton_rooms_path
     when /show room/i
       p = bigbluebutton_room_path(@room)
     when /edit room/i
