@@ -54,6 +54,10 @@ module TemplateHelpers
     page_has_content(server.salt)
     page_has_content(server.version)
     page_has_content(server.param)
+    has_element("a", { :href => edit_bigbluebutton_server_path(server) }) # edit
+    has_element("a", { :href => activity_bigbluebutton_server_path(server) }) # activity
+    has_element("a", { :href => rooms_bigbluebutton_server_path(server) }) # rooms
+    has_element("a", { :href => bigbluebutton_server_path(server), :"data-method" => 'delete' }) # destroy
   end
 
   # servers/
@@ -72,7 +76,7 @@ module TemplateHelpers
         has_content(server.url)
         # action links
         has_element("a", { :href => bigbluebutton_server_path(server) }) # show
-        has_element("a", { :href => bigbluebutton_rooms_path }) # index
+        has_element("a", { :href => rooms_bigbluebutton_server_path(server) }) # rooms
         has_element("a", { :href => activity_bigbluebutton_server_path(server) }) # activity
         has_element("a", { :href => edit_bigbluebutton_server_path(server) }) # edit
         has_element("a", { :href => bigbluebutton_server_path(server), :"data-method" => 'delete' }) # destroy

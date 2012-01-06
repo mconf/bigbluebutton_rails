@@ -111,9 +111,8 @@ class BigbluebuttonRoom < ActiveRecord::Base
   # Triggers API call: <tt>create_meeting</tt>.
   def send_create
     # updates the server whenever a meeting will be created
-    # TODO: test this block
     self.server = select_server
-    self.save unless server.nil? or self.new_record?
+    self.save unless self.new_record?
     require_server
 
     unless self.randomize_meetingid

@@ -140,5 +140,16 @@ describe Bigbluebutton::ServersController do
 
   end # #activity
 
+  describe "#rooms" do
+    before do
+      @room1 = Factory.create(:bigbluebutton_room, :server => server)
+      @room2 = Factory.create(:bigbluebutton_room, :server => server)
+    end
+    before(:each) { get :rooms, :id => server.to_param }
+    it { should respond_with(:success) }
+    it { should render_template(:rooms) }
+    it { should assign_to(:rooms).with([@room1, @room2]) }
+  end
+
 end
 

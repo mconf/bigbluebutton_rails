@@ -305,7 +305,7 @@ describe BigbluebuttonRoom do
 
       it { should respond_to(:send_create) }
 
-      context "send create_meeting" do
+      context "sends create_meeting" do
 
         context "for a stored room" do
           before do
@@ -345,10 +345,8 @@ describe BigbluebuttonRoom do
       end
 
       context "randomizes meetingid" do
-        let(:fail_hash) { { :returncode => true, :meetingID => "new id",
-            :messageKey => "duplicateWarning" } }
-        let(:success_hash) { { :returncode => true, :meetingID => "new id",
-            :messageKey => "" } }
+        let(:fail_hash) { { :returncode => true, :meetingID => "new id", :messageKey => "duplicateWarning" } }
+        let(:success_hash) { { :returncode => true, :meetingID => "new id", :messageKey => "" } }
         let(:new_id) { "new id" }
         before {
           room.randomize_meetingid = true
@@ -367,7 +365,7 @@ describe BigbluebuttonRoom do
         end
 
         it "and tries again on error" do
-          # fails twice and them succeds
+          # fails twice and then succeds
           room.should_receive(:random_meetingid).exactly(3).times.and_return(new_id)
           hash = hash_including(:moderatorPW => room.moderator_password, :attendeePW => room.attendee_password,
                                 :welcome  => room.welcome_msg, :dialNumber => room.dial_number,
@@ -407,7 +405,37 @@ describe BigbluebuttonRoom do
         it { room.send_create }
       end
 
-    end
+      context "selects and requires a server" do
+        let(:another_server) { Factory.create(:bigbluebutton_server) }
+
+        context "and saves the result" do
+          before do
+            room.randomize_meetingid = false # take the shortest path inside #send_create
+            room.should_receive(:select_server).and_return(another_server)
+            room.should_receive(:require_server)
+            room.should_receive(:do_create_meeting)
+            room.server = mocked_server
+            room.send_create
+          end
+          it { BigbluebuttonRoom.find(room.id).server_id.should == another_server.id }
+        end
+
+        context "and does not save when is a new record" do
+          let(:new_room) { Factory.build(:bigbluebutton_room) }
+          before do
+            new_room.randomize_meetingid = false # take the shortest path inside #send_create
+            new_room.should_receive(:select_server).and_return(another_server)
+            new_room.should_receive(:require_server)
+            new_room.should_receive(:do_create_meeting).and_return(nil)
+            new_room.should_not_receive(:save)
+            new_room.server = mocked_server
+            new_room.send_create
+          end
+          it { new_room.new_record?.should be_true }
+        end
+      end
+
+    end # #send_create
 
     describe "#join_url" do
       let(:username) { Forgery(:name).full_name }

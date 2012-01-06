@@ -5,7 +5,7 @@ describe Bigbluebutton::RoomsController do
   let(:server) { Factory.create(:bigbluebutton_server) }
   let(:room) { Factory.create(:bigbluebutton_room, :server => server) }
 
-  context "json responses for " do
+  context "json responses for" do
 
     describe "#index" do
       before do

@@ -1,8 +1,8 @@
 class Bigbluebutton::ServersController < ApplicationController
 
   respond_to :html
-  respond_to :json, :only => [:index, :show, :new, :create, :update, :destroy, :activity]
-  before_filter :find_server, :only => [:show, :edit, :activity, :update, :destroy]
+  respond_to :json, :only => [:index, :show, :new, :create, :update, :destroy, :activity, :rooms]
+  before_filter :find_server, :only => [:show, :edit, :activity, :update, :destroy, :rooms]
 
   def index
     respond_with(@servers = BigbluebuttonServer.all)
@@ -95,6 +95,10 @@ class Bigbluebutton::ServersController < ApplicationController
       format.html { redirect_to(bigbluebutton_servers_url) }
       format.json { head :ok }
     end
+  end
+
+  def rooms
+    respond_with(@rooms = @server.rooms)
   end
 
   protected

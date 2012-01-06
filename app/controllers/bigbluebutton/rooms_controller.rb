@@ -170,7 +170,7 @@ class Bigbluebutton::RoomsController < ApplicationController
     end
   end
 
-  # TODO: before_filter for external and external_auth validations
+  # FIXME: before_filter for external and external_auth validations
 
   # receives :server_id to indicate the server and :meeting to indicate the
   # MeetingID of the meeting that should be joined

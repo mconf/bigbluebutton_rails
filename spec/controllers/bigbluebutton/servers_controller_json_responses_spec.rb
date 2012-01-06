@@ -4,7 +4,7 @@ describe Bigbluebutton::ServersController do
   render_views
   let(:server) { Factory.create(:bigbluebutton_server) }
 
-  context "json responses for " do
+  context "json responses for" do
 
     describe "#index" do
       before do
@@ -142,6 +142,17 @@ describe Bigbluebutton::ServersController do
         it { should respond_with_json([room1, room2].to_json) }
       end
 
+    end
+
+    describe "#rooms" do
+      before do
+        @room1 = Factory.create(:bigbluebutton_room, :server => server)
+        @room2 = Factory.create(:bigbluebutton_room, :server => server)
+      end
+      before(:each) { get :rooms, :id => server.to_param, :format => 'json' }
+      it { should respond_with(:success) }
+      it { should respond_with_content_type(:json) }
+      it { should respond_with_json([@room1, @room2].to_json) }
     end
 
   end

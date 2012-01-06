@@ -1,0 +1,37 @@
+<div id="bbbrails_rooms_links">
+  <%= link_to('View servers list', bigbluebutton_servers_path) %><br/>
+  <%= link_to('New room', new_bigbluebutton_room_path) %>
+</div>
+
+<ul id="bbbrails_rooms_list">
+  <% @rooms.each do |room| %>
+    <li>
+      <div class="field">
+        <label><%= BigbluebuttonRoom.human_attribute_name(:server_id) %></label> <%= room.server_id %>
+        <%= link_to('(view server)', bigbluebutton_server_path(room.server)) unless room.server.nil? %>
+      </div>
+      <div class="field"><label><%= BigbluebuttonRoom.human_attribute_name(:meetingid) %></label> <%= room.meetingid %></div>
+      <div class="field"><label><%= BigbluebuttonRoom.human_attribute_name(:randomize_meetingid) %></label> <%= room.randomize_meetingid %></div>
+      <div class="field"><label><%= BigbluebuttonRoom.human_attribute_name(:name) %></label> <%= room.name %></div>
+      <div class="field"><label><%= BigbluebuttonRoom.human_attribute_name(:private) %></label> <%= room.private %></div>
+      <div class="field"><label><%= BigbluebuttonRoom.human_attribute_name(:attendee_password) %></label> <%= room.attendee_password %></div>
+      <div class="field"><label><%= BigbluebuttonRoom.human_attribute_name(:moderator_password) %></label> <%= room.moderator_password %></div>
+      <div class="field"><label><%= BigbluebuttonRoom.human_attribute_name(:welcome_msg) %></label> <%= room.welcome_msg %></div>
+      <div class="field"><label><%= BigbluebuttonRoom.human_attribute_name(:logout_url) %></label> <%= room.logout_url %></div>
+      <div class="field"><label><%= BigbluebuttonRoom.human_attribute_name(:dial_number) %></label> <%= room.dial_number %></div>
+      <div class="field"><label><%= BigbluebuttonRoom.human_attribute_name(:voice_bridge) %></label> <%= room.voice_bridge %></div>
+      <div class="field"><label><%= BigbluebuttonRoom.human_attribute_name(:max_participants) %></label> <%= room.max_participants %></div>
+      <div class="field"><label><%= BigbluebuttonRoom.human_attribute_name(:external) %></label> <%= room.external %></div>
+      <div class="field"><label><%= BigbluebuttonRoom.human_attribute_name(:param) %></label> <%= room.param %></div>
+      <div class="field"><label>Access</label>
+        <%= link_to 'Show', bigbluebutton_room_path(room) %> |
+        <%= link_to 'Join', join_bigbluebutton_room_path(room) %> |
+        <%= link_to 'Invite', invite_bigbluebutton_room_path(room) %> |
+        <%= link_to 'Mobile Join', join_mobile_bigbluebutton_room_path(room) %> |
+        <%= link_to 'Edit', edit_bigbluebutton_room_path(room) %> |
+        <%= link_to 'End', end_bigbluebutton_room_path(room), :confirm => 'Are you sure?' %> |
+        <%= link_to 'Destroy', bigbluebutton_room_path(room), :confirm => 'Are you sure?', :method => :delete %>
+      </div>
+    </li>
+  <% end %>
+</ul>
