@@ -36,15 +36,15 @@ describe BigbluebuttonServer do
     server.rooms.should_not be_empty
   end
 
-  it "destroys associated rooms" do
+  it "nullifies associated rooms" do
     server = Factory.create(:bigbluebutton_server)
-    Factory.create(:bigbluebutton_room, :server => server)
-    Factory.create(:bigbluebutton_room, :server => server)
+    room = Factory.create(:bigbluebutton_room, :server => server)
     expect {
       expect {
         server.destroy
       }.to change{ BigbluebuttonServer.count }.by(-1)
-    }.to change{ BigbluebuttonRoom.count }.by(-2)
+    }.to change{ BigbluebuttonRoom.count }.by(0)
+    BigbluebuttonRoom.find(room.id).server_id.should == nil
   end
 
   it { should ensure_length_of(:name).is_at_least(1).is_at_most(500) }

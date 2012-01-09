@@ -4,7 +4,7 @@ class BigbluebuttonServer < ActiveRecord::Base
   has_many :rooms,
            :class_name => 'BigbluebuttonRoom',
            :foreign_key => 'server_id',
-           :dependent => :destroy
+           :dependent => :nullify
 
   validates :name,
             :presence => true,
