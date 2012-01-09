@@ -35,6 +35,7 @@ Feature: Join webconference rooms
       And a private room in this server
     When the user goes to the join room page
     Then he should be redirected to the invite room URL
+      And he should see the invite room page
 
   @mechanize
   Scenario: Joining a private room as a moderator

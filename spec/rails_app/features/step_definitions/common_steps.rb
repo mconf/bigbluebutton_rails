@@ -5,7 +5,6 @@ end
 When /^(\d+) server(s)?$/i do |count, _|
   # Note: these servers are not real, it will NOT be possible to make api requests
   #       for a real server use :bigbluebutton_server_integration
-  # Use "a real server" whenever possible
   count.to_i.times do
     Factory.create(:bigbluebutton_server)
   end
@@ -44,11 +43,14 @@ When /(?:|I ) go(es)? to the (.+) page( \(no view check\))?$/i do |_, page_name,
     @params = { :meeting => @room.meetingid, :server_id => @server.id }
   end
   visit path_to(page_name, @params)
-  check_template(page_name) if not_check.nil?
 end
 
 When /see the (.+) page$/i do |page_name|
-  check_template(page_name)
+  opts = {
+    :room => @room, :server => @server,
+    :rooms => BigbluebuttonRoom.all, :servers => BigbluebuttonServer.all
+  }
+  check_template(page_name, opts)
 end
 
 When /a user named "(.+)"/i do |username|

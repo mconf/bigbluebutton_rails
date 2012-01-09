@@ -2,6 +2,11 @@ Feature: Create webconference rooms
   In order to held webconferences
   One needs to create and configure webconference rooms
 
+  Scenario: Access the page to create a new room
+    Given an anonymous user
+    When he goes to the new room page
+    Then he should see the new room page
+
   Scenario: Register a new BigBlueButton room
     Given a real server
     When the user goes to the new room page

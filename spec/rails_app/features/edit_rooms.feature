@@ -2,6 +2,13 @@ Feature: Edit webconference rooms
   To change the information of a webconference rooms
   One needs to be able to edit and update the room
 
+  Scenario: Access the page to edit a room
+    Given an anonymous user
+      And a real server
+      And a room in this server
+    When he goes to the edit room page
+    Then he should see the edit room page
+
   Scenario: Edit data in a BigBlueButton room
     Given an anonymous user
       And a real server

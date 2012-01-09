@@ -1,9 +1,5 @@
 When /^he should see a form to join the external room$/i do
-  within(form_selector(external_bigbluebutton_rooms_path, 'post')) do
-    has_element("input", { :name => 'meeting', :type => 'hidden', :value => @room.meetingid })
-    has_element("input", { :name => 'user[name]', :type => 'text' })
-    has_element("input", { :name => 'user[password]', :type => 'password' })
-  end
+  check_template("join external room")
 end
 
 When /^he should see his name in the user name input$/i do

@@ -2,26 +2,27 @@
 module TemplateHelpers
 
   # calls the specific methods that verify the template for each page
-  def check_template(page_name)
-    begin
-      method = ("check " + page_name).split(" ").join('_').to_sym
-      self.send(method)
-    rescue NoMethodError
+  def check_template(page_name, options={})
+    method = ("check " + page_name).split(" ").join('_').to_sym
+    unless self.respond_to?(method)
       raise "Can't find method to check the template for \"#{page_name}\"\n" +
-            "Now, go and add the method \"#{method}\" in #{__FILE__}"
+            "Now, go and add the method \"#{method}(options)\" in #{__FILE__}"
     end
+    self.send(method, options)
   end
 
   # servers/new
-  def check_new_server
+  def check_new_server(options)
     within(form_selector(bigbluebutton_servers_path, 'post')) do
       check_server_form
     end
   end
 
   # server/:id/edit
-  def check_edit_server
-    within(form_selector(bigbluebutton_server_path(@server), 'post')) do
+  def check_edit_server(options)
+    server = options[:server] || BigbluebuttonServer.last
+
+    within(form_selector(bigbluebutton_server_path(server), 'post')) do
       check_server_form
     end
   end
@@ -47,8 +48,9 @@ module TemplateHelpers
   end
 
   # server/:id/show
-  def check_show_server
-    server = BigbluebuttonServer.last
+  def check_show_server(options)
+    server = options[:server] || BigbluebuttonServer.last
+
     page_has_content(server.name)
     page_has_content(server.url)
     page_has_content(server.salt)
@@ -61,11 +63,13 @@ module TemplateHelpers
   end
 
   # servers/
-  def check_servers_index
+  def check_servers_index(options)
+    servers = options[:severs] || BigbluebuttonServer.all
+
     has_element("a", { :href => new_bigbluebutton_server_path }) # new server link
     has_element("a", { :href => bigbluebutton_rooms_path }) # rooms list
     n = 1
-    BigbluebuttonServer.all.each do |server|
+    servers.each do |server|
       within(make_selector("ul#bbbrails_servers_list>li:nth(#{n})")) do
         # server data
         has_content(server.name)
@@ -86,29 +90,39 @@ module TemplateHelpers
   end
 
   # servers/:id/activity
-  def check_server_activity_monitor
+  def check_server_activity_monitor(options)
+    server = options[:server] || BigbluebuttonServer.last
+
     # checks only the 'skeleton', the content depends on the rooms currently running
+    # and is not checked here
     within(make_selector("div.bbbrails_countdown")) do
       has_element("span.bbbrails_countdown_value")
       has_element("a.bbbrails_refresh_now",
-                  { :href => activity_bigbluebutton_server_path(@server) })
+                  { :href => activity_bigbluebutton_server_path(server) })
     end
     has_element("div#bbbrails_server_activity_meetings")
+  end
+
+  # servers/:id/rooms
+  def check_server_rooms(options)
+    check_rooms_index(options)
   end
 
 
 
 
   # rooms/new
-  def check_new_room
+  def check_new_room(options)
     within(form_selector(bigbluebutton_rooms_path, 'post')) do
       check_room_form
     end
   end
 
   # room/:id/edit
-  def check_edit_room
-    within(form_selector(bigbluebutton_room_path(@room), 'post')) do
+  def check_edit_room(options)
+    room = options[:room] || BigbluebuttonRoom.last
+
+    within(form_selector(bigbluebutton_room_path(room), 'post')) do
       check_room_form
     end
   end
@@ -160,8 +174,9 @@ module TemplateHelpers
   end
 
   # room/:id/show
-  def check_show_room
-    room = BigbluebuttonRoom.last
+  def check_show_room(options)
+    room = options[:room] || BigbluebuttonRoom.last
+
     page_has_content(room.server_id)
     page_has_content(room.name)
     page_has_content(room.meetingid)
@@ -187,10 +202,12 @@ module TemplateHelpers
   end
 
   # rooms/external
-  def check_join_external_room
+  def check_join_external_room(options)
+    room = options[:room] || BigbluebuttonRoom.last
+
     within(form_selector(external_bigbluebutton_rooms_path, 'post')) do
-      has_element("input#server_id", { :name => 'server_id', :type => 'hidden', :value => @room.server_id })
-      has_element("input#meeting", { :name => 'meeting', :type => 'hidden', :value => @room.meetingid })
+      has_element("input#server_id", { :name => 'server_id', :type => 'hidden', :value => room.server_id })
+      has_element("input#meeting", { :name => 'meeting', :type => 'hidden', :value => room.meetingid })
       has_element("input#user_name", { :name => 'user[name]', :type => 'text' })
       has_element("input#user_password", { :name => 'user[password]', :type => 'password' })
       has_element("label", { :for => 'user_name' })
@@ -200,8 +217,10 @@ module TemplateHelpers
   end
 
   # rooms/:id/invite
-  def check_invite_room
-    within(form_selector(join_bigbluebutton_room_path(@room), 'post')) do
+  def check_invite_room(options)
+    room = options[:room] || BigbluebuttonRoom.last
+
+    within(form_selector(join_bigbluebutton_room_path(room), 'post')) do
       has_element("input#user_name", { :name => 'user[name]', :type => 'text' })
       has_element("input#user_password", { :name => 'user[password]', :type => 'password' })
       has_element("label", { :for => 'user_name' })
@@ -211,11 +230,13 @@ module TemplateHelpers
   end
 
   # rooms/
-  def check_rooms_index
+  def check_rooms_index(options)
+    rooms = options[:rooms] || BigbluebuttonRoom.all
+
     has_element("a", { :href => new_bigbluebutton_room_path }) # new room link
     has_element("a", { :href => bigbluebutton_servers_path }) # servers list
     n = 1
-    BigbluebuttonRoom.all.each do |room|
+    rooms.each do |room|
       within(make_selector("ul#bbbrails_rooms_list>li:nth(#{n})")) do
         # room data
         has_content(room.server_id) unless room.server.nil?
@@ -243,12 +264,14 @@ module TemplateHelpers
     end
   end
 
-  def check_join_room # nothing to check, it only redirects to the BBB client
+  def check_join_room(options) # nothing to check, it only redirects to the BBB client
   end
 
   # rooms/:id/join_mobile
-  def check_mobile_join
-    url = join_bigbluebutton_room_url(@room, :mobile => '1')
+  def check_mobile_join(options)
+    room = options[:room] || BigbluebuttonRoom.last
+
+    url = join_bigbluebutton_room_url(room, :mobile => '1')
     url.gsub!(/http:\/\//i, "bigbluebutton://")
     has_element("a", { :href => url })
 
