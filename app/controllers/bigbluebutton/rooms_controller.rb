@@ -3,6 +3,7 @@ require 'bigbluebutton_api'
 class Bigbluebutton::RoomsController < ApplicationController
 
   before_filter :find_room, :only => [:show, :edit, :update, :destroy, :join, :invite, :running, :end, :destroy, :end, :join_mobile]
+  before_filter :find_server, :only => [:external, :external_auth]
   respond_to :html, :except => :running
   respond_to :json, :only => [:running, :show, :new, :index, :create, :update]
 
@@ -170,13 +171,9 @@ class Bigbluebutton::RoomsController < ApplicationController
     end
   end
 
-  # FIXME: before_filter for external and external_auth validations
-
   # receives :server_id to indicate the server and :meeting to indicate the
   # MeetingID of the meeting that should be joined
   def external
-    @server = BigbluebuttonServer.find(params[:server_id])
-
     if params[:meeting].blank?
       message = t('bigbluebutton_rails.rooms.errors.external.blank_meetingid')
       params[:redir_url] ||= bigbluebutton_rooms_path
@@ -188,8 +185,6 @@ class Bigbluebutton::RoomsController < ApplicationController
   # Authenticates an user using name and password passed in the params from #external
   # Uses params[:meeting] to get the meetingID of the target room
   def external_auth
-    @server = BigbluebuttonServer.find(params[:server_id])
-
     # check :meeting and :user
     if !params[:meeting].blank? && !params[:user].blank?
       @server.fetch_meetings
@@ -287,6 +282,10 @@ class Bigbluebutton::RoomsController < ApplicationController
 
   def find_room
     @room = BigbluebuttonRoom.find_by_param(params[:id])
+  end
+
+  def find_server
+    @server = BigbluebuttonServer.find(params[:server_id])
   end
 
   def join_internal(username, role, wait_action)
