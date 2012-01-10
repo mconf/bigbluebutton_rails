@@ -1,4 +1,10 @@
-* rooms/external now receives a parameter "server_id" to indicate the server in which the external rooms is running.
+* Rooms are now decoupled from servers:
+  * A room can exist without a server;
+  * Everytime a 'send_create' is called in a room, the method 'select_server' is called to select a server where the meeting will be held. The room is saved if the server changed;
+  * The method 'select_server' by default selects the server with less rooms;
+  * The routes for rooms are not nested with servers anymore ('/bigbluebutton/rooms' instead of '/bigbluebutton/server/:id/rooms').
+    * Because of this change all path helpers for rooms <b>must be updated!</b>
+* rooms/external now receives a parameter "server_id" to indicate the server in which the external rooms is running. The views were updated.
 * "bigbluebutton_routes :room_matchers" now generates all routes available for rooms, not only a selected set as before.
 
 == 0.1.0

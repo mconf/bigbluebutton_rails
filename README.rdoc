@@ -4,21 +4,20 @@ http://travis-ci.org/mconf/bigbluebutton_rails.png {(more...)}[http://travis-ci.
 {BigBlueButton}[http://bigbluebutton.org] integration for Ruby on Rails 3.
 
 Features:
-* Allows multiple servers and multiple conference rooms
-* Full API access using {bigbluebutton-api-ruby}[https://github.com/mconf/bigbluebutton-api-ruby]
-* Easy way to join conferences: simply create a room and call the "join" action
-* Easy integration with authentication and authorization mechanisms, such as Devise and CanCan
-* Possibility to create private rooms, that require a password to join
-* Deals with visitors (users that are not logged), allowing (or forbidding) them to join rooms
-* Random meeting IDs to avoid problems with end_meeting, timeouts and reuse of URLs
-* Server activity monitor
+* Allows multiple servers and multiple conference rooms.
+* Full API access using {bigbluebutton-api-ruby}[https://github.com/mconf/bigbluebutton-api-ruby].
+* Easy way to join conferences: simply create a room and call the "join" action.
+* Easy integration with authentication and authorization mechanisms, such as Devise and CanCan.
+* Possibility to create private rooms, that require a password to join.
+* Deals with visitors (users that are not logged), allowing (or forbidding) them to join rooms.
+* Random meeting IDs to avoid problems with end_meeting, timeouts and reuse of URLs.
+* Server activity monitor.
+* "On-the-fly" server selection when a meeting is started.
 
-Planned features:
-* Friendly URLs (e.g. http://somewhere.com/my-server/my-room)
-* Limit the number of users per room and rooms per server
-* Server administration (modify config.xml, use bbb-conf, etc.)
-* Decouple servers-rooms to allow server selection on-the-fly
-* Load balancing
+Possible future features:
+* Limit the number of users per room and rooms per server.
+* Server administration (modify config.xml, use bbb-conf, etc.).
+* Load balancing.
 
 For more future features and issues check {our google code page}[http://code.google.com/p/mconf/issues/list?can=2&q=label%3AComponent%20label%3ABigBlueButtonRails].
 
@@ -66,27 +65,26 @@ The routes to BigbluebuttonRails can be generated with the helper <tt>bigbluebut
 It will generate the default routes. You need to call it at least once and the routes will be scoped with 'bigbluebutton'. They will look like:
 
   /bigbluebutton/servers
-  /bigbluebutton/servers/default-server/rooms/my-room
-  /bigbluebutton/servers/default-server/rooms/his-room/join
+  /bigbluebutton/servers/my-server/new
+  /bigbluebutton/servers/my-server/rooms
+  /bigbluebutton/rooms
+  /bigbluebutton/rooms/my-room/join
 
-You can customize the scope name and also make the routes point to custom controllers.
+You can customize the scope name and also make the routes use custom controllers.
 
   bigbluebutton_routes :default, :scope => 'webconference', :controllers => { :servers => 'custom_servers', :rooms => 'custom_rooms' }
   bigbluebutton_routes :default, :scope => '' # to remove the scope
 
 You may also want shorter routes to access conference rooms. For that, use the option <tt>room_matchers</tt>:
 
-  bigbluebutton_routes :room_matchers
-
   resources :users do
     bigbluebutton_routes :room_matchers
   end
 
-It creates routes to the actions used to access the conference room, so you can allow access to webconference rooms using URLs such as:
+It creates routes to the actions used to access a conference room, so you can allow access to webconference rooms using URLs such as:
 
-  http://myserver.com/server-name/room-name/join
-  http://myserver.com/user-name/public-room/join
-  http://myserver.com/ziltoid-room/join
+  http://myserver.com/my-community/room-name/join
+  http://myserver.com/user-name/room-name/join
 
 For more information see:
 
@@ -103,7 +101,21 @@ If you don't, you can change this behaviour easily, keep reading.
 
 BigbluebuttonRails uses the methods <tt>bigbluebutton_user</tt> and <tt>bigbluebutton_role(room)</tt> to get the current user and to get the permission that the current
 user has in the <tt>room</tt>, respectively. These methods are defined in {lib/bigbluebutton_rails/controller_methods.rb}[https://github.com/mconf/bigbluebutton_rails/blob/master/lib/bigbluebutton_rails/controller_methods.rb]
-and you can reimplement them in your application controller to change their behaviour.
+and you can reimplement them in your application controller to change their behaviour as shown below.
+
+  class ApplicationController < ActionController::Base
+
+    # overriding bigbluebutton_rails function
+    def bigbluebutton_user
+      current_user && current_user.is_a?(User) ? current_user : nil
+    end
+
+    def bigbluebutton_role(room)
+      ...
+    end
+
+  end
+
 
 ==== See also
 
