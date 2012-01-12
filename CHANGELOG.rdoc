@@ -1,3 +1,5 @@
+== 0.1.1
+
 * Rooms are now decoupled from servers:
   * A room can exist without a server;
   * Everytime a 'send_create' is called in a room, the method 'select_server' is called to select a server where the meeting will be held. The room is saved if the server changed;
