@@ -1,5 +1,5 @@
 = BigBlueButton on Rails
-http://travis-ci.org/mconf/bigbluebutton_rails.png {(more...)}[http://travis-ci.org/#!/mconf/bigbluebutton_rails]
+{<img src="http://travis-ci.org/mconf/bigbluebutton_rails.png" alt="Travis CI Status" />}[http://travis-ci.org/#!/mconf/bigbluebutton_rails]
 
 {BigBlueButton}[http://bigbluebutton.org] integration for Ruby on Rails 3.
 
@@ -90,7 +90,7 @@ For more information see:
 
 * {How to: Routes}[https://github.com/mconf/bigbluebutton_rails/wiki/How-to:-Routes]
 
-=== User authorization, permissions and assumptions
+=== Basic configurations
 
 There are some basic assumptions made by BigbluebuttonRails:
 
@@ -128,25 +128,27 @@ Fork this repository, clone your fork and start by installing the dependencies:
 
   bundle install
 
-Edit <tt>spec/rails_app/features/integration_conf.yml.example</tt> and set values for an existent BigBlueButton server. Save it as <tt>spec/integration_conf.yml</tt>. You will need it to run the integration tests. For more information see the page [Testing](https://github.com/mconf/bigbluebutton_rails/wiki/Testing) in our wiki.
+Save <tt>spec/rails_app/features/config.yml.example</tt> as <tt>config.yml</tt> and edit it to set values for an existent BigBlueButton server. You will need it to run the integration tests. For more information see the page {Testing}[https://github.com/mconf/bigbluebutton_rails/wiki/Testing] in our wiki.
 
 Prepare the rails_app used for tests:
 
   rake setup:rails_app
-  rake setup:rails_app:db
+  rake setup:rails_app:db SERVER=my-server # select a server you defined in 'config.yml'
 
 Run the tests:
 
   rake spec
-  rake cucumber
+  rake cucumber SERVER=my-server
 
 Or simply:
 
-  rake
+  rake SERVER=my-server
+
+Note: If you don't set the SERVER variable, the first server in <tt>config.yml</tt> will be used.
 
 Develop. :)
 
-If you want your code to be integrated in this repository, please create a branch with your modifications and submit a pull request.
+If you want your code to be integrated in this repository, please fork it, create a branch with your modifications and submit a pull request.
 
 === Test Coverage
 
