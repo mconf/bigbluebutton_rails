@@ -5,9 +5,7 @@ module NavigationHelpers
   #
   # step definition in web_steps.rb
   #
-  def path_to(page_name, params=nil)
-    params = "?" + params.map{ |k,v| "#{k}=#{CGI::escape(v.to_s)}" }.join("&") if params
-
+  def path_to(page_name, params={})
     case page_name
 
     when /^home\s?$/
@@ -40,8 +38,12 @@ module NavigationHelpers
       p = bigbluebutton_room_path(@room)
     when /join room/i
       p = join_bigbluebutton_room_path(@room)
-    when /invite room/i
+    when /invite room$/i
       p = invite_bigbluebutton_room_path(@room)
+    when /invite room with mobile$/i
+      p = invite_bigbluebutton_room_path(@room)
+      params = {} if params.nil?
+      params[:mobile] = true
     when /mobile join/i
       p = join_mobile_bigbluebutton_room_path(@room)
 
@@ -56,7 +58,10 @@ module NavigationHelpers
       end
     end
 
-    p += params if params
+    unless params.nil? or params.empty?
+      params = "?" + params.map{ |k,v| "#{k}=#{CGI::escape(v.to_s)}" }.join("&")
+      p += params
+    end
     p
   end
 end

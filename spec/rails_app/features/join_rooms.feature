@@ -10,8 +10,8 @@ Feature: Join webconference rooms
   #   :moderator
   # end
 
-  # First we check the behaviour of BigbluebuttonRoom#join and the redirects to
-  # BigbluebuttonRoom#invite
+  # First the scenarios for BigbluebuttonRoom#join (and the redirects to
+  # BigbluebuttonRoom#invite)
 
   @mechanize
   Scenario: Joining a public room
@@ -20,14 +20,6 @@ Feature: Join webconference rooms
       And a public room in this server
     When the user goes to the join room page
     Then he should join the conference room
-
-  Scenario: Joining a public room as an anonymous user
-    Given an anonymous user
-      And a real server
-      And a public room in this server
-    When the user goes to the join room page
-    Then he should be at the invite room URL
-      And the password field was pre-filled with the attendee password
 
   Scenario: Joining a private room requires a password
     Given a user named "test user"
@@ -96,19 +88,62 @@ Feature: Join webconference rooms
     Then he should see his name in the user name input
 
 
-  # For the BigbluebuttonRoom#invite action we only check that it can be used by logged
-  # or anonymous users. Other cases were already tested above
+  # Scenarios for BigbluebuttonRoom#invite
 
-  @mechanize
-  Scenario: A logged user may join the meeting through the invite page
+  # The pre-filling depends on the role of the user, that's defined
+  # by bigbluebutton_role(), see the comment on the top of this file.
+
+  Scenario: The invite view shows a link to join from a mobile device when joining from a desktop
     Given a user named "test user"
       And a real server
       And a public room in this server
+    When the user goes to the invite room page
+    Then he should see a link to join the conference from a mobile device
+
+  # Test the invite view with a user logged
+
+  Scenario: The invite page is pre-filled with the user name and moderator password
+    Given a user named "test user"
+      And a real server
+      # Public room = user is a moderator
+      And a public room in this server
     When the user goes to the invite room page (no view check)
+    Then he should be at the invite room URL
+      And the read-only name field was pre-filled with "test user"
+      And the read-only password field was pre-filled with the moderator password
+
+  Scenario: The invite page is pre-filled with the user name only
+    Given a user named "test user"
+      And a real server
+      # Private room = ask for a password
+      And a private room in this server
+    When the user goes to the invite room page (no view check)
+    Then the read-only name field was pre-filled with "test user"
+      And the password field was NOT pre-filled
+
+  # Test the invite view without a user logged
+
+  Scenario: The invite page is not pre-filled when there's no user logged
+    Given an anonymous user
+      And a real server
+      And a public room in this server
+    When the user goes to the invite room page
+    Then the name field was NOT pre-filled
+      And the password field was NOT pre-filled
+
+  # Test if the user can actually join the conference
+
+  @mechanize
+  Scenario: A logged user may join the meeting using the invite page
+    Given a user named "test user"
+      And a real server
+      And a public room in this server
+    When the user goes to the invite room page
+      And clicks in the button "Submit"
     Then he should join the conference room
 
   @mechanize
-  Scenario: An anonymous user may join the meeting through the invite page
+  Scenario: An anonymous user may join the meeting using the invite page
     Given an anonymous user
       And a real server
       And a public room in this server
@@ -116,3 +151,29 @@ Feature: Join webconference rooms
       And enters his name and the moderator password
       And clicks in the button "Submit"
     Then he should join the conference room
+
+  # Tests when the user is accessing from a mobile client
+
+  Scenario: Accessing from a mobile device the invite form should point to the join with mobile=true
+    Given a user named "test user"
+      And a real server
+      And a public room in this server
+    When the user goes to the invite room with mobile page
+    Then the action in the form should point to the mobile join
+
+  @mechanize
+  Scenario: Accessing from a mobile device the user should be redirected to the url
+    Given a user named "test user"
+      And a real server
+      And a public room in this server
+    When the user goes to the invite room with mobile page
+      And enters his name and the moderator password
+      And clicks in the button to join the conference from a mobile device
+    Then he should be redirected to the conference using the "bigbluebutton://" protocol
+
+  Scenario: The invite view shows a link to join from a desktop when joining from a mobile
+    Given a user named "test user"
+      And a real server
+      And a public room in this server
+    When the user goes to the invite room with mobile page
+    Then he should see a link to join the conference from a desktop

@@ -316,68 +316,43 @@ describe Bigbluebutton::RoomsController do
   describe "#invite" do
     before { mock_server_and_api }
     let(:user) { Factory.build(:user) }
+    before { controller.stub(:bigbluebutton_user).and_return(user) }
 
-    context "for an anonymous user" do
-      before { controller.stub(:bigbluebutton_user).and_return(nil) }
+    context "when the parameter mobile is set" do
+      before(:each) { get :invite, :id => room.to_param, :mobile => true }
+      it { should respond_with(:success) }
+      it { should render_template(:invite) }
+      it { should assign_to(:mobile).with(true) }
+    end
 
-      context "with a role defined" do
-        before { controller.stub(:bigbluebutton_role).and_return(:attendee) }
+    context "when the user has a role defined" do
+      before { controller.stub(:bigbluebutton_role).and_return(:attendee) }
+      before(:each) { get :invite, :id => room.to_param }
+      it { should respond_with(:success) }
+      it { should render_template(:invite) }
+      it { should assign_to(:room).with(room) }
+      it { should assign_to(:user_role).with(:attendee) }
+    end
+
+    context "when the user's role" do
+      context "should be defined with a password" do
+        before { controller.stub(:bigbluebutton_role) { :password } }
         before(:each) { get :invite, :id => room.to_param }
         it { should respond_with(:success) }
         it { should render_template(:invite) }
         it { should assign_to(:room).with(room) }
+        it { should assign_to(:user_role).with(:password) }
       end
 
-      context "when the user's role" do
-        context "should be defined with a password" do
-          before { controller.stub(:bigbluebutton_role) { :password } }
-          before(:each) { get :invite, :id => room.to_param }
-          it { should respond_with(:success) }
-          it { should render_template(:invite) }
-          it { should assign_to(:room).with(room) }
-        end
-
-        context "is undefined, the access should be blocked" do
-          before { controller.stub(:bigbluebutton_role) { nil } }
-          it {
-            lambda {
-              get :invite, :id => room.to_param
-            }.should raise_error(BigbluebuttonRails::RoomAccessDenied)
-          }
-        end
+      context "is undefined, the access should be blocked" do
+        before { controller.stub(:bigbluebutton_role) { nil } }
+        it {
+          lambda {
+            get :invite, :id => room.to_param
+          }.should raise_error(BigbluebuttonRails::RoomAccessDenied)
+        }
       end
     end
-
-    context "for a logged user" do
-      before { controller.stub(:bigbluebutton_user).and_return(user) }
-
-      context "with a role defined" do
-        before { controller.stub(:bigbluebutton_role).and_return(:attendee) }
-        before(:each) { get :invite, :id => room.to_param }
-        it { should respond_with(:redirect) }
-        it { should redirect_to(join_bigbluebutton_room_path(room)) }
-      end
-
-      context "when the user's role" do
-        context "should be defined with a password" do
-          before { controller.stub(:bigbluebutton_role) { :password } }
-          before(:each) { get :invite, :id => room.to_param }
-          it { should respond_with(:success) }
-          it { should render_template(:invite) }
-          it { should assign_to(:room).with(room) }
-        end
-
-        context "is undefined, the access should be blocked" do
-          before { controller.stub(:bigbluebutton_role) { nil } }
-          it {
-            lambda {
-              get :invite, :id => room.to_param
-            }.should raise_error(BigbluebuttonRails::RoomAccessDenied)
-          }
-        end
-      end
-    end
-
   end
 
   describe "#auth" do

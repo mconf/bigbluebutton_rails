@@ -40,6 +40,44 @@ When /^enters only the user name$/ do
   fill_in("user[name]", :with => name)
 end
 
-When /^the password field was pre-filled with the attendee password$/ do
-  has_element("input", { :name => 'user[password]', :type => 'password', :value => @room.attendee_password })
+When /^the read-only password field was pre-filled with the moderator password$/ do
+  has_element("input", { :name => 'user[password]', :type => 'password', :value => @room.moderator_password, :readonly => 'readonly' })
+end
+
+When /^the password field was not pre-filled$/i do
+  has_element("input", { :name => 'user[password]', :type => 'password', :value => '' })
+end
+
+When /^the read-only name field was pre-filled with "(.+)"$/ do |name|
+  has_element("input", { :name => 'user[name]', :type => 'text', :value => name, :readonly => 'readonly' })
+end
+
+When /^the name field was not pre-filled$/i do
+  has_element("input", { :name => 'user[name]', :type => 'text', :value => ''})
+end
+
+When /^the action in the form should point to the mobile join$/i do
+  action = join_bigbluebutton_room_path(@room, :mobile => true)
+  has_element("form", { :action => action, :method => 'post' })
+end
+
+When /^he should see a link to join the conference from a desktop$/i do
+  has_element("a", { :href => invite_bigbluebutton_room_path(@room) })
+end
+
+When /^he should see a link to join the conference from a mobile device$/i do
+  has_element("a", { :href => invite_bigbluebutton_room_path(@room, :mobile => true) })
+end
+
+# Joining a conference with mobile=true will redirect the user to a url
+# using the protocol "bigbluebutton://" and Mechanize will throw an exception
+# because it doesn't know the protocol. So we check the url using this exception.
+When /^clicks in the button to join the conference from a mobile device$/i do
+  begin
+    click_button("Submit")
+  rescue Exception => @exception
+  end
+end
+When /^he should be redirected to the conference using the "bigbluebutton:\/\/" protocol$/i do
+  @exception.message.should match(/bigbluebutton:\/\//)
 end

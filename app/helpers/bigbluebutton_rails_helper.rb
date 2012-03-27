@@ -7,6 +7,11 @@ module BigbluebuttonRailsHelper
     "https://chart.googleapis.com/chart?cht=qr&chs=#{size}&chl=#{content}&choe=UTF-8"
   end
 
+  # TODO: improve it, showing all flashes
+  def bbb_rails_error_explanation
+    if flash.has_key?(:error) and !flash[:error].blank?
+      content_tag(:div, flash[:error], { :id => "error_explanation" })
+    end
+  end
+
 end
-
-

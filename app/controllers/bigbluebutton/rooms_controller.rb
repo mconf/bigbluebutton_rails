@@ -133,12 +133,9 @@ class Bigbluebutton::RoomsController < ApplicationController
       role = bigbluebutton_role(@room)
       if role.nil?
         raise BigbluebuttonRails::RoomAccessDenied.new
-
-      # if there's already a logged user with a role in the room, join through #join
-      elsif !bigbluebutton_user.nil? and role != :password
-        format.html { redirect_to :action => :join }
-
       else
+        @mobile = params[:mobile]
+        @user_role = role
         format.html
       end
 
