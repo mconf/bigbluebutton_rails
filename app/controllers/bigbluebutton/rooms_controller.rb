@@ -163,6 +163,8 @@ class Bigbluebutton::RoomsController < ApplicationController
     unless role.nil? or name.nil? or name.empty?
       join_internal(name, role, :invite)
     else
+      @mobile = params[:mobile]
+      @user_role = role
       flash[:error] = t('bigbluebutton_rails.rooms.errors.auth.failure')
       render :invite, :status => :unauthorized
     end

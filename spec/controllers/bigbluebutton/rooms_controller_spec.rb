@@ -416,7 +416,7 @@ describe Bigbluebutton::RoomsController do
       should redirect_to("http://test.com/attendee/join")
     end
 
-    it "use bigbluebutton_role when the return is diferent of password" do
+    it "uses bigbluebutton_role when the return is not :password" do
       controller.stub(:bigbluebutton_role) { :attendee }
       hash = { :name => "Elftor", :password => nil }
       mocked_api.should_receive(:is_meeting_running?).and_return(true)
@@ -436,6 +436,7 @@ describe Bigbluebutton::RoomsController do
         let(:user_hash) { { :password => room.moderator_password } }
         it { should respond_with(:unauthorized) }
         it { should assign_to(:room).with(room) }
+        it { should assign_to(:user_role).with(:moderator) }
         it { should render_template(:invite) }
         it { should set_the_flash.to(I18n.t('bigbluebutton_rails.rooms.errors.auth.failure')) }
       end
@@ -444,6 +445,7 @@ describe Bigbluebutton::RoomsController do
         let(:user_hash) { { :password => room.moderator_password, :name => "" } }
         it { should respond_with(:unauthorized) }
         it { should assign_to(:room).with(room) }
+        it { should assign_to(:user_role).with(:moderator) }
         it { should render_template(:invite) }
         it { should set_the_flash.to(I18n.t('bigbluebutton_rails.rooms.errors.auth.failure')) }
       end
@@ -451,10 +453,20 @@ describe Bigbluebutton::RoomsController do
       context "when the password is wrong" do
         let(:user_hash) { { :name => "Elftor", :password => nil } }
         it { should respond_with(:unauthorized) }
+        it { should assign_to(:user_role).with(nil) }
         it { should assign_to(:room).with(room) }
         it { should render_template(:invite) }
         it { should set_the_flash.to(I18n.t('bigbluebutton_rails.rooms.errors.auth.failure')) }
       end
+    end
+
+    context "sets @mobile when rendering :invite" do
+      before { controller.should_receive(:bigbluebutton_role).once { :password } }
+      let(:user_hash) { { :password => nil } }
+      before(:each) { post :auth, :id => room.to_param, :user => user_hash, :mobile => true }
+      it { should respond_with(:unauthorized) }
+      it { should assign_to(:mobile).with(true) }
+      it { should render_template(:invite) }
     end
 
     # verify the behaviour of .join_internal
