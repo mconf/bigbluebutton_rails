@@ -33,6 +33,7 @@ Dir["#{ File.dirname(__FILE__)}/factories/*.rb"].each { |f| require f }
 RSpec.configure do |config|
   config.mock_with :rspec
   config.use_transactional_fixtures = true
+  config.include FactoryGirl::Syntax::Methods
 end
 
 # To test generators
