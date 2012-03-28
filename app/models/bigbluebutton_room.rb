@@ -302,11 +302,22 @@ class BigbluebuttonRoom < ActiveRecord::Base
   end
 
   def do_create_meeting
-    opts = { :moderatorPW => self.moderator_password, :attendeePW => self.attendee_password,
-      :welcome => self.welcome_msg, :dialNumber => self.dial_number,
+    msg = (self.welcome_msg.nil? or self.welcome_msg.empty?) ? default_welcome_message : self.welcome_msg
+    opts = {
+      :moderatorPW => self.moderator_password, :attendeePW => self.attendee_password,
+      :welcome => msg, :dialNumber => self.dial_number,
       :logoutURL => self.full_logout_url || self.logout_url,
-      :maxParticipants => self.max_participants, :voiceBridge => self.voice_bridge }
+      :maxParticipants => self.max_participants, :voiceBridge => self.voice_bridge
+    }
     self.server.api.create_meeting(self.name, self.meetingid, opts)
+  end
+
+  # Returns the default welcome message to be shown in a conference in case
+  # there's no message set in this room.
+  # Can be used to easily set a default message format for all rooms.
+  def default_welcome_message
+    I18n.t('bigbluebutton_rails.rooms.default_welcome_msg',
+           :name => self.name, :voice_number => self.voice_bridge)
   end
 
   # if :param wasn't set, sets it as :name downcase and parameterized

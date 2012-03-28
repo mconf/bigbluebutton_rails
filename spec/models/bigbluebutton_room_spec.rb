@@ -302,8 +302,28 @@ describe BigbluebuttonRoom do
           :hasBeenForciblyEnded => "false", :messageKey => {}, :message => {}
         }
       }
+      before { room.update_attributes(:welcome_msg => "Anything") }
 
       it { should respond_to(:send_create) }
+
+      context "calls #default_welcome_msg if welcome_msg is" do
+        before do
+          room.should_receive(:default_welcome_message).and_return("Hi!")
+          mocked_api.should_receive(:create_meeting).
+            with(anything, anything, hash_including(:welcome  => "Hi!"))
+          room.stub(:select_server).and_return(mocked_server)
+          room.server = mocked_server
+        end
+
+        context "nil" do
+          before { room.welcome_msg = nil }
+          it { room.send_create }
+        end
+        context "empty" do
+          before { room.welcome_msg = "" }
+          it { room.send_create }
+        end
+      end
 
       context "sends create_meeting" do
 

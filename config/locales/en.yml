@@ -11,6 +11,7 @@ en:
         param_format: 'you can only use letters, numbers and the symbols "-" or "_" (not at the begin or end)'
         url_format: 'should use the pattern http://<server>/bigbluebutton/api'
     rooms:
+      default_welcome_msg: "Welcome to the conference <b>%{name}!</b><br/><br/>To join the audio conference from a SIP phone, dial %{voice_number}.<br/><br/>If you need help using the conference client <u><a href=\"http://www.bigbluebutton.org/videos/\">check out these videos</a></u>."
       notice:
         create:
           success: "Your room was successfully created."
