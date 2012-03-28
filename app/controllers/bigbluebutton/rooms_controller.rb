@@ -113,16 +113,16 @@ class Bigbluebutton::RoomsController < ApplicationController
 
   # Used by logged users to join public rooms.
   def join
-    role = bigbluebutton_role(@room)
-    if role.nil?
+    @user_role = bigbluebutton_role(@room)
+    if @user_role.nil?
       raise BigbluebuttonRails::RoomAccessDenied.new
 
     # anonymous users or users with the role :password join through #invite
-    elsif bigbluebutton_user.nil? or role == :password
-      redirect_to :action => :invite
+    elsif bigbluebutton_user.nil? or @user_role == :password
+      redirect_to :action => :invite, :mobile => params[:mobile]
 
     else
-      join_internal(bigbluebutton_user.name, role, :join)
+      join_internal(bigbluebutton_user.name, @user_role, :join)
     end
   end
 
@@ -130,12 +130,10 @@ class Bigbluebutton::RoomsController < ApplicationController
   def invite
     respond_with @room do |format|
 
-      role = bigbluebutton_role(@room)
-      if role.nil?
+      @user_role = bigbluebutton_role(@room)
+      if @user_role.nil?
         raise BigbluebuttonRails::RoomAccessDenied.new
       else
-        @mobile = params[:mobile]
-        @user_role = role
         format.html
       end
 
@@ -153,18 +151,16 @@ class Bigbluebutton::RoomsController < ApplicationController
     end
 
     name = bigbluebutton_user.nil? ? params[:user][:name] : bigbluebutton_user.name
-    role = bigbluebutton_role(@room)
-    if role.nil?
+    @user_role = bigbluebutton_role(@room)
+    if @user_role.nil?
       raise BigbluebuttonRails::RoomAccessDenied.new
-    elsif role == :password
-      role = @room.user_role(params[:user])
+    elsif @user_role == :password
+      @user_role = @room.user_role(params[:user])
     end
 
-    unless role.nil? or name.nil? or name.empty?
-      join_internal(name, role, :invite)
+    unless @user_role.nil? or name.nil? or name.empty?
+      join_internal(name, @user_role, :invite)
     else
-      @mobile = params[:mobile]
-      @user_role = role
       flash[:error] = t('bigbluebutton_rails.rooms.errors.auth.failure')
       render :invite, :status => :unauthorized
     end

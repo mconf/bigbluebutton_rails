@@ -238,12 +238,11 @@ describe Bigbluebutton::RoomsController do
 
     context "for an anonymous user" do
       before { controller.stub(:bigbluebutton_user) { nil } }
-      before { controller.stub(:bigbluebutton_role) { :moderator } }
+      before { controller.stub(:bigbluebutton_role) { :password } }
       before(:each) { get :join, :id => room.to_param }
-      it {
-        should respond_with(:redirect)
-        should redirect_to(invite_bigbluebutton_room_path(room))
-      }
+      it { should assign_to(:user_role).with(:password) }
+      it { should respond_with(:redirect) }
+      it { should redirect_to(invite_bigbluebutton_room_path(room)) }
     end
 
     context "when the user's role" do
@@ -253,6 +252,7 @@ describe Bigbluebutton::RoomsController do
         before { controller.stub(:bigbluebutton_role) { :password } }
         before(:each) { get :join, :id => room.to_param }
         it { should respond_with(:redirect) }
+        it { should assign_to(:user_role).with(:password) }
         it { should redirect_to(invite_bigbluebutton_room_path(room)) }
       end
 
@@ -317,13 +317,6 @@ describe Bigbluebutton::RoomsController do
     before { mock_server_and_api }
     let(:user) { Factory.build(:user) }
     before { controller.stub(:bigbluebutton_user).and_return(user) }
-
-    context "when the parameter mobile is set" do
-      before(:each) { get :invite, :id => room.to_param, :mobile => true }
-      it { should respond_with(:success) }
-      it { should render_template(:invite) }
-      it { should assign_to(:mobile).with(true) }
-    end
 
     context "when the user has a role defined" do
       before { controller.stub(:bigbluebutton_role).and_return(:attendee) }
@@ -426,6 +419,7 @@ describe Bigbluebutton::RoomsController do
       post :auth, :id => room.to_param, :user => hash
       should respond_with(:redirect)
       should redirect_to("http://test.com/attendee/join")
+      should assign_to(:user_role).with(:attendee)
     end
 
     context "validates user input and shows error" do
@@ -458,15 +452,6 @@ describe Bigbluebutton::RoomsController do
         it { should render_template(:invite) }
         it { should set_the_flash.to(I18n.t('bigbluebutton_rails.rooms.errors.auth.failure')) }
       end
-    end
-
-    context "sets @mobile when rendering :invite" do
-      before { controller.should_receive(:bigbluebutton_role).once { :password } }
-      let(:user_hash) { { :password => nil } }
-      before(:each) { post :auth, :id => room.to_param, :user => user_hash, :mobile => true }
-      it { should respond_with(:unauthorized) }
-      it { should assign_to(:mobile).with(true) }
-      it { should render_template(:invite) }
     end
 
     # verify the behaviour of .join_internal

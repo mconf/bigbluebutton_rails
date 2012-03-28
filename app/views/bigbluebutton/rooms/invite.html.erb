@@ -33,7 +33,7 @@ $(document).ready(function(){
 <p>Meeting status: <span id="meeting_status">-</span> (<a href="javascript:ajax_request();">refresh</a>)</p>
 
 <div class="bbbrails_invite_device_type">
-  <% if @mobile %>
+  <% if params[:mobile] %>
     In this page you can join the conference from a <b>mobile device</b>.
     To join from a desktop <%= link_to "click here", invite_bigbluebutton_room_path(@room) %>.
   <% else %>
@@ -43,7 +43,7 @@ $(document).ready(function(){
 </div>
 
 <p><%= @room.name %> requires a name and/or password to join:</p>
-<%= form_tag join_bigbluebutton_room_path(@room, :mobile => @mobile) do %>
+<%= form_tag join_bigbluebutton_room_path(@room, :mobile => params[:mobile]) do %>
 
   <div class="field">
     <label for="user_name">Name:</label><br />
