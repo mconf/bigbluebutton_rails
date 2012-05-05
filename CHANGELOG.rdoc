@@ -9,7 +9,7 @@
 * rooms/external now receives a parameter "server_id" to indicate the server in which the external rooms is running. The views were updated.
 * "bigbluebutton_routes :room_matchers" now generates all routes available for rooms, not only a selected set as before.
 
-== 0.1.0
+== 1.0.0
 
 * First version with support to BigBlueButton 0.8:
   * The support is still very basic: you can use the gem with BBB 0.8 but not all features are supported yet, such as pre-upload of slides and anything related to recordings.
