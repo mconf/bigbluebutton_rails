@@ -1,4 +1,4 @@
-== 0.1.1
+== 1.1.0
 
 * Rooms are now decoupled from servers:
   * A room can exist without a server;
