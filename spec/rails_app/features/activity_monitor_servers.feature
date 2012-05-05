@@ -34,8 +34,6 @@ Feature: Monitor the active in the webconference servers
     When he goes to the server activity monitor page
     Then he should see the external room in the list
 
-  # Note: This will only work for bbb servers with removeMeetingWhenEnded=false
-  # See: http://code.google.com/p/bigbluebutton/issues/detail?id=980
   @need-bot
   Scenario: Contains a link to partially refresh the meeting list
     Given an anonymous user
@@ -46,8 +44,6 @@ Feature: Monitor the active in the webconference servers
       And he clicks in the link to update the meeting list
     Then he should see one meeting running and the other meeting not running
 
-  # Note: This will only work for bbb servers with removeMeetingWhenEnded=false
-  #       Also defaultMeetingExpireDuration should be >= 2
   @need-bot @webkit
   Scenario: Partially refresh the meeting list periodically
     Given an anonymous user

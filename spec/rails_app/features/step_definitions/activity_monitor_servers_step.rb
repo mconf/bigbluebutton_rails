@@ -53,6 +53,9 @@ When /^he should see one meeting running and the other meeting not running$/ do
   @rooms.last.fetch_is_running?
   @rooms.last.is_running?.should be_true
 
+  # the ended meeting won't appear in the list in BBB 0.8
+  @rooms.delete(@rooms.first) if @server.version >= "0.8"
+
   check_server_activity_monitor_rooms(@rooms)
 end
 
