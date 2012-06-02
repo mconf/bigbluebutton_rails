@@ -73,6 +73,7 @@ describe Bigbluebutton::RoomsController do
         end
 
         it "catches exception on create_meeting" do
+          mocked_api.should_receive(:"request_headers=").once
           mocked_api.should_receive(:is_meeting_running?).and_return(false)
           mocked_api.should_receive(:create_meeting) { raise bbb_error }
         end

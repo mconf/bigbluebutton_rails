@@ -46,7 +46,7 @@ describe BigbluebuttonRoom do
   # attr_accessors
   [:running, :participant_count, :moderator_count, :attendees,
    :has_been_forcibly_ended, :start_time, :end_time,
-   :external, :server].each do |attr|
+   :external, :server, :request_headers].each do |attr|
     it { should respond_to(attr) }
     it { should respond_to("#{attr}=") }
   end
@@ -118,6 +118,7 @@ describe BigbluebuttonRoom do
       room.start_time.should be_nil
       room.end_time.should be_nil
       room.attendees.should == []
+      room.request_headers.should == {}
     end
 
     context "meetingid" do
@@ -302,7 +303,10 @@ describe BigbluebuttonRoom do
           :hasBeenForciblyEnded => "false", :messageKey => {}, :message => {}
         }
       }
-      before { room.update_attributes(:welcome_msg => "Anything") }
+      before {
+        room.update_attributes(:welcome_msg => "Anything")
+        mocked_api.should_receive(:"request_headers=").any_number_of_times.with({})
+      }
 
       it { should respond_to(:send_create) }
 
@@ -453,6 +457,17 @@ describe BigbluebuttonRoom do
           end
           it { new_room.new_record?.should be_true }
         end
+      end
+
+      context "sets the request headers in the server api" do
+        before do
+          mocked_api.should_receive(:create_meeting).with(anything, anything, anything)
+          room.stub(:select_server).and_return(mocked_server)
+          room.server = mocked_server
+          room.request_headers = { :anything => "anything" }
+          mocked_api.should_receive(:"request_headers=").once.with(room.request_headers)
+        end
+        it { room.send_create }
       end
 
     end # #send_create

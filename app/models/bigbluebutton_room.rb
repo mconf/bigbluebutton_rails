@@ -41,6 +41,11 @@ class BigbluebuttonRoom < ActiveRecord::Base
   # the full logout_url used when logout_url is a relative path
   attr_accessor :full_logout_url
 
+  # HTTP headers that will be passed to the BigBlueButtonApi object to send
+  # in all GET/POST requests to a webconf server.
+  # Currently used to send the client's IP to the load balancer.
+  attr_accessor :request_headers
+
   # Convenience method to access the attribute <tt>running</tt>
   def is_running?
     @running
@@ -272,6 +277,8 @@ class BigbluebuttonRoom < ActiveRecord::Base
     self[:meetingid] ||= random_meetingid
     self[:voice_bridge] ||= random_voice_bridge
 
+    @request_headers = {}
+
     # fetched attributes
     @participant_count = 0
     @moderator_count = 0
@@ -309,6 +316,7 @@ class BigbluebuttonRoom < ActiveRecord::Base
       :logoutURL => self.full_logout_url || self.logout_url,
       :maxParticipants => self.max_participants, :voiceBridge => self.voice_bridge
     }
+    self.server.api.request_headers = @request_headers # we need the client IP
     self.server.api.create_meeting(self.name, self.meetingid, opts)
   end
 

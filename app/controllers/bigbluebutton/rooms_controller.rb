@@ -2,8 +2,12 @@ require 'bigbluebutton_api'
 
 class Bigbluebutton::RoomsController < ApplicationController
 
-  before_filter :find_room, :only => [:show, :edit, :update, :destroy, :join, :invite, :running, :end, :destroy, :end, :join_mobile]
+  before_filter :find_room, :only => [:show, :edit, :update, :destroy, :join, :invite, :running, :end, :destroy, :join_mobile]
   before_filter :find_server, :only => [:external, :external_auth]
+
+  # set headers only in actions that might trigger api calls
+  before_filter :set_request_headers, :only => [:join_mobile, :end, :running, :join, :destroy, :auth, :external_auth]
+
   respond_to :html, :except => :running
   respond_to :json, :only => [:running, :show, :new, :index, :create, :update]
 
@@ -126,7 +130,7 @@ class Bigbluebutton::RoomsController < ApplicationController
     end
   end
 
-  # Used to join private rooms or to invited anonymous users (not logged)
+  # Used to join private rooms or to invite anonymous users (not logged)
   def invite
     respond_with @room do |format|
 
@@ -281,6 +285,12 @@ class Bigbluebutton::RoomsController < ApplicationController
 
   def find_server
     @server = BigbluebuttonServer.find(params[:server_id])
+  end
+
+  def set_request_headers
+    unless @room.nil?
+      @room.request_headers["x-forwarded-for"] = request.remote_ip
+    end
   end
 
   def join_internal(username, role, wait_action)

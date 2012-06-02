@@ -41,6 +41,7 @@ describe Bigbluebutton::RoomsController do
     let(:user) { Factory.build(:user) }
     let(:room) { Factory.create(:bigbluebutton_room) }
     before {
+      controller.should_receive(:set_request_headers)
       mock_server_and_api
       room.server = mocked_server
       controller.stub(:bigbluebutton_user) { user }
@@ -184,6 +185,7 @@ describe Bigbluebutton::RoomsController do
 
   describe "#destroy" do
     before {
+      controller.should_receive(:set_request_headers)
       mock_server_and_api
       # to make sure it calls end_meeting if the meeting is running
       mocked_api.should_receive(:is_meeting_running?).and_return(true)
@@ -214,7 +216,10 @@ describe Bigbluebutton::RoomsController do
 
   describe "#running" do
     # setup basic server and API mocks
-    before { mock_server_and_api }
+    before {
+      controller.should_receive(:set_request_headers)
+      mock_server_and_api
+    }
 
     context "room is running" do
       before { mocked_api.should_receive(:is_meeting_running?).and_return(true) }
@@ -234,7 +239,10 @@ describe Bigbluebutton::RoomsController do
 
   describe "#join" do
     let(:user) { Factory.build(:user) }
-    before { mock_server_and_api }
+    before {
+      controller.should_receive(:set_request_headers)
+      mock_server_and_api
+    }
 
     context "for an anonymous user" do
       before { controller.stub(:bigbluebutton_user) { nil } }
@@ -291,7 +299,10 @@ describe Bigbluebutton::RoomsController do
   end
 
   describe "#end" do
-    before { mock_server_and_api }
+    before {
+      controller.should_receive(:set_request_headers)
+      mock_server_and_api
+    }
 
     context "room is running" do
       before {
@@ -351,6 +362,7 @@ describe Bigbluebutton::RoomsController do
   describe "#auth" do
     let(:user) { Factory.build(:user) }
     before {
+      controller.should_receive(:set_request_headers)
       mock_server_and_api
       controller.stub(:bigbluebutton_user).and_return(nil)
     }
@@ -522,8 +534,15 @@ describe Bigbluebutton::RoomsController do
     let(:meetings) { [ new_room ] }
     before { controller.stub(:bigbluebutton_user).and_return(nil) }
 
+    it "shows error when params[:server_id] is invalid" do
+      lambda {
+        post :external_auth, :meeting => new_room.meetingid, :server_id => nil, :user => user_hash
+      }.should raise_error(ActiveRecord::RecordNotFound)
+    end
+
     context "assigns @server and @room if params[:meeting] and params[:user] and params[:server_id]" do
       before {
+        controller.should_receive(:set_request_headers)
         mock_server_and_api
         mocked_server.should_receive(:fetch_meetings)
         mocked_server.should_receive(:meetings).and_return(meetings)
@@ -534,15 +553,10 @@ describe Bigbluebutton::RoomsController do
       it { should assign_to(:server).with(mocked_server) }
     end
 
-    it "shows error when params[:server_id] is invalid" do
-      lambda {
-        post :external_auth, :meeting => new_room.meetingid, :server_id => nil, :user => user_hash
-      }.should raise_error(ActiveRecord::RecordNotFound)
-    end
-
     context "shows error" do
       let(:http_referer) { bigbluebutton_server_path(mocked_server) }
       before {
+        controller.should_receive(:set_request_headers)
         mock_server_and_api
         request.env["HTTP_REFERER"] = http_referer
       }
@@ -568,6 +582,7 @@ describe Bigbluebutton::RoomsController do
 
     context "with @server and @room assigned" do
       before {
+        controller.should_receive(:set_request_headers)
         mock_server_and_api
         mocked_server.should_receive(:fetch_meetings)
         mocked_server.should_receive(:meetings).and_return(meetings)
@@ -641,6 +656,37 @@ describe Bigbluebutton::RoomsController do
     end
 
   end # #external_auth
+
+  describe "before filter :set_request_headers" do
+    let(:headers) { {"x-forwarded-for" => "0.0.0.0"} }
+    before {
+      mock_server_and_api
+    }
+
+    let(:make_request) {  }
+
+    # uses any action that triggers this before filter
+    # just to make sure the before filter won't break before an action that is not covered
+    # by the find_room filter
+    context "when @room is nil" do
+      before {
+        controller.should_receive(:set_request_headers)
+      }
+      it { post :external_auth, :server_id => mocked_server.id }
+    end
+
+    # uses any action that triggers this before filter
+    context "when @room is valid" do
+      before {
+        BigbluebuttonRoom.stub(:find_by_param).and_return(room)
+        room.should_receive(:fetch_is_running?).and_return(false)
+      }
+      it {
+        get :running, :id => room.to_param
+        room.request_headers.should == headers
+      }
+    end
+  end
 
 end
 
