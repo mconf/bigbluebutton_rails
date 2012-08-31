@@ -167,3 +167,15 @@ Run:
   rake best_practices
 
 And look at the file <tt>rails_best_practices_output.html</tt> to see the tips.
+
+== License
+
+Distributed under The MIT License (MIT). See {LICENSE}[https://github.com/mconf/bigbluebutton_rails/blob/master/LICENSE].
+
+== Contact
+
+This project is developed as part of Mconf (http://mconf.org). Contact:
+
+* Mconf: A scalable opensource multiconference system for web and mobile devices
+* PRAV Labs - UFRGS - Porto Alegre - Brazil
+* http://www.inf.ufrgs.br/prav/gtmconf
