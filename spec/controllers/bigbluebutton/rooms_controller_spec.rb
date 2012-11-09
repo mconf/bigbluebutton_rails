@@ -168,19 +168,6 @@ describe Bigbluebutton::RoomsController do
       end
     end
 
-    context "when meetingid is not specified should copied from name" do
-      before :each do
-        attr = new_room.attributes
-        attr.delete("meetingid")
-        put :update, :id => @room.to_param, :bigbluebutton_room => attr
-      end
-      it {
-        saved = BigbluebuttonRoom.find(@room)
-        new_room.meetingid = new_room.name
-        saved.should have_same_attributes_as(new_room)
-      }
-    end
-
   end
 
   describe "#destroy" do

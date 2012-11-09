@@ -58,11 +58,6 @@ class Bigbluebutton::RoomsController < ApplicationController
   end
 
   def update
-    if !params[:bigbluebutton_room].has_key?(:meetingid) or
-        params[:bigbluebutton_room][:meetingid].blank?
-      params[:bigbluebutton_room][:meetingid] = params[:bigbluebutton_room][:name]
-    end
-
     respond_with @room do |format|
       if @room.update_attributes(params[:bigbluebutton_room])
         message = t('bigbluebutton_rails.rooms.notice.update.success')
@@ -74,8 +69,8 @@ class Bigbluebutton::RoomsController < ApplicationController
       else
         format.html {
           unless params[:redir_url].blank?
-            message = t('bigbluebutton_rails.rooms.notice.update.failure')
-            redirect_to params[:redir_url], :error => message
+            flash[:error] = t('bigbluebutton_rails.rooms.notice.update.failure')
+            redirect_to params[:redir_url]
           else
             render :edit
           end
