@@ -1,7 +1,13 @@
+== current
+
+* Updated most of the dependencies to the latest version.
+* Tested against Rails 3.2 (was Rails 3.0).
+* New option `:as` in the router helpers (more at https://github.com/mconf/bigbluebutton_rails/wiki/How-to%3A-Routes)
+
 == 1.2.0
 
 * Updated ruby to 1.9.3-194.
-* Support to BigBlueButton 0.4 rc1.
+* Support to BigBlueButton 0.8 rc1.
 * Updated bigbluebutton-api-ruby to 1.1.0.
 
 == 1.1.0
