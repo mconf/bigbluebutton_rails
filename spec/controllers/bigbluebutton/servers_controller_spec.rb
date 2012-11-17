@@ -2,7 +2,7 @@ require 'spec_helper'
 
 describe Bigbluebutton::ServersController do
   render_views
-  let(:server) { Factory.create(:bigbluebutton_server) }
+  let(:server) { FactoryGirl.create(:bigbluebutton_server) }
 
   describe "#index" do
     before(:each) { get :index }
@@ -35,7 +35,7 @@ describe Bigbluebutton::ServersController do
   describe "#create" do
     before :each do
       expect {
-        post :create, :bigbluebutton_server => Factory.attributes_for(:bigbluebutton_server)
+        post :create, :bigbluebutton_server => FactoryGirl.attributes_for(:bigbluebutton_server)
       }.to change{ BigbluebuttonServer.count }.by(1)
     end
     it {
@@ -46,7 +46,7 @@ describe Bigbluebutton::ServersController do
   end
 
   describe "#update" do
-    let(:new_server) { Factory.build(:bigbluebutton_server) }
+    let(:new_server) { FactoryGirl.build(:bigbluebutton_server) }
     before :each do
       @server = server
       expect {
@@ -79,8 +79,8 @@ describe Bigbluebutton::ServersController do
   end
 
   describe "#activity" do
-    let(:room1) { Factory.create(:bigbluebutton_room, :server => server) }
-    let(:room2) { Factory.create(:bigbluebutton_room, :server => server) }
+    let(:room1) { FactoryGirl.create(:bigbluebutton_room, :server => server) }
+    let(:room2) { FactoryGirl.create(:bigbluebutton_room, :server => server) }
     before do
       # so we return our mocked server
       BigbluebuttonServer.stub!(:find_by_param).with(server.to_param).
@@ -142,8 +142,8 @@ describe Bigbluebutton::ServersController do
 
   describe "#rooms" do
     before do
-      @room1 = Factory.create(:bigbluebutton_room, :server => server)
-      @room2 = Factory.create(:bigbluebutton_room, :server => server)
+      @room1 = FactoryGirl.create(:bigbluebutton_room, :server => server)
+      @room2 = FactoryGirl.create(:bigbluebutton_room, :server => server)
     end
     before(:each) { get :rooms, :id => server.to_param }
     it { should respond_with(:success) }

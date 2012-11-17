@@ -21,24 +21,24 @@ describe BigbluebuttonServer do
   it { should allow_mass_assignment_of(:param) }
 
   context "uniqueness of" do
-    before(:each) { Factory.create(:bigbluebutton_server) }
+    before(:each) { FactoryGirl.create(:bigbluebutton_server) }
     it { should validate_uniqueness_of(:url) }
     it { should validate_uniqueness_of(:name) }
     it { should validate_uniqueness_of(:param) }
   end
 
   it "has associated rooms" do
-    server = Factory.create(:bigbluebutton_server)
+    server = FactoryGirl.create(:bigbluebutton_server)
     server.rooms.should be_empty
 
-    Factory.create(:bigbluebutton_room, :server => server)
+    FactoryGirl.create(:bigbluebutton_room, :server => server)
     server = BigbluebuttonServer.find(server.id)
     server.rooms.should_not be_empty
   end
 
   it "nullifies associated rooms" do
-    server = Factory.create(:bigbluebutton_server)
-    room = Factory.create(:bigbluebutton_room, :server => server)
+    server = FactoryGirl.create(:bigbluebutton_server)
+    room = FactoryGirl.create(:bigbluebutton_room, :server => server)
     expect {
       expect {
         server.destroy
@@ -55,7 +55,7 @@ describe BigbluebuttonServer do
   context ".to_param" do
     it { should respond_to(:to_param) }
     it {
-      s = Factory.create(:bigbluebutton_server)
+      s = FactoryGirl.create(:bigbluebutton_server)
       s.to_param.should be(s.param)
     }
   end
@@ -99,17 +99,17 @@ describe BigbluebuttonServer do
       @server.param.should == @server.name.downcase.parameterize
     end
     it "nil" do
-      @server = Factory.build(:bigbluebutton_server, :param => nil,
+      @server = FactoryGirl.build(:bigbluebutton_server, :param => nil,
                               :name => "-My Name@ _Is Odd_-")
     end
     it "empty" do
-      @server = Factory.build(:bigbluebutton_server, :param => "",
+      @server = FactoryGirl.build(:bigbluebutton_server, :param => "",
                               :name => "-My Name@ _Is Odd_-")
     end
   end
 
   context "has an api object" do
-    let(:server) { server = Factory.build(:bigbluebutton_server) }
+    let(:server) { server = FactoryGirl.build(:bigbluebutton_server) }
     it { should respond_to(:api) }
     it { server.api.should_not be_nil }
     it {
@@ -144,9 +144,9 @@ describe BigbluebuttonServer do
   it { should respond_to(:meetings) }
 
   context "fetching info from bbb" do
-    let(:server) { Factory.create(:bigbluebutton_server) }
-    let(:room1) { Factory.create(:bigbluebutton_room, :server => server, :meetingid => "room1", :randomize_meetingid => true) }
-    let(:room2) { Factory.create(:bigbluebutton_room, :server => server, :meetingid => "room2", :randomize_meetingid => true) }
+    let(:server) { FactoryGirl.create(:bigbluebutton_server) }
+    let(:room1) { FactoryGirl.create(:bigbluebutton_room, :server => server, :meetingid => "room1", :randomize_meetingid => true) }
+    let(:room2) { FactoryGirl.create(:bigbluebutton_room, :server => server, :meetingid => "room2", :randomize_meetingid => true) }
 
     # the hashes should be exactly as returned by bigbluebutton-api-ruby to be sure we are testing it right
     let(:meetings) {

@@ -6,7 +6,7 @@ describe BigbluebuttonRoom do
     BigbluebuttonRoom.new.should be_a_kind_of(ActiveRecord::Base)
   end
 
-  before { Factory.create(:bigbluebutton_room) }
+  before { FactoryGirl.create(:bigbluebutton_room) }
 
   it { should belong_to(:server) }
   it { should belong_to(:owner) }
@@ -54,7 +54,7 @@ describe BigbluebuttonRoom do
   context ".to_param" do
     it { should respond_to(:to_param) }
     it {
-      r = Factory.create(:bigbluebutton_room)
+      r = FactoryGirl.create(:bigbluebutton_room)
       r.to_param.should be(r.param)
     }
   end
@@ -62,7 +62,7 @@ describe BigbluebuttonRoom do
   it { should respond_to(:is_running?) }
 
   describe "#user_role" do
-    let(:room) { Factory.build(:bigbluebutton_room, :moderator_password => "mod", :attendee_password => "att") }
+    let(:room) { FactoryGirl.build(:bigbluebutton_room, :moderator_password => "mod", :attendee_password => "att") }
     it { should respond_to(:user_role) }
     it { room.user_role({ :password => room.moderator_password }).should == :moderator }
     it { room.user_role({ :password => room.attendee_password }).should == :attendee }
@@ -72,7 +72,7 @@ describe BigbluebuttonRoom do
   end
 
   describe "#instance_variables_compare" do
-    let(:room) { Factory.create(:bigbluebutton_room) }
+    let(:room) { FactoryGirl.create(:bigbluebutton_room) }
     let(:room2) { BigbluebuttonRoom.last }
     it { should respond_to(:instance_variables_compare) }
     it { room.instance_variables_compare(room2).should be_empty }
@@ -88,21 +88,21 @@ describe BigbluebuttonRoom do
   end
 
   describe "#attr_equal?" do
-    before { Factory.create(:bigbluebutton_room) }
+    before { FactoryGirl.create(:bigbluebutton_room) }
     let(:room) { BigbluebuttonRoom.last }
     let(:room2) { BigbluebuttonRoom.last }
     it { should respond_to(:attr_equal?) }
     it { room.attr_equal?(room2).should be_true }
-    it "compares instance variables" do
+    it "differentiates instance variables" do
       room2.running = !room.running
       room.attr_equal?(room2).should be_false
     end
-    it "compares attributes" do
+    it "differentiates attributes" do
       room2.private = !room.private
       room.attr_equal?(room2).should be_false
     end
-    it "compares objects" do
-      room2 = room.clone
+    it "differentiates objects" do
+      room2 = room.dup
       room.attr_equal?(room2).should be_false
     end
   end
@@ -111,13 +111,13 @@ describe BigbluebuttonRoom do
     let(:room) { BigbluebuttonRoom.new }
 
     it "fetched attributes before they are fetched" do
-      room.participant_count.should == 0
-      room.moderator_count.should == 0
+      room.participant_count.should be(0)
+      room.moderator_count.should be(0)
       room.running.should be_false
       room.has_been_forcibly_ended.should be_false
       room.start_time.should be_nil
       room.end_time.should be_nil
-      room.attendees.should == []
+      room.attendees.should eql([])
       room.request_headers.should == {}
     end
 
@@ -138,7 +138,7 @@ describe BigbluebuttonRoom do
         it { room.voice_bridge.should_not be_nil }
         it { room.voice_bridge.should =~ /7[0-9]{4}/ }
         it "tries to randomize 10 times if voice_bridge already exists" do
-          room = Factory.create(:bigbluebutton_room, :voice_bridge => "70000")
+          room = FactoryGirl.create(:bigbluebutton_room, :voice_bridge => "70000")
           BigbluebuttonRoom.stub!(:find_by_voice_bridge).and_return(room)
           SecureRandom.should_receive(:random_number).exactly(10).and_return(0000)
           room2 = BigbluebuttonRoom.new # triggers the random_number calls
@@ -172,18 +172,18 @@ describe BigbluebuttonRoom do
       @room.param.should == @room.name.downcase.parameterize
     end
     it "nil" do
-      @room = Factory.build(:bigbluebutton_room, :param => nil,
+      @room = FactoryGirl.build(:bigbluebutton_room, :param => nil,
                             :name => "-My Name@ _Is Odd_-")
     end
     it "empty" do
-      @room = Factory.build(:bigbluebutton_room, :param => "",
+      @room = FactoryGirl.build(:bigbluebutton_room, :param => "",
                             :name => "-My Name@ _Is Odd_-")
     end
   end
 
   context "using the api" do
     before { mock_server_and_api }
-    let(:room) { Factory.create(:bigbluebutton_room) }
+    let(:room) { FactoryGirl.create(:bigbluebutton_room) }
 
     describe "#fetch_is_running?" do
 
@@ -349,7 +349,7 @@ describe BigbluebuttonRoom do
         end
 
         context "for a new record" do
-          let(:new_room) { Factory.build(:bigbluebutton_room) }
+          let(:new_room) { FactoryGirl.build(:bigbluebutton_room) }
           before do
             hash = hash_including(:moderatorPW => new_room.moderator_password, :attendeePW => new_room.attendee_password,
                                   :welcome  => new_room.welcome_msg, :dialNumber => new_room.dial_number,
@@ -430,7 +430,7 @@ describe BigbluebuttonRoom do
       end
 
       context "selects and requires a server" do
-        let(:another_server) { Factory.create(:bigbluebutton_server) }
+        let(:another_server) { FactoryGirl.create(:bigbluebutton_server) }
 
         context "and saves the result" do
           before do
@@ -445,7 +445,7 @@ describe BigbluebuttonRoom do
         end
 
         context "and does not save when is a new record" do
-          let(:new_room) { Factory.build(:bigbluebutton_room) }
+          let(:new_room) { FactoryGirl.build(:bigbluebutton_room) }
           before do
             new_room.randomize_meetingid = false # take the shortest path inside #send_create
             new_room.should_receive(:select_server).and_return(another_server)
@@ -507,13 +507,13 @@ describe BigbluebuttonRoom do
 
   context "validates passwords" do
     context "for private rooms" do
-      let (:room) { Factory.build(:bigbluebutton_room, :private => true) }
+      let (:room) { FactoryGirl.build(:bigbluebutton_room, :private => true) }
       it { room.should_not allow_value('').for(:moderator_password) }
       it { room.should_not allow_value('').for(:attendee_password) }
     end
 
     context "for public rooms" do
-      let (:room) { Factory.build(:bigbluebutton_room, :private => false) }
+      let (:room) { FactoryGirl.build(:bigbluebutton_room, :private => false) }
       it { room.should allow_value('').for(:moderator_password) }
       it { room.should allow_value('').for(:attendee_password) }
     end
@@ -521,7 +521,7 @@ describe BigbluebuttonRoom do
 
   describe "#add_domain_to_logout_url" do
     context "when logout_url has a path only" do
-      let(:room) { Factory.create(:bigbluebutton_room, :logout_url => '/only/path') }
+      let(:room) { FactoryGirl.create(:bigbluebutton_room, :logout_url => '/only/path') }
       before(:each) { room.add_domain_to_logout_url("HTTP://", "test.com:80") }
       it { room.full_logout_url.should == "http://test.com:80/only/path" }
       it { room.logout_url.should == "/only/path" }
@@ -529,7 +529,7 @@ describe BigbluebuttonRoom do
     end
 
     context "when logout_url has a path and domain" do
-      let(:room) { Factory.create(:bigbluebutton_room, :logout_url => 'other.com/only/path') }
+      let(:room) { FactoryGirl.create(:bigbluebutton_room, :logout_url => 'other.com/only/path') }
       before(:each) { room.add_domain_to_logout_url("HTTP://", "test.com:80") }
       it { room.full_logout_url.should == "http://other.com/only/path" }
       it { room.logout_url.should == "other.com/only/path" }
@@ -537,7 +537,7 @@ describe BigbluebuttonRoom do
     end
 
     context "when logout_url has a path, domain and protocol" do
-      let(:room) { Factory.create(:bigbluebutton_room, :logout_url => 'HTTPS://other.com/only/path') }
+      let(:room) { FactoryGirl.create(:bigbluebutton_room, :logout_url => 'HTTPS://other.com/only/path') }
       before(:each) { room.add_domain_to_logout_url("HTTP://", "test.com:80") }
       it { room.full_logout_url.should == "https://other.com/only/path" }
       it { room.logout_url.should == "HTTPS://other.com/only/path" }
@@ -545,7 +545,7 @@ describe BigbluebuttonRoom do
     end
 
     context "does nothing if logout_url is nil" do
-      let(:room) { Factory.create(:bigbluebutton_room, :logout_url => nil) }
+      let(:room) { FactoryGirl.create(:bigbluebutton_room, :logout_url => nil) }
       before(:each) { room.add_domain_to_logout_url("HTTP://", "test.com:80") }
       it { room.full_logout_url.should be_nil }
       it { room.logout_url.should be_nil }
@@ -554,8 +554,8 @@ describe BigbluebuttonRoom do
   end
 
   describe "#perform_join" do
-    let(:room) { Factory.create(:bigbluebutton_room) }
-    let(:user) { Factory.build(:user) }
+    let(:room) { FactoryGirl.create(:bigbluebutton_room) }
+    let(:user) { FactoryGirl.build(:user) }
 
     context "for an attendee" do
       before { room.should_receive(:fetch_is_running?) }
@@ -602,7 +602,7 @@ describe BigbluebuttonRoom do
       end
 
       context "when the arg 'request' is informed" do
-        let(:request) { stub(ActionController::Request) }
+        let(:request) { stub(ActionDispatch::Request) }
         before {
           request.stub!(:protocol).and_return("HTTP://")
           request.stub!(:host_with_port).and_return("test.com:80")
@@ -626,7 +626,7 @@ describe BigbluebuttonRoom do
   end
 
   describe "#require_server" do
-    let(:room) { Factory.create(:bigbluebutton_room) }
+    let(:room) { FactoryGirl.create(:bigbluebutton_room) }
     it { should respond_to(:require_server) }
 
     context "throws exception when the room has no server associated" do
@@ -639,7 +639,7 @@ describe BigbluebuttonRoom do
     end
 
     context "does nothing if the room has a server associated" do
-      before { room.server = Factory.create(:bigbluebutton_server) }
+      before { room.server = FactoryGirl.create(:bigbluebutton_server) }
       it {
         lambda {
           room.send(:require_server)
@@ -649,16 +649,16 @@ describe BigbluebuttonRoom do
   end
 
   describe "#select_server" do
-    let(:room) { Factory.create(:bigbluebutton_room, :server => nil) }
+    let(:room) { FactoryGirl.create(:bigbluebutton_room, :server => nil) }
     it { should respond_to(:select_server) }
 
     context "selects the server with less rooms" do
       before {
         BigbluebuttonServer.destroy_all
-        s1 = Factory.create(:bigbluebutton_server)
-        @s2 = Factory.create(:bigbluebutton_server)
-        3.times{ Factory.create(:bigbluebutton_room, :server => s1) }
-        2.times{ Factory.create(:bigbluebutton_room, :server => @s2) }
+        s1 = FactoryGirl.create(:bigbluebutton_server)
+        @s2 = FactoryGirl.create(:bigbluebutton_server)
+        3.times{ FactoryGirl.create(:bigbluebutton_room, :server => s1) }
+        2.times{ FactoryGirl.create(:bigbluebutton_room, :server => @s2) }
       }
       it { room.send(:select_server).should == @s2 }
     end

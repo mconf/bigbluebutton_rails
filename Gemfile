@@ -1,4 +1,4 @@
-source 'http://rubygems.org'
+source "http://rubygems.org"
 
 gemspec
 
@@ -11,10 +11,10 @@ end
 
 group :test do
   if RUBY_VERSION >= "1.9"
-    gem 'simplecov', '>= 0.4.0', :require => false
+    gem "simplecov", ">= 0.4.0", :require => false
   end
 
-  gem "cucumber-rails"
+  gem "cucumber-rails", :require => false
   gem "database_cleaner"
   gem "shoulda-matchers"
   gem "factory_girl"
@@ -22,7 +22,7 @@ group :test do
   gem "rspec-rails"
   gem "bbbot-ruby", :git => "git://github.com/mconf/bbbot-ruby.git"
 
-  gem "capybara-mechanize", "0.3.0.rc3" # allows remote requests
+  gem "capybara-mechanize" # for remote requests
   gem "launchy"
   gem "capybara-webkit" # best option found for js
 end

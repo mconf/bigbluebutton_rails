@@ -9,7 +9,7 @@ module BigbluebuttonRailsHelper
 
   # TODO: improve it, showing all flashes
   def bbb_rails_error_explanation
-    if flash.has_key?(:error) and !flash[:error].blank?
+    if flash.key?(:error) and !flash[:error].blank?
       content_tag(:div, flash[:error], { :id => "error_explanation" })
     end
   end

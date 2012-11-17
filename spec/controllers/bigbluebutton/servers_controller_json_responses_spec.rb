@@ -2,14 +2,14 @@ require 'spec_helper'
 
 describe Bigbluebutton::ServersController do
   render_views
-  let(:server) { Factory.create(:bigbluebutton_server) }
+  let(:server) { FactoryGirl.create(:bigbluebutton_server) }
 
   context "json responses for" do
 
     describe "#index" do
       before do
-        @server1 = Factory.create(:bigbluebutton_server)
-        @server2 = Factory.create(:bigbluebutton_server)
+        @server1 = FactoryGirl.create(:bigbluebutton_server)
+        @server2 = FactoryGirl.create(:bigbluebutton_server)
       end
       before(:each) { get :index, :format => 'json' }
       it { should respond_with(:success) }
@@ -32,7 +32,7 @@ describe Bigbluebutton::ServersController do
     end
 
     describe "#create" do
-      let(:new_server) { Factory.build(:bigbluebutton_server) }
+      let(:new_server) { FactoryGirl.build(:bigbluebutton_server) }
 
       context "on success" do
         before(:each) {
@@ -58,7 +58,7 @@ describe Bigbluebutton::ServersController do
     end
 
     describe "#update" do
-      let(:new_server) { Factory.build(:bigbluebutton_server) }
+      let(:new_server) { FactoryGirl.build(:bigbluebutton_server) }
       before { @server = server }
 
       context "on success" do
@@ -93,8 +93,8 @@ describe Bigbluebutton::ServersController do
     end
 
     describe "#activity" do
-      let(:room1) { Factory.create(:bigbluebutton_room, :server => server) }
-      let(:room2) { Factory.create(:bigbluebutton_room, :server => server) }
+      let(:room1) { FactoryGirl.create(:bigbluebutton_room, :server => server) }
+      let(:room2) { FactoryGirl.create(:bigbluebutton_room, :server => server) }
       before do
         # so we return our mocked server
         BigbluebuttonServer.stub!(:find_by_param).with(server.to_param).
@@ -146,8 +146,8 @@ describe Bigbluebutton::ServersController do
 
     describe "#rooms" do
       before do
-        @room1 = Factory.create(:bigbluebutton_room, :server => server)
-        @room2 = Factory.create(:bigbluebutton_room, :server => server)
+        @room1 = FactoryGirl.create(:bigbluebutton_room, :server => server)
+        @room2 = FactoryGirl.create(:bigbluebutton_room, :server => server)
       end
       before(:each) { get :rooms, :id => server.to_param, :format => 'json' }
       it { should respond_with(:success) }

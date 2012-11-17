@@ -5,8 +5,8 @@ describe BigbluebuttonRails do
     BigbluebuttonRails.should be_a(Module)
   end
 
-  it "should have an engine" do
-    BigbluebuttonRails::Engine.new.should be_a_kind_of(Rails::Engine)
+  it "should have be an engine" do
+    BigbluebuttonRails::Engine.should be < Rails::Engine
   end
 
   describe "#value_to_boolean" do

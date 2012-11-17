@@ -1,20 +1,20 @@
 When /^a real server$/i do
-  @server = Factory.create(:bigbluebutton_server_integration)
+  @server = FactoryGirl.create(:bigbluebutton_server_integration)
 end
 
 When /^(\d+) server(s)?$/i do |count, _|
   # Note: these servers are not real, it will NOT be possible to make api requests
   #       for a real server use :bigbluebutton_server_integration
   count.to_i.times do
-    Factory.create(:bigbluebutton_server)
+    FactoryGirl.create(:bigbluebutton_server)
   end
 end
 
 When /^a(n external)? room in this server$/i do |external|
   if external.nil?
-    @room = Factory.create(:bigbluebutton_room, :server => @server)
+    @room = FactoryGirl.create(:bigbluebutton_room, :server => @server)
   else
-    @room = Factory.build(:bigbluebutton_room, :server => @server, :external => true)
+    @room = FactoryGirl.build(:bigbluebutton_room, :server => @server, :external => true)
   end
   @room.send_create
 end
@@ -54,7 +54,7 @@ When /see the (.+) page$/i do |page_name|
 end
 
 When /a user named "(.+)"/i do |username|
-  @user = Factory.build(:user, :name => username)
+  @user = FactoryGirl.build(:user, :name => username)
   ApplicationController.set_user(@user) # This is now the logged user
 end
 

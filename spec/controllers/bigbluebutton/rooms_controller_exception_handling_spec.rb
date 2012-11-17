@@ -8,8 +8,10 @@ describe Bigbluebutton::RoomsController do
     let(:bbb_error_msg) { "err msg" }
     let(:bbb_error) { BigBlueButton::BigBlueButtonException.new(bbb_error_msg) }
     let(:http_referer) { bigbluebutton_server_path(mocked_server) }
-    let(:room) { Factory.create(:bigbluebutton_room, :server => mocked_server) }
+    let(:room) { FactoryGirl.create(:bigbluebutton_room, :server => mocked_server) }
     before {
+      BigbluebuttonRoom.stub(:find_by_param) { room }
+      BigbluebuttonRoom.stub(:find) { room }
       mock_server_and_api
       request.env["HTTP_REFERER"] = http_referer
     }
@@ -59,7 +61,7 @@ describe Bigbluebutton::RoomsController do
     end
 
     describe "#join" do
-      before { controller.stub(:bigbluebutton_user) { Factory.build(:user) } }
+      before { controller.stub(:bigbluebutton_user) { FactoryGirl.build(:user) } }
 
       context "as moderator" do
         before {

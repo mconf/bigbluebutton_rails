@@ -6,8 +6,8 @@ require 'bigbluebutton_api'
 
 describe Bigbluebutton::RoomsController do
   render_views
-  let(:server) { Factory.create(:bigbluebutton_server) }
-  let(:room) { Factory.create(:bigbluebutton_room, :server => server) }
+  let(:server) { FactoryGirl.create(:bigbluebutton_server) }
+  let(:room) { FactoryGirl.create(:bigbluebutton_room, :server => server) }
 
   describe "#index" do
     before(:each) { get :index }
@@ -38,8 +38,8 @@ describe Bigbluebutton::RoomsController do
   end
 
   describe "#join_mobile" do
-    let(:user) { Factory.build(:user) }
-    let(:room) { Factory.create(:bigbluebutton_room) }
+    let(:user) { FactoryGirl.build(:user) }
+    let(:room) { FactoryGirl.create(:bigbluebutton_room) }
     before {
       controller.should_receive(:set_request_headers)
       mock_server_and_api
@@ -60,7 +60,7 @@ describe Bigbluebutton::RoomsController do
   end
 
   describe "#create" do
-    let(:new_room) { Factory.build(:bigbluebutton_room, :server => server) }
+    let(:new_room) { FactoryGirl.build(:bigbluebutton_room, :server => server) }
 
     context "on success" do
       before :each do
@@ -122,7 +122,7 @@ describe Bigbluebutton::RoomsController do
   end
 
   describe "#update" do
-    let(:new_room) { Factory.build(:bigbluebutton_room) }
+    let(:new_room) { FactoryGirl.build(:bigbluebutton_room) }
     before { @room = room } # need this to trigger let(:room) and actually create the room
 
     context "on success" do
@@ -222,7 +222,7 @@ describe Bigbluebutton::RoomsController do
     }
 
     context "room is running" do
-      before { mocked_api.should_receive(:is_meeting_running?).and_return(true) }
+      before { @api_mock.should_receive(:is_meeting_running?).and_return(true) }
       before(:each) { get :running, :id => room.to_param }
       it { should respond_with(:success) }
       it { should respond_with_content_type(:json) }
@@ -238,7 +238,7 @@ describe Bigbluebutton::RoomsController do
   end
 
   describe "#join" do
-    let(:user) { Factory.build(:user) }
+    let(:user) { FactoryGirl.build(:user) }
     before {
       controller.should_receive(:set_request_headers)
       mock_server_and_api
@@ -317,16 +317,20 @@ describe Bigbluebutton::RoomsController do
     end
 
     context "room is not running" do
-      before { mocked_api.should_receive(:is_meeting_running?).and_return(false) }
+      before {
+        request.env["HTTP_REFERER"] = "/any"
+        mocked_api.should_receive(:is_meeting_running?).and_return(false)
+      }
       before(:each) { get :end, :id => room.to_param }
       it { should respond_with(:redirect) }
       it { should set_the_flash.to(I18n.t('bigbluebutton_rails.rooms.notice.end.not_running')) }
+      it { should redirect_to("/any") }
     end
   end
 
   describe "#invite" do
     before { mock_server_and_api }
-    let(:user) { Factory.build(:user) }
+    let(:user) { FactoryGirl.build(:user) }
     before { controller.stub(:bigbluebutton_user).and_return(user) }
 
     context "when the user has a role defined" do
@@ -360,7 +364,7 @@ describe Bigbluebutton::RoomsController do
   end
 
   describe "#auth" do
-    let(:user) { Factory.build(:user) }
+    let(:user) { FactoryGirl.build(:user) }
     before {
       controller.should_receive(:set_request_headers)
       mock_server_and_api
@@ -383,7 +387,11 @@ describe Bigbluebutton::RoomsController do
 
       context "if params[:id] doesn't exists" do
         let(:message) { I18n.t('bigbluebutton_rails.rooms.errors.auth.wrong_params') }
-        before(:each) { post :auth, :id => "inexistent-room-id", :user => user_hash }
+        before(:each) {
+          BigbluebuttonRoom.should_receive(:find_by_param)
+                           .with("inexistent-room-id") { nil }
+          post :auth, :id => "inexistent-room-id", :user => user_hash
+        }
         it { should assign_to(:room).with(nil) }
         it { should respond_with(:redirect) }
         it { should redirect_to(http_referer) }
@@ -478,7 +486,7 @@ describe Bigbluebutton::RoomsController do
   end
 
   describe "#external" do
-    let(:server) { Factory.create(:bigbluebutton_server) }
+    let(:server) { FactoryGirl.create(:bigbluebutton_server) }
     let(:meetingid) { 'my-meeting-id' }
 
     context "on success" do
@@ -646,7 +654,7 @@ describe Bigbluebutton::RoomsController do
       end
 
       it "if there's a user logged, should use his name" do
-        user = Factory.build(:user)
+        user = FactoryGirl.build(:user)
         controller.stub(:bigbluebutton_user).and_return(user)
         new_room.should_receive(:perform_join).with(user.name, anything, anything). # here's the validation
           and_return("http://test.com/attendee/join")
@@ -671,8 +679,10 @@ describe Bigbluebutton::RoomsController do
     context "when @room is nil" do
       before {
         controller.should_receive(:set_request_headers)
+        request.env["HTTP_REFERER"] = "/any"
       }
-      it { post :external_auth, :server_id => mocked_server.id }
+      before(:each) { post :external_auth, :server_id => mocked_server.id }
+      it { should redirect_to("/any") }
     end
 
     # uses any action that triggers this before filter
@@ -689,4 +699,3 @@ describe Bigbluebutton::RoomsController do
   end
 
 end
-

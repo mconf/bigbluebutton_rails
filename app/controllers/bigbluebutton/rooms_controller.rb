@@ -150,7 +150,7 @@ class Bigbluebutton::RoomsController < ApplicationController
     @room = BigbluebuttonRoom.find_by_param(params[:id]) unless params[:id].blank?
     if @room.nil?
       message = t('bigbluebutton_rails.rooms.errors.auth.wrong_params')
-      redirect_to request.referer, :notice => message
+      redirect_to :back, :notice => message
       return
     end
 
@@ -195,7 +195,7 @@ class Bigbluebutton::RoomsController < ApplicationController
 
     unless message.nil?
       @room = nil
-      redirect_to request.referer, :notice => message
+      redirect_to :back, :notice => message
       return
     end
 
@@ -252,7 +252,7 @@ class Bigbluebutton::RoomsController < ApplicationController
       respond_with do |format|
         format.html {
           flash[:error] = message
-          redirect_to request.referer
+          redirect_to :back
         }
         format.json { render :json => message, :status => :error }
       end
@@ -305,7 +305,7 @@ class Bigbluebutton::RoomsController < ApplicationController
       end
     rescue BigBlueButton::BigBlueButtonException => e
       flash[:error] = e.to_s
-      redirect_to request.referer
+      redirect_to :back
     end
   end
 

@@ -2,7 +2,7 @@ When /^(\d+) meetings running in this server$/ do |count|
   msalt = FeaturesConfig.server.has_key?('mobile_salt') ? FeaturesConfig.server['mobile_salt'] : ""
   @rooms = []
   count.to_i.times do |i|
-    room = Factory.create(:bigbluebutton_room, :server => @server)
+    room = FactoryGirl.create(:bigbluebutton_room, :server => @server)
     room.send_create
     BigBlueButtonBot.new(@server.api, room.meetingid, msalt, 1,
                          FeaturesConfig.root['timeout_bot_start'])
@@ -14,7 +14,7 @@ When /^(\d+) meetings recently ended in this server$/ do |count|
   msalt = FeaturesConfig.server.has_key?('mobile_salt') ? FeaturesConfig.server['mobile_salt'] : ""
   @ended_rooms = []
   count.to_i.times do |i|
-    room = Factory.create(:bigbluebutton_room, :server => @server)
+    room = FactoryGirl.create(:bigbluebutton_room, :server => @server)
     room.send_create
     BigBlueButtonBot.new(@server.api, room.meetingid, msalt, 1,
                          FeaturesConfig.root['timeout_bot_start'])

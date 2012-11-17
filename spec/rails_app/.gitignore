@@ -3,3 +3,4 @@ db/migrate/*bigbluebutton_rails.rb
 db/schema.rb
 tmp/
 logs/
+.sass-cache/
