@@ -1,5 +1,5 @@
 = BigBlueButton on Rails
-{<img src="http://travis-ci.org/mconf/bigbluebutton_rails.png" alt="Travis CI Status" />}[http://travis-ci.org/#!/mconf/bigbluebutton_rails]
+{<img src="https://secure.travis-ci.org/mconf/bigbluebutton_rails.png?branch=master" alt="Build Status" />}[https://travis-ci.org/mconf/bigbluebutton_rails]
 
 {BigBlueButton}[http://bigbluebutton.org] integration for Ruby on Rails 3.
 
