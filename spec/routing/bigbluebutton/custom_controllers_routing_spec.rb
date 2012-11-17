@@ -97,7 +97,27 @@ describe ActionController do
       should route_to(:controller => "custom_rooms", :action => "auth", :id => "1")
     }
 
+    context "custom named route helpers" do
+      let(:server) { FactoryGirl.create(:bigbluebutton_server) }
+      let(:room) { FactoryGirl.create(:bigbluebutton_room) }
+
+      it { custom_name_servers_path.should == "/custom/servers" }
+      it { new_custom_name_server_path.should == "/custom/servers/new" }
+      it { edit_custom_name_server_path(server).should == "/custom/servers/#{server.to_param}/edit" }
+      it { custom_name_server_path(server).should == "/custom/servers/#{server.to_param}" }
+      it { activity_custom_name_server_path(server).should == "/custom/servers/#{server.to_param}/activity" }
+
+      it { custom_name_rooms_path.should == "/custom/rooms" }
+      it { new_custom_name_room_path.should == "/custom/rooms/new" }
+      it { edit_custom_name_room_path(room).should == "/custom/rooms/#{room.to_param}/edit" }
+      it { custom_name_room_path(room).should == "/custom/rooms/#{room.to_param}" }
+      it { external_custom_name_rooms_path.should == "/custom/rooms/external" }
+      it { join_custom_name_room_path(room).should == "/custom/rooms/#{room.to_param}/join" }
+      it { join_mobile_custom_name_room_path(room).should == "/custom/rooms/#{room.to_param}/join_mobile" }
+      it { end_custom_name_room_path(room).should == "/custom/rooms/#{room.to_param}/end" }
+      it { invite_custom_name_room_path(room).should == "/custom/rooms/#{room.to_param}/invite" }
+    end
+
   end
 
 end
-

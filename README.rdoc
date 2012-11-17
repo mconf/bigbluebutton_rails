@@ -70,10 +70,9 @@ It will generate the default routes. You need to call it at least once and the r
   /bigbluebutton/rooms
   /bigbluebutton/rooms/my-room/join
 
-You can customize the scope name and also make the routes use custom controllers.
+You can also make the routes use custom controllers:
 
-  bigbluebutton_routes :default, :scope => 'webconference', :controllers => { :servers => 'custom_servers', :rooms => 'custom_rooms' }
-  bigbluebutton_routes :default, :scope => '' # to remove the scope
+  bigbluebutton_routes :default, :controllers => { :servers => 'custom_servers', :rooms => 'custom_rooms' }
 
 You may also want shorter routes to access conference rooms. For that, use the option <tt>room_matchers</tt>:
 

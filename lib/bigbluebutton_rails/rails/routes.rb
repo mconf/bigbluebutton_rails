@@ -72,9 +72,10 @@ module ActionDispatch::Routing
     def bigbluebutton_routes_default(*params) #:nodoc:
       options = params.extract_options!
       options_scope = options.has_key?(:scope) ? options[:scope] : BigbluebuttonRails.routing_scope
+      options_as = options.has_key?(:as) ? options[:as] : options_scope
       BigbluebuttonRails.set_controllers(options[:controllers])
 
-      scope options_scope, :as => options_scope do
+      scope options_scope, :as => options_as do
         resources :servers, :controller => BigbluebuttonRails.controllers[:servers] do
           get :activity, :on => :member
           get :rooms, :on => :member
@@ -106,4 +107,3 @@ module ActionDispatch::Routing
 
   end
 end
-
