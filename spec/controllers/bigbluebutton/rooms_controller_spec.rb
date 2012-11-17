@@ -168,19 +168,6 @@ describe Bigbluebutton::RoomsController do
       end
     end
 
-    context "when meetingid is not specified should copied from name" do
-      before :each do
-        attr = new_room.attributes
-        attr.delete("meetingid")
-        put :update, :id => @room.to_param, :bigbluebutton_room => attr
-      end
-      it {
-        saved = BigbluebuttonRoom.find(@room)
-        new_room.meetingid = new_room.name
-        saved.should have_same_attributes_as(new_room)
-      }
-    end
-
   end
 
   describe "#destroy" do
@@ -450,7 +437,7 @@ describe Bigbluebutton::RoomsController do
         let(:user_hash) { { :password => room.moderator_password } }
         it { should respond_with(:unauthorized) }
         it { should assign_to(:room).with(room) }
-        it { should assign_to(:user_role).with(:moderator) }
+        it { should assign_to(:user_role).with(:password) }
         it { should render_template(:invite) }
         it { should set_the_flash.to(I18n.t('bigbluebutton_rails.rooms.errors.auth.failure')) }
       end
@@ -459,7 +446,7 @@ describe Bigbluebutton::RoomsController do
         let(:user_hash) { { :password => room.moderator_password, :name => "" } }
         it { should respond_with(:unauthorized) }
         it { should assign_to(:room).with(room) }
-        it { should assign_to(:user_role).with(:moderator) }
+        it { should assign_to(:user_role).with(:password) }
         it { should render_template(:invite) }
         it { should set_the_flash.to(I18n.t('bigbluebutton_rails.rooms.errors.auth.failure')) }
       end
@@ -467,7 +454,7 @@ describe Bigbluebutton::RoomsController do
       context "when the password is wrong" do
         let(:user_hash) { { :name => "Elftor", :password => nil } }
         it { should respond_with(:unauthorized) }
-        it { should assign_to(:user_role).with(nil) }
+        it { should assign_to(:user_role).with(:password) }
         it { should assign_to(:room).with(room) }
         it { should render_template(:invite) }
         it { should set_the_flash.to(I18n.t('bigbluebutton_rails.rooms.errors.auth.failure')) }

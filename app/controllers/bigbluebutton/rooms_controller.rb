@@ -58,11 +58,6 @@ class Bigbluebutton::RoomsController < ApplicationController
   end
 
   def update
-    if !params[:bigbluebutton_room].has_key?(:meetingid) or
-        params[:bigbluebutton_room][:meetingid].blank?
-      params[:bigbluebutton_room][:meetingid] = params[:bigbluebutton_room][:name]
-    end
-
     respond_with @room do |format|
       if @room.update_attributes(params[:bigbluebutton_room])
         message = t('bigbluebutton_rails.rooms.notice.update.success')
@@ -74,8 +69,8 @@ class Bigbluebutton::RoomsController < ApplicationController
       else
         format.html {
           unless params[:redir_url].blank?
-            message = t('bigbluebutton_rails.rooms.notice.update.failure')
-            redirect_to params[:redir_url], :error => message
+            flash[:error] = t('bigbluebutton_rails.rooms.notice.update.failure')
+            redirect_to params[:redir_url]
           else
             render :edit
           end
@@ -159,11 +154,13 @@ class Bigbluebutton::RoomsController < ApplicationController
     if @user_role.nil?
       raise BigbluebuttonRails::RoomAccessDenied.new
     elsif @user_role == :password
-      @user_role = @room.user_role(params[:user])
+      role = @room.user_role(params[:user])
+    else
+      role = @user_role
     end
 
-    unless @user_role.nil? or name.nil? or name.empty?
-      join_internal(name, @user_role, :invite)
+    unless role.nil? or name.nil? or name.empty?
+      join_internal(name, role, :invite)
     else
       flash[:error] = t('bigbluebutton_rails.rooms.errors.auth.failure')
       render :invite, :status => :unauthorized
