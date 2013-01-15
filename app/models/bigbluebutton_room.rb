@@ -2,6 +2,10 @@ class BigbluebuttonRoom < ActiveRecord::Base
   belongs_to :server, :class_name => 'BigbluebuttonServer'
   belongs_to :owner, :polymorphic => true
 
+  has_many :recordings,
+           :class_name => 'BigbluebuttonRecording',
+           :foreign_key => 'room_id'
+
   validates :meetingid, :presence => true, :uniqueness => true,
     :length => { :minimum => 1, :maximum => 100 }
   validates :name, :presence => true, :uniqueness => true,

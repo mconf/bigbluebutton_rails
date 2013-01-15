@@ -13,6 +13,8 @@ describe BigbluebuttonRoom do
   it { should_not validate_presence_of(:owner_id) }
   it { should_not validate_presence_of(:owner_type) }
 
+  it { should have_many(:recordings) }
+
   it { should_not validate_presence_of(:server_id) }
   it { should validate_presence_of(:meetingid) }
   it { should validate_presence_of(:voice_bridge) }
