@@ -2,7 +2,7 @@ class Bigbluebutton::ServersController < ApplicationController
 
   respond_to :html
   respond_to :json, :only => [:index, :show, :new, :create, :update, :destroy, :activity, :rooms]
-  before_filter :find_server, :only => [:show, :edit, :activity, :update, :destroy, :rooms]
+  before_filter :find_server, :except => [:index, :new, :create]
 
   def index
     respond_with(@servers = BigbluebuttonServer.all)
@@ -89,6 +89,7 @@ class Bigbluebutton::ServersController < ApplicationController
   end
 
   def destroy
+    # TODO: what if it fails?
     @server.destroy
 
     respond_with do |format|
@@ -101,10 +102,44 @@ class Bigbluebutton::ServersController < ApplicationController
     respond_with(@rooms = @server.rooms)
   end
 
+  def publish_recordings
+    self.publish_unpublish(params[:recordings], true)
+  end
+
+  def unpublish_recordings
+    self.publish_unpublish(params[:recordings], false)
+  end
+
   protected
 
   def find_server
     @server = BigbluebuttonServer.find_by_param(params[:id])
+  end
+
+  def publish_unpublish(ids, publish)
+    begin
+      @server.send_publish_recordings(ids, publish)
+      respond_with do |format|
+        format.html {
+          if publish
+            message = t('bigbluebutton_rails.servers.notice.publish_recordings.success')
+          else
+            message = t('bigbluebutton_rails.servers.notice.unpublish_recordings.success')
+          end
+          # TODO: bigbluebutton_server_recordings_path
+          redirect_to(bigbluebutton_server_path(@server), :notice => message)
+        }
+        format.json { render :json => message }
+      end
+    rescue BigBlueButton::BigBlueButtonException => e
+      respond_with do |format|
+        format.html {
+          flash[:error] = e.to_s
+          redirect_to :back
+        }
+        format.json { render :json => e.to_s, :status => :error }
+      end
+    end
   end
 
 end

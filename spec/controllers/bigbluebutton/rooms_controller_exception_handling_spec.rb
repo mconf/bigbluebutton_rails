@@ -30,7 +30,9 @@ describe Bigbluebutton::RoomsController do
         delete :destroy, :id => room.to_param
         should respond_with(:redirect)
         should redirect_to bigbluebutton_rooms_url
-        should set_the_flash.to(bbb_error_msg)
+
+        msg = I18n.t('bigbluebutton_rails.rooms.notice.destroy.success_with_bbb_error', :error => bbb_error_msg)
+        should set_the_flash.to(msg)
       end
     end
 

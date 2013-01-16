@@ -81,18 +81,17 @@ class Bigbluebutton::RoomsController < ApplicationController
   end
 
   def destroy
-    # TODO Destroy the room record even if end_meeting failed?
-
     error = false
     begin
       @room.fetch_is_running?
       @room.send_end if @room.is_running?
+      message = t('bigbluebutton_rails.rooms.notice.destroy.success')
     rescue BigBlueButton::BigBlueButtonException => e
       error = true
-      message = e.to_s
-      # TODO Better error message: "Room destroyed in DB, but not in BBB..."
+      message = t('bigbluebutton_rails.rooms.notice.destroy.success_with_bbb_error', :error => e.to_s)
     end
 
+    # TODO: what if it fails?
     @room.destroy
 
     respond_with do |format|
@@ -101,12 +100,13 @@ class Bigbluebutton::RoomsController < ApplicationController
         params[:redir_url] ||= bigbluebutton_rooms_url
         redirect_to params[:redir_url]
       }
-      if error
-        format.json { render :json => { :message => message }, :status => :error }
-      else
-        message = t('bigbluebutton_rails.rooms.notice.destroy.success')
-        format.json { render :json => { :message => message } }
-      end
+      format.json {
+        if error
+          render :json => { :message => message }, :status => :error
+        else
+          render :json => { :message => message }
+        end
+      }
     end
   end
 

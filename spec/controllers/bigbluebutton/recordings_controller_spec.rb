@@ -60,16 +60,48 @@ describe Bigbluebutton::RecordingsController do
   end
 
   describe "#destroy" do
-    before :each do
-      @recording = recording
-      expect {
-        delete :destroy, :id => @recording.to_param
-      }.to change{ BigbluebuttonRecording.count }.by(-1)
+    before { mock_server_and_api }
+
+    context "on success" do
+      before(:each) {
+        mocked_server.should_receive(:send_delete_recordings).with(recording.recordingid)
+        expect {
+          delete :destroy, :id => recording.to_param
+        }.to change{ BigbluebuttonRecording.count }.by(-1)
+      }
+      it { should respond_with(:redirect) }
+      it { should redirect_to bigbluebutton_recordings_url }
     end
-    it {
-      should respond_with(:redirect)
-      should redirect_to(bigbluebutton_recordings_path)
-    }
+
+    context "on failure" do
+      let(:bbb_error_msg) { "err msg" }
+      let(:bbb_error) { BigBlueButton::BigBlueButtonException.new(bbb_error_msg) }
+      before {
+        mocked_server.should_receive(:send_delete_recordings) { raise bbb_error }
+      }
+      before(:each) {
+        expect {
+          delete :destroy, :id => recording.to_param
+        }.to change{ BigbluebuttonRecording.count }.by(-1)
+      }
+      it { should respond_with(:redirect) }
+      it { should redirect_to bigbluebutton_recordings_url }
+      it {
+        msg = I18n.t('bigbluebutton_rails.recordings.notice.destroy.success_with_bbb_error', :error => bbb_error_msg)
+        should set_the_flash.to(msg)
+      }
+    end
+
+    context "with :redir_url" do
+      before(:each) {
+        expect {
+          mocked_server.should_receive(:send_delete_recordings)
+          delete :destroy, :id => recording.to_param, :redir_url => bigbluebutton_servers_path
+        }.to change{ BigbluebuttonRecording.count }.by(-1)
+      }
+      it { should respond_with(:redirect) }
+      it { should redirect_to bigbluebutton_servers_path }
+    end
   end
 
 end

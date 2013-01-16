@@ -77,8 +77,12 @@ module ActionDispatch::Routing
 
       scope options_scope, :as => options_as do
         resources :servers, :controller => BigbluebuttonRails.controllers[:servers] do
-          get :activity, :on => :member
-          get :rooms, :on => :member
+          member do
+            get :activity
+            get :rooms
+            post :publish_recordings
+            post :unpublish_recordings
+          end
         end
         resources :recordings,
                   :except => [:new, :create],

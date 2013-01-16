@@ -56,7 +56,7 @@ class BigbluebuttonServer < ActiveRecord::Base
   # Using the response, updates <tt>meetings</tt> with a list of <tt>BigbluebuttonMeeting</tt>
   # objects.
   #
-  # Triggers API call: <tt>get_meetings</tt>.
+  # Triggers API call: <tt>getMeetings</tt>.
   def fetch_meetings
     response = self.api.get_meetings
 
@@ -77,6 +77,26 @@ class BigbluebuttonServer < ActiveRecord::Base
 
       @meetings << room
     end
+  end
+
+  # Sends a call to the BBB server to publish or unpublish a recording or a set
+  # of recordings.
+  # ids:: IDs of the recordings that will be affected. Accepts the same format
+  #       accepted by BigBlueButtonApi::publish_recordings
+  # publish:: Publish or unpublish the recordings?
+  #
+  # Triggers API call: <tt>publishRecordings</tt>.
+  def send_publish_recordings(ids, publish)
+    self.api.publish_recordings(ids, publish)
+  end
+
+  # Sends a call to the BBB server to delete a recording or a set or recordings.
+  # ids:: IDs of the recordings that will be affected. Accepts the same format
+  #       accepted by BigBlueButtonApi::delete_recordings
+  #
+  # Triggers API call: <tt>deleteRecordings</tt>.
+  def send_delete_recordings(ids)
+    self.api.delete_recordings(ids)
   end
 
   def to_param

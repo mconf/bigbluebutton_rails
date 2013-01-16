@@ -190,4 +190,37 @@ describe BigbluebuttonServer do
     it { server.meetings[2].private.should be_true  }
   end
 
+  describe "#send_publish_recordings" do
+    let(:server) { FactoryGirl.create(:bigbluebutton_server) }
+
+    it { should respond_to(:send_publish_recordings) }
+
+    context "sends publish_recordings" do
+      let(:ids) { "id1,id2,id3" }
+      let(:publish) { true }
+      before do
+        @api_mock = mock(BigBlueButton::BigBlueButtonApi)
+        server.stub(:api).and_return(@api_mock)
+        @api_mock.should_receive(:publish_recordings).with(ids, publish).and_return(hash)
+      end
+      it { server.send_publish_recordings(ids, publish) }
+    end
+  end
+
+  describe "#send_delete_recordings" do
+    let(:server) { FactoryGirl.create(:bigbluebutton_server) }
+
+    it { should respond_to(:send_delete_recordings) }
+
+    context "sends delete_recordings" do
+      let(:ids) { "id1,id2,id3" }
+      before do
+        @api_mock = mock(BigBlueButton::BigBlueButtonApi)
+        server.stub(:api).and_return(@api_mock)
+        @api_mock.should_receive(:delete_recordings).with(ids).and_return(hash)
+      end
+      it { server.send_delete_recordings(ids) }
+    end
+  end
+
 end

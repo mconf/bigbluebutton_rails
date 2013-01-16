@@ -70,7 +70,7 @@ class BigbluebuttonRoom < ActiveRecord::Base
   # * <tt>end_time</tt>
   # * <tt>attendees</tt> (array of <tt>BigbluebuttonAttendee</tt>)
   #
-  # Triggers API call: <tt>get_meeting_info</tt>.
+  # Triggers API call: <tt>getMeetingInfo</tt>.
   def fetch_meeting_info
     require_server
 
@@ -94,7 +94,7 @@ class BigbluebuttonRoom < ActiveRecord::Base
 
   # Fetches the BBB server to see if the meeting is running. Sets <tt>running</tt>
   #
-  # Triggers API call: <tt>is_meeting_running</tt>.
+  # Triggers API call: <tt>isMeetingRunning</tt>.
   def fetch_is_running?
     require_server
     @running = self.server.api.is_meeting_running?(self.meetingid)
@@ -102,7 +102,7 @@ class BigbluebuttonRoom < ActiveRecord::Base
 
   # Sends a call to the BBB server to end the meeting.
   #
-  # Triggers API call: <tt>end_meeting</tt>.
+  # Triggers API call: <tt>end</tt>.
   def send_end
     require_server
     self.server.api.end_meeting(self.meetingid, self.moderator_password)
@@ -117,7 +117,7 @@ class BigbluebuttonRoom < ActiveRecord::Base
   # * <tt>attendee_password</tt>
   # * <tt>moderator_password</tt>
   #
-  # Triggers API call: <tt>create_meeting</tt>.
+  # Triggers API call: <tt>create</tt>.
   def send_create
     # updates the server whenever a meeting will be created
     self.server = select_server

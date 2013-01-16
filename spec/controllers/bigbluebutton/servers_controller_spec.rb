@@ -96,7 +96,7 @@ describe Bigbluebutton::ServersController do
     let(:room1) { FactoryGirl.create(:bigbluebutton_room, :server => server) }
     let(:room2) { FactoryGirl.create(:bigbluebutton_room, :server => server) }
     before do
-      # so we return our mocked server
+      # return our mocked server
       BigbluebuttonServer.stub!(:find_by_param).with(server.to_param).
         and_return(server)
     end
@@ -104,7 +104,7 @@ describe Bigbluebutton::ServersController do
     context "standard behaviour" do
 
       before do
-        # mock some methods that trigger BBB API calls
+        # mock some methods that trigger API calls
         server.should_receive(:fetch_meetings).and_return({ })
         server.should_receive(:meetings).at_least(:once).and_return([room1, room2])
         room1.should_receive(:fetch_meeting_info)
@@ -163,6 +163,68 @@ describe Bigbluebutton::ServersController do
     it { should respond_with(:success) }
     it { should render_template(:rooms) }
     it { should assign_to(:rooms).with([@room1, @room2]) }
+  end
+
+  describe "#publish_recordings" do
+    let(:recording_ids) { "id1,id2,id3" }
+    before do
+      # return our mocked server
+      BigbluebuttonServer.stub!(:find_by_param).with(server.to_param).and_return(server)
+    end
+
+    context "on success" do
+      before {
+        server.should_receive(:send_publish_recordings).with(recording_ids, true)
+      }
+      before(:each) { post :publish_recordings, :id => server.to_param, :recordings => recording_ids }
+      it { should respond_with(:redirect) }
+      it { should redirect_to(bigbluebutton_server_path(server)) }
+      it { should set_the_flash.to(I18n.t('bigbluebutton_rails.servers.notice.publish_recordings.success')) }
+    end
+
+    context "on failure" do
+      let(:bbb_error_msg) { "err msg" }
+      let(:bbb_error) { BigBlueButton::BigBlueButtonException.new(bbb_error_msg) }
+      before {
+        request.env["HTTP_REFERER"] = "/any"
+        server.should_receive(:send_publish_recordings) { raise bbb_error }
+      }
+      before(:each) { post :publish_recordings, :id => server.to_param, :recordings => recording_ids }
+      it { should respond_with(:redirect) }
+      it { should redirect_to("/any") }
+      it { should set_the_flash.to(bbb_error_msg) }
+    end
+  end
+
+  describe "#unpublish_recordings" do
+    let(:recording_ids) { "id1,id2,id3" }
+    before do
+      # return our mocked server
+      BigbluebuttonServer.stub!(:find_by_param).with(server.to_param).and_return(server)
+    end
+
+    context "on success" do
+      before {
+        server.should_receive(:send_publish_recordings).with(recording_ids, false)
+      }
+      before(:each) { post :unpublish_recordings, :id => server.to_param, :recordings => recording_ids }
+      it { should respond_with(:redirect) }
+      it { should redirect_to(bigbluebutton_server_path(server)) }
+      it { should set_the_flash.to(I18n.t('bigbluebutton_rails.servers.notice.unpublish_recordings.success')) }
+    end
+
+    context "on failure" do
+      let(:bbb_error_msg) { "err msg" }
+      let(:bbb_error) { BigBlueButton::BigBlueButtonException.new(bbb_error_msg) }
+      before {
+        request.env["HTTP_REFERER"] = "/any"
+        server.should_receive(:send_publish_recordings) { raise bbb_error }
+      }
+      before(:each) { post :unpublish_recordings, :id => server.to_param, :recordings => recording_ids }
+      it { should respond_with(:redirect) }
+      it { should redirect_to("/any") }
+      it { should set_the_flash.to(bbb_error_msg) }
+    end
   end
 
 end

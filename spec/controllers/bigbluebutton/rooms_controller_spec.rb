@@ -177,27 +177,47 @@ describe Bigbluebutton::RoomsController do
       mock_server_and_api
       # to make sure it calls end_meeting if the meeting is running
       mocked_api.should_receive(:is_meeting_running?).and_return(true)
-      mocked_api.should_receive(:end_meeting).with(room.meetingid, room.moderator_password)
     }
 
-    context do
-      before :each do
+    context "on success" do
+      before(:each) {
+        mocked_api.should_receive(:end_meeting).with(room.meetingid, room.moderator_password)
         expect {
           delete :destroy, :id => room.to_param
         }.to change{ BigbluebuttonRoom.count }.by(-1)
-      end
+      }
+      it { should respond_with(:redirect) }
+      it { should redirect_to bigbluebutton_rooms_url }
+    end
+
+    context "on failure" do
+      let(:bbb_error_msg) { "err msg" }
+      let(:bbb_error) { BigBlueButton::BigBlueButtonException.new(bbb_error_msg) }
+      before {
+        mocked_api.should_receive(:end_meeting) { raise bbb_error }
+      }
+      before(:each) {
+        expect {
+          delete :destroy, :id => room.to_param
+        }.to change{ BigbluebuttonRoom.count }.by(-1)
+      }
+      it { should respond_with(:redirect) }
+      it { should redirect_to bigbluebutton_rooms_url }
       it {
-        should respond_with(:redirect)
-        should redirect_to bigbluebutton_rooms_url
+        msg = I18n.t('bigbluebutton_rails.rooms.notice.destroy.success_with_bbb_error', :error => bbb_error_msg)
+        should set_the_flash.to(msg)
       }
     end
 
-    it "with :redir_url" do
-      expect {
-        delete :destroy, :id => room.to_param, :redir_url => bigbluebutton_servers_path
-      }.to change{ BigbluebuttonRoom.count }.by(-1)
-      should respond_with(:redirect)
-      should redirect_to bigbluebutton_servers_path
+    context "with :redir_url" do
+      before(:each) {
+        expect {
+          mocked_api.should_receive(:end_meeting)
+          delete :destroy, :id => room.to_param, :redir_url => bigbluebutton_servers_path
+        }.to change{ BigbluebuttonRoom.count }.by(-1)
+      }
+      it { should respond_with(:redirect) }
+      it { should redirect_to bigbluebutton_servers_path }
     end
 
   end

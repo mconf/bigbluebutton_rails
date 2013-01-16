@@ -32,11 +32,34 @@ class Bigbluebutton::RecordingsController < ApplicationController
   end
 
   def destroy
+    error = false
+    begin
+      if @recording.room and @recording.room.server
+        server = @recording.room.server
+        server.send_delete_recordings(@recording.recordingid)
+      end
+      message = t('bigbluebutton_rails.recordings.notice.destroy.success')
+    rescue BigBlueButton::BigBlueButtonException => e
+      error = true
+      message = t('bigbluebutton_rails.recordings.notice.destroy.success_with_bbb_error', :error => e.to_s)
+    end
+
+    # TODO: what if it fails?
     @recording.destroy
 
     respond_with do |format|
-      format.html { redirect_to(bigbluebutton_recordings_url) }
-      format.json { head :ok }
+      format.html {
+        flash[:error] = message if error
+        params[:redir_url] ||= bigbluebutton_recordings_url
+        redirect_to params[:redir_url]
+      }
+      format.json {
+        if error
+         render :json => { :message => message }, :status => :error
+        else
+          render :json => { :message => message }
+        end
+      }
     end
   end
 
