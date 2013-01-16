@@ -84,8 +84,7 @@ module ActionDispatch::Routing
             post :unpublish_recordings
           end
         end
-        resources :recordings,
-                  :except => [:new, :create],
+        resources :recordings, :except => [:new, :create],
                   :controller => BigbluebuttonRails.controllers[:recordings]
         add_routes_for_rooms
       end
@@ -95,7 +94,7 @@ module ActionDispatch::Routing
       add_routes_for_rooms
     end
 
-    def add_routes_for_rooms
+    def add_routes_for_rooms #:nodoc:
       resources :rooms, :controller => BigbluebuttonRails.controllers[:rooms] do
         collection do
           get :external

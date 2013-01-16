@@ -22,7 +22,9 @@ module BigbluebuttonRails
   @@routing_scope = 'bigbluebutton'
 
   def self.set_controllers(options)
-    @@controllers.merge!(options).slice!(:servers, :rooms) unless options.nil?
+    unless options.nil?
+      @@controllers.merge!(options).slice!(:servers, :rooms, :recordings)
+    end
   end
 
 end

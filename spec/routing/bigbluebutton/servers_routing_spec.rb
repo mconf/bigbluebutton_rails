@@ -43,9 +43,16 @@ describe Bigbluebutton::ServersController do
         {:get => "/#{prefix}/servers/server-1/rooms"}.
         should route_to(:controller => "bigbluebutton/servers", :action => "rooms", :id => "server-1")
       }
+      it {
+        {:post => "/#{prefix}/servers/server-1/publish_recordings"}.
+        should route_to(:controller => "bigbluebutton/servers", :action => "publish_recordings", :id => "server-1")
+      }
+      it {
+        {:post => "/#{prefix}/servers/server-1/unpublish_recordings"}.
+        should route_to(:controller => "bigbluebutton/servers", :action => "unpublish_recordings", :id => "server-1")
+      }
     end
 
   end
 
 end
-

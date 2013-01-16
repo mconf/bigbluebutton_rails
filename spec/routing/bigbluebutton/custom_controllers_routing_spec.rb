@@ -97,9 +97,32 @@ describe ActionController do
       should route_to(:controller => "custom_rooms", :action => "auth", :id => "1")
     }
 
+    # custom controllers - recordings
+    it {
+      {:get => "/custom/recordings"}.
+      should route_to(:controller => "custom_recordings", :action => "index")
+    }
+    it {
+      {:get => "/custom/recordings/1/edit"}.
+      should route_to(:controller => "custom_recordings", :action => "edit", :id => "1")
+    }
+    it {
+      {:get => "/custom/recordings/1"}.
+      should route_to(:controller => "custom_recordings", :action => "show", :id => "1")
+    }
+    it {
+      {:put => "/custom/recordings/1"}.
+      should route_to(:controller => "custom_recordings", :action => "update", :id => "1")
+    }
+    it {
+      {:delete => "/custom/recordings/1"}.
+      should route_to(:controller => "custom_recordings", :action => "destroy", :id => "1")
+    }
+
     context "custom named route helpers" do
       let(:server) { FactoryGirl.create(:bigbluebutton_server) }
       let(:room) { FactoryGirl.create(:bigbluebutton_room) }
+      let(:recording) { FactoryGirl.create(:bigbluebutton_recording) }
 
       it { custom_name_servers_path.should == "/custom/servers" }
       it { new_custom_name_server_path.should == "/custom/servers/new" }
@@ -116,6 +139,10 @@ describe ActionController do
       it { join_mobile_custom_name_room_path(room).should == "/custom/rooms/#{room.to_param}/join_mobile" }
       it { end_custom_name_room_path(room).should == "/custom/rooms/#{room.to_param}/end" }
       it { invite_custom_name_room_path(room).should == "/custom/rooms/#{room.to_param}/invite" }
+
+      it { custom_name_recordings_path.should == "/custom/recordings" }
+      it { edit_custom_name_recording_path(recording).should == "/custom/recordings/#{recording.to_param}/edit" }
+      it { custom_name_recording_path(recording).should == "/custom/recordings/#{recording.to_param}" }
     end
 
   end
