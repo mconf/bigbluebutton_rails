@@ -15,7 +15,7 @@ Feature: Edit webconference rooms
       And a room in this server
     When he goes to the edit room page
       And change the room name to "Anything different"
-      And click in the button to save the room
+      And clicks in the button to save the room
     Then he should be at the show room URL
       And the room name should be "Anything different"
 
@@ -25,9 +25,8 @@ Feature: Edit webconference rooms
       And a room in this server
     When he goes to the edit room page
       And change the room name to ""
-      And click in the button to save the room
+      And clicks in the button to save the room
     Then he should be at the update room URL
       And see the edit room page
       And see 2 errors in the field "bigbluebutton_room[name]"
       And the room name should NOT be "Anything different"
-

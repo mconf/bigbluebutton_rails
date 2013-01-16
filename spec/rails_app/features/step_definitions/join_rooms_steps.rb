@@ -16,9 +16,9 @@ end
 
 When /^he should( not)? join the conference room$/i do |negate|
   if negate.nil?
-    current_url.should match(/\/client\/BigBlueButton\.html/) # BBB client page
+    current_url.should match(/\/client\/MconfLive\.html/) # BBB client page
   else
-    current_url.should_not match(/\/client\/BigBlueButton\.html/)
+    current_url.should_not match(/\/client\/MconfLive\.html/)
   end
 end
 
