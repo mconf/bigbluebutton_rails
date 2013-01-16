@@ -5,6 +5,7 @@ describe Bigbluebutton::ServersController do
   let(:server) { FactoryGirl.create(:bigbluebutton_server) }
 
   describe "#index" do
+    before { 3.times { FactoryGirl.create(:bigbluebutton_server) } }
     before(:each) { get :index }
     it { should respond_with(:success) }
     it { should assign_to(:servers).with(BigbluebuttonServer.all) }
@@ -47,23 +48,36 @@ describe Bigbluebutton::ServersController do
 
   describe "#update" do
     let(:new_server) { FactoryGirl.build(:bigbluebutton_server) }
-    before :each do
-      @server = server
-      expect {
-        put :update, :id => @server.to_param, :bigbluebutton_server => new_server.attributes
-      }.not_to change{ BigbluebuttonServer.count }
+    before { @server = server } # need this to trigger let(:server) and actually create the object
+
+    context "on success" do
+      before :each do
+        expect {
+          put :update, :id => @server.to_param, :bigbluebutton_server => new_server.attributes
+        }.not_to change{ BigbluebuttonServer.count }
+      end
+      it {
+        saved = BigbluebuttonServer.find(@server)
+        should respond_with(:redirect)
+        should redirect_to(bigbluebutton_server_path(saved))
+      }
+      it {
+        saved = BigbluebuttonServer.find(@server)
+        saved.should have_same_attributes_as(new_server)
+      }
+      it { should set_the_flash.to(I18n.t('bigbluebutton_rails.servers.notice.update.success')) }
     end
-    it {
-      saved = BigbluebuttonServer.find(@server)
-      should respond_with(:redirect)
-      should redirect_to(bigbluebutton_server_path(saved))
-    }
-    it {
-      saved = BigbluebuttonServer.find(@server)
-      saved.should have_same_attributes_as(new_server)
-    }
-    it { should set_the_flash.to(I18n.t('bigbluebutton_rails.servers.notice.update.success')) }
-  end
+
+    context "on failure" do
+      before :each do
+        new_server.url = nil # invalid
+        put :update, :id => @server.to_param, :bigbluebutton_server => new_server.attributes
+      end
+      it { should render_template(:edit) }
+      it { should assign_to(:server).with(@server) }
+    end
+ end
+
 
   describe "#destroy" do
     before :each do
@@ -152,4 +166,3 @@ describe Bigbluebutton::ServersController do
   end
 
 end
-

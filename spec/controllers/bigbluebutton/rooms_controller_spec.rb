@@ -10,6 +10,7 @@ describe Bigbluebutton::RoomsController do
   let(:room) { FactoryGirl.create(:bigbluebutton_room, :server => server) }
 
   describe "#index" do
+    before { 3.times { FactoryGirl.create(:bigbluebutton_room) } }
     before(:each) { get :index }
     it { should respond_with(:success) }
     it { should assign_to(:rooms).with(BigbluebuttonRoom.all) }

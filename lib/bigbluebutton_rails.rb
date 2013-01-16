@@ -11,7 +11,11 @@ module BigbluebuttonRails
 
   # Default controllers to generate the routes
   mattr_accessor :controllers
-  @@controllers = { :servers => 'bigbluebutton/servers', :rooms => 'bigbluebutton/rooms' }
+  @@controllers = {
+    :servers => 'bigbluebutton/servers',
+    :rooms => 'bigbluebutton/rooms',
+    :recordings => 'bigbluebutton/recordings'
+  }
 
   # Default scope for routes
   mattr_accessor :routing_scope

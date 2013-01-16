@@ -80,6 +80,9 @@ module ActionDispatch::Routing
           get :activity, :on => :member
           get :rooms, :on => :member
         end
+        resources :recordings,
+                  :except => [:new, :create],
+                  :controller => BigbluebuttonRails.controllers[:recordings]
         add_routes_for_rooms
       end
     end
