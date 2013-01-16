@@ -13,14 +13,14 @@ describe Bigbluebutton::RecordingsController do
   end
 
   describe "#show" do
-    before(:each) { get :show, :id => recording }
+    before(:each) { get :show, :id => recording.to_param }
     it { should respond_with(:success) }
     it { should assign_to(:recording).with(recording) }
     it { should render_template(:show) }
   end
 
   describe "#edit" do
-    before(:each) { get :edit, :id => recording }
+    before(:each) { get :edit, :id => recording.to_param }
     it { should respond_with(:success) }
     it { should assign_to(:recording).with(recording) }
     it { should render_template(:edit) }
@@ -33,7 +33,7 @@ describe Bigbluebutton::RecordingsController do
     context "on success" do
       before :each do
         expect {
-          put :update, :id => @recording, :bigbluebutton_recording => new_recording.attributes
+          put :update, :id => @recording.to_param, :bigbluebutton_recording => new_recording.attributes
         }.not_to change{ BigbluebuttonRecording.count }
       end
       it {
@@ -52,7 +52,7 @@ describe Bigbluebutton::RecordingsController do
     context "on failure" do
       before :each do
         new_recording.recordingid = nil # invalid
-        put :update, :id => @recording, :bigbluebutton_recording => new_recording.attributes
+        put :update, :id => @recording.to_param, :bigbluebutton_recording => new_recording.attributes
       end
       it { should render_template(:edit) }
       it { should assign_to(:recording).with(@recording) }
@@ -63,7 +63,7 @@ describe Bigbluebutton::RecordingsController do
     before :each do
       @recording = recording
       expect {
-        delete :destroy, :id => @recording
+        delete :destroy, :id => @recording.to_param
       }.to change{ BigbluebuttonRecording.count }.by(-1)
     end
     it {

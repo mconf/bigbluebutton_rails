@@ -20,4 +20,8 @@ class BigbluebuttonRecording < ActiveRecord::Base
            :foreign_key => 'recording_id',
            :dependent => :destroy
 
+  def to_param
+    self.recordingid
+  end
+
 end

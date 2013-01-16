@@ -43,8 +43,7 @@ class Bigbluebutton::RecordingsController < ApplicationController
   protected
 
   def find_recording
-    @recording = BigbluebuttonRecording.find(params[:id])
-    # @recording = BigbluebuttonRecording.find_by_param(params[:id])
+    @recording = BigbluebuttonRecording.find_by_recordingid(params[:id])
   end
 
 end
