@@ -191,7 +191,7 @@ describe Bigbluebutton::ServersController do
       }
       before(:each) { post :publish_recordings, :id => server.to_param, :recordings => recording_ids }
       it { should respond_with(:redirect) }
-      it { should redirect_to("/any") }
+      it { should redirect_to(bigbluebutton_server_path(server)) }
       it { should set_the_flash.to(bbb_error_msg) }
     end
   end
@@ -216,15 +216,52 @@ describe Bigbluebutton::ServersController do
     context "on failure" do
       let(:bbb_error_msg) { "err msg" }
       let(:bbb_error) { BigBlueButton::BigBlueButtonException.new(bbb_error_msg) }
-      before {
-        request.env["HTTP_REFERER"] = "/any"
+      before(:each) {
         server.should_receive(:send_publish_recordings) { raise bbb_error }
+        post :unpublish_recordings, :id => server.to_param, :recordings => recording_ids
       }
-      before(:each) { post :unpublish_recordings, :id => server.to_param, :recordings => recording_ids }
       it { should respond_with(:redirect) }
-      it { should redirect_to("/any") }
+      it { should redirect_to(bigbluebutton_server_path(server)) }
       it { should set_the_flash.to(bbb_error_msg) }
     end
   end
+
+  describe "#fetch_recordings" do
+    before do
+      # return our mocked server
+      BigbluebuttonServer.stub!(:find_by_param).with(server.to_param).and_return(server)
+    end
+
+    context "on success" do
+      before(:each) {
+        server.should_receive(:fetch_recordings).with({})
+        post :fetch_recordings, :id => server.to_param
+      }
+      it { should respond_with(:redirect) }
+      it { should redirect_to bigbluebutton_server_path(server) }
+      it { should set_the_flash.to(I18n.t('bigbluebutton_rails.servers.notice.fetch_recordings.success')) }
+    end
+
+    context "on failure" do
+      let(:bbb_error_msg) { "err msg" }
+      let(:bbb_error) { BigBlueButton::BigBlueButtonException.new(bbb_error_msg) }
+      before(:each) {
+        server.should_receive(:fetch_recordings) { raise bbb_error }
+        post :fetch_recordings, :id => server.to_param
+      }
+      it { should respond_with(:redirect) }
+      it { should redirect_to(bigbluebutton_server_path(server)) }
+      it { should set_the_flash.to(bbb_error_msg) }
+    end
+
+    context "when params[:meetings] is set" do
+      let(:meetings) { "m1,m2,m3" }
+      it {
+        server.should_receive(:fetch_recordings).with({ :meetingID => meetings })
+        post :fetch_recordings, :id => server.to_param, :meetings => meetings
+      }
+    end
+ end
+
 
 end

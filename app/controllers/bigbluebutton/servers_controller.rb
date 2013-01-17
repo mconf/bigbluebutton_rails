@@ -110,6 +110,37 @@ class Bigbluebutton::ServersController < ApplicationController
     self.publish_unpublish(params[:recordings], false)
   end
 
+  def fetch_recordings
+    error = false
+    begin
+      filter = {}
+      filter.merge!({ :meetingID => params[:meetings] }) if params[:meetings]
+      @server.fetch_recordings(filter)
+      message = t('bigbluebutton_rails.servers.notice.fetch_recordings.success')
+    rescue BigBlueButton::BigBlueButtonException => e
+      error = true
+      message = e.to_s
+    end
+
+    respond_with do |format|
+      format.html {
+        if error
+          flash[:error] = message
+        else
+          flash[:notice] = message
+        end
+        redirect_to bigbluebutton_server_path(@server)
+      }
+      format.json {
+        if error
+          render :json => { :message => message }, :status => :error
+        else
+          head :ok
+        end
+      }
+    end
+  end
+
   protected
 
   def find_server
@@ -135,7 +166,7 @@ class Bigbluebutton::ServersController < ApplicationController
       respond_with do |format|
         format.html {
           flash[:error] = e.to_s
-          redirect_to :back
+          redirect_to bigbluebutton_server_path(@server)
         }
         format.json { render :json => e.to_s, :status => :error }
       end

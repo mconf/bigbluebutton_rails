@@ -201,7 +201,7 @@ describe BigbluebuttonServer do
       before do
         @api_mock = mock(BigBlueButton::BigBlueButtonApi)
         server.stub(:api).and_return(@api_mock)
-        @api_mock.should_receive(:publish_recordings).with(ids, publish).and_return(hash)
+        @api_mock.should_receive(:publish_recordings).with(ids, publish)
       end
       it { server.send_publish_recordings(ids, publish) }
     end
@@ -217,9 +217,47 @@ describe BigbluebuttonServer do
       before do
         @api_mock = mock(BigBlueButton::BigBlueButtonApi)
         server.stub(:api).and_return(@api_mock)
-        @api_mock.should_receive(:delete_recordings).with(ids).and_return(hash)
+        @api_mock.should_receive(:delete_recordings).with(ids)
       end
       it { server.send_delete_recordings(ids) }
+    end
+  end
+
+  describe "#fetch_recordings" do
+    let(:server) { FactoryGirl.create(:bigbluebutton_server) }
+    let(:params) { { :meetingID => "id1,id2,id3" } }
+    before do
+      @api_mock = mock(BigBlueButton::BigBlueButtonApi)
+      server.stub(:api).and_return(@api_mock)
+    end
+
+    it { should respond_to(:fetch_recordings) }
+
+    context "calls get_recordings" do
+      let(:response) { { :recordings => [1, 2] } }
+      before do
+        @api_mock.should_receive(:get_recordings).with(params).and_return(response)
+        BigbluebuttonRecording.should_receive(:sync).with(response[:recordings])
+      end
+      it { server.fetch_recordings(params) }
+    end
+
+    context "when the response is empty" do
+      let(:response) { { :recordings => [1, 2] } }
+      before do
+        @api_mock.should_receive(:get_recordings).with(params).and_return(nil)
+        BigbluebuttonRecording.should_not_receive(:sync)
+      end
+      it { server.fetch_recordings(params) }
+    end
+
+    context "when the response has no :recordings element" do
+      let(:response) { { :recordings => [1, 2] } }
+      before do
+        @api_mock.should_receive(:get_recordings).with(params).and_return({})
+        BigbluebuttonRecording.should_not_receive(:sync)
+      end
+      it { server.fetch_recordings(params) }
     end
   end
 

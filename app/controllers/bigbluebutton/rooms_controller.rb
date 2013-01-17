@@ -39,8 +39,7 @@ class Bigbluebutton::RoomsController < ApplicationController
       if @room.save
         message = t('bigbluebutton_rails.rooms.notice.create.success')
         format.html {
-          params[:redir_url] ||= bigbluebutton_room_path(@room)
-          redirect_to params[:redir_url], :notice => message
+          redirect_to params[:redir_url] ||= bigbluebutton_room_path(@room), :notice => message
         }
         format.json { render :json => { :message => message }, :status => :created }
       else
@@ -62,8 +61,7 @@ class Bigbluebutton::RoomsController < ApplicationController
       if @room.update_attributes(params[:bigbluebutton_room])
         message = t('bigbluebutton_rails.rooms.notice.update.success')
         format.html {
-          params[:redir_url] ||= bigbluebutton_room_path(@room)
-          redirect_to params[:redir_url], :notice => message
+          redirect_to params[:redir_url] ||= bigbluebutton_room_path(@room), :notice => message
         }
         format.json { render :json => { :message => message } }
       else
@@ -97,8 +95,7 @@ class Bigbluebutton::RoomsController < ApplicationController
     respond_with do |format|
       format.html {
         flash[:error] = message if error
-        params[:redir_url] ||= bigbluebutton_rooms_url
-        redirect_to params[:redir_url]
+        redirect_to params[:redir_url] ||= bigbluebutton_rooms_url
       }
       format.json {
         if error
@@ -172,8 +169,7 @@ class Bigbluebutton::RoomsController < ApplicationController
   def external
     if params[:meeting].blank?
       message = t('bigbluebutton_rails.rooms.errors.external.blank_meetingid')
-      params[:redir_url] ||= bigbluebutton_rooms_path
-      redirect_to params[:redir_url], :notice => message
+      redirect_to params[:redir_url] ||= bigbluebutton_rooms_path, :notice => message
     end
     @room = BigbluebuttonRoom.new(:server => @server, :meetingid => params[:meeting])
   end

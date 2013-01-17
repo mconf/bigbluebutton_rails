@@ -66,6 +66,8 @@ en:
       notice:
         create:
           success: "Your server was successfully created."
+        fetch_recordings:
+          success: "The list of recordings was successfully updated."
         publish_recordings:
           success: "Your recordings were successfully published."
         unpublish_recordings:

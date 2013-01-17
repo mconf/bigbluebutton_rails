@@ -71,6 +71,7 @@ describe Bigbluebutton::RecordingsController do
       }
       it { should respond_with(:redirect) }
       it { should redirect_to bigbluebutton_recordings_url }
+      it { should set_the_flash.to(I18n.t('bigbluebutton_rails.recordings.notice.destroy.success')) }
     end
 
     context "on failure" do

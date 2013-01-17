@@ -82,6 +82,7 @@ module ActionDispatch::Routing
             get :rooms
             post :publish_recordings
             post :unpublish_recordings
+            post :fetch_recordings
           end
         end
         resources :recordings, :except => [:new, :create],

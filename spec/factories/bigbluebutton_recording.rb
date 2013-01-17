@@ -5,7 +5,7 @@ FactoryGirl.define do
     r.meetingid { "meeting" + SecureRandom.hex(8) }
     r.sequence(:name) { |n| "Rec #{n}" }
     r.published true
-    r.start_time { Time.now - 2.hours }
-    r.end_time { Time.now }
+    r.start_time { Time.now - rand(5).hours }
+    r.end_time { Time.now + rand(5).hours }
   end
 end

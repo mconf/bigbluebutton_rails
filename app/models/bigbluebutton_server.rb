@@ -99,6 +99,19 @@ class BigbluebuttonServer < ActiveRecord::Base
     self.api.delete_recordings(ids)
   end
 
+  # Sends a call to the BBB server to get the list of recordings and updates
+  # the database with these recordings.
+  # ids:: meetingIDs of the recordings to be filtered, uses the same format
+  #       accepted by BigBlueButtonApi::get_recordings
+  #
+  # Triggers API call: <tt>getRecordings</tt>.
+  def fetch_recordings(ids)
+    recordings = self.api.get_recordings(ids)
+    if recordings and recordings[:recordings]
+      BigbluebuttonRecording.sync(recordings[:recordings])
+    end
+  end
+
   def to_param
     self.param
   end
