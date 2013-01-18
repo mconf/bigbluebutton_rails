@@ -1,11 +1,11 @@
 class BigbluebuttonRecording < ActiveRecord::Base
   belongs_to :room, :class_name => 'BigbluebuttonRoom'
 
-  validates :recordingid,
+  validates :recordid,
             :presence => true,
             :uniqueness => true
 
-  attr_accessible :recordingid, :meetingid, :name, :published, :start_time,
+  attr_accessible :recordid, :meetingid, :name, :published, :start_time,
                   :end_time
 
   has_many :metadata,
@@ -19,7 +19,7 @@ class BigbluebuttonRecording < ActiveRecord::Base
            :dependent => :destroy
 
   def to_param
-    self.recordingid
+    self.recordid
   end
 
   # Syncs the recordings in the db with the array of recordings in 'recordings',
@@ -29,7 +29,7 @@ class BigbluebuttonRecording < ActiveRecord::Base
   # even if they are not in the array.
   def self.sync(recordings)
     recordings.each do |rec|
-      rec_db = BigbluebuttonRecording.find_by_recordingid(rec[:recordID])
+      rec_db = BigbluebuttonRecording.find_by_recordid(rec[:recordID])
       if rec_db
         self.update_recording(rec_db, rec)
       else
@@ -55,7 +55,7 @@ class BigbluebuttonRecording < ActiveRecord::Base
   # BigBlueButtonApi#get_recordings
   def self.create_recording(data)
     data = adapt_recording_hash(data)
-    data.slice!(:recordingid, :meetingid, :name, :published, :start_time, :end_time)
+    data.slice!(:recordid, :meetingid, :name, :published, :start_time, :end_time)
 
     rec = BigbluebuttonRecording.create data
     rec.save
@@ -65,7 +65,7 @@ class BigbluebuttonRecording < ActiveRecord::Base
   def self.adapt_recording_hash(hash)
     new_hash = hash.clone
     mappings = {
-      :recordID => :recordingid,
+      :recordID => :recordid,
       :meetingID => :meetingid,
       :startTime => :start_time,
       :endTime => :end_time

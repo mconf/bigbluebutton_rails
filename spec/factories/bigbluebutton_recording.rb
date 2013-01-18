@@ -1,7 +1,7 @@
 FactoryGirl.define do
   factory  :bigbluebutton_recording do |r|
     r.association :room, :factory => :bigbluebutton_room
-    r.sequence(:recordingid) { |n| "rec#{n}" + SecureRandom.hex(26) }
+    r.sequence(:recordid) { |n| "rec#{n}" + SecureRandom.hex(26) }
     r.meetingid { "meeting" + SecureRandom.hex(8) }
     r.sequence(:name) { |n| "Rec #{n}" }
     r.published true

@@ -10,10 +10,10 @@ describe BigbluebuttonRecording do
 
   it { should belong_to(:room) }
 
-  it { should validate_presence_of(:recordingid) }
-  it { should validate_uniqueness_of(:recordingid) }
+  it { should validate_presence_of(:recordid) }
+  it { should validate_uniqueness_of(:recordid) }
 
-  [:recordingid, :meetingid, :name, :published, :start_time,
+  [:recordid, :meetingid, :name, :published, :start_time,
    :end_time].each do |attribute|
     it { should allow_mass_assignment_of(attribute) }
   end
@@ -26,7 +26,7 @@ describe BigbluebuttonRecording do
     it { should respond_to(:to_param) }
     it {
       s = FactoryGirl.create(:bigbluebutton_recording)
-      s.to_param.should be(s.recordingid)
+      s.to_param.should be(s.recordid)
     }
   end
 
@@ -64,7 +64,7 @@ describe BigbluebuttonRecording do
         @recording = BigbluebuttonRecording.last
       }
       it { BigbluebuttonRecording.count.should == 1 }
-      it { @recording.recordingid.should == data[0][:recordID] }
+      it { @recording.recordid.should == data[0][:recordID] }
       it { @recording.meetingid.should == data[0][:meetingID] }
       it { @recording.name.should == data[0][:name] }
       it { @recording.published.should == data[0][:published] }
@@ -75,12 +75,12 @@ describe BigbluebuttonRecording do
     context "updates existing recordings" do
       before {
         # pre-existing recording, with same id but the rest is different
-        FactoryGirl.create(:bigbluebutton_recording, :recordingid => data[0][:recordID])
+        FactoryGirl.create(:bigbluebutton_recording, :recordid => data[0][:recordID])
         BigbluebuttonRecording.sync(data)
         @recording = BigbluebuttonRecording.last
       }
       it { BigbluebuttonRecording.count.should == 1 }
-      it { @recording.recordingid.should == data[0][:recordID] }
+      it { @recording.recordid.should == data[0][:recordID] }
       it { @recording.meetingid.should == data[0][:meetingID] }
       it { @recording.name.should == data[0][:name] }
       it { @recording.published.should == data[0][:published] }
@@ -101,10 +101,10 @@ describe BigbluebuttonRecording do
       before {
         # adds 2 more recordings to the input data
         clone = data[0].clone
-        clone[:recordID] = "recordingid-2"
+        clone[:recordID] = "recordid-2"
         data.push(clone)
         clone = data[0].clone
-        clone[:recordID] = "recordingid-3"
+        clone[:recordID] = "recordid-3"
         data.push(clone)
         BigbluebuttonRecording.sync(data)
       }
@@ -118,7 +118,7 @@ describe BigbluebuttonRecording do
     let(:recording) { FactoryGirl.create(:bigbluebutton_recording, old_attrs) }
     let(:data) {
       {
-        :recordID => attrs[:recordingid],
+        :recordID => attrs[:recordid],
         :meetingID => attrs[:meetingid],
         :name => attrs[:name],
         :published => !old_attrs[:published],
@@ -129,7 +129,7 @@ describe BigbluebuttonRecording do
       }
     }
     before { BigbluebuttonRecording.send(:update_recording, recording, data) }
-    it { recording.recordingid.should == old_attrs[:recordingid] } # not updated
+    it { recording.recordid.should == old_attrs[:recordid] } # not updated
     it { recording.meetingid.should == attrs[:meetingid] }
     it { recording.name.should == attrs[:name] }
     it { recording.published.should == !old_attrs[:published] }
@@ -143,7 +143,7 @@ describe BigbluebuttonRecording do
       BigbluebuttonRecording.send(:create_recording, attrs)
       @recording = BigbluebuttonRecording.last
     }
-    it { @recording.recordingid.should == attrs[:recordingid] }
+    it { @recording.recordid.should == attrs[:recordid] }
     it { @recording.meetingid.should == attrs[:meetingid] }
     it { @recording.name.should == attrs[:name] }
     it { @recording.published.should == attrs[:published] }
@@ -162,7 +162,7 @@ describe BigbluebuttonRecording do
       }
     }
     let(:after) {
-      { :recordingid => "anything",
+      { :recordid => "anything",
         :meetingid => "anything",
         :name => "anything",
         :published => "anything",

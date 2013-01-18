@@ -3,7 +3,7 @@ class BigbluebuttonRailsTo130 < ActiveRecord::Migration
   def self.up
     create_table :bigbluebutton_recordings do |t|
       t.integer :room_id
-      t.string :recordingid
+      t.string :recordid
       t.string :meetingid
       t.string :name
       t.boolean :published, :default => false
@@ -12,7 +12,7 @@ class BigbluebuttonRailsTo130 < ActiveRecord::Migration
       t.timestamps
     end
     add_index :bigbluebutton_recordings, :room_id
-    add_index :bigbluebutton_recordings, :recordingid, :unique => true
+    add_index :bigbluebutton_recordings, :recordid, :unique => true
 
     create_table :bigbluebutton_metadata do |t|
       t.integer :recording_id

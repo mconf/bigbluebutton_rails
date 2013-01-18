@@ -36,7 +36,7 @@ class Bigbluebutton::RecordingsController < ApplicationController
     begin
       if @recording.room and @recording.room.server
         server = @recording.room.server
-        server.send_delete_recordings(@recording.recordingid)
+        server.send_delete_recordings(@recording.recordid)
       end
       message = t('bigbluebutton_rails.recordings.notice.destroy.success')
     rescue BigBlueButton::BigBlueButtonException => e
@@ -65,7 +65,7 @@ class Bigbluebutton::RecordingsController < ApplicationController
   protected
 
   def find_recording
-    @recording = BigbluebuttonRecording.find_by_recordingid(params[:id])
+    @recording = BigbluebuttonRecording.find_by_recordid(params[:id])
   end
 
 end

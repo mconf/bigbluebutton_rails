@@ -16,7 +16,7 @@ def mock_server_and_api
   # when testing recordings
   unless not defined?(recording) or recording.nil?
     recording.room.stub(:server) { @server_mock }
-    BigbluebuttonRecording.stub(:find_by_recordingid) { recording }
+    BigbluebuttonRecording.stub(:find_by_recordid) { recording }
     BigbluebuttonRecording.stub(:find) { recording }
   end
 end

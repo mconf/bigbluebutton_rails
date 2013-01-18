@@ -51,7 +51,7 @@ describe Bigbluebutton::RecordingsController do
 
     context "on failure" do
       before :each do
-        new_recording.recordingid = nil # invalid
+        new_recording.recordid = nil # invalid
         put :update, :id => @recording.to_param, :bigbluebutton_recording => new_recording.attributes
       end
       it { should render_template(:edit) }
@@ -64,7 +64,7 @@ describe Bigbluebutton::RecordingsController do
 
     context "on success" do
       before(:each) {
-        mocked_server.should_receive(:send_delete_recordings).with(recording.recordingid)
+        mocked_server.should_receive(:send_delete_recordings).with(recording.recordid)
         expect {
           delete :destroy, :id => recording.to_param
         }.to change{ BigbluebuttonRecording.count }.by(-1)
