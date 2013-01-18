@@ -93,9 +93,20 @@ namespace :spec do
   end
 end
 
+desc 'Generate the best practices report'
 task :best_practices do |app|
   sh "rails_best_practices -f html --spec &>/dev/null"
   puts
   puts "Output will be in the file rails_best_practices_output.html"
   puts
+end
+
+namespace :db do
+
+  desc 'Populate the db in the test app'
+  task :populate do
+    cd "spec/rails_app/"
+    sh "rake db:populate"
+    cd "../.."
+  end
 end
