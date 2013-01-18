@@ -11,11 +11,11 @@ describe BigbluebuttonPlaybackFormat do
   it { should belong_to(:recording) }
   it { should validate_presence_of(:recording_id) }
 
-  it { should_not validate_presence_of(:type) }
+  it { should_not validate_presence_of(:format_type) }
   it { should_not validate_presence_of(:url) }
   it { should_not validate_presence_of(:length) }
 
-  [:recording_id, :type, :url, :length].each do |attribute|
+  [:recording_id, :format_type, :url, :length].each do |attribute|
     it { should allow_mass_assignment_of(attribute) }
   end
 end

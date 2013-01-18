@@ -55,7 +55,7 @@ class CreateBigbluebuttonRails < ActiveRecord::Migration
 
     create_table :bigbluebutton_playback_formats do |t|
       t.integer :recording_id
-      t.string :type
+      t.string :format_type
       t.string :url
       t.integer :length
       t.timestamps

@@ -43,17 +43,17 @@ describe BigbluebuttonRecording do
          :metadata => { :course => "Fundamentals of JAVA",
            :description => "List of recordings",
            :activity => "Evening Class1" },
-         :playback => {
-           :format => {
-             :type => "slides",
-             :url => "http://test-install.blindsidenetworks.com/playback/slides/playback.html?meetingId=125468758b24fa27551e7a065849dda3ce65dd32-1329872486268",
-             :length => 64
-           },
-           :format => {
-             :type => "presentation",
-             :url => "http://test-install.blindsidenetworks.com/presentation/slides/playback.html?meetingId=125468758b24fa27551e7a065849dda3ce65dd32-1329872486268",
-             :length => 64
-           }
+         :playback => { :format =>
+           [
+            { :type => "slides",
+              :url => "http://test-install.blindsidenetworks.com/playback/slides/playback.html?meetingId=125468758b24fa27551e7a065849dda3ce65dd32-1329872486268",
+              :length => 64
+            },
+            { :type => "presentation",
+              :url => "http://test-install.blindsidenetworks.com/presentation/slides/playback.html?meetingId=125468758b24fa27551e7a065849dda3ce65dd32-1329872486268",
+              :length => 64
+            }
+           ]
          }
        }
       ]
@@ -118,71 +118,57 @@ describe BigbluebuttonRecording do
     let(:recording) { FactoryGirl.create(:bigbluebutton_recording, old_attrs) }
     let(:data) {
       {
-        :recordID => attrs[:recordid],
-        :meetingID => attrs[:meetingid],
+        :recordid => attrs[:recordid],
+        :meetingid => attrs[:meetingid],
         :name => attrs[:name],
         :published => !old_attrs[:published],
-        :startTime => attrs[:start_time],
-        :endTime => attrs[:end_time],
+        :start_time => attrs[:start_time],
+        :end_time => attrs[:end_time],
         :metadata => { :any => "any" },
-        :playback => { :format => { :type => "any" } }
+        :playback => { :format => [ { :type => "any1" }, { :type => "any2" } ] }
       }
     }
 
-    context "on success" do
-      before {
-        BigbluebuttonRecording.should_receive(:sync_metadata)
-          .with(recording, { :any => "any" })
-        BigbluebuttonRecording.send(:update_recording, recording, data)
-      }
-      it { recording.recordid.should == old_attrs[:recordid] } # not updated
-      it { recording.meetingid.should == attrs[:meetingid] }
-      it { recording.name.should == attrs[:name] }
-      it { recording.published.should == !old_attrs[:published] }
-      it { recording.end_time.utc.to_i.should == attrs[:end_time].utc.to_i }
-      it { recording.start_time.utc.to_i.should == attrs[:start_time].utc.to_i }
-    end
-
-    it "doesn't update metadata if there's no metadata info" do
-      BigbluebuttonRecording.should_not_receive(:sync_metadata)
-      BigbluebuttonRecording.send(:update_recording, recording, {})
-    end
+    before {
+      BigbluebuttonRecording.should_receive(:sync_additional_data)
+        .with(recording, data)
+      BigbluebuttonRecording.send(:update_recording, recording, data)
+    }
+    it { recording.recordid.should == old_attrs[:recordid] } # not updated
+    it { recording.meetingid.should == attrs[:meetingid] }
+    it { recording.name.should == attrs[:name] }
+    it { recording.published.should == !old_attrs[:published] }
+    it { recording.end_time.utc.to_i.should == attrs[:end_time].utc.to_i }
+    it { recording.start_time.utc.to_i.should == attrs[:start_time].utc.to_i }
   end
 
   describe "#create_recording" do
     let(:attrs) { FactoryGirl.attributes_for(:bigbluebutton_recording) }
     let(:data) {
       {
-        :recordID => attrs[:recordid],
-        :meetingID => attrs[:meetingid],
+        :recordid => attrs[:recordid],
+        :meetingid => attrs[:meetingid],
         :name => attrs[:name],
         :published => attrs[:published],
-        :startTime => attrs[:start_time],
-        :endTime => attrs[:end_time],
+        :start_time => attrs[:start_time],
+        :end_time => attrs[:end_time],
         :metadata => { :any => "any" },
-        :playback => { :format => { :type => "any" } }
+        :playback => { :format => [ { :type => "any1" }, { :type => "any2" } ] }
       }
     }
 
-    context "on success" do
-      before {
-        BigbluebuttonRecording.should_receive(:sync_metadata)
-          .with(anything, { :any => "any" })
-        BigbluebuttonRecording.send(:create_recording, data)
-        @recording = BigbluebuttonRecording.last
-      }
-      it { @recording.recordid.should == attrs[:recordid] }
-      it { @recording.meetingid.should == attrs[:meetingid] }
-      it { @recording.name.should == attrs[:name] }
-      it { @recording.published.should == attrs[:published] }
-      it { @recording.end_time.utc.to_i.should == attrs[:end_time].utc.to_i }
-      it { @recording.start_time.utc.to_i.should == attrs[:start_time].utc.to_i }
-    end
-
-    it "doesn't update metadata if there's no metadata info" do
-      BigbluebuttonRecording.should_not_receive(:sync_metadata)
-      BigbluebuttonRecording.send(:create_recording, { :recordid => "abc"})
-    end
+    before {
+      BigbluebuttonRecording.should_receive(:sync_additional_data)
+        .with(anything, data)
+      BigbluebuttonRecording.send(:create_recording, data)
+      @recording = BigbluebuttonRecording.last
+    }
+    it { @recording.recordid.should == attrs[:recordid] }
+    it { @recording.meetingid.should == attrs[:meetingid] }
+    it { @recording.name.should == attrs[:name] }
+    it { @recording.published.should == attrs[:published] }
+    it { @recording.end_time.utc.to_i.should == attrs[:end_time].utc.to_i }
+    it { @recording.start_time.utc.to_i.should == attrs[:start_time].utc.to_i }
   end
 
   describe "#adapt_recording_hash" do
@@ -208,6 +194,51 @@ describe BigbluebuttonRecording do
     it { should eq(after) }
   end
 
+  describe "#sync_additional_data" do
+    let(:attrs) { FactoryGirl.attributes_for(:bigbluebutton_recording) }
+    let(:recording) { FactoryGirl.create(:bigbluebutton_recording) }
+    let(:data) {
+      {
+        :recordID => attrs[:recordid],
+        :meetingID => attrs[:meetingid],
+        :name => attrs[:name],
+        :published => attrs[:published],
+        :startTime => attrs[:start_time],
+        :endTime => attrs[:end_time],
+        :metadata => { :any => "any" },
+        :playback => { :format => [ { :type => "any1" }, { :type => "any2" } ] }
+      }
+    }
+
+    it "succeds" do
+      BigbluebuttonRecording.should_receive(:sync_metadata)
+        .with(recording, data[:metadata])
+      BigbluebuttonRecording.should_receive(:sync_playback_formats)
+        .with(recording, data[:playback][:format])
+      BigbluebuttonRecording.send(:sync_additional_data, recording, data)
+    end
+
+    it "doesn't update metadata if there's no metadata info" do
+      BigbluebuttonRecording.should_receive(:sync_playback_formats)
+      BigbluebuttonRecording.should_not_receive(:sync_metadata)
+      BigbluebuttonRecording.send(:sync_additional_data, recording, data.except(:metadata))
+    end
+
+    it "doesn't update playback formats if there's no :playback key" do
+      BigbluebuttonRecording.should_receive(:sync_metadata)
+      BigbluebuttonRecording.should_not_receive(:sync_playback_formats)
+      BigbluebuttonRecording.send(:sync_additional_data, recording, data.except(:playback))
+    end
+
+    it "doesn't update playback formats if there's no :format key" do
+      BigbluebuttonRecording.should_receive(:sync_metadata)
+      BigbluebuttonRecording.should_not_receive(:sync_playback_formats)
+      new_data = data.clone
+      new_data[:playback].delete(:format)
+      BigbluebuttonRecording.send(:sync_additional_data, recording, new_data)
+    end
+  end
+
   describe "#sync_metadata" do
     let(:recording) { FactoryGirl.create(:bigbluebutton_recording) }
     let(:metadata) {
@@ -230,6 +261,29 @@ describe BigbluebuttonRecording do
     it { BigbluebuttonMetadata.find_by_name(:course).content.should == metadata[:course] }
     it { BigbluebuttonMetadata.find_by_name(:description).content.should == metadata[:description] }
     it { BigbluebuttonMetadata.find_by_name(:activity).content.should == metadata[:activity] }
+  end
+
+  describe "#sync_playback_formats" do
+    let(:recording) { FactoryGirl.create(:bigbluebutton_recording) }
+    let(:data) {
+      [ { :type => "any1", :url => "url1", :length => 1 },
+        { :type => "any2", :url => "url2", :length => 2 } ]
+    }
+    before {
+      # one playback format to be updated
+      FactoryGirl.create(:bigbluebutton_playback_format,
+                         :recording => recording, :format_type => "any1")
+      # one to be deleted
+      FactoryGirl.create(:bigbluebutton_playback_format, :recording => recording)
+
+      BigbluebuttonRecording.send(:sync_playback_formats, recording, data)
+    }
+    it { BigbluebuttonPlaybackFormat.count.should == 2 }
+    it { BigbluebuttonPlaybackFormat.where(:recording_id => recording.id).count.should == 2 }
+    it { BigbluebuttonPlaybackFormat.find_by_format_type("any1").url.should == "url1" }
+    it { BigbluebuttonPlaybackFormat.find_by_format_type("any1").length.should == 1 }
+    it { BigbluebuttonPlaybackFormat.find_by_format_type("any2").url.should == "url2" }
+    it { BigbluebuttonPlaybackFormat.find_by_format_type("any2").length.should == 2 }
   end
 
 end
