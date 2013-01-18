@@ -128,27 +128,61 @@ describe BigbluebuttonRecording do
         :playback => { :format => { :type => "any" } }
       }
     }
-    before { BigbluebuttonRecording.send(:update_recording, recording, data) }
-    it { recording.recordid.should == old_attrs[:recordid] } # not updated
-    it { recording.meetingid.should == attrs[:meetingid] }
-    it { recording.name.should == attrs[:name] }
-    it { recording.published.should == !old_attrs[:published] }
-    it { recording.end_time.utc.to_i.should == attrs[:end_time].utc.to_i }
-    it { recording.start_time.utc.to_i.should == attrs[:start_time].utc.to_i }
+
+    context "on success" do
+      before {
+        BigbluebuttonRecording.should_receive(:sync_metadata)
+          .with(recording, { :any => "any" })
+        BigbluebuttonRecording.send(:update_recording, recording, data)
+      }
+      it { recording.recordid.should == old_attrs[:recordid] } # not updated
+      it { recording.meetingid.should == attrs[:meetingid] }
+      it { recording.name.should == attrs[:name] }
+      it { recording.published.should == !old_attrs[:published] }
+      it { recording.end_time.utc.to_i.should == attrs[:end_time].utc.to_i }
+      it { recording.start_time.utc.to_i.should == attrs[:start_time].utc.to_i }
+    end
+
+    it "doesn't update metadata if there's no metadata info" do
+      BigbluebuttonRecording.should_not_receive(:sync_metadata)
+      BigbluebuttonRecording.send(:update_recording, recording, {})
+    end
   end
 
   describe "#create_recording" do
     let(:attrs) { FactoryGirl.attributes_for(:bigbluebutton_recording) }
-    before {
-      BigbluebuttonRecording.send(:create_recording, attrs)
-      @recording = BigbluebuttonRecording.last
+    let(:data) {
+      {
+        :recordID => attrs[:recordid],
+        :meetingID => attrs[:meetingid],
+        :name => attrs[:name],
+        :published => attrs[:published],
+        :startTime => attrs[:start_time],
+        :endTime => attrs[:end_time],
+        :metadata => { :any => "any" },
+        :playback => { :format => { :type => "any" } }
+      }
     }
-    it { @recording.recordid.should == attrs[:recordid] }
-    it { @recording.meetingid.should == attrs[:meetingid] }
-    it { @recording.name.should == attrs[:name] }
-    it { @recording.published.should == attrs[:published] }
-    it { @recording.end_time.utc.to_i.should == attrs[:end_time].utc.to_i }
-    it { @recording.start_time.utc.to_i.should == attrs[:start_time].utc.to_i }
+
+    context "on success" do
+      before {
+        BigbluebuttonRecording.should_receive(:sync_metadata)
+          .with(anything, { :any => "any" })
+        BigbluebuttonRecording.send(:create_recording, data)
+        @recording = BigbluebuttonRecording.last
+      }
+      it { @recording.recordid.should == attrs[:recordid] }
+      it { @recording.meetingid.should == attrs[:meetingid] }
+      it { @recording.name.should == attrs[:name] }
+      it { @recording.published.should == attrs[:published] }
+      it { @recording.end_time.utc.to_i.should == attrs[:end_time].utc.to_i }
+      it { @recording.start_time.utc.to_i.should == attrs[:start_time].utc.to_i }
+    end
+
+    it "doesn't update metadata if there's no metadata info" do
+      BigbluebuttonRecording.should_not_receive(:sync_metadata)
+      BigbluebuttonRecording.send(:create_recording, { :recordid => "abc"})
+    end
   end
 
   describe "#adapt_recording_hash" do
@@ -172,6 +206,30 @@ describe BigbluebuttonRecording do
     }
     subject { BigbluebuttonRecording.send(:adapt_recording_hash, before) }
     it { should eq(after) }
+  end
+
+  describe "#sync_metadata" do
+    let(:recording) { FactoryGirl.create(:bigbluebutton_recording) }
+    let(:metadata) {
+      { :course => "Fundamentals of JAVA",
+        :description => "List of recordings",
+        :activity => "Evening Class1"
+      }
+    }
+    before {
+      # one metadata to be updated
+      FactoryGirl.create(:bigbluebutton_metadata,
+                         :recording => recording, :name => "course")
+      # one to be deleted
+      FactoryGirl.create(:bigbluebutton_metadata, :recording => recording)
+
+      BigbluebuttonRecording.send(:sync_metadata, recording, metadata)
+    }
+    it { BigbluebuttonMetadata.count.should == 3 }
+    it { BigbluebuttonMetadata.where(:recording_id => recording.id).count.should == 3 }
+    it { BigbluebuttonMetadata.find_by_name(:course).content.should == metadata[:course] }
+    it { BigbluebuttonMetadata.find_by_name(:description).content.should == metadata[:description] }
+    it { BigbluebuttonMetadata.find_by_name(:activity).content.should == metadata[:activity] }
   end
 
 end
