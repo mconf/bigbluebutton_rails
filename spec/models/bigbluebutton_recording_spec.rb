@@ -14,7 +14,7 @@ describe BigbluebuttonRecording do
   it { should validate_uniqueness_of(:recordid) }
 
   [:recordid, :meetingid, :name, :published, :start_time,
-   :end_time].each do |attribute|
+   :end_time, :room_id].each do |attribute|
     it { should allow_mass_assignment_of(attribute) }
   end
 

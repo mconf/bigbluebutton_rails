@@ -6,7 +6,7 @@ class BigbluebuttonRecording < ActiveRecord::Base
             :uniqueness => true
 
   attr_accessible :recordid, :meetingid, :name, :published, :start_time,
-                  :end_time
+                  :end_time, :room_id
 
   has_many :metadata,
            :class_name => 'BigbluebuttonMetadata',

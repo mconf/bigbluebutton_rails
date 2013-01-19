@@ -1,0 +1,59 @@
+<h1><%= BigbluebuttonRecording.model_name.human %>:</h1>
+
+<p id="notice"><%= notice %></p>
+
+<p>
+  <b><%= BigbluebuttonRecording.human_attribute_name(:recordid) %>:</b>
+  <%= @recording.recordid %>
+</p>
+
+<p>
+  <b><%= BigbluebuttonRecording.human_attribute_name(:name) %>:</b>
+  <%= @recording.name %>
+</p>
+
+<p>
+  <b><%= BigbluebuttonRecording.human_attribute_name(:room_id) %>:</b>
+  <%= @recording.room_id %>
+</p>
+
+<p>
+  <b><%= BigbluebuttonRecording.human_attribute_name(:meetingid) %>:</b>
+  <%= @recording.meetingid %>
+</p>
+
+<p>
+  <b><%= BigbluebuttonRecording.human_attribute_name(:published) %>:</b>
+  <%= @recording.published %>
+</p>
+
+<p>
+  <b><%= BigbluebuttonRecording.human_attribute_name(:start_time) %>:</b>
+  <%= @recording.start_time %>
+</p>
+
+<p>
+  <b><%= BigbluebuttonRecording.human_attribute_name(:end_time) %>:</b>
+  <%= @recording.end_time %>
+</p>
+
+<p>
+  <b><%= BigbluebuttonRecording.human_attribute_name(:metadata) %>:</b>
+  <% @recording.metadata.each do |metadata| %>
+    <%= metadata.attributes.except("id", "recording_id", "updated_at", "created_at") %>,
+  <% end %>
+</p>
+
+<p>
+  <b><%= BigbluebuttonRecording.human_attribute_name(:playback_formats) %>:</b>
+  <% @recording.playback_formats.each do |format| %>
+    <%= format.attributes.except("id", "recording_id", "updated_at", "created_at") %>,
+  <% end %>
+</p>
+
+<p>
+  <span>Access:</span>
+  <%= link_to 'Edit', edit_bigbluebutton_recording_path(@recording) %> |
+  <%= link_to 'Destroy', bigbluebutton_recording_path(@recording), :confirm => 'Are you sure?', :method => :delete %> |
+  <%= link_to 'Back', bigbluebutton_recordings_path %>
+</p>

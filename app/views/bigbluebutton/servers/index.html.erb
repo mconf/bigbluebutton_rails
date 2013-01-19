@@ -1,7 +1,8 @@
 <h1>Listing <%= BigbluebuttonServer.model_name.human %>:</h1>
 
 <div id="bbbrails_servers_links">
-  <%= link_to('View rooms list', bigbluebutton_rooms_path) %><br/>
+  <%= link_to('View room list', bigbluebutton_rooms_path) %><br/>
+  <%= link_to('View recording list', bigbluebutton_recordings_path) %><br/>
   <%= link_to('New server', new_bigbluebutton_server_path) %>
 </div>
 
@@ -20,7 +21,11 @@
         <%= link_to 'Edit', edit_bigbluebutton_server_path(server) %> |
         <%= link_to 'Destroy', bigbluebutton_server_path(server), :confirm => 'Are you sure?', :method => :delete %>
       </div>
+      <div><label>Recordings</label>
+        <%= link_to 'Fetch recordings', fetch_recordings_bigbluebutton_server_path(server), :confirm => 'Are you sure?', :method => :post %> |
+        <%= link_to 'Publish recordings', publish_recordings_bigbluebutton_server_path(server), :confirm => 'Are you sure?', :method => :post %> |
+        <%= link_to 'Unpublish recordings', unpublish_recordings_bigbluebutton_server_path(server), :confirm => 'Are you sure?', :method => :post %>
+      </div>
     </li>
   <% end %>
 </ul>
-
