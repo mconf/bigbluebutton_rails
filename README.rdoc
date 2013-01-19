@@ -139,6 +139,7 @@ Prepare the rails_app used for tests:
 
   rake setup:rails_app
   rake setup:rails_app:db SERVER=my-server # select a server you defined in 'config.yml'
+  rake setup:rails_app:db:populate         # to create fake data
 
 Run the tests:
 

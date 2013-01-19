@@ -50,6 +50,13 @@ namespace :setup do
       sh "rake db:test:prepare RAILS_ENV=test"
       cd File.dirname(__FILE__)
     end
+
+    desc 'Populate the db in the test app'
+    task :populate do
+      cd "spec/rails_app/"
+      sh "rake db:populate"
+      cd "../.."
+    end
   end
 end
 
@@ -99,14 +106,4 @@ task :best_practices do |app|
   puts
   puts "Output will be in the file rails_best_practices_output.html"
   puts
-end
-
-namespace :db do
-
-  desc 'Populate the db in the test app'
-  task :populate do
-    cd "spec/rails_app/"
-    sh "rake db:populate"
-    cd "../.."
-  end
 end
