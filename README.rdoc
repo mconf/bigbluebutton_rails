@@ -56,9 +56,14 @@ After installing, you need to run the generator:
 
   rails generate bigbluebutton_rails:install
 
-This generator will create a migration file, a language file and some additional resources. These additional files are basically the JQuery library,
-a stylesheet and some images. They are only used in the *views* provided by this gem, so you may or may not use them. You can easily generate the views
-and modify them to use other resources.
+This generator will create a migration file and a language file.
+
+By default the gem will use the views it provides, <b>but it is strongly recommended that you adapt them for your needs!</b>
+The views provided are just an example of how they can be implemented in your application and
+they depend on jQuery (use the gem <tt>jquery-rails</tt>) and a css file also provided by this gem.
+You can easily generate the views and the css file in your application to later customize them with:
+
+  rails generate bigbluebutton_rails:views
 
 To now more about the generators see {How to: Generators}[https://github.com/mconf/bigbluebutton_rails/wiki/How-to:-Generators]
 
@@ -120,6 +125,11 @@ and you can reimplement them in your application controller to change their beha
     end
 
   end
+
+
+=== Example application
+
+If you need more help to setup the gem, check out the test application at <tt>spec/rails_app/</tt>!
 
 
 ==== See also
