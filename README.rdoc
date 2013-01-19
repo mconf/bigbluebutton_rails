@@ -133,7 +133,7 @@ Fork this repository, clone your fork and start by installing the dependencies:
 
   bundle install
 
-Save <tt>spec/rails_app/features/config.yml.example</tt> as <tt>config.yml</tt> and edit it to set values for an existent BigBlueButton server. You will need it to run the integration tests. For more information see the page {Testing}[https://github.com/mconf/bigbluebutton_rails/wiki/Testing] in our wiki.
+Save <tt>spec/rails_app/features/config.yml.example</tt> as <tt>spec/rails_app/features/config.yml</tt> and edit it to set values for an existent BigBlueButton server. You will need it to run the integration tests. For more information see the page {Testing}[https://github.com/mconf/bigbluebutton_rails/wiki/Testing] in our wiki.
 
 Prepare the rails_app used for tests:
 
@@ -151,6 +151,11 @@ Or simply:
   rake SERVER=my-server
 
 Note: If you don't set the SERVER variable, the first server in <tt>config.yml</tt> will be used.
+
+You can also start the test application and navigate to <tt>localhost:3000</tt> to check it:
+
+  cd spec/rails_app/
+  rails server
 
 Develop. :)
 

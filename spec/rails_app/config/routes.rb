@@ -18,4 +18,6 @@ RailsApp::Application.routes.draw do
                       :recordings => "custom_recordings" },
     :as => "custom_name"
 
+  root :to => "frontpage#show"
+
 end
