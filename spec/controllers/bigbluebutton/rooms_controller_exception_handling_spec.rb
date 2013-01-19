@@ -5,7 +5,7 @@ describe Bigbluebutton::RoomsController do
 
   # make sure that the exceptions thrown by bigbluebutton-api-ruby are treated by the controller
   context "exception handling" do
-    let(:bbb_error_msg) { "err msg" }
+    let(:bbb_error_msg) { SecureRandom.hex(250) }
     let(:bbb_error) { BigBlueButton::BigBlueButtonException.new(bbb_error_msg) }
     let(:http_referer) { bigbluebutton_server_path(mocked_server) }
     let(:room) { FactoryGirl.create(:bigbluebutton_room, :server => mocked_server) }
@@ -31,7 +31,7 @@ describe Bigbluebutton::RoomsController do
         should respond_with(:redirect)
         should redirect_to bigbluebutton_rooms_url
 
-        msg = I18n.t('bigbluebutton_rails.rooms.notice.destroy.success_with_bbb_error', :error => bbb_error_msg)
+        msg = I18n.t('bigbluebutton_rails.rooms.notice.destroy.success_with_bbb_error', :error => bbb_error_msg[0..200])
         should set_the_flash.to(msg)
       end
     end
@@ -40,8 +40,8 @@ describe Bigbluebutton::RoomsController do
       before { mocked_api.should_receive(:is_meeting_running?) { raise bbb_error } }
       before(:each) { get :running, :id => room.to_param }
       it { should respond_with(:success) }
-      it { response.body.should == build_running_json(false, bbb_error_msg) }
-      it { should set_the_flash.to(bbb_error_msg) }
+      it { response.body.should == build_running_json(false, bbb_error_msg[0..200]) }
+      it { should set_the_flash.to(bbb_error_msg[0..200]) }
     end
 
     describe "#end" do
@@ -58,7 +58,7 @@ describe Bigbluebutton::RoomsController do
         get :end, :id => room.to_param
         should respond_with(:redirect)
         should redirect_to(http_referer)
-        should set_the_flash.to(bbb_error_msg)
+        should set_the_flash.to(bbb_error_msg[0..200])
       end
     end
 
@@ -91,7 +91,7 @@ describe Bigbluebutton::RoomsController do
           get :join, :id => room.to_param
           should respond_with(:redirect)
           should redirect_to(http_referer)
-          should set_the_flash.to(bbb_error_msg)
+          should set_the_flash.to(bbb_error_msg[0..200])
         end
 
       end
@@ -112,7 +112,7 @@ describe Bigbluebutton::RoomsController do
           get :join, :id => room.to_param
           should respond_with(:redirect)
           should redirect_to(http_referer)
-          should set_the_flash.to(bbb_error_msg)
+          should set_the_flash.to(bbb_error_msg[0..200])
         end
       end
 

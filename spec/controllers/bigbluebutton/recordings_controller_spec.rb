@@ -51,7 +51,8 @@ describe Bigbluebutton::RecordingsController do
 
     context "on failure" do
       before :each do
-        new_recording.recordid = nil # invalid
+        BigbluebuttonRecording.should_receive(:find_by_recordid).and_return(@recording)
+        @recording.should_receive(:update_attributes).and_return(false)
         put :update, :id => @recording.to_param, :bigbluebutton_recording => new_recording.attributes
       end
       it { should render_template(:edit) }
@@ -75,7 +76,7 @@ describe Bigbluebutton::RecordingsController do
     end
 
     context "on failure" do
-      let(:bbb_error_msg) { "err msg" }
+      let(:bbb_error_msg) { SecureRandom.hex(250) }
       let(:bbb_error) { BigBlueButton::BigBlueButtonException.new(bbb_error_msg) }
       before {
         mocked_server.should_receive(:send_delete_recordings) { raise bbb_error }
@@ -88,7 +89,7 @@ describe Bigbluebutton::RecordingsController do
       it { should respond_with(:redirect) }
       it { should redirect_to bigbluebutton_recordings_url }
       it {
-        msg = I18n.t('bigbluebutton_rails.recordings.notice.destroy.success_with_bbb_error', :error => bbb_error_msg)
+        msg = I18n.t('bigbluebutton_rails.recordings.notice.destroy.success_with_bbb_error', :error => bbb_error_msg[0..200])
         should set_the_flash.to(msg)
       }
     end

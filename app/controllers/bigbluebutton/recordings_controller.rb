@@ -41,7 +41,7 @@ class Bigbluebutton::RecordingsController < ApplicationController
       message = t('bigbluebutton_rails.recordings.notice.destroy.success')
     rescue BigBlueButton::BigBlueButtonException => e
       error = true
-      message = t('bigbluebutton_rails.recordings.notice.destroy.success_with_bbb_error', :error => e.to_s)
+      message = t('bigbluebutton_rails.recordings.notice.destroy.success_with_bbb_error', :error => e.to_s[0..200])
     end
 
     # TODO: what if it fails?

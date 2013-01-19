@@ -132,13 +132,13 @@ describe Bigbluebutton::ServersController do
     end
 
     context "exception handling" do
-      let(:bbb_error_msg) { "err msg" }
+      let(:bbb_error_msg) { SecureRandom.hex(250) }
       let(:bbb_error) { BigBlueButton::BigBlueButtonException.new(bbb_error_msg) }
 
       context "at fetch_meetings" do
         before { server.should_receive(:fetch_meetings) { raise bbb_error } }
         before(:each) { get :activity, :id => server.to_param }
-        it { should set_the_flash.to(bbb_error_msg) }
+        it { should set_the_flash.to(bbb_error_msg[0..200]) }
       end
 
       context "at fetch_meeting_info" do
@@ -148,7 +148,7 @@ describe Bigbluebutton::ServersController do
           room1.should_receive(:fetch_meeting_info) { raise bbb_error }
         end
         before(:each) { get :activity, :id => server.to_param }
-        it { should set_the_flash.to(bbb_error_msg) }
+        it { should set_the_flash.to(bbb_error_msg[0..200]) }
       end
     end
 
@@ -183,7 +183,7 @@ describe Bigbluebutton::ServersController do
     end
 
     context "on failure" do
-      let(:bbb_error_msg) { "err msg" }
+      let(:bbb_error_msg) { SecureRandom.hex(250) }
       let(:bbb_error) { BigBlueButton::BigBlueButtonException.new(bbb_error_msg) }
       before {
         request.env["HTTP_REFERER"] = "/any"
@@ -192,7 +192,7 @@ describe Bigbluebutton::ServersController do
       before(:each) { post :publish_recordings, :id => server.to_param, :recordings => recording_ids }
       it { should respond_with(:redirect) }
       it { should redirect_to(bigbluebutton_server_path(server)) }
-      it { should set_the_flash.to(bbb_error_msg) }
+      it { should set_the_flash.to(bbb_error_msg[0..200]) }
     end
   end
 
@@ -214,7 +214,7 @@ describe Bigbluebutton::ServersController do
     end
 
     context "on failure" do
-      let(:bbb_error_msg) { "err msg" }
+      let(:bbb_error_msg) { SecureRandom.hex(250) }
       let(:bbb_error) { BigBlueButton::BigBlueButtonException.new(bbb_error_msg) }
       before(:each) {
         server.should_receive(:send_publish_recordings) { raise bbb_error }
@@ -222,7 +222,7 @@ describe Bigbluebutton::ServersController do
       }
       it { should respond_with(:redirect) }
       it { should redirect_to(bigbluebutton_server_path(server)) }
-      it { should set_the_flash.to(bbb_error_msg) }
+      it { should set_the_flash.to(bbb_error_msg[0..200]) }
     end
   end
 
@@ -243,7 +243,7 @@ describe Bigbluebutton::ServersController do
     end
 
     context "on failure" do
-      let(:bbb_error_msg) { "err msg" }
+      let(:bbb_error_msg) { SecureRandom.hex(250) }
       let(:bbb_error) { BigBlueButton::BigBlueButtonException.new(bbb_error_msg) }
       before(:each) {
         server.should_receive(:fetch_recordings) { raise bbb_error }
@@ -251,7 +251,7 @@ describe Bigbluebutton::ServersController do
       }
       it { should respond_with(:redirect) }
       it { should redirect_to(bigbluebutton_server_path(server)) }
-      it { should set_the_flash.to(bbb_error_msg) }
+      it { should set_the_flash.to(bbb_error_msg[0..200]) }
     end
 
     context "when params[:meetings] is set" do

@@ -29,7 +29,7 @@ class Bigbluebutton::ServersController < ApplicationController
       end
     rescue BigBlueButton::BigBlueButtonException => e
       error = true
-      message = e.to_s
+      message = e.to_s[0..200]
     end
 
     # update_list works only for html
@@ -119,7 +119,7 @@ class Bigbluebutton::ServersController < ApplicationController
       message = t('bigbluebutton_rails.servers.notice.fetch_recordings.success')
     rescue BigBlueButton::BigBlueButtonException => e
       error = true
-      message = e.to_s
+      message = e.to_s[0..200]
     end
 
     respond_with do |format|
@@ -165,7 +165,7 @@ class Bigbluebutton::ServersController < ApplicationController
     rescue BigBlueButton::BigBlueButtonException => e
       respond_with do |format|
         format.html {
-          flash[:error] = e.to_s
+          flash[:error] = e.to_s[0..200]
           redirect_to bigbluebutton_server_path(@server)
         }
         format.json { render :json => e.to_s, :status => :error }
