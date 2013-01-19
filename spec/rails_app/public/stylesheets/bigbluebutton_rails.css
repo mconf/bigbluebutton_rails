@@ -1,3 +1,49 @@
+/*
+ * Used in bigbluebutton_%/index
+ */
+
+#bbbrails_list {
+  list-style-type: none;
+  margin: 0;
+  padding: 0;
+}
+
+#bbbrails_recordings_link {
+  margin-bottom: 5px;
+  padding-bottom: 5px;
+  border-bottom: 1px solid #ddd;
+}
+
+#bbbrails_list > li {
+  margin-bottom: 5px;
+  padding-bottom: 5px;
+  border-bottom: 1px solid #ddd;
+  clear: both;
+}
+
+#bbbrails_list ul {
+  list-style-type: none;
+}
+
+#bbbrails_list div.field {
+  margin: 0;
+  padding: 0;
+  clear: both;
+}
+
+#bbbrails_list label {
+  font-weight: bold;
+  width: 300px;
+  float: left;
+  text-align: right;
+  margin-right: 10px;
+  clear: both;
+}
+
+/*
+ * Used in bigbluebutton_servers/activity
+ */
+
 .bbbrails_meeting_description {
   padding: 5px;
   margin-top: 20px;
@@ -24,10 +70,6 @@
 .bbbrails_meeting_description .title_bar {
   padding: 5px;
   background: #f0f0f0;
-}
-
-.bbbrails_meeting_description_changed {
-  border: 1px solid #d00000;
 }
 
 .bbbrails_countdown {
@@ -60,61 +102,6 @@
   padding: 3px;
 }
 
-
-/*
- * Used in bigbluebutton_%/index
- */
-
-#bbbrails_servers_list,
-#bbbrails_rooms_list,
-#bbbrails_recordings_list {
-  list-style-type: none;
-  margin: 0;
-  padding: 0;
-}
-
-#bbbrails_servers_links,
-#bbbrails_rooms_links,
-#bbbrails_recordings_link {
-  margin-bottom: 5px;
-  padding-bottom: 5px;
-  border-bottom: 1px solid #ddd;
-}
-
-#bbbrails_servers_list > li,
-#bbbrails_rooms_list > li,
-#bbbrails_recordings_list > li {
-  margin-bottom: 5px;
-  padding-bottom: 5px;
-  border-bottom: 1px solid #ddd;
-  clear: both;
-}
-
-#bbbrails_servers_list ul,
-#bbbrails_rooms_list ul,
-#bbbrails_recordings_list ul {
-  list-style-type: none;
-}
-
-#bbbrails_servers_list div.field,
-#bbbrails_rooms_list div.field,
-#bbbrails_recordings_list div.field {
-  margin: 0;
-  padding: 0;
-  clear: both;
-}
-
-#bbbrails_servers_list label,
-#bbbrails_rooms_list label,
-#bbbrails_recordings_list label {
-  font-weight: bold;
-  width: 300px;
-  float: left;
-  text-align: right;
-  margin-right: 10px;
-  clear: both;
-}
-
 /*
  * Used in bigbluebutton_rooms/invite
  */
@@ -123,4 +110,18 @@
   background: #f6f6f6;
   border: 1px solid #ddd;
   padding: 5px;
+}
+
+/*
+ * Error messages
+ */
+
+#error_explanation.error {
+  border-color: red;
+}
+#error_explanation.success {
+  border-color: green;
+}
+#error_explanation.notice {
+  border-color: blue;
 }

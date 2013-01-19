@@ -9,9 +9,7 @@
 </head>
 <body>
 
-<% flash.each do |key, msg| %>
-  <div id="<%= key %>"><%= msg %></div>
-<% end %>
+<%= bbb_rails_error_explanation %>
 
 <%= yield %>
 

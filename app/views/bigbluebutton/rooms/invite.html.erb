@@ -28,7 +28,8 @@ $(document).ready(function(){
 
 <h1>Invite to the meeting <%= @room.name %></h1>
 
-<%= bbb_rails_error_explanation %>
+<!-- A helper to show errors, add it to the views were you need it -->
+<!-- <%= bbb_rails_error_explanation %> -->
 
 <p>Meeting status: <span id="meeting_status">-</span> (<a href="javascript:ajax_request();">refresh</a>)</p>
 

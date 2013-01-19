@@ -3,7 +3,7 @@
   <%= link_to('View room list', bigbluebutton_rooms_path) %>
 </div>
 
-<ul id="bbbrails_recordings_list">
+<ul id="bbbrails_list">
   <% @recordings.each do |recording| %>
     <li>
       <div class="field"><label><%= BigbluebuttonRecording.human_attribute_name(:recordid) %></label> <%= recording.recordid %></div>
