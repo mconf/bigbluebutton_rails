@@ -2,10 +2,24 @@
 en:
   activerecord:
     attributes:
+      bigbluebutton_metadata:
+        content: Content
+        name: Name
+      bigbluebutton_playback_format:
+        format_type: Type
+        length: Length
+        url: URL
+      bigbluebutton_recording:
+        end_time: "End Time"
+        meetingid: "Meeting ID"
+        name: Name
+        published: Published
+        recordid: "Record ID"
+        start_time: "Start Time"
       bigbluebutton_room:
         attendee_password: "Attendee Password"
         dial_number: "Dial Number"
-        external: "Externally created"
+        external: "Externally Created"
         logout_url: "Logout URL"
         max_participants: "Maximum Number of Participants"
         meetingid: "Meeting ID"
@@ -24,6 +38,9 @@ en:
         url: URL
         version: Version
     models:
+      bigbluebutton_metadata: "BigBlueButton Recording Metadata"
+      bigbluebutton_playback_format: "BigBlueButton Recording Playback Format"
+      bigbluebutton_recording: "BigBlueButton Recording"
       bigbluebutton_room: "BigBlueButton Room"
       bigbluebutton_server: "BigBlueButton Server"
   bigbluebutton_rails:
