@@ -64,9 +64,9 @@ namespace :db do
             metadata.save!
           end
 
-          2.times do
+          2.times do |n4|
             params = {
-              :format_type => Forgery(:name).first_name.downcase,
+              :format_type => "#{n4}-#{Forgery(:name).first_name.downcase}",
               :url => "http://" + Forgery(:internet).domain_name + "/playback",
               :length => Forgery(:basic).number
             }

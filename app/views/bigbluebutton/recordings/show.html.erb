@@ -55,3 +55,11 @@
   <%= link_to 'Destroy', bigbluebutton_recording_path(@recording), :confirm => 'Are you sure?', :method => :delete %> |
   <%= link_to 'Back', bigbluebutton_recordings_path %>
 </p>
+
+<p>
+  <label>Play:</label>
+  <%= link_to "default", play_bigbluebutton_recording_path(@recording) %>
+  <% @recording.playback_formats.each do |format| %>
+    <%= link_to format.format_type, play_bigbluebutton_recording_path(@recording, :type => format.format_type) %>
+  <% end %>
+</p>

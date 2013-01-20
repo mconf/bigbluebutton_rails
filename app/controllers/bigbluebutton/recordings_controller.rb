@@ -2,7 +2,7 @@ class Bigbluebutton::RecordingsController < ApplicationController
 
   respond_to :html
   respond_to :json, :only => [:index, :show, :update, :destroy]
-  before_filter :find_recording, :only => [:show, :edit, :update, :destroy]
+  before_filter :find_recording, :except => [:index]
 
   def index
     respond_with(@recordings = BigbluebuttonRecording.all)
@@ -57,6 +57,24 @@ class Bigbluebutton::RecordingsController < ApplicationController
          render :json => { :message => message }, :status => :error
         else
           render :json => { :message => message }
+        end
+      }
+    end
+  end
+
+  def play
+    if params[:type]
+      playback = @recording.playback_formats.where(:format_type => params[:type]).first
+    else
+      playback = @recording.playback_formats.first
+    end
+    respond_with do |format|
+      format.html {
+        if playback
+          redirect_to playback.url
+        else
+          flash[:error] = t('bigbluebutton_rails.recordings.errors.play.no_format')
+          redirect_to bigbluebutton_recording_url(@recording)
         end
       }
     end

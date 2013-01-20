@@ -85,8 +85,14 @@ module ActionDispatch::Routing
             post :fetch_recordings
           end
         end
+
         resources :recordings, :except => [:new, :create],
-                  :controller => BigbluebuttonRails.controllers[:recordings]
+                  :controller => BigbluebuttonRails.controllers[:recordings] do
+          member do
+            get :play
+          end
+        end
+
         add_routes_for_rooms
       end
     end

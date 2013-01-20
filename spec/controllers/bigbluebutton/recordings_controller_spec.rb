@@ -106,4 +106,32 @@ describe Bigbluebutton::RecordingsController do
     end
   end
 
+  describe "#play" do
+    context do
+      before {
+        @format1 = FactoryGirl.create(:bigbluebutton_playback_format, :recording => recording)
+        @format2 = FactoryGirl.create(:bigbluebutton_playback_format, :recording => recording)
+      }
+
+      context "when params[:type] is specified" do
+        before(:each) { get :play, :id => recording.to_param, :type => @format2.format_type }
+        it { should respond_with(:redirect) }
+        it { should redirect_to @format2.url }
+      end
+
+      context "when params[:type] is not specified plays the first format" do
+        before(:each) { get :play, :id => recording.to_param }
+        it { should respond_with(:redirect) }
+        it { should redirect_to @format1.url }
+      end
+    end
+
+    context "when a playback format is not found" do
+      before(:each) { get :play, :id => recording.to_param }
+      it { should respond_with(:redirect) }
+      it { should redirect_to bigbluebutton_recording_path(recording) }
+      it { should set_the_flash.to(I18n.t('bigbluebutton_rails.recordings.errors.play.no_format')) }
+    end
+  end
+
 end

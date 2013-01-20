@@ -27,6 +27,10 @@ describe Bigbluebutton::RecordingsController do
         {:delete => "/#{prefix}/recordings/rec-1"}.
         should route_to(:controller => "bigbluebutton/recordings", :action => "destroy", :id => "rec-1")
       }
+      it {
+        {:get => "/#{prefix}/recordings/rec-1/play?type=any"}.
+        should route_to(:controller => "bigbluebutton/recordings", :action => "play", :id => "rec-1")
+      }
     end
 
   end

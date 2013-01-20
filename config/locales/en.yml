@@ -46,6 +46,9 @@ en:
   bigbluebutton_rails:
     bigbluebutton: BigBlueButton
     recordings:
+      errors:
+        play:
+          no_format: "There's no playback url specified for this recording."
       notice:
         destroy:
           success: "Your recording was successfully destroyed."
