@@ -1,12 +1,15 @@
 class BigbluebuttonRecording < ActiveRecord::Base
+  belongs_to :server, :class_name => 'BigbluebuttonServer'
   belongs_to :room, :class_name => 'BigbluebuttonRoom'
+
+  validates :server, :presence => true
 
   validates :recordid,
             :presence => true,
             :uniqueness => true
 
   attr_accessible :recordid, :meetingid, :name, :published, :start_time,
-                  :end_time, :room_id
+                  :end_time
 
   has_many :metadata,
            :class_name => 'BigbluebuttonMetadata',
@@ -27,15 +30,18 @@ class BigbluebuttonRecording < ActiveRecord::Base
   # Will add new recordings that are not in the db yet and update the ones that
   # already are (matching by 'recordid'). Will NOT delete recordings from the db,
   # even if they are not in the array.
+  # 'server' is the BigbluebuttonServer object from which the recordings
+  # were fetched.
+  #
   # TODO: catch exceptions on creating/updating recordings
-  def self.sync(recordings)
+  def self.sync(server, recordings)
     recordings.each do |rec|
       rec_obj = BigbluebuttonRecording.find_by_recordid(rec[:recordID])
       rec_data = adapt_recording_hash(rec)
       if rec_obj
-        self.update_recording(rec_obj, rec_data)
+        self.update_recording(server, rec_obj, rec_data)
       else
-        self.create_recording(rec_data)
+        self.create_recording(server, rec_data)
       end
     end
   end
@@ -58,9 +64,11 @@ class BigbluebuttonRecording < ActiveRecord::Base
   # Updates the BigbluebuttonRecording 'recording' with the data in the hash 'data'.
   # The format expected for 'data' follows the format returned by
   # BigBlueButtonApi#get_recordings but with the keys already converted to our format.
-  def self.update_recording(recording, data)
+  def self.update_recording(server, recording, data)
     filtered = data.slice(:meetingid, :name, :published, :start_time, :end_time)
-    recording.update_attributes(filtered)
+    recording.server = server
+    recording.assign_attributes(filtered)
+    recording.save!
 
     sync_additional_data(recording, data)
   end
@@ -68,9 +76,11 @@ class BigbluebuttonRecording < ActiveRecord::Base
   # Creates a new BigbluebuttonRecording with the data from 'data'.
   # The format expected for 'data' follows the format returned by
   # BigBlueButtonApi#get_recordings but with the keys already converted to our format.
-  def self.create_recording(data)
+  def self.create_recording(server, data)
     filtered = data.slice(:recordid, :meetingid, :name, :published, :start_time, :end_time)
-    recording = BigbluebuttonRecording.create!(filtered)
+    recording = BigbluebuttonRecording.create(filtered)
+    recording.server = server
+    recording.save!
 
     sync_additional_data(recording, data)
   end

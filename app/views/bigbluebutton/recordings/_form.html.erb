@@ -12,7 +12,11 @@
 
   <div class="field">
     <%= f.label :room_id %><br />
-    <%= f.text_field :room_id %>
+    <%= f.text_field :room_id, :disabled => "disabled" %>
+  </div>
+  <div class="field">
+    <%= f.label :server_id %><br />
+    <%= f.text_field :server_id, :disabled => "disabled" %>
   </div>
   <div class="field">
     <%= f.label :name %><br />

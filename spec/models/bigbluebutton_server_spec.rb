@@ -237,7 +237,7 @@ describe BigbluebuttonServer do
       let(:response) { { :recordings => [1, 2] } }
       before do
         @api_mock.should_receive(:get_recordings).with(params).and_return(response)
-        BigbluebuttonRecording.should_receive(:sync).with(response[:recordings])
+        BigbluebuttonRecording.should_receive(:sync).with(server, response[:recordings])
       end
       it { server.fetch_recordings(params) }
     end

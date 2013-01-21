@@ -12,6 +12,10 @@
         <label><%= BigbluebuttonRecording.human_attribute_name(:room_id) %></label> <%= recording.room_id %>
         <%= link_to('(view room)', bigbluebutton_room_path(recording.room)) unless recording.room.nil? %>
       </div>
+      <div class="field">
+        <label><%= BigbluebuttonRecording.human_attribute_name(:server_id) %></label> <%= recording.server_id %>
+        <%= link_to('(view server)', bigbluebutton_server_path(recording.server)) unless recording.server.nil? %>
+      </div>
       <div class="field"><label><%= BigbluebuttonRecording.human_attribute_name(:meetingid) %></label> <%= recording.meetingid %></div>
       <div class="field"><label><%= BigbluebuttonRecording.human_attribute_name(:published) %></label> <%= recording.published %></div>
       <div class="field"><label><%= BigbluebuttonRecording.human_attribute_name(:start_time) %></label> <%= recording.start_time %></div>

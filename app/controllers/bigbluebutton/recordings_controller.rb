@@ -35,8 +35,8 @@ class Bigbluebutton::RecordingsController < ApplicationController
   def destroy
     error = false
     begin
-      if @recording.room and @recording.room.server
-        server = @recording.room.server
+      if @recording.server
+        server = @recording.server
         server.send_delete_recordings(@recording.recordid)
       end
       message = t('bigbluebutton_rails.recordings.notice.destroy.success')
@@ -96,7 +96,7 @@ class Bigbluebutton::RecordingsController < ApplicationController
   end
 
   def check_for_server
-    unless @recording.room and @recording.room.server
+    unless @recording.server
       flash[:error] = t('bigbluebutton_rails.recordings.errors.check_for_server.no_server')
       redirect_to bigbluebutton_recording_path(@recording)
       false
@@ -107,7 +107,7 @@ class Bigbluebutton::RecordingsController < ApplicationController
 
   def publish_unpublish(publish)
     begin
-      server = @recording.room.server
+      server = @recording.server
       server.send_publish_recordings(@recording.recordid, publish)
       respond_with do |format|
         format.html {

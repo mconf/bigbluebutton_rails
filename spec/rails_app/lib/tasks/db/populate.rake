@@ -50,6 +50,7 @@ namespace :db do
           }
           puts "    - Creating recording #{params[:name]}"
           recording = BigbluebuttonRecording.create(params)
+          recording.server = server
           recording.room = room
           recording.save!
 

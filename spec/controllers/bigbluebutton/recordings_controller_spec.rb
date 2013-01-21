@@ -43,7 +43,11 @@ describe Bigbluebutton::RecordingsController do
       }
       it {
         saved = BigbluebuttonRecording.find(@recording)
-        new_recording.room_id = saved.room_id # this attribute is protected, so wasn't updated
+
+        # these attributes are protected so weren't updated
+        new_recording.room_id = saved.room_id
+        new_recording.server_id = saved.server_id
+
         saved.should have_same_attributes_as(new_recording)
       }
       it { should set_the_flash.to(I18n.t('bigbluebutton_rails.recordings.notice.update.success')) }
@@ -104,6 +108,19 @@ describe Bigbluebutton::RecordingsController do
       it { should respond_with(:redirect) }
       it { should redirect_to bigbluebutton_servers_path }
     end
+
+    context "when there's no server associated" do
+      before(:each) {
+        recording.stub(:server) { nil }
+        mocked_server.should_not_receive(:send_delete_recordings)
+        expect {
+          delete :destroy, :id => recording.to_param
+        }.to change{ BigbluebuttonRecording.count }.by(-1)
+      }
+      it { should respond_with(:redirect) }
+      it { should redirect_to bigbluebutton_recordings_url }
+      it { should set_the_flash.to(I18n.t('bigbluebutton_rails.recordings.notice.destroy.success')) }
+    end
   end
 
   describe "#play" do
@@ -160,16 +177,8 @@ describe Bigbluebutton::RecordingsController do
       it { should set_the_flash.to(bbb_error_msg[0..200]) }
     end
 
-    context "returns error if there's no room associated" do
-      before { recording.stub(:room) { nil } }
-      before(:each) { post :publish, :id => recording.to_param }
-      it { should respond_with(:redirect) }
-      it { should redirect_to(bigbluebutton_recording_path(recording)) }
-      it { should set_the_flash.to(I18n.t('bigbluebutton_rails.recordings.errors.check_for_server.no_server')) }
-    end
-
     context "returns error if there's no server associated" do
-      before { recording.stub_chain("room.server") { nil } }
+      before { recording.stub(:server) { nil } }
       before(:each) { post :publish, :id => recording.to_param }
       it { should respond_with(:redirect) }
       it { should redirect_to(bigbluebutton_recording_path(recording)) }
@@ -203,16 +212,8 @@ describe Bigbluebutton::RecordingsController do
       it { should set_the_flash.to(bbb_error_msg[0..200]) }
     end
 
-    context "returns error if there's no room associated" do
-      before { recording.stub(:room) { nil } }
-      before(:each) { post :unpublish, :id => recording.to_param }
-      it { should respond_with(:redirect) }
-      it { should redirect_to(bigbluebutton_recording_path(recording)) }
-      it { should set_the_flash.to(I18n.t('bigbluebutton_rails.recordings.errors.check_for_server.no_server')) }
-    end
-
     context "returns error if there's no server associated" do
-      before { recording.stub_chain("room.server") { nil } }
+      before { recording.stub(:server) { nil } }
       before(:each) { post :unpublish, :id => recording.to_param }
       it { should respond_with(:redirect) }
       it { should redirect_to(bigbluebutton_recording_path(recording)) }

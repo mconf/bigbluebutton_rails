@@ -34,6 +34,7 @@ class CreateBigbluebuttonRails < ActiveRecord::Migration
     add_index :bigbluebutton_rooms, :voice_bridge, :unique => true
 
     create_table :bigbluebutton_recordings do |t|
+      t.integer :server_id
       t.integer :room_id
       t.string :recordid
       t.string :meetingid

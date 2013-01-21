@@ -2,6 +2,7 @@ class BigbluebuttonRailsTo130 < ActiveRecord::Migration
 
   def self.up
     create_table :bigbluebutton_recordings do |t|
+      t.integer :server_id
       t.integer :room_id
       t.string :recordid
       t.string :meetingid

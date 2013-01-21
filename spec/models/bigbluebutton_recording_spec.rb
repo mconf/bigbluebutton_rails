@@ -6,7 +6,8 @@ describe BigbluebuttonRecording do
     BigbluebuttonRecording.new.should be_a_kind_of(ActiveRecord::Base)
   end
 
-  # before { FactoryGirl.create(:bigbluebutton_recording) }
+  it { should belong_to(:server) }
+  it { should validate_presence_of(:server) }
 
   it { should belong_to(:room) }
 
@@ -14,7 +15,7 @@ describe BigbluebuttonRecording do
   it { should validate_uniqueness_of(:recordid) }
 
   [:recordid, :meetingid, :name, :published, :start_time,
-   :end_time, :room_id].each do |attribute|
+   :end_time].each do |attribute|
     it { should allow_mass_assignment_of(attribute) }
   end
 
@@ -58,9 +59,11 @@ describe BigbluebuttonRecording do
        }
       ]
     }
+    let(:new_server) { FactoryGirl.create(:bigbluebutton_server) }
+
     context "adds new recordings" do
       before {
-        BigbluebuttonRecording.sync(data)
+        BigbluebuttonRecording.sync(new_server, data)
         @recording = BigbluebuttonRecording.last
       }
       it { BigbluebuttonRecording.count.should == 1 }
@@ -70,13 +73,14 @@ describe BigbluebuttonRecording do
       it { @recording.published.should == data[0][:published] }
       it { @recording.end_time.utc.to_i.should == data[0][:endTime].utc.to_i }
       it { @recording.start_time.utc.to_i.should == data[0][:startTime].utc.to_i }
+      it { @recording.server.should == new_server }
     end
 
     context "updates existing recordings" do
       before {
         # pre-existing recording, with same id but the rest is different
         FactoryGirl.create(:bigbluebutton_recording, :recordid => data[0][:recordID])
-        BigbluebuttonRecording.sync(data)
+        BigbluebuttonRecording.sync(new_server, data)
         @recording = BigbluebuttonRecording.last
       }
       it { BigbluebuttonRecording.count.should == 1 }
@@ -86,13 +90,14 @@ describe BigbluebuttonRecording do
       it { @recording.published.should == data[0][:published] }
       it { @recording.end_time.utc.to_i.should == data[0][:endTime].utc.to_i }
       it { @recording.start_time.utc.to_i.should == data[0][:startTime].utc.to_i }
+      it { @recording.server.should == new_server }
     end
 
     context "doesn't remove recordings" do
       before {
         # pre-existing recording that shouldn't be removed
         FactoryGirl.create(:bigbluebutton_recording)
-        BigbluebuttonRecording.sync(data)
+        BigbluebuttonRecording.sync(new_server, data)
       }
       it { BigbluebuttonRecording.count.should == 2 }
     end
@@ -106,7 +111,7 @@ describe BigbluebuttonRecording do
         clone = data[0].clone
         clone[:recordID] = "recordid-3"
         data.push(clone)
-        BigbluebuttonRecording.sync(data)
+        BigbluebuttonRecording.sync(new_server, data)
       }
       it { BigbluebuttonRecording.count.should == 3 }
     end
@@ -128,11 +133,12 @@ describe BigbluebuttonRecording do
         :playback => { :format => [ { :type => "any1" }, { :type => "any2" } ] }
       }
     }
+    let(:new_server) { FactoryGirl.create(:bigbluebutton_server) }
 
     before {
       BigbluebuttonRecording.should_receive(:sync_additional_data)
         .with(recording, data)
-      BigbluebuttonRecording.send(:update_recording, recording, data)
+      BigbluebuttonRecording.send(:update_recording, new_server, recording, data)
     }
     it { recording.recordid.should == old_attrs[:recordid] } # not updated
     it { recording.meetingid.should == attrs[:meetingid] }
@@ -140,6 +146,7 @@ describe BigbluebuttonRecording do
     it { recording.published.should == !old_attrs[:published] }
     it { recording.end_time.utc.to_i.should == attrs[:end_time].utc.to_i }
     it { recording.start_time.utc.to_i.should == attrs[:start_time].utc.to_i }
+    it { recording.server.should == new_server }
   end
 
   describe "#create_recording" do
@@ -156,11 +163,12 @@ describe BigbluebuttonRecording do
         :playback => { :format => [ { :type => "any1" }, { :type => "any2" } ] }
       }
     }
+    let(:new_server) { FactoryGirl.create(:bigbluebutton_server) }
 
     before {
       BigbluebuttonRecording.should_receive(:sync_additional_data)
         .with(anything, data)
-      BigbluebuttonRecording.send(:create_recording, data)
+      BigbluebuttonRecording.send(:create_recording, new_server, data)
       @recording = BigbluebuttonRecording.last
     }
     it { @recording.recordid.should == attrs[:recordid] }
@@ -169,6 +177,7 @@ describe BigbluebuttonRecording do
     it { @recording.published.should == attrs[:published] }
     it { @recording.end_time.utc.to_i.should == attrs[:end_time].utc.to_i }
     it { @recording.start_time.utc.to_i.should == attrs[:start_time].utc.to_i }
+    it { @recording.server.should == new_server }
   end
 
   describe "#adapt_recording_hash" do

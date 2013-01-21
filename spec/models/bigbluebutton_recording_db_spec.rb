@@ -4,6 +4,7 @@ describe BigbluebuttonRecording do
 
   # to ensure that the migration is correct
   context "db" do
+    it { should have_db_column(:server_id).of_type(:integer) }
     it { should have_db_column(:room_id).of_type(:integer) }
     it { should have_db_column(:recordid).of_type(:string) }
     it { should have_db_column(:meetingid).of_type(:string) }

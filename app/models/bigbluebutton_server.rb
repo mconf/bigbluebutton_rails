@@ -108,7 +108,7 @@ class BigbluebuttonServer < ActiveRecord::Base
   def fetch_recordings(ids)
     recordings = self.api.get_recordings(ids)
     if recordings and recordings[:recordings]
-      BigbluebuttonRecording.sync(recordings[:recordings])
+      BigbluebuttonRecording.sync(self, recordings[:recordings])
     end
   end
 

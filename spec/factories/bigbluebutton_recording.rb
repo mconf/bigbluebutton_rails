@@ -1,5 +1,6 @@
 FactoryGirl.define do
   factory  :bigbluebutton_recording do |r|
+    r.association :server, :factory => :bigbluebutton_server
     r.association :room, :factory => :bigbluebutton_room
     r.sequence(:recordid) { |n| "rec#{n}" + SecureRandom.hex(26) }
     r.meetingid { "meeting" + SecureRandom.hex(8) }
