@@ -46,6 +46,7 @@ describe BigbluebuttonRails::Generators::ViewsGenerator do
       "app/views/#{scope}/servers/_form.html.erb",
       "app/views/#{scope}/servers/index.html.erb",
       "app/views/#{scope}/servers/new.html.erb",
+      "app/views/#{scope}/servers/recordings.html.erb",
       "app/views/#{scope}/servers/rooms.html.erb",
       "app/views/#{scope}/servers/show.html.erb",
       "app/views/#{scope}/recordings/edit.html.erb",

@@ -80,6 +80,7 @@ module ActionDispatch::Routing
           member do
             get :activity
             get :rooms
+            get :recordings
             post :publish_recordings
             post :unpublish_recordings
             post :fetch_recordings

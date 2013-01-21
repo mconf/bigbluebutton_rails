@@ -98,6 +98,10 @@ class Bigbluebutton::ServersController < ApplicationController
     end
   end
 
+  def recordings
+    respond_with(@recordings = BigbluebuttonRecording.where(:room_id => @server.rooms))
+  end
+
   def rooms
     respond_with(@rooms = @server.rooms)
   end
@@ -157,8 +161,7 @@ class Bigbluebutton::ServersController < ApplicationController
           else
             message = t('bigbluebutton_rails.servers.notice.unpublish_recordings.success')
           end
-          # TODO: bigbluebutton_server_recordings_path
-          redirect_to(bigbluebutton_server_path(@server), :notice => message)
+          redirect_to(recordings_bigbluebutton_server_path(@server), :notice => message)
         }
         format.json { render :json => message }
       end
@@ -166,7 +169,7 @@ class Bigbluebutton::ServersController < ApplicationController
       respond_with do |format|
         format.html {
           flash[:error] = e.to_s[0..200]
-          redirect_to bigbluebutton_server_path(@server)
+          redirect_to recordings_bigbluebutton_server_path(@server)
         }
         format.json { render :json => e.to_s, :status => :error }
       end

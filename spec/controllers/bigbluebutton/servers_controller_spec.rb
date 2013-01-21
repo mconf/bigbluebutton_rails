@@ -158,6 +158,7 @@ describe Bigbluebutton::ServersController do
     before do
       @room1 = FactoryGirl.create(:bigbluebutton_room, :server => server)
       @room2 = FactoryGirl.create(:bigbluebutton_room, :server => server)
+      another_room = FactoryGirl.create(:bigbluebutton_room)
     end
     before(:each) { get :rooms, :id => server.to_param }
     it { should respond_with(:success) }
@@ -178,7 +179,7 @@ describe Bigbluebutton::ServersController do
       }
       before(:each) { post :publish_recordings, :id => server.to_param, :recordings => recording_ids }
       it { should respond_with(:redirect) }
-      it { should redirect_to(bigbluebutton_server_path(server)) }
+      it { should redirect_to(recordings_bigbluebutton_server_path(server)) }
       it { should set_the_flash.to(I18n.t('bigbluebutton_rails.servers.notice.publish_recordings.success')) }
     end
 
@@ -191,7 +192,7 @@ describe Bigbluebutton::ServersController do
       }
       before(:each) { post :publish_recordings, :id => server.to_param, :recordings => recording_ids }
       it { should respond_with(:redirect) }
-      it { should redirect_to(bigbluebutton_server_path(server)) }
+      it { should redirect_to(recordings_bigbluebutton_server_path(server)) }
       it { should set_the_flash.to(bbb_error_msg[0..200]) }
     end
   end
@@ -209,7 +210,7 @@ describe Bigbluebutton::ServersController do
       }
       before(:each) { post :unpublish_recordings, :id => server.to_param, :recordings => recording_ids }
       it { should respond_with(:redirect) }
-      it { should redirect_to(bigbluebutton_server_path(server)) }
+      it { should redirect_to(recordings_bigbluebutton_server_path(server)) }
       it { should set_the_flash.to(I18n.t('bigbluebutton_rails.servers.notice.unpublish_recordings.success')) }
     end
 
@@ -221,7 +222,7 @@ describe Bigbluebutton::ServersController do
         post :unpublish_recordings, :id => server.to_param, :recordings => recording_ids
       }
       it { should respond_with(:redirect) }
-      it { should redirect_to(bigbluebutton_server_path(server)) }
+      it { should redirect_to(recordings_bigbluebutton_server_path(server)) }
       it { should set_the_flash.to(bbb_error_msg[0..200]) }
     end
   end
@@ -261,7 +262,19 @@ describe Bigbluebutton::ServersController do
         post :fetch_recordings, :id => server.to_param, :meetings => meetings
       }
     end
- end
+  end
 
+  describe "#recordings" do
+    before do
+      room = FactoryGirl.create(:bigbluebutton_room, :server => server)
+      @recording1 = FactoryGirl.create(:bigbluebutton_recording, :room => room)
+      @recording2 = FactoryGirl.create(:bigbluebutton_recording, :room => room)
+      another_recording = FactoryGirl.create(:bigbluebutton_recording)
+    end
+    before(:each) { get :recordings, :id => server.to_param }
+    it { should respond_with(:success) }
+    it { should render_template(:recordings) }
+    it { should assign_to(:recordings).with([@recording1, @recording2]) }
+  end
 
 end
