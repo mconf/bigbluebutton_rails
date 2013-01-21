@@ -274,25 +274,48 @@ describe BigbluebuttonRecording do
 
   describe "#sync_playback_formats" do
     let(:recording) { FactoryGirl.create(:bigbluebutton_recording) }
-    let(:data) {
-      [ { :type => "any1", :url => "url1", :length => 1 },
-        { :type => "any2", :url => "url2", :length => 2 } ]
-    }
-    before {
-      # one playback format to be updated
-      FactoryGirl.create(:bigbluebutton_playback_format,
-                         :recording => recording, :format_type => "any1")
-      # one to be deleted
-      FactoryGirl.create(:bigbluebutton_playback_format, :recording => recording)
 
-      BigbluebuttonRecording.send(:sync_playback_formats, recording, data)
-    }
-    it { BigbluebuttonPlaybackFormat.count.should == 2 }
-    it { BigbluebuttonPlaybackFormat.where(:recording_id => recording.id).count.should == 2 }
-    it { BigbluebuttonPlaybackFormat.find_by_format_type("any1").url.should == "url1" }
-    it { BigbluebuttonPlaybackFormat.find_by_format_type("any1").length.should == 1 }
-    it { BigbluebuttonPlaybackFormat.find_by_format_type("any2").url.should == "url2" }
-    it { BigbluebuttonPlaybackFormat.find_by_format_type("any2").length.should == 2 }
+    context "with several formats" do
+      let(:data) {
+        [ { :type => "any1", :url => "url1", :length => 1 },
+          { :type => "any2", :url => "url2", :length => 2 } ]
+      }
+      before {
+        # one playback format to be updated
+        FactoryGirl.create(:bigbluebutton_playback_format,
+                           :recording => recording, :format_type => "any1")
+        # one to be deleted
+        FactoryGirl.create(:bigbluebutton_playback_format, :recording => recording)
+
+        BigbluebuttonRecording.send(:sync_playback_formats, recording, data)
+      }
+      it { BigbluebuttonPlaybackFormat.count.should == 2 }
+      it { BigbluebuttonPlaybackFormat.where(:recording_id => recording.id).count.should == 2 }
+      it { BigbluebuttonPlaybackFormat.find_by_format_type("any1").url.should == "url1" }
+      it { BigbluebuttonPlaybackFormat.find_by_format_type("any1").length.should == 1 }
+      it { BigbluebuttonPlaybackFormat.find_by_format_type("any2").url.should == "url2" }
+      it { BigbluebuttonPlaybackFormat.find_by_format_type("any2").length.should == 2 }
+    end
+
+    context "with a single formats" do
+      let(:data) {
+        { :type => "any1", :url => "url1", :length => 1 }
+      }
+      before {
+        # one playback format to be updated
+        FactoryGirl.create(:bigbluebutton_playback_format,
+                           :recording => recording, :format_type => "any1")
+        # one to be deleted
+        FactoryGirl.create(:bigbluebutton_playback_format, :recording => recording)
+
+        BigbluebuttonRecording.send(:sync_playback_formats, recording, data)
+      }
+      it { BigbluebuttonPlaybackFormat.count.should == 1 }
+      it { BigbluebuttonPlaybackFormat.where(:recording_id => recording.id).count.should == 1 }
+      it { BigbluebuttonPlaybackFormat.find_by_format_type("any1").url.should == "url1" }
+      it { BigbluebuttonPlaybackFormat.find_by_format_type("any1").length.should == 1 }
+    end
+
   end
 
 end

@@ -158,7 +158,7 @@ describe Bigbluebutton::ServersController do
     before do
       @room1 = FactoryGirl.create(:bigbluebutton_room, :server => server)
       @room2 = FactoryGirl.create(:bigbluebutton_room, :server => server)
-      another_room = FactoryGirl.create(:bigbluebutton_room)
+      FactoryGirl.create(:bigbluebutton_room)
     end
     before(:each) { get :rooms, :id => server.to_param }
     it { should respond_with(:success) }
@@ -266,10 +266,13 @@ describe Bigbluebutton::ServersController do
 
   describe "#recordings" do
     before do
+      @recording1 = FactoryGirl.create(:bigbluebutton_recording, :server => server)
+      @recording2 = FactoryGirl.create(:bigbluebutton_recording, :server => server)
+      FactoryGirl.create(:bigbluebutton_recording)
+
+      # one that belongs to another server but to a room that's in the target server
       room = FactoryGirl.create(:bigbluebutton_room, :server => server)
-      @recording1 = FactoryGirl.create(:bigbluebutton_recording, :room => room)
-      @recording2 = FactoryGirl.create(:bigbluebutton_recording, :room => room)
-      another_recording = FactoryGirl.create(:bigbluebutton_recording)
+      FactoryGirl.create(:bigbluebutton_recording, :room => room)
     end
     before(:each) { get :recordings, :id => server.to_param }
     it { should respond_with(:success) }

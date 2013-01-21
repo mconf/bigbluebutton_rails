@@ -99,7 +99,7 @@ class Bigbluebutton::ServersController < ApplicationController
   end
 
   def recordings
-    respond_with(@recordings = BigbluebuttonRecording.where(:room_id => @server.rooms))
+    respond_with(@recordings = BigbluebuttonRecording.where(:server_id => @server))
   end
 
   def rooms

@@ -123,13 +123,19 @@ class BigbluebuttonRecording < ActiveRecord::Base
   # The format expected for 'formats' follows the format returned by
   # BigBlueButtonApi#get_recordings but with the keys already converted to our format.
   def self.sync_playback_formats(recording, formats)
-    formats_hash = formats.clone
+    formats_copy = formats.clone
+
+    # make it an array if it's a hash with a single format
+    formats_copy = [ formats_copy ] if formats_copy.is_a?(Hash)
+
     BigbluebuttonPlaybackFormat.where(:recording_id => recording.id).each do |format_db|
+      format = formats_copy.select{ |d| d[:type] == format_db.format_type }.first
+
       # the format exists in the hash, update it in the db
-      format = formats_hash.select{ |d| d[:type] == format_db.format_type }.first
       if format
         format_db.update_attributes({ :url => format[:url], :length => format[:length] })
-        formats_hash.delete(format)
+        formats_copy.delete(format)
+
       # the format is not in the hash, remove from the db
       else
         format_db.destroy
@@ -137,9 +143,9 @@ class BigbluebuttonRecording < ActiveRecord::Base
     end
 
     # for formats that are not in the db yet
-    formats_hash.each do |format|
+    formats_copy.each do |format|
       attrs = { :recording_id => recording.id, :format_type => format[:type],
-        :url => format[:url], :length => format[:length] }
+        :url => format[:url], :length => format[:length].to_i }
       BigbluebuttonPlaybackFormat.create!(attrs)
     end
   end
