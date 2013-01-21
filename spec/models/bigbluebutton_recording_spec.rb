@@ -74,6 +74,17 @@ describe BigbluebuttonRecording do
       it { @recording.end_time.utc.to_i.should == data[0][:endTime].utc.to_i }
       it { @recording.start_time.utc.to_i.should == data[0][:startTime].utc.to_i }
       it { @recording.server.should == new_server }
+      it { @recording.metadata.count.should == 3 }
+      3.times do |i|
+        it { @recording.metadata[i].name.should == data[0][:metadata].keys[i].to_s }
+        it { @recording.metadata[i].content.should == data[0][:metadata].values[i] }
+      end
+      it { @recording.playback_formats.count.should == 2 }
+      2.times do |i|
+        it { @recording.playback_formats[i].format_type.should == data[0][:playback][:format][i][:type] }
+        it { @recording.playback_formats[i].url.should == data[0][:playback][:format][i][:url] }
+        it { @recording.playback_formats[i].length.should == data[0][:playback][:format][i][:length] }
+      end
     end
 
     context "updates existing recordings" do
@@ -91,6 +102,17 @@ describe BigbluebuttonRecording do
       it { @recording.end_time.utc.to_i.should == data[0][:endTime].utc.to_i }
       it { @recording.start_time.utc.to_i.should == data[0][:startTime].utc.to_i }
       it { @recording.server.should == new_server }
+      it { @recording.metadata.count.should == 3 }
+      3.times do |i|
+        it { @recording.metadata[i].name.should == data[0][:metadata].keys[i].to_s }
+        it { @recording.metadata[i].content.should == data[0][:metadata].values[i] }
+      end
+      it { @recording.playback_formats.count.should == 2 }
+      2.times do |i|
+        it { @recording.playback_formats[i].format_type.should == data[0][:playback][:format][i][:type] }
+        it { @recording.playback_formats[i].url.should == data[0][:playback][:format][i][:url] }
+        it { @recording.playback_formats[i].length.should == data[0][:playback][:format][i][:length] }
+      end
     end
 
     context "doesn't remove recordings" do
@@ -114,6 +136,34 @@ describe BigbluebuttonRecording do
         BigbluebuttonRecording.sync(new_server, data)
       }
       it { BigbluebuttonRecording.count.should == 3 }
+    end
+
+    context "uses transactions for each recording individually" do
+      before {
+        # this recording will fail when saving, so all associated data
+        # should also NOT be saved
+        clone = data[0].clone
+        clone[:recordID] = "recordid-2"
+        clone[:playback] = { :format =>
+          [
+           { # without :type to trigger an exception
+             :url => "http://test-install.blindsidenetworks.com/playback/slides/playback.html?meetingId=125468758b24fa27551e7a065849dda3ce65dd32-1329872486268",
+             :length => 64
+           },
+           { :type => "presentation",
+             :url => "http://test-install.blindsidenetworks.com/presentation/slides/playback.html?meetingId=125468758b24fa27551e7a065849dda3ce65dd32-1329872486268",
+             :length => 64
+           }
+          ]
+        }
+        data.push(clone)
+        lambda {
+          BigbluebuttonRecording.sync(new_server, data)
+        }.should raise_error(Exception)
+      }
+      it { BigbluebuttonRecording.count.should == 1 }
+      it { BigbluebuttonMetadata.count.should == 3 }
+      it { BigbluebuttonPlaybackFormat.count.should == 2 }
     end
   end
 

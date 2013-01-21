@@ -3,5 +3,7 @@ class BigbluebuttonPlaybackFormat < ActiveRecord::Base
 
   validates :recording_id, :presence => true
 
+  validates :format_type, :presence => true
+
   attr_accessible :recording_id, :format_type, :url, :length
 end

@@ -38,10 +38,12 @@ class BigbluebuttonRecording < ActiveRecord::Base
     recordings.each do |rec|
       rec_obj = BigbluebuttonRecording.find_by_recordid(rec[:recordID])
       rec_data = adapt_recording_hash(rec)
-      if rec_obj
-        self.update_recording(server, rec_obj, rec_data)
-      else
-        self.create_recording(server, rec_data)
+      BigbluebuttonRecording.transaction do
+        if rec_obj
+          self.update_recording(server, rec_obj, rec_data)
+        else
+          self.create_recording(server, rec_data)
+        end
       end
     end
   end
