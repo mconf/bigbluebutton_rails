@@ -35,6 +35,8 @@
       <div class="field"><label>Access</label>
         <%= link_to 'Show', bigbluebutton_recording_path(recording) %> |
         <%= link_to 'Edit', edit_bigbluebutton_recording_path(recording) %> |
+        <%= link_to 'Publish', publish_bigbluebutton_recording_path(recording), :confirm => 'Are you sure?', :method => :post %> |
+        <%= link_to 'Unpublish', unpublish_bigbluebutton_recording_path(recording), :confirm => 'Are you sure?', :method => :post %> |
         <%= link_to 'Destroy', bigbluebutton_recording_path(recording), :confirm => 'Are you sure?', :method => :delete %>
       </div>
       <div class="field"><label>Play</label>

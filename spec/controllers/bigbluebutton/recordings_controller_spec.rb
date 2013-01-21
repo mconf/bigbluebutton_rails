@@ -134,4 +134,90 @@ describe Bigbluebutton::RecordingsController do
     end
   end
 
+  describe "#publish" do
+    before { mock_server_and_api }
+
+    context "on success" do
+      before {
+        mocked_server.should_receive(:send_publish_recordings).with(recording.recordid, true)
+      }
+      before(:each) { post :publish, :id => recording.to_param }
+      it { should respond_with(:redirect) }
+      it { should redirect_to(bigbluebutton_recording_path(recording)) }
+      it { should set_the_flash.to(I18n.t('bigbluebutton_rails.recordings.notice.publish.success')) }
+    end
+
+    context "on failure" do
+      let(:bbb_error_msg) { SecureRandom.hex(250) }
+      let(:bbb_error) { BigBlueButton::BigBlueButtonException.new(bbb_error_msg) }
+      before {
+        request.env["HTTP_REFERER"] = "/any"
+        mocked_server.should_receive(:send_publish_recordings) { raise bbb_error }
+      }
+      before(:each) { post :publish, :id => recording.to_param }
+      it { should respond_with(:redirect) }
+      it { should redirect_to(bigbluebutton_recording_path(recording)) }
+      it { should set_the_flash.to(bbb_error_msg[0..200]) }
+    end
+
+    context "returns error if there's no room associated" do
+      before { recording.stub(:room) { nil } }
+      before(:each) { post :publish, :id => recording.to_param }
+      it { should respond_with(:redirect) }
+      it { should redirect_to(bigbluebutton_recording_path(recording)) }
+      it { should set_the_flash.to(I18n.t('bigbluebutton_rails.recordings.errors.check_for_server.no_server')) }
+    end
+
+    context "returns error if there's no server associated" do
+      before { recording.stub_chain("room.server") { nil } }
+      before(:each) { post :publish, :id => recording.to_param }
+      it { should respond_with(:redirect) }
+      it { should redirect_to(bigbluebutton_recording_path(recording)) }
+      it { should set_the_flash.to(I18n.t('bigbluebutton_rails.recordings.errors.check_for_server.no_server')) }
+    end
+  end
+
+  describe "#unpublish" do
+    before { mock_server_and_api }
+
+    context "on success" do
+      before {
+        mocked_server.should_receive(:send_publish_recordings).with(recording.recordid, false)
+      }
+      before(:each) { post :unpublish, :id => recording.to_param }
+      it { should respond_with(:redirect) }
+      it { should redirect_to(bigbluebutton_recording_path(recording)) }
+      it { should set_the_flash.to(I18n.t('bigbluebutton_rails.recordings.notice.unpublish.success')) }
+    end
+
+    context "on failure" do
+      let(:bbb_error_msg) { SecureRandom.hex(250) }
+      let(:bbb_error) { BigBlueButton::BigBlueButtonException.new(bbb_error_msg) }
+      before {
+        request.env["HTTP_REFERER"] = "/any"
+        mocked_server.should_receive(:send_publish_recordings) { raise bbb_error }
+      }
+      before(:each) { post :unpublish, :id => recording.to_param }
+      it { should respond_with(:redirect) }
+      it { should redirect_to(bigbluebutton_recording_path(recording)) }
+      it { should set_the_flash.to(bbb_error_msg[0..200]) }
+    end
+
+    context "returns error if there's no room associated" do
+      before { recording.stub(:room) { nil } }
+      before(:each) { post :unpublish, :id => recording.to_param }
+      it { should respond_with(:redirect) }
+      it { should redirect_to(bigbluebutton_recording_path(recording)) }
+      it { should set_the_flash.to(I18n.t('bigbluebutton_rails.recordings.errors.check_for_server.no_server')) }
+    end
+
+    context "returns error if there's no server associated" do
+      before { recording.stub_chain("room.server") { nil } }
+      before(:each) { post :unpublish, :id => recording.to_param }
+      it { should respond_with(:redirect) }
+      it { should redirect_to(bigbluebutton_recording_path(recording)) }
+      it { should set_the_flash.to(I18n.t('bigbluebutton_rails.recordings.errors.check_for_server.no_server')) }
+    end
+  end
+
 end

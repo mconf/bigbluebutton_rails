@@ -52,6 +52,8 @@
 <p>
   <span>Access:</span>
   <%= link_to 'Edit', edit_bigbluebutton_recording_path(@recording) %> |
+  <%= link_to 'Publish', publish_bigbluebutton_recording_path(@recording), :confirm => 'Are you sure?', :method => :post %> |
+  <%= link_to 'Unpublish', unpublish_bigbluebutton_recording_path(@recording), :confirm => 'Are you sure?', :method => :post %> |
   <%= link_to 'Destroy', bigbluebutton_recording_path(@recording), :confirm => 'Are you sure?', :method => :delete %> |
   <%= link_to 'Back', bigbluebutton_recordings_path %>
 </p>

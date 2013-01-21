@@ -22,9 +22,7 @@
         <%= link_to 'Destroy', bigbluebutton_server_path(server), :confirm => 'Are you sure?', :method => :delete %>
       </div>
       <div><label>Recordings</label>
-        <%= link_to 'Fetch recordings', fetch_recordings_bigbluebutton_server_path(server), :confirm => 'Are you sure?', :method => :post %> |
-        <%= link_to 'Publish recordings', publish_recordings_bigbluebutton_server_path(server), :confirm => 'Are you sure?', :method => :post %> |
-        <%= link_to 'Unpublish recordings', unpublish_recordings_bigbluebutton_server_path(server), :confirm => 'Are you sure?', :method => :post %>
+        <%= link_to 'Fetch recordings', fetch_recordings_bigbluebutton_server_path(server), :confirm => 'Are you sure?', :method => :post %>
       </div>
     </li>
   <% end %>

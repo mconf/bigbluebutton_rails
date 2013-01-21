@@ -90,6 +90,8 @@ module ActionDispatch::Routing
                   :controller => BigbluebuttonRails.controllers[:recordings] do
           member do
             get :play
+            post :publish
+            post :unpublish
           end
         end
 

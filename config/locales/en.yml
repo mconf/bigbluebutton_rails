@@ -47,12 +47,18 @@ en:
     bigbluebutton: BigBlueButton
     recordings:
       errors:
+        check_for_server:
+          no_server: "There's no server associated with this recording."
         play:
           no_format: "There's no playback url specified for this recording."
       notice:
         destroy:
           success: "Your recording was successfully destroyed."
           success_with_bbb_error: "The recording was successfully destroyed but it wasn't deleted from the webconference server (\"%{error}\")"
+        publish:
+          success: "Your recording was successfully published."
+        unpublish:
+          success: "Your recording was successfully unpublished."
         update:
           success: "Your recording was successfully updated."
     rooms:

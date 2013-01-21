@@ -1,3 +1,24 @@
+<script type="text/javascript">
+  $(document).ready(function() {
+    $("#publish-recordings-input").keyup(function() {
+      var recordings = $("#publish-recordings-input").val();
+      var url = "<%= publish_recordings_bigbluebutton_server_path(@server) %>";
+      if (recordings.trim() != "") {
+        url = url + "?recordings=" + recordings;
+      }
+      $("#publish-recordings-link").attr("href", url);
+    });
+    $("#unpublish-recordings-input").keyup(function() {
+      var recordings = $("#unpublish-recordings-input").val();
+      var url = "<%= unpublish_recordings_bigbluebutton_server_path(@server) %>";
+      if (recordings.trim() != "") {
+        url = url + "?recordings=" + recordings;
+      }
+      $("#unpublish-recordings-link").attr("href", url);
+    });
+  });
+</script>
+
 <h1><%= BigbluebuttonServer.model_name.human %>:</h1>
 
 <p>
@@ -37,6 +58,8 @@
 <p>
   <span>Recordings:</span>
   <%= link_to 'Fetch recordings', fetch_recordings_bigbluebutton_server_path(@server), :confirm => 'Are you sure?', :method => :post %> |
-  <%= link_to 'Publish recordings', publish_recordings_bigbluebutton_server_path(@server), :confirm => 'Are you sure?', :method => :post %> |
-  <%= link_to 'Unpublish recordings', unpublish_recordings_bigbluebutton_server_path(@server), :confirm => 'Are you sure?', :method => :post %>
+  <%= text_field_tag 'publish_recordings', '', :id => 'publish-recordings-input', :size => 10 %>
+  <%= link_to 'Publish recordings', publish_recordings_bigbluebutton_server_path(@server), :confirm => 'Are you sure?', :method => :post, :id => 'publish-recordings-link' %> |
+  <%= text_field_tag 'publish_recordings', '', :id => 'unpublish-recordings-input', :size => 10 %>
+  <%= link_to 'Unpublish recordings', unpublish_recordings_bigbluebutton_server_path(@server), :confirm => 'Are you sure?', :method => :post, :id => 'unpublish-recordings-link' %>
 </p>
