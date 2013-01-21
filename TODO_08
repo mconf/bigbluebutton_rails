@@ -5,9 +5,7 @@ See:
 * http://groups.google.com/group/bigbluebutton-dev/browse_thread/thread/c214cbe9bdb2268a?pli=1
 
 TODO:
-* Support for recordings
-  * Keep track of older meetings?
 * Pre-upload of slides
 * New arguments in some methods (e.g. userID, record, duration, meta_*)
-* New return values (e.g createTime).
+* New return values (e.g. createTime).
 * We don't need to randomize the meeting_id anymore (to confirm)
