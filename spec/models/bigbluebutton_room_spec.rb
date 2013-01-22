@@ -9,20 +9,46 @@ describe BigbluebuttonRoom do
   before { FactoryGirl.create(:bigbluebutton_room) }
 
   it { should belong_to(:server) }
+  it { should_not validate_presence_of(:server_id) }
+
   it { should belong_to(:owner) }
   it { should_not validate_presence_of(:owner_id) }
   it { should_not validate_presence_of(:owner_type) }
 
   it { should have_many(:recordings) }
 
-  it { should_not validate_presence_of(:server_id) }
   it { should validate_presence_of(:meetingid) }
+  it { should validate_uniqueness_of(:meetingid) }
+  it { should ensure_length_of(:meetingid).is_at_least(1).is_at_most(100) }
+
   it { should validate_presence_of(:voice_bridge) }
+  it { should validate_uniqueness_of(:voice_bridge) }
+
   it { should validate_presence_of(:name) }
+  it { should validate_uniqueness_of(:name) }
+  it { should ensure_length_of(:name).is_at_least(1).is_at_most(150) }
+
   it { should validate_presence_of(:param) }
+  it { should validate_uniqueness_of(:param) }
+  it { should ensure_length_of(:param).is_at_least(3) }
 
   it { should be_boolean(:private) }
+
   it { should be_boolean(:randomize_meetingid) }
+
+  it { should be_boolean(:record) }
+
+  it { should validate_presence_of(:duration) }
+  it { should validate_numericality_of(:duration).only_integer }
+  it { should_not allow_value(-1).for(:duration) }
+  it { should allow_value(0).for(:duration) }
+  it { should allow_value(1).for(:duration) }
+
+  it { should ensure_length_of(:attendee_password).is_at_most(16) }
+
+  it { should ensure_length_of(:moderator_password).is_at_most(16) }
+
+  it { should ensure_length_of(:welcome_msg).is_at_most(250) }
 
   [:name, :server_id, :meetingid, :attendee_password,
    :moderator_password, :welcome_msg, :owner, :private, :logout_url,
@@ -33,22 +59,10 @@ describe BigbluebuttonRoom do
   end
   it { should_not allow_mass_assignment_of(:id) }
 
-  it { should validate_uniqueness_of(:meetingid) }
-  it { should validate_uniqueness_of(:name) }
-  it { should validate_uniqueness_of(:voice_bridge) }
-  it { should validate_uniqueness_of(:param) }
-
-  it { should ensure_length_of(:meetingid).is_at_least(1).is_at_most(100) }
-  it { should ensure_length_of(:name).is_at_least(1).is_at_most(150) }
-  it { should ensure_length_of(:attendee_password).is_at_most(16) }
-  it { should ensure_length_of(:moderator_password).is_at_most(16) }
-  it { should ensure_length_of(:welcome_msg).is_at_most(250) }
-  it { should ensure_length_of(:param).is_at_least(3) }
-
   # attr_accessors
   [:running, :participant_count, :moderator_count, :attendees,
    :has_been_forcibly_ended, :start_time, :end_time,
-   :external, :server, :request_headers].each do |attr|
+   :external, :server, :request_headers, :record, :duration].each do |attr|
     it { should respond_to(attr) }
     it { should respond_to("#{attr}=") }
   end
@@ -338,7 +352,8 @@ describe BigbluebuttonRoom do
             hash = hash_including(:moderatorPW => room.moderator_password, :attendeePW => room.attendee_password,
                                   :welcome  => room.welcome_msg, :dialNumber => room.dial_number,
                                   :logoutURL => room.logout_url, :maxParticipants => room.max_participants,
-                                  :voiceBridge => room.voice_bridge)
+                                  :voiceBridge => room.voice_bridge, :record => room.record,
+                                  :duration => room.duration)
             mocked_api.should_receive(:create_meeting).
               with(room.name, room.meetingid, hash).and_return(hash_create)
             room.stub(:select_server).and_return(mocked_server)
@@ -356,7 +371,8 @@ describe BigbluebuttonRoom do
             hash = hash_including(:moderatorPW => new_room.moderator_password, :attendeePW => new_room.attendee_password,
                                   :welcome  => new_room.welcome_msg, :dialNumber => new_room.dial_number,
                                   :logoutURL => new_room.logout_url, :maxParticipants => new_room.max_participants,
-                                  :voiceBridge => new_room.voice_bridge)
+                                  :voiceBridge => new_room.voice_bridge, :record => room.record,
+                                  :duration => room.duration)
             mocked_api.should_receive(:create_meeting).
               with(new_room.name, new_room.meetingid, hash).and_return(hash_create)
             new_room.stub(:select_server).and_return(mocked_server)
@@ -385,7 +401,8 @@ describe BigbluebuttonRoom do
           hash = hash_including(:moderatorPW => room.moderator_password, :attendeePW => room.attendee_password,
                                 :welcome  => room.welcome_msg, :dialNumber => room.dial_number,
                                 :logoutURL => room.logout_url, :maxParticipants => room.max_participants,
-                                :voiceBridge => room.voice_bridge)
+                                :voiceBridge => room.voice_bridge, :record => room.record,
+                                :duration => room.duration)
           mocked_api.should_receive(:create_meeting).with(room.name, new_id, hash)
           room.send_create
         end
@@ -396,7 +413,8 @@ describe BigbluebuttonRoom do
           hash = hash_including(:moderatorPW => room.moderator_password, :attendeePW => room.attendee_password,
                                 :welcome  => room.welcome_msg, :dialNumber => room.dial_number,
                                 :logoutURL => room.logout_url, :maxParticipants => room.max_participants,
-                                :voiceBridge => room.voice_bridge)
+                                :voiceBridge => room.voice_bridge, :record => room.record,
+                                :duration => room.duration)
           mocked_api.should_receive(:create_meeting).
             with(room.name, new_id, hash).twice.and_return(fail_hash)
           mocked_api.should_receive(:create_meeting).
@@ -409,7 +427,8 @@ describe BigbluebuttonRoom do
           hash = hash_including(:moderatorPW => room.moderator_password, :attendeePW => room.attendee_password,
                                 :welcome  => room.welcome_msg, :dialNumber => room.dial_number,
                                 :logoutURL => room.logout_url, :maxParticipants => room.max_participants,
-                                :voiceBridge => room.voice_bridge)
+                                :voiceBridge => room.voice_bridge, :record => room.record,
+                                :duration => room.duration)
           mocked_api.should_receive(:create_meeting).
             with(room.name, new_id, hash).exactly(10).times.and_return(fail_hash)
           room.send_create
@@ -422,7 +441,8 @@ describe BigbluebuttonRoom do
           hash = hash_including(:moderatorPW => room.moderator_password, :attendeePW => room.attendee_password,
                                 :welcome  => room.welcome_msg, :dialNumber => room.dial_number,
                                 :logoutURL => "full-version-of-logout-url", :maxParticipants => room.max_participants,
-                                :voiceBridge => room.voice_bridge)
+                                :voiceBridge => room.voice_bridge, :record => room.record,
+                                :duration => room.duration)
           mocked_api.should_receive(:create_meeting).
             with(room.name, room.meetingid, hash).and_return(hash_create)
           room.stub(:select_server).and_return(mocked_server)

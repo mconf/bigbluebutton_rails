@@ -29,11 +29,20 @@ class BigbluebuttonRailsTo130 < ActiveRecord::Migration
       t.integer :length
       t.timestamps
     end
+
+    change_table(:bigbluebutton_rooms) do |t|
+      t.boolean :record, :default => false
+      t.integer :duration, :default => 0
+    end
   end
 
   def self.down
-    drop_table :bigbluebutton_recordings
-    drop_table :bigbluebutton_metadata
+    change_table(:bigbluebutton_rooms) do |t|
+      t.remove :record
+      t.remove :duration
+    end
     drop_table :bigbluebutton_playback_formats
+    drop_table :bigbluebutton_metadata
+    drop_table :bigbluebutton_recordings
   end
 end

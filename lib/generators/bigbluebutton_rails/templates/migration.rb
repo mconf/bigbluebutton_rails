@@ -27,6 +27,8 @@ class CreateBigbluebuttonRails < ActiveRecord::Migration
       t.boolean :randomize_meetingid, :default => true
       t.boolean :external, :default => false
       t.string :param
+      t.boolean :record, :default => false
+      t.integer :duration, :default => 0
       t.timestamps
     end
     add_index :bigbluebutton_rooms, :server_id
@@ -64,11 +66,11 @@ class CreateBigbluebuttonRails < ActiveRecord::Migration
   end
 
   def self.down
+    drop_table :bigbluebutton_playback_formats
+    drop_table :bigbluebutton_metadata
+    drop_table :bigbluebutton_recordings
     drop_table :bigbluebutton_rooms
     drop_table :bigbluebutton_servers
-    drop_table :bigbluebutton_recordings
-    drop_table :bigbluebutton_metadata
-    drop_table :bigbluebutton_playback_formats
   end
 
 end

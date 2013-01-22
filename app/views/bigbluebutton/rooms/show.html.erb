@@ -56,6 +56,14 @@
   <b><%= BigbluebuttonRoom.human_attribute_name(:param) %>:</b>
   <%= @room.param %>
 </p>
+<p>
+  <b><%= BigbluebuttonRoom.human_attribute_name(:record) %>:</b>
+  <%= @room.record %>
+</p>
+<p>
+  <b><%= BigbluebuttonRoom.human_attribute_name(:duration) %>:</b>
+  <%= @room.duration %>
+</p>
 
 <%= link_to 'Edit', edit_bigbluebutton_room_path(@room) %> |
 <%= link_to 'Back', bigbluebutton_rooms_path %>

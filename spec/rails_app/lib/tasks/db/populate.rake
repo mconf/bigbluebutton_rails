@@ -34,7 +34,9 @@ namespace :db do
           :private => false,
           :randomize_meetingid => false,
           :param => "meeting-#{n1}-#{n2}",
-          :external => false
+          :external => false,
+          :record => false,
+          :duration => 0
         }
         puts "  - Creating room #{params[:name]}"
         room = BigbluebuttonRoom.create!(params)

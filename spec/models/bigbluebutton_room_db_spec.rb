@@ -20,6 +20,8 @@ describe BigbluebuttonRoom do
     it { should have_db_column(:randomize_meetingid).of_type(:boolean) }
     it { should have_db_column(:external).of_type(:boolean) }
     it { should have_db_column(:param).of_type(:string) }
+    it { should have_db_column(:record).of_type(:boolean) }
+    it { should have_db_column(:duration).of_type(:integer) }
     it { should have_db_index(:server_id) }
     it { should have_db_index(:meetingid).unique(true) }
     it { should have_db_index(:voice_bridge).unique(true) }

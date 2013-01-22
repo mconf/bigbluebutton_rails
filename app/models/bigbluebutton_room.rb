@@ -14,6 +14,11 @@ class BigbluebuttonRoom < ActiveRecord::Base
   validates :private, :inclusion => { :in => [true, false] }
   validates :randomize_meetingid, :inclusion => { :in => [true, false] }
   validates :voice_bridge, :presence => true, :uniqueness => true
+  validates :record, :inclusion => { :in => [true, false] }
+
+  validates :duration,
+    :presence => true,
+    :numericality => { :only_integer => true, :greater_than_or_equal_to => 0 }
 
   validates :param,
             :presence => true,
@@ -33,7 +38,7 @@ class BigbluebuttonRoom < ActiveRecord::Base
   attr_accessible :name, :server_id, :meetingid, :attendee_password, :moderator_password,
                   :welcome_msg, :owner, :server, :private, :logout_url, :dial_number,
                   :voice_bridge, :max_participants, :owner_id, :owner_type, :randomize_meetingid,
-                  :external, :param
+                  :external, :param, :record, :duration
 
   # Note: these params need to be fetched from the server before being accessed
   attr_accessor :running, :participant_count, :moderator_count, :attendees,
@@ -313,14 +318,18 @@ class BigbluebuttonRoom < ActiveRecord::Base
   end
 
   def do_create_meeting
-    msg = (self.welcome_msg.nil? or self.welcome_msg.empty?) ? default_welcome_message : self.welcome_msg
     opts = {
-      :moderatorPW => self.moderator_password, :attendeePW => self.attendee_password,
-      :welcome => msg, :dialNumber => self.dial_number,
+      :record => self.record,
+      :duration => self.duration,
+      :moderatorPW => self.moderator_password,
+      :attendeePW => self.attendee_password,
+      :welcome => self.welcome_msg.blank? ? default_welcome_message : self.welcome_msg,
+      :dialNumber => self.dial_number,
       :logoutURL => self.full_logout_url || self.logout_url,
-      :maxParticipants => self.max_participants, :voiceBridge => self.voice_bridge
+      :maxParticipants => self.max_participants,
+      :voiceBridge => self.voice_bridge
     }
-    self.server.api.request_headers = @request_headers # we need the client IP
+    self.server.api.request_headers = @request_headers # we need the client's IP
     self.server.api.create_meeting(self.name, self.meetingid, opts)
   end
 
