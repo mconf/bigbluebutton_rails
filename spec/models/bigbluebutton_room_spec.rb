@@ -52,10 +52,12 @@ describe BigbluebuttonRoom do
 
   it { should ensure_length_of(:welcome_msg).is_at_most(250) }
 
+  it { should accept_nested_attributes_for(:metadata).allow_destroy(true) }
+
   [:name, :server_id, :meetingid, :attendee_password,
    :moderator_password, :welcome_msg, :owner, :private, :logout_url,
    :dial_number, :voice_bridge, :max_participants, :owner_id,
-   :owner_type, :randomize_meetingid, :param].
+   :owner_type, :randomize_meetingid, :param, :metadata_attributes].
     each do |attribute|
     it { should allow_mass_assignment_of(attribute) }
   end
@@ -63,8 +65,8 @@ describe BigbluebuttonRoom do
 
   # attr_accessors
   [:running, :participant_count, :moderator_count, :attendees,
-   :has_been_forcibly_ended, :start_time, :end_time,
-   :external, :server, :request_headers, :record, :duration].each do |attr|
+   :has_been_forcibly_ended, :start_time, :end_time, :external,
+   :server, :request_headers, :record, :duration].each do |attr|
     it { should respond_to(attr) }
     it { should respond_to("#{attr}=") }
   end

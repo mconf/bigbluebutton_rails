@@ -4,7 +4,7 @@
   <% url = bigbluebutton_room_path(@room) %>
 <% end %>
 
-<%= form_for @room, :url => url do |f| %>
+<%= form_for setup_bigbluebutton_room(@room), :url => url do |f| %>
   <% if @room.errors.any? %>
     <div id="error_explanation">
       <h2><%= pluralize(@room.errors.count, "error") %>:</h2>
@@ -81,11 +81,18 @@
     <%= f.text_field :duration %>
   </div>
   <div class="field">
-    <b><%= BigbluebuttonRoom.human_attribute_name(:metadata) %></b>
-    <% @room.metadata.each do |metadata| %>
-      <%= metadata.attributes.except("id", "owner_id", "owner_type", "updated_at", "created_at") %>,
+    <b>Metadata</b> (by default we have 10 metadata in this view, but it's not limited to it)<br />
+    <%= f.fields_for :metadata do |metadata_form| %>
+      <%= metadata_form.label :name %>
+      <%= metadata_form.text_field :name %>
+      <%= metadata_form.label :content %>
+      <%= metadata_form.text_field :content %>
+      <%= metadata_form.check_box :_destroy %>
+      <%= metadata_form.label :_destroy, "Remove Metadata" %>
+      <br/>
     <% end %>
   </div>
+
   <div class="actions">
     <%= f.submit %>
   </div>

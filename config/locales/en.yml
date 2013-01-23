@@ -54,7 +54,7 @@ en:
     bigbluebutton: BigBlueButton
     metadata:
       errors:
-        name_format: "you can only use letters, numbers and the symbols \"-\" or \"_\", but only letters at the beginning"
+        name_format: "can only use letters, numbers and the symbols \"-\" or \"_\", but only letters at the beginning"
     recordings:
       errors:
         check_for_server:
@@ -79,7 +79,7 @@ en:
           wrong_params: "Wrong params in your request."
         external:
           blank_meetingid: "You must specify the meetingid of the meeting you want to join"
-        param_format: "you can only use letters, numbers and the symbols \"-\" or \"_\" (not at the begin or end)"
+        param_format: "can only use letters, numbers and the symbols \"-\" or \"_\" (not at the begin or end)"
         server:
           nil: "Your room must be associated to a server to execute this operation."
       notice:

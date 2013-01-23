@@ -44,14 +44,14 @@ namespace :db do
         room = BigbluebuttonRoom.create!(params)
 
         # Room metadata
-        3.times do
+        3.times do |n_metadata|
           params = {
-            :name => Forgery(:name).first_name.downcase,
-            :content => Forgery(:name).full_name,
-            :owner => room
+            :name => "#{Forgery(:name).first_name.downcase}-#{n_metadata}",
+            :content => Forgery(:name).full_name
           }
           puts "    - Creating room metadata #{params[:name]}"
           metadata = BigbluebuttonMetadata.create(params)
+          metadata.owner = room
           metadata.save!
         end
 
@@ -72,21 +72,21 @@ namespace :db do
           recording.save!
 
           # Recording metadata
-          3.times do
+          3.times do |n_metadata|
             params = {
-              :name => Forgery(:name).first_name.downcase,
-              :content => Forgery(:name).full_name,
-              :owner => recording
+              :name => "#{Forgery(:name).first_name.downcase}-#{n_metadata}",
+              :content => Forgery(:name).full_name
             }
             puts "      - Creating recording metadata #{params[:name]}"
             metadata = BigbluebuttonMetadata.create(params)
+            metadata.owner = recording
             metadata.save!
           end
 
           # Recording playback formats
-          2.times do |n4|
+          2.times do |n_format|
             params = {
-              :format_type => "#{n4}-#{Forgery(:name).first_name.downcase}",
+              :format_type => "#{Forgery(:name).first_name.downcase}-#{n_format}",
               :url => "http://" + Forgery(:internet).domain_name + "/playback",
               :length => Forgery(:basic).number
             }

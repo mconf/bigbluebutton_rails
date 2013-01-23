@@ -9,10 +9,11 @@ describe BigbluebuttonMetadata do
   before { FactoryGirl.create(:bigbluebutton_metadata) }
 
   it { should belong_to(:owner) }
-  it { should validate_presence_of(:owner) }
+  it { should validate_presence_of(:owner_id) }
+  it { should validate_presence_of(:owner_type) }
 
   it { should validate_presence_of(:name) }
-  it { should validate_uniqueness_of(:name).scoped_to([:owner_id, :owner_id]) }
+  it { should validate_uniqueness_of(:name).scoped_to([:owner_id, :owner_type]) }
   context "#name format" do
     let(:msg) { I18n.t('bigbluebutton_rails.metadata.errors.name_format') }
     it { should validate_format_of(:name).not_with("a b").with_message(msg) }
@@ -26,6 +27,7 @@ describe BigbluebuttonMetadata do
     it { should validate_format_of(:name).not_with("-abc").with_message(msg) }
     it { should validate_format_of(:name).not_with("_abc").with_message(msg) }
     it { should validate_format_of(:name).with("abc-") }
+    it { should validate_format_of(:name).with("abc-0") }
     it { should validate_format_of(:name).with("abc_") }
     it { should validate_format_of(:name).with("abc") }
     it { should validate_format_of(:name).with("aBcD") }
@@ -35,7 +37,7 @@ describe BigbluebuttonMetadata do
 
   it { should_not validate_presence_of(:content) }
 
-  [:owner, :name, :content].each do |attribute|
+  [:name, :content].each do |attribute|
     it { should allow_mass_assignment_of(attribute) }
   end
 end

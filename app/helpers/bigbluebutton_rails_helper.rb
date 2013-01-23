@@ -15,4 +15,10 @@ module BigbluebuttonRailsHelper
     msgs.html_safe
   end
 
+  # Setup a BigbluebuttonRoom to show in the forms
+  def setup_bigbluebutton_room(room)
+    (room.metadata.count..10).each { room.metadata.build }
+    room
+  end
+
 end

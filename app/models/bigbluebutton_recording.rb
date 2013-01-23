@@ -118,8 +118,13 @@ class BigbluebuttonRecording < ActiveRecord::Base
 
     # for metadata that are not in the db yet
     local_metadata.each do |name, content|
-      attrs = { :name => name, :content => content, :owner => recording }
-      BigbluebuttonMetadata.create!(attrs)
+      attrs = {
+        :name => name,
+        :content => content,
+      }
+      meta = BigbluebuttonMetadata.create(attrs)
+      meta.owner = recording
+      meta.save!
     end
   end
 
