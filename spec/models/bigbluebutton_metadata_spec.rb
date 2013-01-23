@@ -26,13 +26,14 @@ describe BigbluebuttonMetadata do
     it { should validate_format_of(:name).not_with("ábcd").with_message(msg) }
     it { should validate_format_of(:name).not_with("-abc").with_message(msg) }
     it { should validate_format_of(:name).not_with("_abc").with_message(msg) }
+    it { should validate_format_of(:name).not_with("abc_").with_message(msg) }
+    it { should validate_format_of(:name).not_with("abc-123_d5").with_message(msg) }
     it { should validate_format_of(:name).with("abc-") }
     it { should validate_format_of(:name).with("abc-0") }
-    it { should validate_format_of(:name).with("abc_") }
     it { should validate_format_of(:name).with("abc") }
     it { should validate_format_of(:name).with("aBcD") }
     it { should validate_format_of(:name).with("abc123") }
-    it { should validate_format_of(:name).with("abc-123_d5") }
+    it { should validate_format_of(:name).with("abc-123-d5") }
   end
 
   it { should_not validate_presence_of(:content) }
