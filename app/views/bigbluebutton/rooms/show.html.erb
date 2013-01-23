@@ -64,6 +64,12 @@
   <b><%= BigbluebuttonRoom.human_attribute_name(:duration) %>:</b>
   <%= @room.duration %>
 </p>
+<p>
+  <b><%= BigbluebuttonRoom.human_attribute_name(:metadata) %></b>
+  <% @room.metadata.each do |metadata| %>
+    <%= metadata.attributes.except("id", "owner_id", "owner_type", "updated_at", "created_at") %>,
+  <% end %>
+</p>
 
 <%= link_to 'Edit', edit_bigbluebutton_room_path(@room) %> |
 <%= link_to 'Back', bigbluebutton_rooms_path %>

@@ -17,6 +17,8 @@ describe BigbluebuttonRoom do
 
   it { should have_many(:recordings) }
 
+  it { should have_many(:metadata).dependent(:destroy) }
+
   it { should validate_presence_of(:meetingid) }
   it { should validate_uniqueness_of(:meetingid) }
   it { should ensure_length_of(:meetingid).is_at_least(1).is_at_most(100) }
@@ -164,7 +166,7 @@ describe BigbluebuttonRoom do
     end
   end
 
-  context "param format" do
+  context "#param format" do
     let(:msg) { I18n.t('bigbluebutton_rails.rooms.errors.param_format') }
     it { should validate_format_of(:param).not_with("123 321").with_message(msg) }
     it { should validate_format_of(:param).not_with("").with_message(msg) }
@@ -321,6 +323,9 @@ describe BigbluebuttonRoom do
       }
       before {
         room.update_attributes(:welcome_msg => "Anything")
+        FactoryGirl.create(:bigbluebutton_room_metadata, :owner => room)
+        FactoryGirl.create(:bigbluebutton_room_metadata, :owner => room)
+
         mocked_api.should_receive(:"request_headers=").any_number_of_times.with({})
       }
 
@@ -329,8 +334,8 @@ describe BigbluebuttonRoom do
       context "calls #default_welcome_msg if welcome_msg is" do
         before do
           room.should_receive(:default_welcome_message).and_return("Hi!")
-          mocked_api.should_receive(:create_meeting).
-            with(anything, anything, hash_including(:welcome  => "Hi!"))
+          mocked_api.should_receive(:create_meeting)
+            .with(anything, anything, hash_including(:welcome  => "Hi!"))
           room.stub(:select_server).and_return(mocked_server)
           room.server = mocked_server
         end
@@ -349,13 +354,9 @@ describe BigbluebuttonRoom do
 
         context "for a stored room" do
           before do
-            hash = hash_including(:moderatorPW => room.moderator_password, :attendeePW => room.attendee_password,
-                                  :welcome  => room.welcome_msg, :dialNumber => room.dial_number,
-                                  :logoutURL => room.logout_url, :maxParticipants => room.max_participants,
-                                  :voiceBridge => room.voice_bridge, :record => room.record,
-                                  :duration => room.duration)
-            mocked_api.should_receive(:create_meeting).
-              with(room.name, room.meetingid, hash).and_return(hash_create)
+            mocked_api.should_receive(:create_meeting)
+              .with(room.name, room.meetingid, get_create_params(room))
+              .and_return(hash_create)
             room.stub(:select_server).and_return(mocked_server)
             room.server = mocked_server
             room.send_create
@@ -368,13 +369,9 @@ describe BigbluebuttonRoom do
         context "for a new record" do
           let(:new_room) { FactoryGirl.build(:bigbluebutton_room) }
           before do
-            hash = hash_including(:moderatorPW => new_room.moderator_password, :attendeePW => new_room.attendee_password,
-                                  :welcome  => new_room.welcome_msg, :dialNumber => new_room.dial_number,
-                                  :logoutURL => new_room.logout_url, :maxParticipants => new_room.max_participants,
-                                  :voiceBridge => new_room.voice_bridge, :record => room.record,
-                                  :duration => room.duration)
-            mocked_api.should_receive(:create_meeting).
-              with(new_room.name, new_room.meetingid, hash).and_return(hash_create)
+            mocked_api.should_receive(:create_meeting)
+              .with(new_room.name, new_room.meetingid, get_create_params(new_room))
+              .and_return(hash_create)
             new_room.stub(:select_server).and_return(mocked_server)
             new_room.server = mocked_server
             new_room.send_create
@@ -398,39 +395,27 @@ describe BigbluebuttonRoom do
 
         it "before calling create" do
           room.should_receive(:random_meetingid).and_return(new_id)
-          hash = hash_including(:moderatorPW => room.moderator_password, :attendeePW => room.attendee_password,
-                                :welcome  => room.welcome_msg, :dialNumber => room.dial_number,
-                                :logoutURL => room.logout_url, :maxParticipants => room.max_participants,
-                                :voiceBridge => room.voice_bridge, :record => room.record,
-                                :duration => room.duration)
-          mocked_api.should_receive(:create_meeting).with(room.name, new_id, hash)
+          mocked_api.should_receive(:create_meeting)
+            .with(room.name, new_id, get_create_params(room))
           room.send_create
         end
 
         it "and tries again on error" do
           # fails twice and then succeds
           room.should_receive(:random_meetingid).exactly(3).times.and_return(new_id)
-          hash = hash_including(:moderatorPW => room.moderator_password, :attendeePW => room.attendee_password,
-                                :welcome  => room.welcome_msg, :dialNumber => room.dial_number,
-                                :logoutURL => room.logout_url, :maxParticipants => room.max_participants,
-                                :voiceBridge => room.voice_bridge, :record => room.record,
-                                :duration => room.duration)
-          mocked_api.should_receive(:create_meeting).
-            with(room.name, new_id, hash).twice.and_return(fail_hash)
-          mocked_api.should_receive(:create_meeting).
-            with(room.name, new_id, hash).once.and_return(success_hash)
+          hash = hash_including(get_create_params(room))
+          mocked_api.should_receive(:create_meeting)
+            .with(room.name, new_id, hash).twice.and_return(fail_hash)
+          mocked_api.should_receive(:create_meeting)
+            .with(room.name, new_id, hash).once.and_return(success_hash)
           room.send_create
         end
 
         it "and limits to 10 tries" do
           room.should_receive(:random_meetingid).exactly(11).times.and_return(new_id)
-          hash = hash_including(:moderatorPW => room.moderator_password, :attendeePW => room.attendee_password,
-                                :welcome  => room.welcome_msg, :dialNumber => room.dial_number,
-                                :logoutURL => room.logout_url, :maxParticipants => room.max_participants,
-                                :voiceBridge => room.voice_bridge, :record => room.record,
-                                :duration => room.duration)
-          mocked_api.should_receive(:create_meeting).
-            with(room.name, new_id, hash).exactly(10).times.and_return(fail_hash)
+          mocked_api.should_receive(:create_meeting)
+            .with(room.name, new_id, get_create_params(room))
+            .exactly(10).times.and_return(fail_hash)
           room.send_create
         end
       end
@@ -438,11 +423,7 @@ describe BigbluebuttonRoom do
       context "uses #full_logout_url when set" do
         before do
           room.full_logout_url = "full-version-of-logout-url"
-          hash = hash_including(:moderatorPW => room.moderator_password, :attendeePW => room.attendee_password,
-                                :welcome  => room.welcome_msg, :dialNumber => room.dial_number,
-                                :logoutURL => "full-version-of-logout-url", :maxParticipants => room.max_participants,
-                                :voiceBridge => room.voice_bridge, :record => room.record,
-                                :duration => room.duration)
+          hash = get_create_params(room).merge({ :logoutURL => "full-version-of-logout-url" })
           mocked_api.should_receive(:create_meeting).
             with(room.name, room.meetingid, hash).and_return(hash_create)
           room.stub(:select_server).and_return(mocked_server)
@@ -691,4 +672,32 @@ describe BigbluebuttonRoom do
     end
   end
 
+  describe "#get_metadata_for_create" do
+    let(:room) { FactoryGirl.create(:bigbluebutton_room, :server => nil) }
+    before {
+      @m1 = FactoryGirl.create(:bigbluebutton_room_metadata, :owner => room)
+      @m2 = FactoryGirl.create(:bigbluebutton_room_metadata, :owner => room)
+    }
+    it {
+      result = { "meta_#{@m1.name}" => @m1.content, "meta_#{@m2.name}" => @m2.content }
+      room.send(:get_metadata_for_create).should == result
+    }
+  end
+
+end
+
+def get_create_params(room)
+  params = {
+    :moderatorPW => room.moderator_password,
+    :attendeePW => room.attendee_password,
+    :welcome  => room.welcome_msg,
+    :dialNumber => room.dial_number,
+    :logoutURL => room.logout_url,
+    :maxParticipants => room.max_participants,
+    :voiceBridge => room.voice_bridge,
+    :record => room.record,
+    :duration => room.duration
+  }
+  room.metadata.each { |meta| params["meta_#{meta.name}"] = meta.content }
+  params
 end

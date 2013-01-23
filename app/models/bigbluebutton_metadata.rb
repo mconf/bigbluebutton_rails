@@ -1,9 +1,14 @@
 class BigbluebuttonMetadata < ActiveRecord::Base
-  belongs_to :recording, :class_name => 'BigbluebuttonRecording'
+  belongs_to :owner, :polymorphic => true
 
-  validates :recording_id, :presence => true
+  validates :owner, :presence => true
 
-  validates :name, :presence => true
+  validates :name,
+    :presence => true,
+    :format => { :with => /^[a-zA-Z]+[a-zA-Z\d_-]$/,
+      :message => I18n.t('bigbluebutton_rails.metadata.errors.name_format') }
+  validates :name,
+    :uniqueness => { :scope => [:owner_id, :owner_id] }
 
-  attr_accessible :recording_id, :name, :content
+  attr_accessible :owner, :name, :content
 end

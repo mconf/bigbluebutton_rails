@@ -5,6 +5,7 @@ en:
       bigbluebutton_metadata:
         content: Content
         name: Name
+        owner: Owner
       bigbluebutton_playback_format:
         format_type: Type
         length: Length
@@ -12,6 +13,7 @@ en:
       bigbluebutton_recording:
         end_time: "End Time"
         meetingid: "Meeting ID"
+        metadata: Metadata
         name: Name
         published: Published
         recordid: "Record ID"
@@ -26,6 +28,7 @@ en:
         logout_url: "Logout URL"
         max_participants: "Maximum Number of Participants"
         meetingid: "Meeting ID"
+        metadata: Metadata
         moderator_password: "Moderator Password"
         name: Name
         param: "String ID"
@@ -49,6 +52,9 @@ en:
       bigbluebutton_server: "BigBlueButton Server"
   bigbluebutton_rails:
     bigbluebutton: BigBlueButton
+    metadata:
+      errors:
+        name_format: "you can only use letters, numbers and the symbols \"-\" or \"_\", but only letters at the beginning"
     recordings:
       errors:
         check_for_server:

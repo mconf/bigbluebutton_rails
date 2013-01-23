@@ -50,7 +50,8 @@ class CreateBigbluebuttonRails < ActiveRecord::Migration
     add_index :bigbluebutton_recordings, :recordid, :unique => true
 
     create_table :bigbluebutton_metadata do |t|
-      t.integer :recording_id
+      t.integer :owner_id
+      t.string :owner_type
       t.string :name
       t.text :content
       t.timestamps

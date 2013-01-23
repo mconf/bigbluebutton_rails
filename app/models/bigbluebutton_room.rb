@@ -6,6 +6,11 @@ class BigbluebuttonRoom < ActiveRecord::Base
            :class_name => 'BigbluebuttonRecording',
            :foreign_key => 'room_id'
 
+  has_many :metadata,
+           :class_name => 'BigbluebuttonMetadata',
+           :as => :owner,
+           :dependent => :destroy
+
   validates :meetingid, :presence => true, :uniqueness => true,
     :length => { :minimum => 1, :maximum => 100 }
   validates :name, :presence => true, :uniqueness => true,
@@ -328,7 +333,7 @@ class BigbluebuttonRoom < ActiveRecord::Base
       :logoutURL => self.full_logout_url || self.logout_url,
       :maxParticipants => self.max_participants,
       :voiceBridge => self.voice_bridge
-    }
+    }.merge(self.get_metadata_for_create)
     self.server.api.request_headers = @request_headers # we need the client's IP
     self.server.api.create_meeting(self.name, self.meetingid, opts)
   end
@@ -346,6 +351,12 @@ class BigbluebuttonRoom < ActiveRecord::Base
     if self.param.blank?
       self.param = self.name.parameterize.downcase unless self.name.nil?
     end
+  end
+
+  def get_metadata_for_create
+    self.metadata.inject({}) { |result, meta|
+      result["meta_#{meta.name}"] = meta.content; result
+    }
   end
 
 end

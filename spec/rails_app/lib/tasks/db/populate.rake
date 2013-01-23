@@ -12,6 +12,7 @@ namespace :db do
     BigbluebuttonMetadata.destroy_all
     BigbluebuttonPlaybackFormat.destroy_all
 
+    # Servers
     2.times do |n1|
       params = {
         :name => "Server #{n1}",
@@ -23,6 +24,7 @@ namespace :db do
       puts "- Creating server #{params[:name]}"
       server = BigbluebuttonServer.create!(params)
 
+      # Rooms
       2.times do |n2|
         params = {
           :meetingid => "meeting-#{n1}-#{n2}-" + SecureRandom.hex(4),
@@ -41,6 +43,19 @@ namespace :db do
         puts "  - Creating room #{params[:name]}"
         room = BigbluebuttonRoom.create!(params)
 
+        # Room metadata
+        3.times do
+          params = {
+            :name => Forgery(:name).first_name.downcase,
+            :content => Forgery(:name).full_name,
+            :owner => room
+          }
+          puts "    - Creating room metadata #{params[:name]}"
+          metadata = BigbluebuttonMetadata.create(params)
+          metadata.save!
+        end
+
+        # Recordings
         2.times do |n3|
           params = {
             :recordid => "rec-#{n1}-#{n2}-#{n3}-" + SecureRandom.hex(26),
@@ -56,17 +71,19 @@ namespace :db do
           recording.room = room
           recording.save!
 
+          # Recording metadata
           3.times do
             params = {
               :name => Forgery(:name).first_name.downcase,
-              :content => Forgery(:name).full_name
+              :content => Forgery(:name).full_name,
+              :owner => recording
             }
-            puts "      - Creating metadata #{params[:name]}"
+            puts "      - Creating recording metadata #{params[:name]}"
             metadata = BigbluebuttonMetadata.create(params)
-            metadata.recording = recording
             metadata.save!
           end
 
+          # Recording playback formats
           2.times do |n4|
             params = {
               :format_type => "#{n4}-#{Forgery(:name).first_name.downcase}",

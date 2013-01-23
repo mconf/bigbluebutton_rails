@@ -26,6 +26,14 @@
       <div class="field"><label><%= BigbluebuttonRoom.human_attribute_name(:param) %></label> <%= room.param %></div>
       <div class="field"><label><%= BigbluebuttonRoom.human_attribute_name(:record) %></label> <%= room.record %></div>
       <div class="field"><label><%= BigbluebuttonRoom.human_attribute_name(:duration) %></label> <%= room.duration %></div>
+      <div class="field">
+        <label><%= BigbluebuttonRoom.human_attribute_name(:metadata) %></label>
+        <div>
+          <% room.metadata.each do |metadata| %>
+            <%= metadata.attributes.except("id", "owner_id", "owner_type", "updated_at", "created_at") %>,
+          <% end %>
+        </div>
+      </div>
       <div class="field"><label>Access</label>
         <%= link_to 'Show', bigbluebutton_room_path(room) %> |
         <%= link_to 'Join', join_bigbluebutton_room_path(room) %> |

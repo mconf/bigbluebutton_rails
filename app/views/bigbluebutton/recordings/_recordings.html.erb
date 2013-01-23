@@ -24,7 +24,7 @@
         <label><%= BigbluebuttonRecording.human_attribute_name(:metadata) %></label>
         <div>
           <% recording.metadata.each do |metadata| %>
-            <%= metadata.attributes.except("id", "recording_id", "updated_at", "created_at") %>,
+            <%= metadata.attributes.except("id", "owner_id", "owner_type", "updated_at", "created_at") %>,
           <% end %>
         </div>
       </div>

@@ -1,7 +1,11 @@
 FactoryGirl.define do
   factory  :bigbluebutton_metadata do |r|
-    r.association :recording, :factory => :bigbluebutton_recording
+    r.association :owner, :factory => :bigbluebutton_recording
     r.name { Forgery(:name).first_name.downcase }
     r.content { Forgery(:name).full_name }
+
+    factory :bigbluebutton_room_metadata do |f|
+      f.association :owner, :factory => :bigbluebutton_room
+    end
   end
 end

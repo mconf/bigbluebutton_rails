@@ -309,14 +309,17 @@ describe BigbluebuttonRecording do
     before {
       # one metadata to be updated
       FactoryGirl.create(:bigbluebutton_metadata,
-                         :recording => recording, :name => "course")
+                         :owner => recording, :name => "course")
       # one to be deleted
-      FactoryGirl.create(:bigbluebutton_metadata, :recording => recording)
+      FactoryGirl.create(:bigbluebutton_metadata, :owner => recording)
 
       BigbluebuttonRecording.send(:sync_metadata, recording, metadata)
     }
     it { BigbluebuttonMetadata.count.should == 3 }
-    it { BigbluebuttonMetadata.where(:recording_id => recording.id).count.should == 3 }
+    it {
+      query = { :owner_id => recording.id, :owner_type => recording.class.to_s }
+      BigbluebuttonMetadata.where(query).count.should == 3
+    }
     it { BigbluebuttonMetadata.find_by_name(:course).content.should == metadata[:course] }
     it { BigbluebuttonMetadata.find_by_name(:description).content.should == metadata[:description] }
     it { BigbluebuttonMetadata.find_by_name(:activity).content.should == metadata[:activity] }

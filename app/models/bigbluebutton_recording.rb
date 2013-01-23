@@ -13,7 +13,7 @@ class BigbluebuttonRecording < ActiveRecord::Base
 
   has_many :metadata,
            :class_name => 'BigbluebuttonMetadata',
-           :foreign_key => 'recording_id',
+           :as => :owner,
            :dependent => :destroy
 
   has_many :playback_formats,
@@ -103,7 +103,9 @@ class BigbluebuttonRecording < ActiveRecord::Base
   # BigBlueButtonApi#get_recordings but with the keys already converted to our format.
   def self.sync_metadata(recording, metadata)
     local_metadata = metadata.clone
-    BigbluebuttonMetadata.where(:recording_id => recording.id).each do |data|
+
+    query = { :owner_id => recording.id, :owner_type => recording.class.to_s }
+    BigbluebuttonMetadata.where(query).each do |data|
       # the metadata is in the hash, update it in the db
       if local_metadata.has_key?(data.name)
         data.update_attributes({ :content => local_metadata[data.name] })
@@ -116,7 +118,7 @@ class BigbluebuttonRecording < ActiveRecord::Base
 
     # for metadata that are not in the db yet
     local_metadata.each do |name, content|
-      attrs = { :name => name, :content => content, :recording_id => recording.id }
+      attrs = { :name => name, :content => content, :owner => recording }
       BigbluebuttonMetadata.create!(attrs)
     end
   end
