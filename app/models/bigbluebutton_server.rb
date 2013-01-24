@@ -88,6 +88,13 @@ class BigbluebuttonServer < ActiveRecord::Base
   # Triggers API call: <tt>publishRecordings</tt>.
   def send_publish_recordings(ids, publish)
     self.api.publish_recordings(ids, publish)
+
+    # Update #published in all recordings
+    ids = ids.split(",") if ids.instance_of?(String) # "id1,id2" to ["id1", "id2"]
+    ids.each do |id|
+      recording = BigbluebuttonRecording.find_by_recordid(id.strip)
+      recording.update_attributes(:published => publish) unless recording.nil?
+    end
   end
 
   # Sends a call to the BBB server to delete a recording or a set or recordings.

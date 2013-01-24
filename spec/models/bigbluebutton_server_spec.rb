@@ -195,14 +195,18 @@ describe BigbluebuttonServer do
     it { should respond_to(:send_publish_recordings) }
 
     context "sends publish_recordings" do
-      let(:ids) { "id1,id2,id3" }
+      let(:recording1) { FactoryGirl.create(:bigbluebutton_recording, :published => false) }
+      let(:recording2) { FactoryGirl.create(:bigbluebutton_recording, :published => false) }
+      let(:ids) { "#{recording1.recordid},#{recording2.recordid}" }
       let(:publish) { true }
       before do
         @api_mock = mock(BigBlueButton::BigBlueButtonApi)
         server.stub(:api).and_return(@api_mock)
         @api_mock.should_receive(:publish_recordings).with(ids, publish)
       end
-      it { server.send_publish_recordings(ids, publish) }
+      before(:each) { server.send_publish_recordings(ids, publish) }
+      it { BigbluebuttonRecording.find(recording1.id).published.should == true }
+      it { BigbluebuttonRecording.find(recording2.id).published.should == true }
     end
   end
 
