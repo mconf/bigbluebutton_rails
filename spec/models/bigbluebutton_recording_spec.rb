@@ -46,7 +46,7 @@ describe BigbluebuttonRecording do
            :course => "Fundamentals of JAVA",
            :description => "List of recordings",
            :activity => "Evening Class1",
-           :"bbbrails-room-id" => room.id
+           :"bbbrails-room-id" => room.uniqueid
          },
          :playback => { :format =>
            [
@@ -186,7 +186,7 @@ describe BigbluebuttonRecording do
         :published => !old_attrs[:published],
         :start_time => attrs[:start_time],
         :end_time => attrs[:end_time],
-        :metadata => { :any => "any", :"bbbrails-room-id" => room.id },
+        :metadata => { :any => "any", :"bbbrails-room-id" => room.uniqueid },
         :playback => { :format => [ { :type => "any1" }, { :type => "any2" } ] }
       }
     }
@@ -218,7 +218,7 @@ describe BigbluebuttonRecording do
         :published => attrs[:published],
         :start_time => attrs[:start_time],
         :end_time => attrs[:end_time],
-        :metadata => { :any => "any", :"bbbrails-room-id" => room.id },
+        :metadata => { :any => "any", :"bbbrails-room-id" => room.uniqueid },
         :playback => { :format => [ { :type => "any1" }, { :type => "any2" } ] }
       }
     }

@@ -36,6 +36,7 @@ en:
         randomize_meetingid: "Randomize Meeting ID"
         record: Record
         server_id: "Server ID"
+        uniqueid: "Globally Unique ID"
         voice_bridge: "Voice Bridge"
         welcome_msg: "Welcome Message"
       bigbluebutton_server:

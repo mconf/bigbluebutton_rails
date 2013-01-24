@@ -17,12 +17,16 @@
   <% end %>
 
   <div class="field">
+    <%= f.label :name %><br />
+    <%= f.text_field :name %>
+  </div>
+  <div class="field">
     <%= f.label :server_id %><br />
     <%= f.text_field :server_id %>
   </div>
   <div class="field">
-    <%= f.label :name %><br />
-    <%= f.text_field :name %>
+    <%= f.label :uniqueid %><br />
+    <%= @room.uniqueid %>
   </div>
   <div class="field">
     <%= f.label :meetingid %><br />

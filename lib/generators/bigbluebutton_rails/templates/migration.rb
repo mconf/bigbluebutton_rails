@@ -29,11 +29,13 @@ class CreateBigbluebuttonRails < ActiveRecord::Migration
       t.string :param
       t.boolean :record, :default => false
       t.integer :duration, :default => 0
+      t.string :uniqueid, :null => false
       t.timestamps
     end
     add_index :bigbluebutton_rooms, :server_id
     add_index :bigbluebutton_rooms, :meetingid, :unique => true
     add_index :bigbluebutton_rooms, :voice_bridge, :unique => true
+    add_index :bigbluebutton_rooms, :uniqueid, :unique => true
 
     create_table :bigbluebutton_recordings do |t|
       t.integer :server_id

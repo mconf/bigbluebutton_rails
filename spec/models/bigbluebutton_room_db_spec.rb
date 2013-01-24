@@ -22,9 +22,11 @@ describe BigbluebuttonRoom do
     it { should have_db_column(:param).of_type(:string) }
     it { should have_db_column(:record).of_type(:boolean) }
     it { should have_db_column(:duration).of_type(:integer) }
+    it { should have_db_column(:uniqueid).of_type(:string) }
     it { should have_db_index(:server_id) }
     it { should have_db_index(:meetingid).unique(true) }
     it { should have_db_index(:voice_bridge).unique(true) }
+    it { should have_db_index(:uniqueid).unique(true) }
     it "default values" do
       room = BigbluebuttonRoom.new
       room.private.should be_false

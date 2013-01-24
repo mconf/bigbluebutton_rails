@@ -37,6 +37,11 @@ class BigbluebuttonRoom < ActiveRecord::Base
             :format => { :with => /^[a-zA-Z\d_]+[a-zA-Z\d_-]*[a-zA-Z\d_]+$/,
                          :message => I18n.t('bigbluebutton_rails.rooms.errors.param_format') }
 
+  validates :uniqueid,
+            :presence => true,
+            :uniqueness => true,
+            :length => { :minimum => 16 }
+
   # Passwords are 16 character strings
   # See http://groups.google.com/group/bigbluebutton-dev/browse_thread/thread/9be5aae1648bcab?pli=1
   validates :attendee_password, :length => { :maximum => 16 }
@@ -296,6 +301,11 @@ class BigbluebuttonRoom < ActiveRecord::Base
     self[:meetingid] ||= random_meetingid
     self[:voice_bridge] ||= random_voice_bridge
 
+    # Automatically generated id that should be unique to identify this object
+    # in case more that one bigbluebutton_rails application is using the same
+    # web conference server.
+    self[:uniqueid] ||= "#{SecureRandom.hex(16)}-#{Time.now.to_i}"
+
     @request_headers = {}
 
     # fetched attributes
@@ -340,8 +350,8 @@ class BigbluebuttonRoom < ActiveRecord::Base
       :voiceBridge => self.voice_bridge
     }.merge(self.get_metadata_for_create)
 
-    # Add an identifier to match recordings when fetched
-    opts.merge!({ "meta_#{BigbluebuttonRails.room_id_metadata_name}" => self.id })
+    # Add a globally unique identifier to match recordings when fetched
+    opts.merge!({ "meta_#{BigbluebuttonRails.room_id_metadata_name}" => self.uniqueid })
 
     self.server.api.request_headers = @request_headers # we need the client's IP
     self.server.api.create_meeting(self.name, self.meetingid, opts)

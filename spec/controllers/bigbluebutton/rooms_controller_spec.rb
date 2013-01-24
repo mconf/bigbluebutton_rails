@@ -76,7 +76,7 @@ describe Bigbluebutton::RoomsController do
       it { should set_the_flash.to(I18n.t('bigbluebutton_rails.rooms.notice.create.success')) }
       it {
         saved = BigbluebuttonRoom.last
-        saved.should have_same_attributes_as(new_room)
+        saved.should have_same_attributes_as(new_room, ['uniqueid'])
       }
     end
 
@@ -117,7 +117,7 @@ describe Bigbluebutton::RoomsController do
       it {
         saved = BigbluebuttonRoom.last
         new_room.meetingid = new_room.name
-        saved.should have_same_attributes_as(new_room)
+        saved.should have_same_attributes_as(new_room, ['uniqueid'])
       }
     end
   end
@@ -139,7 +139,7 @@ describe Bigbluebutton::RoomsController do
       }
       it {
         saved = BigbluebuttonRoom.find(@room)
-        saved.should have_same_attributes_as(new_room)
+        saved.should have_same_attributes_as(new_room, ['uniqueid'])
       }
       it { should set_the_flash.to(I18n.t('bigbluebutton_rails.rooms.notice.update.success')) }
     end

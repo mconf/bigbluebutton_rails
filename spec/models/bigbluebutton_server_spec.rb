@@ -14,11 +14,10 @@ describe BigbluebuttonServer do
   it { should validate_presence_of(:version) }
   it { should validate_presence_of(:param) }
 
-  it { should allow_mass_assignment_of(:name) }
-  it { should allow_mass_assignment_of(:url) }
-  it { should allow_mass_assignment_of(:salt) }
-  it { should allow_mass_assignment_of(:version) }
-  it { should allow_mass_assignment_of(:param) }
+  [:name, :url, :salt, :version, :param].each do |attribute|
+    it { should allow_mass_assignment_of(attribute) }
+  end
+  it { should_not allow_mass_assignment_of(:id) }
 
   context "uniqueness of" do
     before(:each) { FactoryGirl.create(:bigbluebutton_server) }

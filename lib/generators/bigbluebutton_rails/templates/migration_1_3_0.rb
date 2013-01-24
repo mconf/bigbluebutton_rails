@@ -34,13 +34,17 @@ class BigbluebuttonRailsTo130 < ActiveRecord::Migration
     change_table(:bigbluebutton_rooms) do |t|
       t.boolean :record, :default => false
       t.integer :duration, :default => 0
+      t.string :uniqueid, :null => false
     end
+    add_index :bigbluebutton_rooms, :uniqueid, :unique => true
   end
 
   def self.down
+    remove_index :bigbluebutton_rooms, :uniqueid
     change_table(:bigbluebutton_rooms) do |t|
       t.remove :record
       t.remove :duration
+      t.remove :uniqueid
     end
     drop_table :bigbluebutton_playback_formats
     drop_table :bigbluebutton_metadata

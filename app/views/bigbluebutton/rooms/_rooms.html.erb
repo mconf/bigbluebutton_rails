@@ -11,6 +11,7 @@
         <label><%= BigbluebuttonRoom.human_attribute_name(:server_id) %></label> <%= room.server_id %>
         <%= link_to('(view server)', bigbluebutton_server_path(room.server)) unless room.server.nil? %>
       </div>
+      <div class="field"><label><%= BigbluebuttonRoom.human_attribute_name(:uniqueid) %></label> <%= room.uniqueid %></div>
       <div class="field"><label><%= BigbluebuttonRoom.human_attribute_name(:meetingid) %></label> <%= room.meetingid %></div>
       <div class="field"><label><%= BigbluebuttonRoom.human_attribute_name(:randomize_meetingid) %></label> <%= room.randomize_meetingid %></div>
       <div class="field"><label><%= BigbluebuttonRoom.human_attribute_name(:name) %></label> <%= room.name %></div>
