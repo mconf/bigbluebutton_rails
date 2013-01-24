@@ -32,6 +32,7 @@ describe BigbluebuttonRecording do
   end
 
   describe "#sync" do
+    let(:room) { FactoryGirl.create(:bigbluebutton_room) }
     let(:data) {
       [
        {
@@ -41,9 +42,12 @@ describe BigbluebuttonRecording do
          :published => true,
          :startTime => DateTime.now,
          :endTime => DateTime.now + 2.hours,
-         :metadata => { :course => "Fundamentals of JAVA",
+         :metadata => {
+           :course => "Fundamentals of JAVA",
            :description => "List of recordings",
-           :activity => "Evening Class1" },
+           :activity => "Evening Class1",
+           :"bbbrails-room-id" => room.id
+         },
          :playback => { :format =>
            [
             { :type => "slides",
@@ -74,7 +78,8 @@ describe BigbluebuttonRecording do
       it { @recording.end_time.utc.to_i.should == data[0][:endTime].utc.to_i }
       it { @recording.start_time.utc.to_i.should == data[0][:startTime].utc.to_i }
       it { @recording.server.should == new_server }
-      it { @recording.metadata.count.should == 3 }
+      it { @recording.room.should == room }
+      it { @recording.metadata.count.should == 4 }
       3.times do |i|
         it { @recording.metadata[i].name.should == data[0][:metadata].keys[i].to_s }
         it { @recording.metadata[i].content.should == data[0][:metadata].values[i] }
@@ -102,7 +107,8 @@ describe BigbluebuttonRecording do
       it { @recording.end_time.utc.to_i.should == data[0][:endTime].utc.to_i }
       it { @recording.start_time.utc.to_i.should == data[0][:startTime].utc.to_i }
       it { @recording.server.should == new_server }
-      it { @recording.metadata.count.should == 3 }
+      it { @recording.room.should == room }
+      it { @recording.metadata.count.should == 4 }
       3.times do |i|
         it { @recording.metadata[i].name.should == data[0][:metadata].keys[i].to_s }
         it { @recording.metadata[i].content.should == data[0][:metadata].values[i] }
@@ -162,12 +168,13 @@ describe BigbluebuttonRecording do
         }.should raise_error(Exception)
       }
       it { BigbluebuttonRecording.count.should == 1 }
-      it { BigbluebuttonMetadata.count.should == 3 }
+      it { BigbluebuttonMetadata.count.should == 4 }
       it { BigbluebuttonPlaybackFormat.count.should == 2 }
     end
   end
 
   describe "#update_recording" do
+    let(:room) { FactoryGirl.create(:bigbluebutton_room) }
     let(:old_attrs) { FactoryGirl.attributes_for(:bigbluebutton_recording) }
     let(:attrs) { FactoryGirl.attributes_for(:bigbluebutton_recording) }
     let(:recording) { FactoryGirl.create(:bigbluebutton_recording, old_attrs) }
@@ -179,7 +186,7 @@ describe BigbluebuttonRecording do
         :published => !old_attrs[:published],
         :start_time => attrs[:start_time],
         :end_time => attrs[:end_time],
-        :metadata => { :any => "any" },
+        :metadata => { :any => "any", :"bbbrails-room-id" => room.id },
         :playback => { :format => [ { :type => "any1" }, { :type => "any2" } ] }
       }
     }
@@ -197,9 +204,11 @@ describe BigbluebuttonRecording do
     it { recording.end_time.utc.to_i.should == attrs[:end_time].utc.to_i }
     it { recording.start_time.utc.to_i.should == attrs[:start_time].utc.to_i }
     it { recording.server.should == new_server }
+    it { recording.room.should == room }
   end
 
   describe "#create_recording" do
+    let(:room) { FactoryGirl.create(:bigbluebutton_room) }
     let(:attrs) { FactoryGirl.attributes_for(:bigbluebutton_recording) }
     let(:data) {
       {
@@ -209,7 +218,7 @@ describe BigbluebuttonRecording do
         :published => attrs[:published],
         :start_time => attrs[:start_time],
         :end_time => attrs[:end_time],
-        :metadata => { :any => "any" },
+        :metadata => { :any => "any", :"bbbrails-room-id" => room.id },
         :playback => { :format => [ { :type => "any1" }, { :type => "any2" } ] }
       }
     }
@@ -228,6 +237,7 @@ describe BigbluebuttonRecording do
     it { @recording.end_time.utc.to_i.should == attrs[:end_time].utc.to_i }
     it { @recording.start_time.utc.to_i.should == attrs[:start_time].utc.to_i }
     it { @recording.server.should == new_server }
+    it { @recording.room.should == room }
   end
 
   describe "#adapt_recording_hash" do

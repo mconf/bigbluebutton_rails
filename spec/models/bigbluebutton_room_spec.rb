@@ -701,5 +701,6 @@ def get_create_params(room)
     :duration => room.duration
   }
   room.metadata.each { |meta| params["meta_#{meta.name}"] = meta.content }
+  params.merge!({ "meta_bbbrails-room-id" => room.id })
   params
 end

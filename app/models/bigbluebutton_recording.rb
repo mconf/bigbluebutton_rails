@@ -69,6 +69,7 @@ class BigbluebuttonRecording < ActiveRecord::Base
   def self.update_recording(server, recording, data)
     filtered = data.slice(:meetingid, :name, :published, :start_time, :end_time)
     recording.server = server
+    recording.room = BigbluebuttonRails.match_room_recording(data)
     recording.assign_attributes(filtered)
     recording.save!
 
@@ -81,6 +82,7 @@ class BigbluebuttonRecording < ActiveRecord::Base
   def self.create_recording(server, data)
     filtered = data.slice(:recordid, :meetingid, :name, :published, :start_time, :end_time)
     recording = BigbluebuttonRecording.create(filtered)
+    recording.room = BigbluebuttonRails.match_room_recording(data)
     recording.server = server
     recording.save!
 

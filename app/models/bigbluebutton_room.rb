@@ -339,6 +339,10 @@ class BigbluebuttonRoom < ActiveRecord::Base
       :maxParticipants => self.max_participants,
       :voiceBridge => self.voice_bridge
     }.merge(self.get_metadata_for_create)
+
+    # Add an identifier to match recordings when fetched
+    opts.merge!({ "meta_#{BigbluebuttonRails.room_id_metadata_name}" => self.id })
+
     self.server.api.request_headers = @request_headers # we need the client's IP
     self.server.api.create_meeting(self.name, self.meetingid, opts)
   end
