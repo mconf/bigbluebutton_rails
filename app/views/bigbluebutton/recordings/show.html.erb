@@ -1,6 +1,11 @@
 <h1><%= BigbluebuttonRecording.model_name.human %>:</h1>
 
 <p>
+  <b><%= BigbluebuttonRecording.human_attribute_name(:id) %>:</b>
+  <%= @recording.id %>
+</p>
+
+<p>
   <b><%= BigbluebuttonRecording.human_attribute_name(:recordid) %>:</b>
   <%= @recording.recordid %>
 </p>

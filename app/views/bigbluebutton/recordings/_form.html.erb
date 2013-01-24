@@ -11,20 +11,24 @@
   <% end %>
 
   <div class="field">
-    <%= f.label :room_id %><br />
-    <%= f.text_field :room_id, :disabled => "disabled" %>
+    <%= f.label :id %><br />
+    <%= @recording.id %>
   </div>
   <div class="field">
-    <%= f.label :server_id %><br />
-    <%= f.text_field :server_id, :disabled => "disabled" %>
+    <%= f.label :recordid %><br />
+    <%= f.text_field :recordid %>
   </div>
   <div class="field">
     <%= f.label :name %><br />
     <%= f.text_field :name %>
   </div>
   <div class="field">
-    <%= f.label :recordid %><br />
-    <%= f.text_field :recordid %>
+    <%= f.label :room_id %><br />
+    <%= f.text_field :room_id, :disabled => "disabled" %>
+  </div>
+  <div class="field">
+    <%= f.label :server_id %><br />
+    <%= f.text_field :server_id, :disabled => "disabled" %>
   </div>
   <div class="field">
     <%= f.label :published %><br />

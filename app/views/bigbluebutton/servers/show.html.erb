@@ -22,6 +22,11 @@
 <h1><%= BigbluebuttonServer.model_name.human %>:</h1>
 
 <p>
+  <b><%= BigbluebuttonServer.human_attribute_name(:id) %>:</b>
+  <%= @server.id %>
+</p>
+
+<p>
   <b><%= BigbluebuttonServer.human_attribute_name(:name) %>:</b>
   <%= @server.name %>
 </p>

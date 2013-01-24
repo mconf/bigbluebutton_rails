@@ -17,8 +17,8 @@
   <% end %>
 
   <div class="field">
-    <%= f.label :name %><br />
-    <%= f.text_field :name %>
+    <%= f.label :id %><br />
+    <%= @room.id %>
   </div>
   <div class="field">
     <%= f.label :server_id %><br />
@@ -27,6 +27,10 @@
   <div class="field">
     <%= f.label :uniqueid %><br />
     <%= @room.uniqueid %>
+  </div>
+  <div class="field">
+    <%= f.label :name %><br />
+    <%= f.text_field :name %>
   </div>
   <div class="field">
     <%= f.label :meetingid %><br />

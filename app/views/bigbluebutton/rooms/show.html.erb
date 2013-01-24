@@ -1,8 +1,8 @@
 <h1><%= BigbluebuttonRoom.model_name.human %>:</h1>
 
 <p>
-  <b><%= BigbluebuttonRoom.human_attribute_name(:name) %>:</b>
-  <%= @room.name %>
+  <b><%= BigbluebuttonRoom.human_attribute_name(:id) %>:</b>
+  <%= @room.id %>
 </p>
 <p>
   <b><%= BigbluebuttonRoom.human_attribute_name(:server_id) %>:</b>
@@ -11,6 +11,10 @@
 <p>
   <b><%= BigbluebuttonRoom.human_attribute_name(:uniqueid) %>:</b>
   <%= @room.uniqueid %>
+</p>
+<p>
+  <b><%= BigbluebuttonRoom.human_attribute_name(:name) %>:</b>
+  <%= @room.name %>
 </p>
 <p>
   <b><%= BigbluebuttonRoom.human_attribute_name(:meetingid) %>:</b>

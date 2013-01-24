@@ -6,6 +6,7 @@
 <ul id="bbbrails_list">
   <% @recordings.each do |recording| %>
     <li>
+      <div class="field"><label><%= BigbluebuttonRecording.human_attribute_name(:id) %></label> <%= recording.id %></div>
       <div class="field"><label><%= BigbluebuttonRecording.human_attribute_name(:recordid) %></label> <%= recording.recordid %></div>
       <div class="field"><label><%= BigbluebuttonRecording.human_attribute_name(:name) %></label> <%= recording.name %></div>
       <div class="field">
