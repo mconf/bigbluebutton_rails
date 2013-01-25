@@ -15,7 +15,7 @@ describe BigbluebuttonRoom do
   it { should_not validate_presence_of(:owner_id) }
   it { should_not validate_presence_of(:owner_type) }
 
-  it { should have_many(:recordings) }
+  it { should have_many(:recordings).dependent(:nullify) }
 
   it { should have_many(:metadata).dependent(:destroy) }
 

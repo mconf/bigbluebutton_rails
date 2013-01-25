@@ -6,7 +6,9 @@ describe BigbluebuttonServer do
     BigbluebuttonServer.new.should be_a_kind_of(ActiveRecord::Base)
   end
 
-  it { should have_many(:rooms) }
+  it { should have_many(:rooms).dependent(:nullify) }
+
+  it { should have_many(:recordings).dependent(:nullify) }
 
   it { should validate_presence_of(:name) }
   it { should validate_presence_of(:url) }
@@ -30,20 +32,18 @@ describe BigbluebuttonServer do
     server = FactoryGirl.create(:bigbluebutton_server)
     server.rooms.should be_empty
 
-    FactoryGirl.create(:bigbluebutton_room, :server => server)
+    r = FactoryGirl.create(:bigbluebutton_room, :server => server)
     server = BigbluebuttonServer.find(server.id)
-    server.rooms.should_not be_empty
+    server.rooms.should == [r]
   end
 
-  it "nullifies associated rooms" do
+  it "has associated recordings" do
     server = FactoryGirl.create(:bigbluebutton_server)
-    room = FactoryGirl.create(:bigbluebutton_room, :server => server)
-    expect {
-      expect {
-        server.destroy
-      }.to change{ BigbluebuttonServer.count }.by(-1)
-    }.to change{ BigbluebuttonRoom.count }.by(0)
-    BigbluebuttonRoom.find(room.id).server_id.should == nil
+    server.rooms.should be_empty
+
+    r = FactoryGirl.create(:bigbluebutton_recording, :server => server)
+    server = BigbluebuttonServer.find(server.id)
+    server.recordings.should == [r]
   end
 
   it { should ensure_length_of(:name).is_at_least(1).is_at_most(500) }

@@ -6,6 +6,11 @@ class BigbluebuttonServer < ActiveRecord::Base
            :foreign_key => 'server_id',
            :dependent => :nullify
 
+  has_many :recordings,
+           :class_name => 'BigbluebuttonRecording',
+           :foreign_key => 'server_id',
+           :dependent => :nullify
+
   validates :name,
             :presence => true,
             :uniqueness => true,
