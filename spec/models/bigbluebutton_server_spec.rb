@@ -255,12 +255,19 @@ describe BigbluebuttonServer do
     end
 
     context "when the response has no :recordings element" do
-      let(:response) { { :recordings => [1, 2] } }
       before do
         @api_mock.should_receive(:get_recordings).with(params).and_return({})
         BigbluebuttonRecording.should_not_receive(:sync)
       end
       it { server.fetch_recordings(params) }
+    end
+
+    context "works without parameters" do
+      before do
+        @api_mock.should_receive(:get_recordings).with({}).and_return(nil)
+        BigbluebuttonRecording.should_not_receive(:sync)
+      end
+      it { server.fetch_recordings }
     end
   end
 

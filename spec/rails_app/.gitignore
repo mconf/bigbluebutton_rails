@@ -4,3 +4,4 @@ db/schema.rb
 tmp/
 logs/
 .sass-cache/
+config/schedule.rb

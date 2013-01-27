@@ -56,11 +56,12 @@ After installing, you need to run the generator:
 
   rails generate bigbluebutton_rails:install
 
-This generator will create a migration file and a language file.
+This generator will create the files needed to setup the gem in your application.
+You should take some time to open all the files generated and analyze them.
 
 By default the gem will use the views it provides, <b>but it is strongly recommended that you adapt them for your needs!</b>
 The views provided are just an example of how they can be implemented in your application and
-they depend on jQuery (use the gem <tt>jquery-rails</tt>) and a css file also provided by this gem.
+they depend on jQuery (use the gem <tt>jquery-rails</tt>) and on a css file provided by this gem.
 You can easily generate the views and the css file in your application to later customize them with:
 
   rails generate bigbluebutton_rails:views
@@ -127,9 +128,39 @@ and you can reimplement them in your application controller to change their beha
   end
 
 
+=== Updating the recordings
+
+Since this task can comsume quite some time if your server has a lot of recordings,
+it is recommended to run it periodically in background. To do that, you can use the
+gem {whenever}[https://github.com/javan/whenever] (that uses {cron}[http://en.wikipedia.org/wiki/Cron]
+underneath).
+
+This gem provides a rake task to fetch the recordings from the webconference servers and
+update the application database. This task can be used to update the recordings from whenever/cron.
+
+The command below will fetch recordings for <b>all servers</b> and update the database
+with all recordings found:
+
+  rake bigbluebutton_rails:recordings:update
+
+To set up whenever, first add it to your application Gemfile:
+
+  gem 'whenever', :require => false
+
+When you ran the generator <tt>:install</tt> previously, it created a file at
+<tt>config/schedule.rb</tt> inside your application. This file is used to configure whenever.
+Once this file is in place, running the following command will update your cron tab
+to update the recordings periodically.
+
+  whenever --update-crontab
+
+Check {whenever}[https://github.com/javan/whenever] page to learn more about it.
+
+
 === Example application
 
-If you need more help to setup the gem, check out the test application at <tt>spec/rails_app/</tt>!
+If you need more help to set up the gem or just want to see an example of it working,
+check out the test application at <tt>spec/rails_app/</tt>!
 
 
 ==== See also
@@ -147,9 +178,9 @@ Save <tt>spec/rails_app/features/config.yml.example</tt> as <tt>spec/rails_app/f
 
 Prepare the rails_app used for tests:
 
-  rake setup:rails_app
-  rake setup:rails_app:db SERVER=my-server # select a server you defined in 'config.yml'
-  rake setup:rails_app:populate            # to create fake data
+  rake rails_app:install
+  rake rails_app:db SERVER=my-server # select a server you defined in 'config.yml'
+  rake rails_app:populate            # to create fake data
 
 Run the tests:
 

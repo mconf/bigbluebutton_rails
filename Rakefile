@@ -28,33 +28,40 @@ Gem::PackageTask.new $specification do |pkg|
 end
 
 desc 'Setup RailsApp used in tests.'
-namespace :setup do
-  task :rails_app do |app|
+namespace :rails_app do
+  task :install do |app|
     cd File.join(File.dirname(__FILE__), "spec", "rails_app")
     sh "rails destroy bigbluebutton_rails:install"
     sh "rails generate bigbluebutton_rails:install"
     cd File.dirname(__FILE__)
   end
 
-  namespace :rails_app do |app|
-    task :db do
-      cd File.join(File.dirname(__FILE__), "spec", "rails_app")
-      # base
-      sh "rake db:drop:all"
-      sh "rake db:create:all"
-      # development
-      sh "rake db:migrate RAILS_ENV=development"
-      sh "rake db:seed RAILS_ENV=development"
-      # test
-      sh "rake db:migrate RAILS_ENV=test"
-      sh "rake db:test:prepare RAILS_ENV=test"
-      cd File.dirname(__FILE__)
-    end
+  task :db do
+    cd File.join(File.dirname(__FILE__), "spec", "rails_app")
+    # base
+    sh "rake db:drop:all"
+    sh "rake db:create:all"
+    # development
+    sh "rake db:migrate RAILS_ENV=development"
+    sh "rake db:seed RAILS_ENV=development"
+    # test
+    sh "rake db:migrate RAILS_ENV=test"
+    sh "rake db:test:prepare RAILS_ENV=test"
+    cd File.dirname(__FILE__)
+  end
 
-    desc 'Populate the db in the test app'
-    task :populate do
+  desc 'Populate the db in the test app'
+  task :populate do
+    cd "spec/rails_app/"
+    sh "rake db:populate"
+    cd "../.."
+  end
+
+  namespace :recordings do
+    desc 'Updates the recordings'
+    task :update do
       cd "spec/rails_app/"
-      sh "rake db:populate"
+      sh "rake bigbluebutton_rails:recordings:update"
       cd "../.."
     end
   end

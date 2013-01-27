@@ -40,8 +40,12 @@ class BigbluebuttonRecording < ActiveRecord::Base
       rec_data = adapt_recording_hash(rec)
       BigbluebuttonRecording.transaction do
         if rec_obj
+          logger.info "Sync recordings: updating recording #{rec_obj.inspect}"
+          logger.debug "Sync recordings: recording data #{rec_data.inspect}"
           self.update_recording(server, rec_obj, rec_data)
         else
+          logger.info "Sync recordings: creating recording"
+          logger.debug "Sync recordings: recording data #{rec_data.inspect}"
           self.create_recording(server, rec_data)
         end
       end

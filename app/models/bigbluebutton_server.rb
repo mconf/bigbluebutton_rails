@@ -117,7 +117,8 @@ class BigbluebuttonServer < ActiveRecord::Base
   #       accepted by BigBlueButtonApi::get_recordings
   #
   # Triggers API call: <tt>getRecordings</tt>.
-  def fetch_recordings(ids)
+  def fetch_recordings(ids={})
+    logger.info "Fetching recordings for the server #{self.inspect} with filter #{ids}"
     recordings = self.api.get_recordings(ids)
     if recordings and recordings[:recordings]
       BigbluebuttonRecording.sync(self, recordings[:recordings])
