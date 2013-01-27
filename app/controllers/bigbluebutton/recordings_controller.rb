@@ -1,7 +1,7 @@
 class Bigbluebutton::RecordingsController < ApplicationController
 
   respond_to :html
-  respond_to :json, :only => [:index, :show, :update, :destroy]
+  respond_to :json, :only => [:index, :show, :update, :destroy, :publish, :unpublish]
   before_filter :find_recording, :except => [:index]
   before_filter :check_for_server, :only => [:publish, :unpublish]
 
@@ -97,8 +97,14 @@ class Bigbluebutton::RecordingsController < ApplicationController
 
   def check_for_server
     unless @recording.server
-      flash[:error] = t('bigbluebutton_rails.recordings.errors.check_for_server.no_server')
-      redirect_to bigbluebutton_recording_path(@recording)
+      message = t('bigbluebutton_rails.recordings.errors.check_for_server.no_server')
+      respond_with do |format|
+        format.html {
+          flash[:error] = message
+          redirect_to bigbluebutton_recording_path(@recording)
+        }
+        format.json { render :json => message, :status => :error }
+      end
       false
     else
       true
@@ -110,14 +116,12 @@ class Bigbluebutton::RecordingsController < ApplicationController
       server = @recording.server
       server.send_publish_recordings(@recording.recordid, publish)
       respond_with do |format|
-        format.html {
-          if publish
-            message = t('bigbluebutton_rails.recordings.notice.publish.success')
-          else
-            message = t('bigbluebutton_rails.recordings.notice.unpublish.success')
-          end
-          redirect_to(bigbluebutton_recording_path(@recording), :notice => message)
-        }
+        if publish
+          message = t('bigbluebutton_rails.recordings.notice.publish.success')
+        else
+          message = t('bigbluebutton_rails.recordings.notice.unpublish.success')
+        end
+        format.html { redirect_to(bigbluebutton_recording_path(@recording), :notice => message) }
         format.json { render :json => message }
       end
     rescue BigBlueButton::BigBlueButtonException => e
@@ -126,7 +130,7 @@ class Bigbluebutton::RecordingsController < ApplicationController
           flash[:error] = e.to_s[0..200]
           redirect_to bigbluebutton_recording_path(@recording)
         }
-        format.json { render :json => e.to_s, :status => :error }
+        format.json { render :json => e.to_s[0..200], :status => :error }
       end
     end
   end
