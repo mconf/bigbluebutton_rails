@@ -37,6 +37,12 @@ class BigbluebuttonRailsTo130 < ActiveRecord::Migration
       t.string :uniqueid, :null => false
     end
     add_index :bigbluebutton_rooms, :uniqueid, :unique => true
+
+    # Ensure all rooms will have :uniqueid set
+    BigbluebuttonRoom.all.each do |room|
+      room.uniqueid = "#{SecureRandom.hex(16)}-#{Time.now.to_i}"
+      room.save!
+    end
   end
 
   def self.down
