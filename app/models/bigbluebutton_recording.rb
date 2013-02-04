@@ -21,6 +21,8 @@ class BigbluebuttonRecording < ActiveRecord::Base
            :foreign_key => 'recording_id',
            :dependent => :destroy
 
+  scope :published, where(:published => true)
+
   def to_param
     self.recordid
   end

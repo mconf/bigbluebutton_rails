@@ -54,7 +54,6 @@ describe BigbluebuttonRoom do
 
   it { should accept_nested_attributes_for(:metadata).allow_destroy(true) }
 
-  it { should validate_presence_of(:uniqueid) }
   it { should validate_uniqueness_of(:uniqueid) }
   it { should ensure_length_of(:uniqueid).is_at_least(16) }
 
@@ -207,6 +206,17 @@ describe BigbluebuttonRoom do
     it "empty" do
       @room = FactoryGirl.build(:bigbluebutton_room, :param => "",
                             :name => "-My Name@ _Is Odd_-")
+    end
+  end
+
+  context "before validation" do
+    context "generates an uniqueid" do
+      before do
+        @room = FactoryGirl.build(:bigbluebutton_room)
+        @room.uniqueid = nil
+        @room.save!
+      end
+      it { @room.uniqueid.should_not be_nil }
     end
   end
 

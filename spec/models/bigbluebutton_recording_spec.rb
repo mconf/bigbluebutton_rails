@@ -23,6 +23,19 @@ describe BigbluebuttonRecording do
 
   it { should have_many(:playback_formats).dependent(:destroy) }
 
+  context "scopes" do
+
+    describe "#published" do
+      before :each do
+        @recording1 = FactoryGirl.create(:bigbluebutton_recording, :published => false)
+        @recording2 = FactoryGirl.create(:bigbluebutton_recording, :published => true)
+        @recording3 = FactoryGirl.create(:bigbluebutton_recording, :published => true)
+      end
+      it { BigbluebuttonRecording.published.should == [@recording2, @recording3] }
+    end
+
+  end
+
   describe "#to_param" do
     it { should respond_to(:to_param) }
     it {

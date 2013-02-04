@@ -39,7 +39,7 @@ class BigbluebuttonRoom < ActiveRecord::Base
                          :message => I18n.t('bigbluebutton_rails.rooms.errors.param_format') }
 
   validates :uniqueid,
-            :presence => true,
+            :presence => true, # not really needed, will be created before_validation if nil
             :uniqueness => true,
             :length => { :minimum => 16 }
 
@@ -62,6 +62,7 @@ class BigbluebuttonRoom < ActiveRecord::Base
 
   after_initialize :init
   before_validation :set_param
+  before_validation :generate_uniqueid
 
   # the full logout_url used when logout_url is a relative path
   attr_accessor :full_logout_url
@@ -301,11 +302,7 @@ class BigbluebuttonRoom < ActiveRecord::Base
   def init
     self[:meetingid] ||= random_meetingid
     self[:voice_bridge] ||= random_voice_bridge
-
-    # Automatically generated id that should be unique to identify this object
-    # in case more that one bigbluebutton_rails application is using the same
-    # web conference server.
-    self[:uniqueid] ||= "#{SecureRandom.hex(16)}-#{Time.now.to_i}"
+    generate_uniqueid()
 
     @request_headers = {}
 
@@ -377,6 +374,13 @@ class BigbluebuttonRoom < ActiveRecord::Base
     self.metadata.inject({}) { |result, meta|
       result["meta_#{meta.name}"] = meta.content; result
     }
+  end
+
+  def generate_uniqueid
+    # Automatically generated id that should be unique to identify this object
+    # in case more that one bigbluebutton_rails application is using the same
+    # web conference server.
+    self[:uniqueid] ||= "#{SecureRandom.hex(16)}-#{Time.now.to_i}"
   end
 
 end
