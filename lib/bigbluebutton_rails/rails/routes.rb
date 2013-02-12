@@ -81,11 +81,7 @@ module ActionDispatch::Routing
           add_routes_for_servers
           add_routes_for_rooms
         else
-          if options_only.include? 'servers'
-            add_routes_for_servers
-          elsif options_only.include? 'rooms'
-            add_routes_for_rooms
-          end
+          options_only.include?('servers') ? add_routes_for_servers : add_routes_for_rooms
         end
       end
     end
