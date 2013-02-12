@@ -84,6 +84,28 @@ module ActionDispatch::Routing
       end
     end
 
+    def bigbluebutton_routes_servers(*params)
+      options = params.extract_options!
+      options_scope = options.has_key?(:scope) ? options[:scope] : BigbluebuttonRails.routing_scope
+      options_as = options.has_key?(:as) ? options[:as] : options_scope
+      BigbluebuttonRails.set_controllers(options[:controllers])
+
+      scope options_scope, :as => options_as do
+        add_routes_for_servers
+      end
+    end
+
+    def bigbluebutton_routes_rooms(*params)
+      options = params.extract_options!
+      options_scope = options.has_key?(:scope) ? options[:scope] : BigbluebuttonRails.routing_scope
+      options_as = options.has_key?(:as) ? options[:as] : options_scope
+      BigbluebuttonRails.set_controllers(options[:controllers])
+
+      scope options_scope, :as => options_as do
+        add_routes_for_rooms
+      end
+    end
+
     def bigbluebutton_routes_room_matchers(*params) #:nodoc:
       add_routes_for_rooms
     end
@@ -102,6 +124,13 @@ module ActionDispatch::Routing
           get :join_mobile
           post :join, :action => :auth
         end
+      end
+    end
+
+    def add_routes_for_servers
+      resources :servers, :controller => BigbluebuttonRails.controllers[:servers] do
+        get :activity, :on => :member
+        get :rooms, :on => :member
       end
     end
 
