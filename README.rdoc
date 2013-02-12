@@ -80,6 +80,10 @@ You can also make the routes use custom controllers:
 
   bigbluebutton_routes :default, :controllers => { :servers => 'custom_servers', :rooms => 'custom_rooms' }
 
+You can choose which controller in use:
+
+  bigbluebutton_routes :default, :only => 'servers', :controllers => { :servers => 'custom_servers' }
+
 You may also want shorter routes to access conference rooms. For that, use the option <tt>room_matchers</tt>:
 
   resources :users do
