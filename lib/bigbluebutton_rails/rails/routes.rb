@@ -73,36 +73,20 @@ module ActionDispatch::Routing
       options = params.extract_options!
       options_scope = options.has_key?(:scope) ? options[:scope] : BigbluebuttonRails.routing_scope
       options_as = options.has_key?(:as) ? options[:as] : options_scope
+      options_only = options.has_key?(:only) ? options[:only] : nil
       BigbluebuttonRails.set_controllers(options[:controllers])
 
       scope options_scope, :as => options_as do
-        resources :servers, :controller => BigbluebuttonRails.controllers[:servers] do
-          get :activity, :on => :member
-          get :rooms, :on => :member
+        if options_only.nil?
+          add_routes_for_servers
+          add_routes_for_rooms
+        else
+          if options_only.include? 'servers'
+            add_routes_for_servers
+          elsif options_only.include? 'rooms'
+            add_routes_for_rooms
+          end
         end
-        add_routes_for_rooms
-      end
-    end
-
-    def bigbluebutton_routes_servers(*params)
-      options = params.extract_options!
-      options_scope = options.has_key?(:scope) ? options[:scope] : BigbluebuttonRails.routing_scope
-      options_as = options.has_key?(:as) ? options[:as] : options_scope
-      BigbluebuttonRails.set_controllers(options[:controllers])
-
-      scope options_scope, :as => options_as do
-        add_routes_for_servers
-      end
-    end
-
-    def bigbluebutton_routes_rooms(*params)
-      options = params.extract_options!
-      options_scope = options.has_key?(:scope) ? options[:scope] : BigbluebuttonRails.routing_scope
-      options_as = options.has_key?(:as) ? options[:as] : options_scope
-      BigbluebuttonRails.set_controllers(options[:controllers])
-
-      scope options_scope, :as => options_as do
-        add_routes_for_rooms
       end
     end
 
