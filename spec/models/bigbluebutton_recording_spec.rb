@@ -163,18 +163,7 @@ describe BigbluebuttonRecording do
         # should also NOT be saved
         clone = data[0].clone
         clone[:recordID] = "recordid-2"
-        clone[:playback] = { :format =>
-          [
-           { # without :type to trigger an exception
-             :url => "http://test-install.blindsidenetworks.com/playback/slides/playback.html?meetingId=125468758b24fa27551e7a065849dda3ce65dd32-1329872486268",
-             :length => 64
-           },
-           { :type => "presentation",
-             :url => "http://test-install.blindsidenetworks.com/presentation/slides/playback.html?meetingId=125468758b24fa27551e7a065849dda3ce65dd32-1329872486268",
-             :length => 64
-           }
-          ]
-        }
+        clone[:metadata] = "I will make it throw an exception"
         data.push(clone)
         lambda {
           BigbluebuttonRecording.sync(new_server, data)
@@ -373,7 +362,7 @@ describe BigbluebuttonRecording do
       it { BigbluebuttonPlaybackFormat.find_by_format_type("any2").length.should == 2 }
     end
 
-    context "with a single formats" do
+    context "with a single format" do
       let(:data) {
         { :type => "any1", :url => "url1", :length => 1 }
       }
@@ -390,6 +379,21 @@ describe BigbluebuttonRecording do
       it { BigbluebuttonPlaybackFormat.where(:recording_id => recording.id).count.should == 1 }
       it { BigbluebuttonPlaybackFormat.find_by_format_type("any1").url.should == "url1" }
       it { BigbluebuttonPlaybackFormat.find_by_format_type("any1").length.should == 1 }
+    end
+
+    context "ignores formats with blank type" do
+      let(:data) {
+        { :url => "url1", :length => 1 }
+        { :type => "", :url => "url1", :length => 1 }
+        { :type => "any", :url => "url2", :length => 1 }
+      }
+      before {
+        BigbluebuttonRecording.send(:sync_playback_formats, recording, data)
+      }
+      it { BigbluebuttonPlaybackFormat.count.should == 1 }
+      it { BigbluebuttonPlaybackFormat.where(:recording_id => recording.id).count.should == 1 }
+      it { BigbluebuttonPlaybackFormat.find_by_format_type("any").url.should == "url2" }
+      it { BigbluebuttonPlaybackFormat.find_by_format_type("any").length.should == 1 }
     end
 
   end

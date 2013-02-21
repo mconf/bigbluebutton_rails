@@ -60,6 +60,8 @@ describe Bigbluebutton::RecordingsController do
     describe "#destroy" do
       before :each do
         @recording = recording
+        @recording.server = nil
+        BigbluebuttonRecording.stub(:find_by_recordid) { @recording }
         delete :destroy, :id => @recording.to_param, :format => 'json'
       end
       it { should respond_with(:success) }

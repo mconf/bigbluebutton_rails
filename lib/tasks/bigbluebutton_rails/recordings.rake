@@ -9,6 +9,7 @@ namespace :bigbluebutton_rails do
         rescue Exception => e
           puts "Failure fetching recordings from #{server.inspect}"
           puts e.inspect
+          puts e.backtrace.join "\n"
         end
       end
     end

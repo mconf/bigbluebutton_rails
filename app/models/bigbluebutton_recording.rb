@@ -146,7 +146,9 @@ class BigbluebuttonRecording < ActiveRecord::Base
     formats_copy = [ formats_copy ] if formats_copy.is_a?(Hash)
 
     BigbluebuttonPlaybackFormat.where(:recording_id => recording.id).each do |format_db|
-      format = formats_copy.select{ |d| d[:type] == format_db.format_type }.first
+      format = formats_copy.select{ |d|
+        !d[:type].blank? and d[:type] == format_db.format_type
+      }.first
 
       # the format exists in the hash, update it in the db
       if format
@@ -161,9 +163,11 @@ class BigbluebuttonRecording < ActiveRecord::Base
 
     # for formats that are not in the db yet
     formats_copy.each do |format|
-      attrs = { :recording_id => recording.id, :format_type => format[:type],
-        :url => format[:url], :length => format[:length].to_i }
-      BigbluebuttonPlaybackFormat.create!(attrs)
+      unless format[:type].blank?
+        attrs = { :recording_id => recording.id, :format_type => format[:type],
+          :url => format[:url], :length => format[:length].to_i }
+        BigbluebuttonPlaybackFormat.create!(attrs)
+      end
     end
   end
 
