@@ -37,7 +37,7 @@ module BigbluebuttonRails
     else
       param_name = BigbluebuttonRails.room_id_metadata_name
       if data[:metadata] and data[:metadata][param_name]
-        BigbluebuttonRoom.find_by_uniqueid(data[:metadata][param_name])
+        BigbluebuttonRoom.find_by_uniqueid(data[:metadata][param_name].strip)
       end
     end
   end
