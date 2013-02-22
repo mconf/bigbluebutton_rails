@@ -73,10 +73,9 @@ class BigbluebuttonRecording < ActiveRecord::Base
   # The format expected for 'data' follows the format returned by
   # BigBlueButtonApi#get_recordings but with the keys already converted to our format.
   def self.update_recording(server, recording, data)
-    filtered = data.slice(:meetingid, :name, :published, :start_time, :end_time)
     recording.server = server
     recording.room = BigbluebuttonRails.match_room_recording(data)
-    recording.assign_attributes(filtered)
+    recording.attributes = data.slice(:meetingid, :name, :published, :start_time, :end_time)
     recording.save!
 
     sync_additional_data(recording, data)
