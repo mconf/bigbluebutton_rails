@@ -25,8 +25,20 @@ module BigbluebuttonRails
   # when a room is created. Used to match the room of a recording when
   # recordings are fetched from the DB.
   # Has to be a symbol!
-  mattr_accessor :room_id_metadata_name
-  @@room_id_metadata_name = :'bbbrails-room-id'
+  mattr_accessor :metadata_room_id
+  @@metadata_room_id = :'bbbrails-room-id'
+
+  # Name of the metadata parameter that will contain the user's ID
+  # when a room is created.
+  # Has to be a symbol!
+  mattr_accessor :metadata_user_id
+  @@metadata_user_id = :'bbbrails-user-id'
+
+  # Name of the metadata parameter that will contain the user's name
+  # when a room is created.
+  # Has to be a symbol!
+  mattr_accessor :metadata_user_name
+  @@metadata_user_name = :'bbbrails-user-name'
 
   # Finds the BigbluebuttonRoom associated with the recording data
   # in 'data', if any.
@@ -35,7 +47,7 @@ module BigbluebuttonRails
     if block_given?
       yield
     else
-      param_name = BigbluebuttonRails.room_id_metadata_name
+      param_name = BigbluebuttonRails.metadata_room_id
       if data[:metadata] and data[:metadata][param_name]
         BigbluebuttonRoom.find_by_uniqueid(data[:metadata][param_name].strip)
       end

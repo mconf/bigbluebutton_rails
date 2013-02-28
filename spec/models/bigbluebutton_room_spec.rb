@@ -402,6 +402,20 @@ describe BigbluebuttonRoom do
           it("and do not save the record") { new_room.new_record?.should be_true }
         end
 
+        context "passing the user's name and id" do
+          let(:user) { FactoryGirl.build(:user) }
+          before do
+            mocked_api.should_receive(:create_meeting)
+              .with(room.name, room.meetingid, get_create_params(room, user.name, user.id))
+              .and_return(hash_create)
+            room.stub(:select_server).and_return(mocked_server)
+            room.server = mocked_server
+            room.send_create(user.name, user.id)
+          end
+          it { room.attendee_password.should be(attendee_password) }
+          it { room.moderator_password.should be(moderator_password) }
+          it { room.changed?.should be_false }
+        end
       end
 
       context "randomizes meetingid" do
@@ -577,7 +591,7 @@ describe BigbluebuttonRoom do
     end
   end
 
-  describe "#perform_join" do
+  describe "#join" do
     let(:room) { FactoryGirl.create(:bigbluebutton_room) }
     let(:user) { FactoryGirl.build(:user) }
 
@@ -590,13 +604,13 @@ describe BigbluebuttonRoom do
           room.should_receive(:join_url).with(user.name, :attendee).
           and_return("http://test.com/attendee/join")
         }
-        subject { room.perform_join(user.name, :attendee) }
+        subject { room.join(user.name, :attendee) }
         it { should == "http://test.com/attendee/join" }
       end
 
       context "when the conference is not running" do
         before { room.should_receive(:is_running?).and_return(false) }
-        subject { room.perform_join(user.name, :attendee) }
+        subject { room.join(user.name, :attendee) }
         it { should be_nil }
       end
     end
@@ -610,18 +624,18 @@ describe BigbluebuttonRoom do
           room.should_receive(:join_url).with(user.name, :moderator).
           and_return("http://test.com/moderator/join")
         }
-        subject { room.perform_join(user.name, :moderator) }
+        subject { room.join(user.name, :moderator) }
         it { should == "http://test.com/moderator/join" }
       end
 
       context "when the conference is not running" do
         before {
           room.should_receive(:is_running?).and_return(false)
-          room.should_receive(:send_create)
+          room.should_receive(:send_create).with(user.name, user.id)
           room.should_receive(:join_url).with(user.name, :moderator).
           and_return("http://test.com/moderator/join")
         }
-        subject { room.perform_join(user.name, :moderator) }
+        subject { room.join(user.name, :moderator, user.id) }
         it { should == "http://test.com/moderator/join" }
       end
 
@@ -635,7 +649,7 @@ describe BigbluebuttonRoom do
           room.should_receive(:join_url).with(user.name, :moderator).
           and_return("http://test.com/moderator/join")
         }
-        subject { room.perform_join(user.name, :moderator, request) }
+        subject { room.join(user.name, :moderator, nil, request) }
         it { should == "http://test.com/moderator/join" }
       end
 
@@ -707,7 +721,7 @@ describe BigbluebuttonRoom do
 
 end
 
-def get_create_params(room)
+def get_create_params(room, username=nil, userid=nil)
   params = {
     :moderatorPW => room.moderator_password,
     :attendeePW => room.attendee_password,
@@ -721,5 +735,7 @@ def get_create_params(room)
   }
   room.metadata.each { |meta| params["meta_#{meta.name}"] = meta.content }
   params.merge!({ "meta_bbbrails-room-id" => room.uniqueid })
+  params.merge!({ "meta_bbbrails-user-id" => userid }) unless userid.nil?
+  params.merge!({ "meta_bbbrails-user-name" => username }) unless username.nil?
   params
 end

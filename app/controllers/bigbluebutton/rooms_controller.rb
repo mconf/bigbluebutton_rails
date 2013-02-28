@@ -118,7 +118,7 @@ class Bigbluebutton::RoomsController < ApplicationController
       redirect_to :action => :invite, :mobile => params[:mobile]
 
     else
-      join_internal(bigbluebutton_user.name, @user_role, :join)
+      join_internal(bigbluebutton_user.name, @user_role, bigbluebutton_user.id, :join)
     end
   end
 
@@ -146,7 +146,11 @@ class Bigbluebutton::RoomsController < ApplicationController
       return
     end
 
+    # gets the user information, given priority to a possible logged user
     name = bigbluebutton_user.nil? ? params[:user][:name] : bigbluebutton_user.name
+    id = bigbluebutton_user.nil? ? nil : bigbluebutton_user.id
+    # the role: nil means access denied, :password means check the room
+    # password, otherwise just use it
     @user_role = bigbluebutton_role(@room)
     if @user_role.nil?
       raise BigbluebuttonRails::RoomAccessDenied.new
@@ -157,7 +161,7 @@ class Bigbluebutton::RoomsController < ApplicationController
     end
 
     unless role.nil? or name.nil? or name.empty?
-      join_internal(name, role, :invite)
+      join_internal(name, role, id, :invite)
     else
       flash[:error] = t('bigbluebutton_rails.rooms.errors.auth.failure')
       render :invite, :status => :unauthorized
@@ -197,11 +201,12 @@ class Bigbluebutton::RoomsController < ApplicationController
 
     # if there's a user logged, use his name instead of the name in the params
     name = bigbluebutton_user.nil? ? params[:user][:name] : bigbluebutton_user.name
+    id = bigbluebutton_user.nil? ? nil : bigbluebutton_user.id
     role = @room.user_role(params[:user])
 
-    # FIXME: use internal_join ?
+    # FIXME: use join_internal ?
     unless role.nil? or name.nil? or name.empty?
-      url = @room.perform_join(name, role, request)
+      url = @room.join(name, role, id, request)
       unless url.nil?
         redirect_to(url)
       else
@@ -286,9 +291,9 @@ class Bigbluebutton::RoomsController < ApplicationController
     end
   end
 
-  def join_internal(username, role, wait_action)
+  def join_internal(username, role, id, wait_action)
     begin
-      url = @room.perform_join(username, role, request)
+      url = @room.join(username, role, id, request)
       unless url.nil?
         url.gsub!(/http:\/\//i, "bigbluebutton://") if BigbluebuttonRails::value_to_boolean(params[:mobile])
         redirect_to(url)

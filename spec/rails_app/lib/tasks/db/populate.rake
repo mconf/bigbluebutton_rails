@@ -71,6 +71,25 @@ namespace :db do
           recording.room = room
           recording.save!
 
+          # Basic metadata the gem always adds and should always be there
+          basic_metadata =
+            [{
+               :name => BigbluebuttonRails.metadata_room_id,
+               :content => room.uniqueid
+             }, {
+               :name => BigbluebuttonRails.metadata_user_id,
+               :content => Forgery(:basic).number(:at_most => 1000)
+             }, {
+               :name => BigbluebuttonRails.metadata_user_name,
+               :content => Forgery(:name).full_name
+             }]
+          basic_metadata.each do |meta_params|
+            metadata = BigbluebuttonMetadata.create(meta_params)
+            metadata.owner = recording
+            metadata.save!
+            puts "      - Creating recording metadata #{meta_params[:name]}"
+          end
+
           # Recording metadata
           3.times do |n_metadata|
             params = {

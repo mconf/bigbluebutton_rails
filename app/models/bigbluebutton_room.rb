@@ -131,6 +131,8 @@ class BigbluebuttonRoom < ActiveRecord::Base
   end
 
   # Sends a call to the BBB server to create the meeting.
+  # 'username' is the name of the user that is creating the meeting.
+  # 'userid' is the id of the user that is creating the meeting.
   #
   # Will trigger 'select_server' to select a server where the meeting
   # will be created. If a server is selected, the model is saved.
@@ -140,14 +142,14 @@ class BigbluebuttonRoom < ActiveRecord::Base
   # * <tt>moderator_password</tt>
   #
   # Triggers API call: <tt>create</tt>.
-  def send_create
+  def send_create(username=nil, userid=nil)
     # updates the server whenever a meeting will be created
     self.server = select_server
     self.save unless self.new_record?
     require_server
 
     unless self.randomize_meetingid
-      response = do_create_meeting
+      response = do_create_meeting(username, userid)
 
     # create a new random meetingid everytime create fails with "duplicateWarning"
     else
@@ -156,7 +158,7 @@ class BigbluebuttonRoom < ActiveRecord::Base
       count = 0
       try_again = true
       while try_again and count < 10
-        response = do_create_meeting
+        response = do_create_meeting(username, userid)
 
         count += 1
         try_again = false
@@ -239,16 +241,18 @@ class BigbluebuttonRoom < ActiveRecord::Base
     self.param
   end
 
-  # The join logic
-  # A moderator can create the meeting and join
-  # An attendee can only join if the meeting is running
-  def perform_join(username, role, request=nil)
+  # The join logic.
+  # A moderator can create the meeting and join, an attendee can only join if
+  # the meeting is running.
+  # Returns the URL the user should be redirected to to join the meeting.
+  # Returns nil in case the user can't access the meeting.
+  def join(username, role, userid=nil, request=nil)
     fetch_is_running?
 
     # if the user is a moderator, create the room (if needed) and join it
     if role == :moderator
       add_domain_to_logout_url(request.protocol, request.host_with_port) unless request.nil?
-      send_create unless is_running?
+      send_create(username, userid) unless is_running?
       ret = join_url(username, role)
 
     # normal user only joins if the conference is running
@@ -335,7 +339,7 @@ class BigbluebuttonRoom < ActiveRecord::Base
     value
   end
 
-  def do_create_meeting
+  def do_create_meeting(username=nil, userid=nil)
     opts = {
       :record => self.record,
       :duration => self.duration,
@@ -349,7 +353,11 @@ class BigbluebuttonRoom < ActiveRecord::Base
     }.merge(self.get_metadata_for_create)
 
     # Add a globally unique identifier to match recordings when fetched
-    opts.merge!({ "meta_#{BigbluebuttonRails.room_id_metadata_name}" => self.uniqueid })
+    opts.merge!({ "meta_#{BigbluebuttonRails.metadata_room_id}" => self.uniqueid })
+
+    # Add information about the user that is creating the meeting (if any)
+    opts.merge!({ "meta_#{BigbluebuttonRails.metadata_user_id}" => userid }) unless userid.nil?
+    opts.merge!({ "meta_#{BigbluebuttonRails.metadata_user_name}" => username }) unless username.nil?
 
     self.server.api.request_headers = @request_headers # we need the client's IP
     self.server.api.create_meeting(self.name, self.meetingid, opts)

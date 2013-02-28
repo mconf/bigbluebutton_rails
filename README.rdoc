@@ -106,7 +106,8 @@ For more information see:
 There are some basic assumptions made by BigbluebuttonRails:
 
 * You have a method called <tt>current_user</tt> that returns the current user;
-* The <tt>current_user</tt> has an attribute or method called "name" that returns his/her fullname.
+* The <tt>current_user</tt> has an attribute or method called "name" that returns
+  his/her fullname and an attribute or method "id" that returns the ID.
 
 If you don't, you can change this behaviour easily, keep reading.
 

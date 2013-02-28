@@ -305,7 +305,7 @@ describe Bigbluebutton::RoomsController do
         controller.stub(:bigbluebutton_user) { user }
         controller.stub(:bigbluebutton_role) { :moderator }
         BigbluebuttonRoom.stub(:find_by_param).and_return(room)
-        room.should_receive(:perform_join).and_return("http://test.com/join/url")
+        room.should_receive(:join).and_return("http://test.com/join/url")
       }
       before(:each) {
         get :join, :id => room.to_param, :mobile => "1"
@@ -506,7 +506,10 @@ describe Bigbluebutton::RoomsController do
       let(:template) { :invite }
       let(:hash) { { :name => user.name, :password => room.attendee_password } }
       let(:do_request) { post :auth, :id => room.to_param, :user => hash }
-      before { controller.stub(:bigbluebutton_user).and_return(nil) }
+      before {
+        user.id = nil # there is no user logged, so the id should be nil
+        controller.stub(:bigbluebutton_user).and_return(nil)
+      }
       it_should_behave_like "internal join caller"
     end
   end
@@ -580,7 +583,7 @@ describe Bigbluebutton::RoomsController do
         mock_server_and_api
         mocked_server.should_receive(:fetch_meetings)
         mocked_server.should_receive(:meetings).and_return(meetings)
-        new_room.should_receive(:perform_join)
+        new_room.should_receive(:join)
       }
       before(:each) { post :external_auth, :meeting => new_room.meetingid, :server_id => mocked_server.id, :user => user_hash }
       it { should assign_to(:room).with(new_room) }
@@ -657,11 +660,12 @@ describe Bigbluebutton::RoomsController do
         end
       end
 
-      context "calls room#perform_join" do
+      context "calls room#join" do
         context "and redirects to the url received" do
           before {
-            new_room.should_receive(:perform_join).with(anything, :attendee, request).
-              and_return("http://test.com/attendee/join")
+            new_room.should_receive(:join)
+              .with(anything, :attendee, anything, request)
+              .and_return("http://test.com/attendee/join")
           }
           before(:each) { post :external_auth, :meeting => new_room.meetingid, :server_id => mocked_server.id, :user => user_hash }
           it { should respond_with(:redirect) }
@@ -670,7 +674,9 @@ describe Bigbluebutton::RoomsController do
 
         context "and shows error if it returns nil" do
           before {
-            new_room.should_receive(:perform_join).with(user_hash[:name], :attendee, request).and_return(nil)
+            new_room.should_receive(:join)
+              .with(anything, :attendee, anything, request)
+              .and_return(nil)
           }
           before(:each) { post :external_auth, :meeting => new_room.meetingid, :server_id => mocked_server.id, :user => user_hash }
           it { should respond_with(:success) }
@@ -679,11 +685,12 @@ describe Bigbluebutton::RoomsController do
         end
       end
 
-      it "if there's a user logged, should use his name" do
+      it "if there's a user logged, should use his name and id" do
         user = FactoryGirl.build(:user)
         controller.stub(:bigbluebutton_user).and_return(user)
-        new_room.should_receive(:perform_join).with(user.name, anything, anything). # here's the validation
-          and_return("http://test.com/attendee/join")
+        new_room.should_receive(:join)
+          .with(user.name, anything, user.id, anything) # here's the validation
+          .and_return("http://test.com/attendee/join")
         post :external_auth, :meeting => new_room.meetingid, :server_id => mocked_server.id, :user => user_hash
       end
 
