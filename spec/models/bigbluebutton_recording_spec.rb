@@ -312,29 +312,61 @@ describe BigbluebuttonRecording do
 
   describe "#sync_metadata" do
     let(:recording) { FactoryGirl.create(:bigbluebutton_recording) }
-    let(:metadata) {
-      { :course => "Fundamentals of JAVA",
-        :description => "List of recordings",
-        :activity => "Evening Class1"
-      }
-    }
-    before {
-      # one metadata to be updated
-      FactoryGirl.create(:bigbluebutton_metadata,
-                         :owner => recording, :name => "course")
-      # one to be deleted
-      FactoryGirl.create(:bigbluebutton_metadata, :owner => recording)
 
-      BigbluebuttonRecording.send(:sync_metadata, recording, metadata)
-    }
-    it { BigbluebuttonMetadata.count.should == 3 }
-    it {
-      query = { :owner_id => recording.id, :owner_type => recording.class.to_s }
-      BigbluebuttonMetadata.where(query).count.should == 3
-    }
-    it { BigbluebuttonMetadata.find_by_name(:course).content.should == metadata[:course] }
-    it { BigbluebuttonMetadata.find_by_name(:description).content.should == metadata[:description] }
-    it { BigbluebuttonMetadata.find_by_name(:activity).content.should == metadata[:activity] }
+    context "updates metadata that are already in the db" do
+      let(:metadata) {
+        { :course => "Fundamentals of JAVA",
+          :description => "List of recordings"
+        }
+      }
+      before {
+        # two metadata to be updated
+        @meta1 = FactoryGirl.create(:bigbluebutton_metadata,
+                                    :owner => recording, :name => "course")
+        @meta2 = FactoryGirl.create(:bigbluebutton_metadata,
+                                    :owner => recording, :name => "description")
+        BigbluebuttonRecording.send(:sync_metadata, recording, metadata)
+      }
+      it { BigbluebuttonMetadata.count.should == 2 }
+      it { recording.metadata.count.should == 2 }
+      it { BigbluebuttonMetadata.find_by_name(:course).content.should == metadata[:course] }
+      it { BigbluebuttonMetadata.find_by_name(:course).id.should == @meta1.id }
+      it { BigbluebuttonMetadata.find_by_name(:description).content.should == metadata[:description] }
+      it { BigbluebuttonMetadata.find_by_name(:description).id.should == @meta2.id }
+    end
+
+    context "updates metadata from the db if not in the parameters" do
+      let(:metadata) {
+        { :course => "Fundamentals of JAVA" }
+      }
+      before {
+        # two metadata to be removed
+        FactoryGirl.create(:bigbluebutton_metadata,
+                           :owner => recording, :name => "meta1deleted")
+        FactoryGirl.create(:bigbluebutton_metadata,
+                           :owner => recording, :name => "meta2deleted")
+        BigbluebuttonRecording.send(:sync_metadata, recording, metadata)
+      }
+      it { recording.metadata.count.should == 1 }
+      it { BigbluebuttonMetadata.find_by_name(:course).content.should == metadata[:course] }
+      it { BigbluebuttonMetadata.find_by_name(:meta1deleted).should be_nil }
+      it { BigbluebuttonMetadata.find_by_name(:meta2deleted).should be_nil }
+    end
+
+    context "creates metadata that's not in the db yet" do
+      let(:metadata) {
+        { :course => "Fundamentals of JAVA",
+          :description => "List of recordings"
+        }
+      }
+      before {
+        BigbluebuttonRecording.send(:sync_metadata, recording, metadata)
+      }
+      it { recording.metadata.count.should == 2 }
+      it { BigbluebuttonMetadata.find_by_name(:course).content.should == metadata[:course] }
+      it { BigbluebuttonMetadata.find_by_name(:description).content.should == metadata[:description] }
+    end
+
   end
 
   describe "#sync_playback_formats" do

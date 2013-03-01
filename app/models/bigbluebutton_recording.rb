@@ -109,22 +109,25 @@ class BigbluebuttonRecording < ActiveRecord::Base
   # The format expected for 'metadata' follows the format returned by
   # BigBlueButtonApi#get_recordings but with the keys already converted to our format.
   def self.sync_metadata(recording, metadata)
-    local_metadata = metadata.clone
+    # keys are stored as strings in the db
+    received_metadata = metadata.clone.stringify_keys
 
     query = { :owner_id => recording.id, :owner_type => recording.class.to_s }
-    BigbluebuttonMetadata.where(query).each do |data|
-      # the metadata is in the hash, update it in the db
-      if local_metadata.has_key?(data.name)
-        data.update_attributes({ :content => local_metadata[data.name] })
-        local_metadata.delete(data.name)
-      # the format is not in the hash, remove from the db
+    BigbluebuttonMetadata.where(query).each do |meta_db|
+
+      # the metadata in the db is also in the received data, update it in the db
+      if received_metadata.has_key?(meta_db.name)
+        meta_db.update_attributes({ :content => received_metadata[meta_db.name] })
+        received_metadata.delete(meta_db.name)
+
+      # the metadata is not in the received data, remove from the db
       else
-        data.destroy
+        meta_db.destroy
       end
     end
 
     # for metadata that are not in the db yet
-    local_metadata.each do |name, content|
+    received_metadata.each do |name, content|
       attrs = {
         :name => name,
         :content => content,
