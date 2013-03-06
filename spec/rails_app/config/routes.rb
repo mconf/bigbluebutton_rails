@@ -11,9 +11,16 @@ RailsApp::Application.routes.draw do
     end
   end
 
+  scope "only-servers" do
+    bigbluebutton_routes :default, :only => "servers"
+  end
+
+  scope "only-rooms" do
+    bigbluebutton_routes :default, :only => "rooms"
+  end
+
   bigbluebutton_routes :default,
     :scope => "custom",
     :controllers => { :servers => "custom_servers", :rooms => "custom_rooms" },
     :as => "custom_name"
-
 end
