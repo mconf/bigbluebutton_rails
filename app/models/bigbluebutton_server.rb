@@ -113,13 +113,14 @@ class BigbluebuttonServer < ActiveRecord::Base
 
   # Sends a call to the BBB server to get the list of recordings and updates
   # the database with these recordings.
-  # ids:: meetingIDs of the recordings to be filtered, uses the same format
-  #       accepted by BigBlueButtonApi::get_recordings
+  # filter:: filters to be used, uses the same format accepted by
+  #          BigBlueButtonApi::get_recordings. Can filter by meetingID and/or
+  #          metadata values.
   #
   # Triggers API call: <tt>getRecordings</tt>.
-  def fetch_recordings(ids={})
-    logger.info "Fetching recordings for the server #{self.inspect} with filter #{ids}"
-    recordings = self.api.get_recordings(ids)
+  def fetch_recordings(filter={})
+    logger.info "Fetching recordings for the server #{self.inspect} with filter: #{filter.inspect}"
+    recordings = self.api.get_recordings(filter)
     if recordings and recordings[:recordings]
       BigbluebuttonRecording.sync(self, recordings[:recordings])
     end

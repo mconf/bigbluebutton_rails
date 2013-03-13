@@ -255,11 +255,21 @@ describe Bigbluebutton::ServersController do
       it { should set_the_flash.to(bbb_error_msg[0..200]) }
     end
 
-    context "when params[:meetings] is set" do
+    context "when filtering by meetingID" do
       let(:meetings) { "m1,m2,m3" }
       it {
         server.should_receive(:fetch_recordings).with({ :meetingID => meetings })
         post :fetch_recordings, :id => server.to_param, :meetings => meetings
+      }
+    end
+
+    context "when filtering by metadata" do
+      let(:filters) {
+        { :meta_first => "first-value", :meta_second => "second-value" }
+      }
+      it {
+        server.should_receive(:fetch_recordings).with(filters)
+        post :fetch_recordings, :id => server.to_param, :meta_first => "first-value", :meta_second => "second-value"
       }
     end
   end

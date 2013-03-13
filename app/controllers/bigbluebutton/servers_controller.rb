@@ -114,11 +114,22 @@ class Bigbluebutton::ServersController < ApplicationController
     self.publish_unpublish(params[:recordings], false)
   end
 
+  # Accepts the following parameters in URL:
+  # meetings:: A list of meetingIDs to be used as filter.
+  # meta_*:: To filter by metadata, where "*" can be anything.
+  #
+  # For example: fetch_recordings?meetings=meeting1,meeting2&meta_name=value
   def fetch_recordings
     error = false
     begin
+
+      # accept meetingID and meta_* filters
       filter = {}
       filter.merge!({ :meetingID => params[:meetings] }) if params[:meetings]
+      params.each do |key, value|
+        filter.merge!({ key.to_sym => value }) if key.match(/^meta_/)
+      end
+
       @server.fetch_recordings(filter)
       message = t('bigbluebutton_rails.servers.notice.fetch_recordings.success')
     rescue BigBlueButton::BigBlueButtonException => e
@@ -128,11 +139,7 @@ class Bigbluebutton::ServersController < ApplicationController
 
     respond_with do |format|
       format.html {
-        if error
-          flash[:error] = message
-        else
-          flash[:notice] = message
-        end
+        flash[error ? :error : :notice] = message
         redirect_to bigbluebutton_server_path(@server)
       }
       format.json {
