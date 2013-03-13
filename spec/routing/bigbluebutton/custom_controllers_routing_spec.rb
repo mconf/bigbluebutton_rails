@@ -116,6 +116,10 @@ describe ActionController do
       {:post => "/custom/rooms/1/fetch_recordings"}.
       should route_to(:controller => "custom_rooms", :action => "fetch_recordings", :id => "1")
     }
+    it {
+      {:get => "/custom/rooms/1/recordings"}.
+      should route_to(:controller => "custom_rooms", :action => "recordings", :id => "1")
+    }
 
     # custom controllers - recordings
     it {
@@ -164,6 +168,7 @@ describe ActionController do
       it { end_custom_name_room_path(room).should == "/custom/rooms/#{room.to_param}/end" }
       it { invite_custom_name_room_path(room).should == "/custom/rooms/#{room.to_param}/invite" }
       it { fetch_recordings_custom_name_room_path(room).should == "/custom/rooms/#{room.to_param}/fetch_recordings" }
+      it { recordings_custom_name_room_path(room).should == "/custom/rooms/#{room.to_param}/recordings" }
 
       it { custom_name_recordings_path.should == "/custom/recordings" }
       it { edit_custom_name_recording_path(recording).should == "/custom/recordings/#{recording.to_param}/edit" }

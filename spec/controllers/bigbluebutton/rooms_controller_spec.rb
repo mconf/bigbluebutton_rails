@@ -741,6 +741,22 @@ describe Bigbluebutton::RoomsController do
     end
   end
 
+  describe "#recordings" do
+    before do
+      @recording1 = FactoryGirl.create(:bigbluebutton_recording, :room => room)
+      @recording2 = FactoryGirl.create(:bigbluebutton_recording, :room => room)
+      FactoryGirl.create(:bigbluebutton_recording)
+
+      # one that belongs to another room in the same server
+      room2 = FactoryGirl.create(:bigbluebutton_room, :server => room.server)
+      FactoryGirl.create(:bigbluebutton_recording, :room => room2)
+    end
+    before(:each) { get :recordings, :id => room.to_param }
+    it { should respond_with(:success) }
+    it { should render_template(:recordings) }
+    it { should assign_to(:recordings).with([@recording1, @recording2]) }
+  end
+
   describe "before filter :set_request_headers" do
     let(:headers) { {"x-forwarded-for" => "0.0.0.0"} }
     before {

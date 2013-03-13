@@ -27,8 +27,8 @@ Gem::PackageTask.new $specification do |pkg|
   pkg.need_zip = true
 end
 
-desc 'Setup RailsApp used in tests.'
 namespace :rails_app do
+  desc 'Setup rails app used in tests.'
   task :install do |app|
     cd File.join(File.dirname(__FILE__), "spec", "rails_app")
     sh "rails destroy bigbluebutton_rails:install"
@@ -36,6 +36,7 @@ namespace :rails_app do
     cd File.dirname(__FILE__)
   end
 
+  desc 'Setup the db in the rails app used in tests.'
   task :db do
     cd File.join(File.dirname(__FILE__), "spec", "rails_app")
     # base

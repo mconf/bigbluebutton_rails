@@ -96,5 +96,6 @@
 
 <p>
   <span>Recordings:</span>
+  <%= link_to 'View recordings', recordings_bigbluebutton_room_path(@room) %> |
   <%= link_to 'Fetch recordings', fetch_recordings_bigbluebutton_room_path(@room), :confirm => 'Are you sure?', :method => :post %>
 </p>
