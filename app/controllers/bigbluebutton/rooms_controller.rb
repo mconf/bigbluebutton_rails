@@ -2,7 +2,7 @@ require 'bigbluebutton_api'
 
 class Bigbluebutton::RoomsController < ApplicationController
 
-  before_filter :find_room, :only => [:show, :edit, :update, :destroy, :join, :invite, :running, :end, :destroy, :join_mobile]
+  before_filter :find_room, :only => [:show, :edit, :update, :destroy, :join, :invite, :running, :end, :destroy, :join_mobile, :fetch_recordings]
   before_filter :find_server, :only => [:external, :external_auth]
 
   # set headers only in actions that might trigger api calls
@@ -273,6 +273,39 @@ class Bigbluebutton::RoomsController < ApplicationController
     # logged. so we are using the full BBB url for now.
     @qrcode_url = @room.join_url(bigbluebutton_user.name, bigbluebutton_role(@room))
     @qrcode_url.gsub!(/http:\/\//i, "bigbluebutton://")
+  end
+
+  def fetch_recordings
+    error = false
+
+    if @room.server.nil?
+      error = true
+      message = t('bigbluebutton_rails.rooms.error.fetch_recordings.no_server')
+    else
+      begin
+        # filter only recordings created by this room
+        filter = { :"meta_#{BigbluebuttonRails.metadata_room_id}" => @room.uniqueid }
+        @room.server.fetch_recordings(filter)
+        message = t('bigbluebutton_rails.rooms.notice.fetch_recordings.success')
+      rescue BigBlueButton::BigBlueButtonException => e
+        error = true
+        message = e.to_s[0..200]
+      end
+    end
+
+    respond_with do |format|
+      format.html {
+        flash[error ? :error : :notice] = message
+        redirect_to bigbluebutton_room_path(@room)
+      }
+      format.json {
+        if error
+          render :json => { :message => message }, :status => :error
+        else
+          head :ok
+        end
+      }
+    end
   end
 
   protected

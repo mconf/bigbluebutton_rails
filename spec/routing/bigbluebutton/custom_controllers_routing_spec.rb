@@ -38,6 +38,22 @@ describe ActionController do
       {:get => "/custom/servers/1/activity"}.
       should route_to(:controller => "custom_servers", :action => "activity", :id => "1")
     }
+    it {
+      {:get => "/custom/servers/1/recordings"}.
+      should route_to(:controller => "custom_servers", :action => "recordings", :id => "1")
+    }
+    it {
+      {:post => "/custom/servers/1/publish_recordings"}.
+      should route_to(:controller => "custom_servers", :action => "publish_recordings", :id => "1")
+    }
+    it {
+      {:post => "/custom/servers/1/unpublish_recordings"}.
+      should route_to(:controller => "custom_servers", :action => "unpublish_recordings", :id => "1")
+    }
+    it {
+      {:post => "/custom/servers/1/fetch_recordings"}.
+      should route_to(:controller => "custom_servers", :action => "fetch_recordings", :id => "1")
+    }
 
     # custom controllers - rooms
     it {
@@ -96,6 +112,10 @@ describe ActionController do
       {:post => "/custom/rooms/1/join"}.
       should route_to(:controller => "custom_rooms", :action => "auth", :id => "1")
     }
+    it {
+      {:post => "/custom/rooms/1/fetch_recordings"}.
+      should route_to(:controller => "custom_rooms", :action => "fetch_recordings", :id => "1")
+    }
 
     # custom controllers - recordings
     it {
@@ -129,6 +149,10 @@ describe ActionController do
       it { edit_custom_name_server_path(server).should == "/custom/servers/#{server.to_param}/edit" }
       it { custom_name_server_path(server).should == "/custom/servers/#{server.to_param}" }
       it { activity_custom_name_server_path(server).should == "/custom/servers/#{server.to_param}/activity" }
+      it { fetch_recordings_custom_name_server_path(server).should == "/custom/servers/#{server.to_param}/fetch_recordings" }
+      it { recordings_custom_name_server_path(server).should == "/custom/servers/#{server.to_param}/recordings" }
+      it { publish_recordings_custom_name_server_path(server).should == "/custom/servers/#{server.to_param}/publish_recordings" }
+      it { unpublish_recordings_custom_name_server_path(server).should == "/custom/servers/#{server.to_param}/unpublish_recordings" }
 
       it { custom_name_rooms_path.should == "/custom/rooms" }
       it { new_custom_name_room_path.should == "/custom/rooms/new" }
@@ -139,6 +163,7 @@ describe ActionController do
       it { join_mobile_custom_name_room_path(room).should == "/custom/rooms/#{room.to_param}/join_mobile" }
       it { end_custom_name_room_path(room).should == "/custom/rooms/#{room.to_param}/end" }
       it { invite_custom_name_room_path(room).should == "/custom/rooms/#{room.to_param}/invite" }
+      it { fetch_recordings_custom_name_room_path(room).should == "/custom/rooms/#{room.to_param}/fetch_recordings" }
 
       it { custom_name_recordings_path.should == "/custom/recordings" }
       it { edit_custom_name_recording_path(recording).should == "/custom/recordings/#{recording.to_param}/edit" }

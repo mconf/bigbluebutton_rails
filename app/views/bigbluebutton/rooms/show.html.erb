@@ -93,3 +93,8 @@
   <%= link_to 'End', end_bigbluebutton_room_path(@room), :confirm => 'Are you sure?' %> |
   <%= link_to 'Destroy', bigbluebutton_room_path(@room), :confirm => 'Are you sure?', :method => :delete %>
 </p>
+
+<p>
+  <span>Recordings:</span>
+  <%= link_to 'Fetch recordings', fetch_recordings_bigbluebutton_room_path(@room), :confirm => 'Are you sure?', :method => :post %>
+</p>

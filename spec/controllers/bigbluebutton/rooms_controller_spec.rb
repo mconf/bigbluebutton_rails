@@ -698,6 +698,49 @@ describe Bigbluebutton::RoomsController do
 
   end # #external_auth
 
+  describe "#fetch_recordings" do
+    # setup basic server and API mocks
+    before do
+      #controller.should_receive(:set_request_headers)
+      mock_server_and_api
+    end
+    let(:filter) {
+      { :"meta_#{BigbluebuttonRails.metadata_room_id}" => room.uniqueid }
+    }
+
+    context "on success" do
+      before(:each) {
+        mocked_server.should_receive(:fetch_recordings).with(filter)
+        post :fetch_recordings, :id => room.to_param
+      }
+      it { should respond_with(:redirect) }
+      it { should redirect_to bigbluebutton_room_path(room) }
+      it { should set_the_flash.to(I18n.t('bigbluebutton_rails.rooms.notice.fetch_recordings.success')) }
+    end
+
+    context "on BigBlueButtonException" do
+      let(:bbb_error_msg) { SecureRandom.hex(250) }
+      let(:bbb_error) { BigBlueButton::BigBlueButtonException.new(bbb_error_msg) }
+      before(:each) {
+        mocked_server.should_receive(:fetch_recordings) { raise bbb_error }
+        post :fetch_recordings, :id => room.to_param
+      }
+      it { should respond_with(:redirect) }
+      it { should redirect_to(bigbluebutton_room_path(room)) }
+      it { should set_the_flash.to(bbb_error_msg[0..200]) }
+    end
+
+    context "if the room has no server associated" do
+      before(:each) {
+        room.stub(:server) { nil }
+        post :fetch_recordings, :id => room.to_param
+      }
+      it { should respond_with(:redirect) }
+      it { should redirect_to(bigbluebutton_room_path(room)) }
+      it { should set_the_flash.to(I18n.t('bigbluebutton_rails.rooms.error.fetch_recordings.no_server')) }
+    end
+  end
+
   describe "before filter :set_request_headers" do
     let(:headers) { {"x-forwarded-for" => "0.0.0.0"} }
     before {

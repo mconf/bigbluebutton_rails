@@ -64,6 +64,10 @@ describe Bigbluebutton::RoomsController do
         {:post => "/#{prefix}/rooms/room-1/join"}.
         should route_to(:controller => "bigbluebutton/rooms", :action => "auth", :id => "room-1")
       }
+      it {
+        {:post => "/#{prefix}/rooms/room-1/fetch_recordings"}.
+        should route_to(:controller => "bigbluebutton/rooms", :action => "fetch_recordings", :id => "room-1")
+      }
 
     end
 
@@ -138,7 +142,11 @@ describe Bigbluebutton::RoomsController do
       should route_to(:controller => "bigbluebutton/rooms", :action => "auth",
                       :user_id => "1", :id => "room-1")
     }
-
+    it {
+      {:post => "/users/1/rooms/room-1/fetch_recordings"}.
+      should route_to(:controller => "bigbluebutton/rooms", :action => "fetch_recordings",
+                      :user_id => "1", :id => "room-1")
+    }
 
     # room matchers inside users/spaces
     it {
@@ -211,7 +219,11 @@ describe Bigbluebutton::RoomsController do
       should route_to(:controller => "bigbluebutton/rooms", :action => "auth",
                       :user_id => "1", :space_id => "2", :id => "room-1")
     }
+    it {
+      {:post => "/users/1/spaces/2/rooms/room-1/fetch_recordings"}.
+      should route_to(:controller => "bigbluebutton/rooms", :action => "fetch_recordings",
+                      :user_id => "1", :space_id => "2", :id => "room-1")
+    }
  end
 
 end
-

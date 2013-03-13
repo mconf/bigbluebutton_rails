@@ -80,6 +80,8 @@ en:
           wrong_params: "Wrong params in your request."
         external:
           blank_meetingid: "You must specify the meetingid of the meeting you want to join"
+        fetch_recordings:
+          no_server: "There's no server associated with this room."
         param_format: "can only use letters, numbers and the symbols \"-\" or \"_\" (not at the begin or end)"
         server:
           nil: "Your room must be associated to a server to execute this operation."
@@ -93,6 +95,8 @@ en:
         end:
           not_running: "The meeting could not be ended because it is not running."
           success: "The meeting was successfully ended."
+        fetch_recordings:
+          success: "The list of recordings for this room was successfully updated."
         update:
           failure: "Your room could not be updated."
           success: "Your room was successfully updated."
