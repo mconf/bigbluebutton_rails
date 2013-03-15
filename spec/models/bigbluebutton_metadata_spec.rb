@@ -41,4 +41,24 @@ describe BigbluebuttonMetadata do
   [:name, :content].each do |attribute|
     it { should allow_mass_assignment_of(attribute) }
   end
+
+  context "reserved metadata keys" do
+    before(:each) { subject.owner = FactoryGirl.create(:bigbluebutton_room) }
+
+    it { should ensure_exclusion_of(:name)
+          .in_array(BigbluebuttonRails.metadata_invalid_keys.map(&:to_s)) }
+
+    it "allows values to be added to the list of invalid metadata keys" do
+      old = BigbluebuttonRails.metadata_invalid_keys.clone
+      BigbluebuttonRails.metadata_invalid_keys.push("1")
+      old.push("1")
+      should ensure_exclusion_of(:name).in_array(old.map(&:to_s))
+    end
+
+    it "only invalidates if the metadata belongs to a room" do
+      subject.owner = FactoryGirl.create(:bigbluebutton_recording)
+      should_not ensure_exclusion_of(:name)
+        .in_array(BigbluebuttonRails.metadata_invalid_keys.map(&:to_s))
+    end
+  end
 end

@@ -40,6 +40,16 @@ module BigbluebuttonRails
   mattr_accessor :metadata_user_name
   @@metadata_user_name = :'bbbrails-user-name'
 
+  # List of invalid metadata keys. Invalid keys are usually keys that are
+  # used by the gem and by the application. The application using this gem
+  # can add items to this list as well.
+  # All values added can be symbols or strings.
+  mattr_accessor :metadata_invalid_keys
+  @@metadata_invalid_keys =
+    [ @@metadata_room_id,
+      @@metadata_user_id,
+      @@metadata_user_name ]
+
   # Finds the BigbluebuttonRoom associated with the recording data
   # in 'data', if any.
   # TODO: if not found, remove the association or keep the old one?
