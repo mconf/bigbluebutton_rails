@@ -92,6 +92,7 @@ describe BigbluebuttonRecording do
       it { @recording.start_time.utc.to_i.should == data[0][:startTime].utc.to_i }
       it { @recording.server.should == new_server }
       it { @recording.room.should == room }
+      it { @recording.available.should == true }
       it { @recording.metadata.count.should == 4 }
       3.times do |i|
         it { @recording.metadata[i].name.should == data[0][:metadata].keys[i].to_s }
@@ -121,6 +122,7 @@ describe BigbluebuttonRecording do
       it { @recording.start_time.utc.to_i.should == data[0][:startTime].utc.to_i }
       it { @recording.server.should == new_server }
       it { @recording.room.should == room }
+      it { @recording.available.should == true }
       it { @recording.metadata.count.should == 4 }
       3.times do |i|
         it { @recording.metadata[i].name.should == data[0][:metadata].keys[i].to_s }
@@ -141,6 +143,20 @@ describe BigbluebuttonRecording do
         BigbluebuttonRecording.sync(new_server, data)
       }
       it { BigbluebuttonRecording.count.should == 2 }
+    end
+
+    context "sets recording that are not in the parameters as unavailable" do
+      before {
+        # pre-existing recordings that should be marked as unavailable
+        @r1 = FactoryGirl.create(:bigbluebutton_recording, :available => true)
+        @r2 = FactoryGirl.create(:bigbluebutton_recording, :available => true)
+        BigbluebuttonRecording.sync(new_server, data)
+        @r1.reload
+        @r2.reload
+      }
+      it { BigbluebuttonRecording.count.should == 3 }
+      it { @r1.available.should == false }
+      it { @r2.available.should == false }
     end
 
     context "works for multiple recordings" do

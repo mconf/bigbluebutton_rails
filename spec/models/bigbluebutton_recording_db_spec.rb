@@ -12,6 +12,7 @@ describe BigbluebuttonRecording do
     it { should have_db_column(:published).of_type(:boolean) }
     it { should have_db_column(:start_time).of_type(:datetime) }
     it { should have_db_column(:end_time).of_type(:datetime) }
+    it { should have_db_column(:available).of_type(:boolean) }
     it { should have_db_index(:room_id) }
     it { should have_db_index(:recordid).unique(true) }
     it "default values" do

@@ -62,6 +62,7 @@ namespace :db do
             :meetingid => room.meetingid,
             :name => "Rec-#{n1}-#{n2}-#{n3}",
             :published => true,
+            :available => true,
             :start_time => Time.now - rand(5).hours,
             :end_time => Time.now + rand(5).hours
           }

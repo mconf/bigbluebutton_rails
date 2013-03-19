@@ -30,8 +30,8 @@ class BigbluebuttonRecording < ActiveRecord::Base
   # Syncs the recordings in the db with the array of recordings in 'recordings',
   # as received from BigBlueButtonApi#get_recordings.
   # Will add new recordings that are not in the db yet and update the ones that
-  # already are (matching by 'recordid'). Will NOT delete recordings from the db,
-  # even if they are not in the array.
+  # already are (matching by 'recordid'). Will NOT delete recordings from the db
+  # if they are not in the array but instead mark them as unavailable.
   # 'server' is the BigbluebuttonServer object from which the recordings
   # were fetched.
   #
@@ -51,6 +51,15 @@ class BigbluebuttonRecording < ActiveRecord::Base
           self.create_recording(server, rec_data)
         end
       end
+    end
+
+    # set as unavailable the recordings that are not in 'recordings'
+    recordIDs = recordings.map{ |rec| rec[:recordID] }
+    if recordIDs.length > 0
+      BigbluebuttonRecording
+        .where(:available => true)
+        .where("recordid NOT IN (?)", recordIDs)
+        .update_all(:available => false)
     end
   end
 
@@ -76,6 +85,7 @@ class BigbluebuttonRecording < ActiveRecord::Base
     recording.server = server
     recording.room = BigbluebuttonRails.match_room_recording(data)
     recording.attributes = data.slice(:meetingid, :name, :published, :start_time, :end_time)
+    recording.available = true
     recording.save!
 
     sync_additional_data(recording, data)
@@ -87,6 +97,7 @@ class BigbluebuttonRecording < ActiveRecord::Base
   def self.create_recording(server, data)
     filtered = data.slice(:recordid, :meetingid, :name, :published, :start_time, :end_time)
     recording = BigbluebuttonRecording.create(filtered)
+    recording.available = true
     recording.room = BigbluebuttonRails.match_room_recording(data)
     recording.server = server
     recording.save!
