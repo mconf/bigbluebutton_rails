@@ -18,12 +18,12 @@
       <div><label>Access</label>
         <%= link_to 'Show', server %> |
         <%= link_to 'View rooms', rooms_bigbluebutton_server_path(server) %> |
-        <%= link_to 'View recordings', recordings_bigbluebutton_server_path(server) %> |
         <%= link_to 'Activity monitor', activity_bigbluebutton_server_path(server) %> |
         <%= link_to 'Edit', edit_bigbluebutton_server_path(server) %> |
         <%= link_to 'Destroy', bigbluebutton_server_path(server), :confirm => 'Are you sure?', :method => :delete %>
       </div>
       <div><label>Recordings</label>
+        <%= link_to 'View recordings', recordings_bigbluebutton_server_path(server) %> |
         <%= link_to 'Fetch recordings', fetch_recordings_bigbluebutton_server_path(server), :confirm => 'Are you sure?', :method => :post %>
       </div>
     </li>
