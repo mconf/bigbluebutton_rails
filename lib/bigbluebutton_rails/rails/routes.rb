@@ -84,25 +84,13 @@ module ActionDispatch::Routing
       options = params.extract_options!
       options_scope = options.has_key?(:scope) ? options[:scope] : BigbluebuttonRails.routing_scope
       options_as = options.has_key?(:as) ? options[:as] : options_scope
-      options_only = options.has_key?(:only) ? options[:only] : nil
+      options_only = options.has_key?(:only) ? options[:only] : ["servers", "rooms", "recordings"]
       BigbluebuttonRails.set_controllers(options[:controllers])
 
       scope options_scope, :as => options_as do
-        if options_only.nil?
-          add_routes_for_servers
-          add_routes_for_rooms
-        else
-          options_only.include?('servers') ? add_routes_for_servers : add_routes_for_rooms
-        end
-
-        resources :recordings, :except => [:new, :create],
-                  :controller => BigbluebuttonRails.controllers[:recordings] do
-          member do
-            get :play
-            post :publish
-            post :unpublish
-          end
-        end
+        add_routes_for_servers if options_only.include?("servers")
+        add_routes_for_rooms if options_only.include?("rooms")
+        add_routes_for_recordings if options_only.include?("recordings")
       end
     end
 
@@ -138,6 +126,17 @@ module ActionDispatch::Routing
           post :publish_recordings
           post :unpublish_recordings
           post :fetch_recordings
+        end
+      end
+    end
+
+    def add_routes_for_recordings #:nodoc:
+      resources :recordings, :except => [:new, :create],
+                             :controller => BigbluebuttonRails.controllers[:recordings] do
+        member do
+          get :play
+          post :publish
+          post :unpublish
         end
       end
     end
