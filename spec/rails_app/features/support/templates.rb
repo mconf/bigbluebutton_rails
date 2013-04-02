@@ -70,7 +70,7 @@ module TemplateHelpers
     has_element("a", { :href => bigbluebutton_rooms_path }) # rooms list
     n = 1
     servers.each do |server|
-      within(make_selector("ul#bbbrails_servers_list>li:nth(#{n})")) do
+      within(make_selector("ul#bbbrails_list>li:nth(#{n})")) do
         # server data
         has_content(server.name)
         has_content(server.url)
@@ -237,7 +237,7 @@ module TemplateHelpers
     has_element("a", { :href => bigbluebutton_servers_path }) # servers list
     n = 1
     rooms.each do |room|
-      within(make_selector("ul#bbbrails_rooms_list>li:nth(#{n})")) do
+      within(make_selector("ul#bbbrails_list>li:nth(#{n})")) do
         # room data
         has_content(room.server_id) unless room.server.nil?
         has_content(room.name)

@@ -6,6 +6,11 @@ class BigbluebuttonServer < ActiveRecord::Base
            :foreign_key => 'server_id',
            :dependent => :nullify
 
+  has_many :recordings,
+           :class_name => 'BigbluebuttonRecording',
+           :foreign_key => 'server_id',
+           :dependent => :nullify
+
   validates :name,
             :presence => true,
             :uniqueness => true,
@@ -56,7 +61,7 @@ class BigbluebuttonServer < ActiveRecord::Base
   # Using the response, updates <tt>meetings</tt> with a list of <tt>BigbluebuttonMeeting</tt>
   # objects.
   #
-  # Triggers API call: <tt>get_meetings</tt>.
+  # Triggers API call: <tt>getMeetings</tt>.
   def fetch_meetings
     response = self.api.get_meetings
 
@@ -76,6 +81,48 @@ class BigbluebuttonServer < ActiveRecord::Base
       room.running = attr[:running]
 
       @meetings << room
+    end
+  end
+
+  # Sends a call to the BBB server to publish or unpublish a recording or a set
+  # of recordings.
+  # ids:: IDs of the recordings that will be affected. Accepts the same format
+  #       accepted by BigBlueButtonApi::publish_recordings
+  # publish:: Publish or unpublish the recordings?
+  #
+  # Triggers API call: <tt>publishRecordings</tt>.
+  def send_publish_recordings(ids, publish)
+    self.api.publish_recordings(ids, publish)
+
+    # Update #published in all recordings
+    ids = ids.split(",") if ids.instance_of?(String) # "id1,id2" to ["id1", "id2"]
+    ids.each do |id|
+      recording = BigbluebuttonRecording.find_by_recordid(id.strip)
+      recording.update_attributes(:published => publish) unless recording.nil?
+    end
+  end
+
+  # Sends a call to the BBB server to delete a recording or a set or recordings.
+  # ids:: IDs of the recordings that will be affected. Accepts the same format
+  #       accepted by BigBlueButtonApi::delete_recordings
+  #
+  # Triggers API call: <tt>deleteRecordings</tt>.
+  def send_delete_recordings(ids)
+    self.api.delete_recordings(ids)
+  end
+
+  # Sends a call to the BBB server to get the list of recordings and updates
+  # the database with these recordings.
+  # filter:: filters to be used, uses the same format accepted by
+  #          BigBlueButtonApi::get_recordings. Can filter by meetingID and/or
+  #          metadata values.
+  #
+  # Triggers API call: <tt>getRecordings</tt>.
+  def fetch_recordings(filter={})
+    logger.info "Fetching recordings for the server #{self.inspect} with filter: #{filter.inspect}"
+    recordings = self.api.get_recordings(filter)
+    if recordings and recordings[:recordings]
+      BigbluebuttonRecording.sync(self, recordings[:recordings])
     end
   end
 

@@ -2,7 +2,7 @@ require 'bigbluebutton_api'
 
 class Bigbluebutton::RoomsController < ApplicationController
 
-  before_filter :find_room, :only => [:show, :edit, :update, :destroy, :join, :invite, :running, :end, :destroy, :join_mobile]
+  before_filter :find_room, :except => [:index, :create, :new, :auth, :external, :external_auth]
   before_filter :find_server, :only => [:external, :external_auth]
 
   # set headers only in actions that might trigger api calls
@@ -39,8 +39,7 @@ class Bigbluebutton::RoomsController < ApplicationController
       if @room.save
         message = t('bigbluebutton_rails.rooms.notice.create.success')
         format.html {
-          params[:redir_url] ||= bigbluebutton_room_path(@room)
-          redirect_to params[:redir_url], :notice => message
+          redirect_to params[:redir_url] ||= bigbluebutton_room_path(@room), :notice => message
         }
         format.json { render :json => { :message => message }, :status => :created }
       else
@@ -62,8 +61,7 @@ class Bigbluebutton::RoomsController < ApplicationController
       if @room.update_attributes(params[:bigbluebutton_room])
         message = t('bigbluebutton_rails.rooms.notice.update.success')
         format.html {
-          params[:redir_url] ||= bigbluebutton_room_path(@room)
-          redirect_to params[:redir_url], :notice => message
+          redirect_to params[:redir_url] ||= bigbluebutton_room_path(@room), :notice => message
         }
         format.json { render :json => { :message => message } }
       else
@@ -81,32 +79,31 @@ class Bigbluebutton::RoomsController < ApplicationController
   end
 
   def destroy
-    # TODO Destroy the room record even if end_meeting failed?
-
     error = false
     begin
       @room.fetch_is_running?
       @room.send_end if @room.is_running?
+      message = t('bigbluebutton_rails.rooms.notice.destroy.success')
     rescue BigBlueButton::BigBlueButtonException => e
       error = true
-      message = e.to_s
-      # TODO Better error message: "Room destroyed in DB, but not in BBB..."
+      message = t('bigbluebutton_rails.rooms.notice.destroy.success_with_bbb_error', :error => e.to_s[0..200])
     end
 
+    # TODO: what if it fails?
     @room.destroy
 
     respond_with do |format|
       format.html {
         flash[:error] = message if error
-        params[:redir_url] ||= bigbluebutton_rooms_url
-        redirect_to params[:redir_url]
+        redirect_to params[:redir_url] ||= bigbluebutton_rooms_url
       }
-      if error
-        format.json { render :json => { :message => message }, :status => :error }
-      else
-        message = t('bigbluebutton_rails.rooms.notice.destroy.success')
-        format.json { render :json => { :message => message } }
-      end
+      format.json {
+        if error
+          render :json => { :message => message }, :status => :error
+        else
+          render :json => { :message => message }
+        end
+      }
     end
   end
 
@@ -121,7 +118,7 @@ class Bigbluebutton::RoomsController < ApplicationController
       redirect_to :action => :invite, :mobile => params[:mobile]
 
     else
-      join_internal(bigbluebutton_user.name, @user_role, :join)
+      join_internal(bigbluebutton_user.name, @user_role, bigbluebutton_user.id, :join)
     end
   end
 
@@ -149,7 +146,11 @@ class Bigbluebutton::RoomsController < ApplicationController
       return
     end
 
+    # gets the user information, given priority to a possible logged user
     name = bigbluebutton_user.nil? ? params[:user][:name] : bigbluebutton_user.name
+    id = bigbluebutton_user.nil? ? nil : bigbluebutton_user.id
+    # the role: nil means access denied, :password means check the room
+    # password, otherwise just use it
     @user_role = bigbluebutton_role(@room)
     if @user_role.nil?
       raise BigbluebuttonRails::RoomAccessDenied.new
@@ -160,7 +161,7 @@ class Bigbluebutton::RoomsController < ApplicationController
     end
 
     unless role.nil? or name.nil? or name.empty?
-      join_internal(name, role, :invite)
+      join_internal(name, role, id, :invite)
     else
       flash[:error] = t('bigbluebutton_rails.rooms.errors.auth.failure')
       render :invite, :status => :unauthorized
@@ -172,8 +173,7 @@ class Bigbluebutton::RoomsController < ApplicationController
   def external
     if params[:meeting].blank?
       message = t('bigbluebutton_rails.rooms.errors.external.blank_meetingid')
-      params[:redir_url] ||= bigbluebutton_rooms_path
-      redirect_to params[:redir_url], :notice => message
+      redirect_to params[:redir_url] ||= bigbluebutton_rooms_path, :notice => message
     end
     @room = BigbluebuttonRoom.new(:server => @server, :meetingid => params[:meeting])
   end
@@ -201,11 +201,12 @@ class Bigbluebutton::RoomsController < ApplicationController
 
     # if there's a user logged, use his name instead of the name in the params
     name = bigbluebutton_user.nil? ? params[:user][:name] : bigbluebutton_user.name
+    id = bigbluebutton_user.nil? ? nil : bigbluebutton_user.id
     role = @room.user_role(params[:user])
 
-    # FIXME: use internal_join ?
+    # FIXME: use join_internal ?
     unless role.nil? or name.nil? or name.empty?
-      url = @room.perform_join(name, role, request)
+      url = @room.join(name, role, id, request)
       unless url.nil?
         redirect_to(url)
       else
@@ -222,8 +223,8 @@ class Bigbluebutton::RoomsController < ApplicationController
     begin
       @room.fetch_is_running?
     rescue BigBlueButton::BigBlueButtonException => e
-      flash[:error] = e.to_s
-      render :json => { :running => "false", :error => "#{e.to_s}" }
+      flash[:error] = e.to_s[0..200]
+      render :json => { :running => "false", :error => "#{e.to_s[0..200]}" }
     else
       render :json => { :running => "#{@room.is_running?}" }
     end
@@ -242,7 +243,7 @@ class Bigbluebutton::RoomsController < ApplicationController
       end
     rescue BigBlueButton::BigBlueButtonException => e
       error = true
-      message = e.to_s
+      message = e.to_s[0..200]
     end
 
     if error
@@ -274,6 +275,43 @@ class Bigbluebutton::RoomsController < ApplicationController
     @qrcode_url.gsub!(/http:\/\//i, "bigbluebutton://")
   end
 
+  def fetch_recordings
+    error = false
+
+    if @room.server.nil?
+      error = true
+      message = t('bigbluebutton_rails.rooms.error.fetch_recordings.no_server')
+    else
+      begin
+        # filter only recordings created by this room
+        filter = { :"meta_#{BigbluebuttonRails.metadata_room_id}" => @room.uniqueid }
+        @room.server.fetch_recordings(filter)
+        message = t('bigbluebutton_rails.rooms.notice.fetch_recordings.success')
+      rescue BigBlueButton::BigBlueButtonException => e
+        error = true
+        message = e.to_s[0..200]
+      end
+    end
+
+    respond_with do |format|
+      format.html {
+        flash[error ? :error : :notice] = message
+        redirect_to bigbluebutton_room_path(@room)
+      }
+      format.json {
+        if error
+          render :json => { :message => message }, :status => :error
+        else
+          head :ok
+        end
+      }
+    end
+  end
+
+  def recordings
+    respond_with(@recordings = @room.recordings)
+  end
+
   protected
 
   def find_room
@@ -290,9 +328,9 @@ class Bigbluebutton::RoomsController < ApplicationController
     end
   end
 
-  def join_internal(username, role, wait_action)
+  def join_internal(username, role, id, wait_action)
     begin
-      url = @room.perform_join(username, role, request)
+      url = @room.join(username, role, id, request)
       unless url.nil?
         url.gsub!(/http:\/\//i, "bigbluebutton://") if BigbluebuttonRails::value_to_boolean(params[:mobile])
         redirect_to(url)
@@ -301,7 +339,7 @@ class Bigbluebutton::RoomsController < ApplicationController
         render wait_action
       end
     rescue BigBlueButton::BigBlueButtonException => e
-      flash[:error] = e.to_s
+      flash[:error] = e.to_s[0..200]
       redirect_to :back
     end
   end

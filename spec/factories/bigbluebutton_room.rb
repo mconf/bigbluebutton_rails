@@ -12,5 +12,7 @@ FactoryGirl.define do
     r.randomize_meetingid false
     r.sequence(:param) { |n| "meeting-#{n}" }
     r.external false
+    r.record false
+    r.duration 0
   end
 end

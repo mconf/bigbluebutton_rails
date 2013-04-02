@@ -1,4 +1,4 @@
-script: "bundle exec rake setup:rails_app setup:rails_app:db spec"
+script: "bundle exec rake rails_app:install rails_app:db spec"
 rvm:
   - 1.9.2
   - 1.9.3

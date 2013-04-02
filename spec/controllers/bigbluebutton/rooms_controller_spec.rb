@@ -10,6 +10,7 @@ describe Bigbluebutton::RoomsController do
   let(:room) { FactoryGirl.create(:bigbluebutton_room, :server => server) }
 
   describe "#index" do
+    before { 3.times { FactoryGirl.create(:bigbluebutton_room) } }
     before(:each) { get :index }
     it { should respond_with(:success) }
     it { should assign_to(:rooms).with(BigbluebuttonRoom.all) }
@@ -75,7 +76,7 @@ describe Bigbluebutton::RoomsController do
       it { should set_the_flash.to(I18n.t('bigbluebutton_rails.rooms.notice.create.success')) }
       it {
         saved = BigbluebuttonRoom.last
-        saved.should have_same_attributes_as(new_room)
+        saved.should have_same_attributes_as(new_room, ['uniqueid'])
       }
     end
 
@@ -116,7 +117,7 @@ describe Bigbluebutton::RoomsController do
       it {
         saved = BigbluebuttonRoom.last
         new_room.meetingid = new_room.name
-        saved.should have_same_attributes_as(new_room)
+        saved.should have_same_attributes_as(new_room, ['uniqueid'])
       }
     end
   end
@@ -138,7 +139,7 @@ describe Bigbluebutton::RoomsController do
       }
       it {
         saved = BigbluebuttonRoom.find(@room)
-        saved.should have_same_attributes_as(new_room)
+        saved.should have_same_attributes_as(new_room, ['uniqueid'])
       }
       it { should set_the_flash.to(I18n.t('bigbluebutton_rails.rooms.notice.update.success')) }
     end
@@ -176,27 +177,47 @@ describe Bigbluebutton::RoomsController do
       mock_server_and_api
       # to make sure it calls end_meeting if the meeting is running
       mocked_api.should_receive(:is_meeting_running?).and_return(true)
-      mocked_api.should_receive(:end_meeting).with(room.meetingid, room.moderator_password)
     }
 
-    context do
-      before :each do
+    context "on success" do
+      before(:each) {
+        mocked_api.should_receive(:end_meeting).with(room.meetingid, room.moderator_password)
         expect {
           delete :destroy, :id => room.to_param
         }.to change{ BigbluebuttonRoom.count }.by(-1)
-      end
+      }
+      it { should respond_with(:redirect) }
+      it { should redirect_to bigbluebutton_rooms_url }
+    end
+
+    context "on failure" do
+      let(:bbb_error_msg) { SecureRandom.hex(250) }
+      let(:bbb_error) { BigBlueButton::BigBlueButtonException.new(bbb_error_msg) }
+      before {
+        mocked_api.should_receive(:end_meeting) { raise bbb_error }
+      }
+      before(:each) {
+        expect {
+          delete :destroy, :id => room.to_param
+        }.to change{ BigbluebuttonRoom.count }.by(-1)
+      }
+      it { should respond_with(:redirect) }
+      it { should redirect_to bigbluebutton_rooms_url }
       it {
-        should respond_with(:redirect)
-        should redirect_to bigbluebutton_rooms_url
+        msg = I18n.t('bigbluebutton_rails.rooms.notice.destroy.success_with_bbb_error', :error => bbb_error_msg[0..200])
+        should set_the_flash.to(msg)
       }
     end
 
-    it "with :redir_url" do
-      expect {
-        delete :destroy, :id => room.to_param, :redir_url => bigbluebutton_servers_path
-      }.to change{ BigbluebuttonRoom.count }.by(-1)
-      should respond_with(:redirect)
-      should redirect_to bigbluebutton_servers_path
+    context "with :redir_url" do
+      before(:each) {
+        expect {
+          mocked_api.should_receive(:end_meeting)
+          delete :destroy, :id => room.to_param, :redir_url => bigbluebutton_servers_path
+        }.to change{ BigbluebuttonRoom.count }.by(-1)
+      }
+      it { should respond_with(:redirect) }
+      it { should redirect_to bigbluebutton_servers_path }
     end
 
   end
@@ -221,6 +242,15 @@ describe Bigbluebutton::RoomsController do
       before { mocked_api.should_receive(:is_meeting_running?).and_return(false) }
       before(:each) { get :running, :id => room.to_param }
       it { response.body.should == build_running_json(false) }
+    end
+
+    context "on failure" do
+      let(:bbb_error_msg) { SecureRandom.hex(250) }
+      let(:bbb_error) { BigBlueButton::BigBlueButtonException.new(bbb_error_msg) }
+      before { mocked_api.should_receive(:is_meeting_running?)  { raise bbb_error } }
+      before(:each) { get :running, :id => room.to_param }
+      it { should respond_with(:success) }
+      it { should set_the_flash.to(bbb_error_msg[0..200]) }
     end
   end
 
@@ -265,7 +295,7 @@ describe Bigbluebutton::RoomsController do
     # see support/shared_examples/rooms_controller.rb
     context "calling .join_internal" do
       let(:template) { :join }
-      let(:request) { get :join, :id => room.to_param }
+      let(:do_request) { get :join, :id => room.to_param }
       before { controller.stub(:bigbluebutton_user).and_return(user) }
       it_should_behave_like "internal join caller"
     end
@@ -275,7 +305,7 @@ describe Bigbluebutton::RoomsController do
         controller.stub(:bigbluebutton_user) { user }
         controller.stub(:bigbluebutton_role) { :moderator }
         BigbluebuttonRoom.stub(:find_by_param).and_return(room)
-        room.should_receive(:perform_join).and_return("http://test.com/join/url")
+        room.should_receive(:join).and_return("http://test.com/join/url")
       }
       before(:each) {
         get :join, :id => room.to_param, :mobile => "1"
@@ -289,6 +319,7 @@ describe Bigbluebutton::RoomsController do
     before {
       controller.should_receive(:set_request_headers)
       mock_server_and_api
+      request.env["HTTP_REFERER"] = "/any"
     }
 
     context "room is running" do
@@ -305,13 +336,21 @@ describe Bigbluebutton::RoomsController do
 
     context "room is not running" do
       before {
-        request.env["HTTP_REFERER"] = "/any"
         mocked_api.should_receive(:is_meeting_running?).and_return(false)
       }
       before(:each) { get :end, :id => room.to_param }
       it { should respond_with(:redirect) }
       it { should set_the_flash.to(I18n.t('bigbluebutton_rails.rooms.notice.end.not_running')) }
       it { should redirect_to("/any") }
+    end
+
+    context "on failure" do
+      let(:bbb_error_msg) { SecureRandom.hex(250) }
+      let(:bbb_error) { BigBlueButton::BigBlueButtonException.new(bbb_error_msg) }
+      before { mocked_api.should_receive(:is_meeting_running?) { raise bbb_error } }
+      before(:each) { get :end, :id => room.to_param }
+      it { should respond_with(:redirect) }
+      it { should set_the_flash.to(bbb_error_msg[0..200]) }
     end
   end
 
@@ -466,8 +505,11 @@ describe Bigbluebutton::RoomsController do
     context "calling .join_internal" do
       let(:template) { :invite }
       let(:hash) { { :name => user.name, :password => room.attendee_password } }
-      let(:request) { post :auth, :id => room.to_param, :user => hash }
-      before { controller.stub(:bigbluebutton_user).and_return(nil) }
+      let(:do_request) { post :auth, :id => room.to_param, :user => hash }
+      before {
+        user.id = nil # there is no user logged, so the id should be nil
+        controller.stub(:bigbluebutton_user).and_return(nil)
+      }
       it_should_behave_like "internal join caller"
     end
   end
@@ -541,7 +583,7 @@ describe Bigbluebutton::RoomsController do
         mock_server_and_api
         mocked_server.should_receive(:fetch_meetings)
         mocked_server.should_receive(:meetings).and_return(meetings)
-        new_room.should_receive(:perform_join)
+        new_room.should_receive(:join)
       }
       before(:each) { post :external_auth, :meeting => new_room.meetingid, :server_id => mocked_server.id, :user => user_hash }
       it { should assign_to(:room).with(new_room) }
@@ -618,11 +660,12 @@ describe Bigbluebutton::RoomsController do
         end
       end
 
-      context "calls room#perform_join" do
+      context "calls room#join" do
         context "and redirects to the url received" do
           before {
-            new_room.should_receive(:perform_join).with(anything, :attendee, request).
-              and_return("http://test.com/attendee/join")
+            new_room.should_receive(:join)
+              .with(anything, :attendee, anything, request)
+              .and_return("http://test.com/attendee/join")
           }
           before(:each) { post :external_auth, :meeting => new_room.meetingid, :server_id => mocked_server.id, :user => user_hash }
           it { should respond_with(:redirect) }
@@ -631,7 +674,9 @@ describe Bigbluebutton::RoomsController do
 
         context "and shows error if it returns nil" do
           before {
-            new_room.should_receive(:perform_join).with(user_hash[:name], :attendee, request).and_return(nil)
+            new_room.should_receive(:join)
+              .with(anything, :attendee, anything, request)
+              .and_return(nil)
           }
           before(:each) { post :external_auth, :meeting => new_room.meetingid, :server_id => mocked_server.id, :user => user_hash }
           it { should respond_with(:success) }
@@ -640,17 +685,77 @@ describe Bigbluebutton::RoomsController do
         end
       end
 
-      it "if there's a user logged, should use his name" do
+      it "if there's a user logged, should use his name and id" do
         user = FactoryGirl.build(:user)
         controller.stub(:bigbluebutton_user).and_return(user)
-        new_room.should_receive(:perform_join).with(user.name, anything, anything). # here's the validation
-          and_return("http://test.com/attendee/join")
+        new_room.should_receive(:join)
+          .with(user.name, anything, user.id, anything) # here's the validation
+          .and_return("http://test.com/attendee/join")
         post :external_auth, :meeting => new_room.meetingid, :server_id => mocked_server.id, :user => user_hash
       end
 
     end
 
   end # #external_auth
+
+  describe "#fetch_recordings" do
+    # setup basic server and API mocks
+    before do
+      #controller.should_receive(:set_request_headers)
+      mock_server_and_api
+    end
+    let(:filter) {
+      { :"meta_#{BigbluebuttonRails.metadata_room_id}" => room.uniqueid }
+    }
+
+    context "on success" do
+      before(:each) {
+        mocked_server.should_receive(:fetch_recordings).with(filter)
+        post :fetch_recordings, :id => room.to_param
+      }
+      it { should respond_with(:redirect) }
+      it { should redirect_to bigbluebutton_room_path(room) }
+      it { should set_the_flash.to(I18n.t('bigbluebutton_rails.rooms.notice.fetch_recordings.success')) }
+    end
+
+    context "on BigBlueButtonException" do
+      let(:bbb_error_msg) { SecureRandom.hex(250) }
+      let(:bbb_error) { BigBlueButton::BigBlueButtonException.new(bbb_error_msg) }
+      before(:each) {
+        mocked_server.should_receive(:fetch_recordings) { raise bbb_error }
+        post :fetch_recordings, :id => room.to_param
+      }
+      it { should respond_with(:redirect) }
+      it { should redirect_to(bigbluebutton_room_path(room)) }
+      it { should set_the_flash.to(bbb_error_msg[0..200]) }
+    end
+
+    context "if the room has no server associated" do
+      before(:each) {
+        room.stub(:server) { nil }
+        post :fetch_recordings, :id => room.to_param
+      }
+      it { should respond_with(:redirect) }
+      it { should redirect_to(bigbluebutton_room_path(room)) }
+      it { should set_the_flash.to(I18n.t('bigbluebutton_rails.rooms.error.fetch_recordings.no_server')) }
+    end
+  end
+
+  describe "#recordings" do
+    before do
+      @recording1 = FactoryGirl.create(:bigbluebutton_recording, :room => room)
+      @recording2 = FactoryGirl.create(:bigbluebutton_recording, :room => room)
+      FactoryGirl.create(:bigbluebutton_recording)
+
+      # one that belongs to another room in the same server
+      room2 = FactoryGirl.create(:bigbluebutton_room, :server => room.server)
+      FactoryGirl.create(:bigbluebutton_recording, :room => room2)
+    end
+    before(:each) { get :recordings, :id => room.to_param }
+    it { should respond_with(:success) }
+    it { should render_template(:recordings) }
+    it { should assign_to(:recordings).with([@recording1, @recording2]) }
+  end
 
   describe "before filter :set_request_headers" do
     let(:headers) { {"x-forwarded-for" => "0.0.0.0"} }

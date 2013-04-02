@@ -10,8 +10,10 @@ end
 
 class User
   attr_accessor :name
+  attr_accessor :id
 
   def initialize
+    self.id = 0
     self.name = "Chuck"
   end
 end

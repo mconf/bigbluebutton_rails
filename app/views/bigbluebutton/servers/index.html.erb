@@ -1,13 +1,15 @@
 <h1>Listing <%= BigbluebuttonServer.model_name.human %>:</h1>
 
 <div id="bbbrails_servers_links">
-  <%= link_to('View rooms list', bigbluebutton_rooms_path) %><br/>
+  <%= link_to('View room list', bigbluebutton_rooms_path) %><br/>
+  <%= link_to('View recording list', bigbluebutton_recordings_path) %><br/>
   <%= link_to('New server', new_bigbluebutton_server_path) %>
 </div>
 
-<ul id="bbbrails_servers_list">
+<ul id="bbbrails_list">
   <% @servers.each do |server| %>
     <li>
+      <div><label><%= BigbluebuttonServer.human_attribute_name(:id) %></label> <%= server.id %></div>
       <div><label><%= BigbluebuttonServer.human_attribute_name(:name) %></label> <%= server.name %></div>
       <div><label><%= BigbluebuttonServer.human_attribute_name(:url) %></label> <%= server.url %></div>
       <div><label><%= BigbluebuttonServer.human_attribute_name(:salt) %></label> <%= server.salt %></div>
@@ -20,7 +22,10 @@
         <%= link_to 'Edit', edit_bigbluebutton_server_path(server) %> |
         <%= link_to 'Destroy', bigbluebutton_server_path(server), :confirm => 'Are you sure?', :method => :delete %>
       </div>
+      <div><label>Recordings</label>
+        <%= link_to 'View recordings', recordings_bigbluebutton_server_path(server) %> |
+        <%= link_to 'Fetch recordings', fetch_recordings_bigbluebutton_server_path(server), :confirm => 'Are you sure?', :method => :post %>
+      </div>
     </li>
   <% end %>
 </ul>
-

@@ -1,14 +1,20 @@
 <h1><%= BigbluebuttonRoom.model_name.human %>:</h1>
 
-<p id="notice"><%= notice %></p>
-
 <p>
-  <b><%= BigbluebuttonRoom.human_attribute_name(:name) %>:</b>
-  <%= @room.name %>
+  <b><%= BigbluebuttonRoom.human_attribute_name(:id) %>:</b>
+  <%= @room.id %>
 </p>
 <p>
   <b><%= BigbluebuttonRoom.human_attribute_name(:server_id) %>:</b>
   <%= @room.server_id %>
+</p>
+<p>
+  <b><%= BigbluebuttonRoom.human_attribute_name(:uniqueid) %>:</b>
+  <%= @room.uniqueid %>
+</p>
+<p>
+  <b><%= BigbluebuttonRoom.human_attribute_name(:name) %>:</b>
+  <%= @room.name %>
 </p>
 <p>
   <b><%= BigbluebuttonRoom.human_attribute_name(:meetingid) %>:</b>
@@ -58,16 +64,38 @@
   <b><%= BigbluebuttonRoom.human_attribute_name(:param) %>:</b>
   <%= @room.param %>
 </p>
+<p>
+  <b><%= BigbluebuttonRoom.human_attribute_name(:record) %>:</b>
+  <%= @room.record %>
+</p>
+<p>
+  <b><%= BigbluebuttonRoom.human_attribute_name(:duration) %>:</b>
+  <%= @room.duration %>
+</p>
+<p>
+  <b><%= BigbluebuttonRoom.human_attribute_name(:metadata) %></b>
+  <% @room.metadata.each do |metadata| %>
+    <%= metadata.attributes.except("id", "owner_id", "owner_type", "updated_at", "created_at") %>,
+  <% end %>
+</p>
 
 <%= link_to 'Edit', edit_bigbluebutton_room_path(@room) %> |
 <%= link_to 'Back', bigbluebutton_rooms_path %>
 
 <br/>
 
-<span>Access:</span>
-<%= link_to 'Show', bigbluebutton_room_path(@room) %> |
-<%= link_to 'Join', join_bigbluebutton_room_path(@room) %> |
-<%= link_to 'Invite', invite_bigbluebutton_room_path(@room) %> |
-<%= link_to 'Mobile Join', join_mobile_bigbluebutton_room_path(@room) %> |
-<%= link_to 'End', end_bigbluebutton_room_path(@room), :confirm => 'Are you sure?' %> |
-<%= link_to 'Destroy', bigbluebutton_room_path(@room), :confirm => 'Are you sure?', :method => :delete %>
+<p>
+  <span>Access:</span>
+  <%= link_to 'Show', bigbluebutton_room_path(@room) %> |
+  <%= link_to 'Join', join_bigbluebutton_room_path(@room) %> |
+  <%= link_to 'Invite', invite_bigbluebutton_room_path(@room) %> |
+  <%= link_to 'Mobile Join', join_mobile_bigbluebutton_room_path(@room) %> |
+  <%= link_to 'End', end_bigbluebutton_room_path(@room), :confirm => 'Are you sure?' %> |
+  <%= link_to 'Destroy', bigbluebutton_room_path(@room), :confirm => 'Are you sure?', :method => :delete %>
+</p>
+
+<p>
+  <span>Recordings:</span>
+  <%= link_to 'View recordings', recordings_bigbluebutton_room_path(@room) %> |
+  <%= link_to 'Fetch recordings', fetch_recordings_bigbluebutton_room_path(@room), :confirm => 'Are you sure?', :method => :post %>
+</p>

@@ -115,7 +115,7 @@ describe Bigbluebutton::ServersController do
       end
 
       context "on failure" do
-        let(:bbb_error_msg) { "err msg" }
+        let(:bbb_error_msg) { SecureRandom.hex(250) }
         let(:bbb_error) { BigBlueButton::BigBlueButtonException.new(bbb_error_msg) }
         before do
           server.should_receive(:fetch_meetings).and_return({ })
@@ -125,8 +125,8 @@ describe Bigbluebutton::ServersController do
         before(:each) { get :activity, :id => server.to_param, :format => 'json' }
         it { should respond_with(:error) }
         it { should respond_with_content_type(:json) }
-        it { should respond_with_json([{ :message => bbb_error_msg }, room1, room2].to_json) }
-        it { should set_the_flash.to(bbb_error_msg) }
+        it { should respond_with_json([{ :message => bbb_error_msg[0..200] }, room1, room2].to_json) }
+        it { should set_the_flash.to(bbb_error_msg[0..200]) }
       end
 
       context "ignores params[:update_list]" do

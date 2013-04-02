@@ -4,7 +4,7 @@
   <% url = bigbluebutton_room_path(@room) %>
 <% end %>
 
-<%= form_for @room, :url => url do |f| %>
+<%= form_for setup_bigbluebutton_room(@room), :url => url do |f| %>
   <% if @room.errors.any? %>
     <div id="error_explanation">
       <h2><%= pluralize(@room.errors.count, "error") %>:</h2>
@@ -17,8 +17,16 @@
   <% end %>
 
   <div class="field">
+    <%= f.label :id %><br />
+    <%= @room.id %>
+  </div>
+  <div class="field">
     <%= f.label :server_id %><br />
     <%= f.text_field :server_id %>
+  </div>
+  <div class="field">
+    <%= f.label :uniqueid %><br />
+    <%= @room.uniqueid %>
   </div>
   <div class="field">
     <%= f.label :name %><br />
@@ -38,11 +46,11 @@
   </div>
   <div class="field">
     <%= f.label :attendee_password %><br />
-    <%= f.password_field :attendee_password %>
+    <%= f.text_field :attendee_password %>
   </div>
   <div class="field">
     <%= f.label :moderator_password %><br />
-    <%= f.password_field :moderator_password %>
+    <%= f.text_field :moderator_password %>
   </div>
   <div class="field">
     <%= f.label :welcome_msg %><br />
@@ -72,6 +80,27 @@
     <%= f.label :param %><br />
     <%= f.text_field :param %>
   </div>
+  <div class="field">
+    <%= f.label :record %><br />
+    <%= f.check_box :record %>
+  </div>
+  <div class="field">
+    <%= f.label :duration %><br />
+    <%= f.text_field :duration %>
+  </div>
+  <div class="field">
+    <b>Metadata</b> (by default we have 10 metadata in this view, but it's not limited to it)<br />
+    <%= f.fields_for :metadata do |metadata_form| %>
+      <%= metadata_form.label :name %>
+      <%= metadata_form.text_field :name %>
+      <%= metadata_form.label :content %>
+      <%= metadata_form.text_field :content %>
+      <%= metadata_form.check_box :_destroy %>
+      <%= metadata_form.label :_destroy, "Remove Metadata" %>
+      <br/>
+    <% end %>
+  </div>
+
   <div class="actions">
     <%= f.submit %>
   </div>

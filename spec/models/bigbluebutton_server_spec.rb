@@ -6,7 +6,9 @@ describe BigbluebuttonServer do
     BigbluebuttonServer.new.should be_a_kind_of(ActiveRecord::Base)
   end
 
-  it { should have_many(:rooms) }
+  it { should have_many(:rooms).dependent(:nullify) }
+
+  it { should have_many(:recordings).dependent(:nullify) }
 
   it { should validate_presence_of(:name) }
   it { should validate_presence_of(:url) }
@@ -14,11 +16,10 @@ describe BigbluebuttonServer do
   it { should validate_presence_of(:version) }
   it { should validate_presence_of(:param) }
 
-  it { should allow_mass_assignment_of(:name) }
-  it { should allow_mass_assignment_of(:url) }
-  it { should allow_mass_assignment_of(:salt) }
-  it { should allow_mass_assignment_of(:version) }
-  it { should allow_mass_assignment_of(:param) }
+  [:name, :url, :salt, :version, :param].each do |attribute|
+    it { should allow_mass_assignment_of(attribute) }
+  end
+  it { should_not allow_mass_assignment_of(:id) }
 
   context "uniqueness of" do
     before(:each) { FactoryGirl.create(:bigbluebutton_server) }
@@ -31,20 +32,18 @@ describe BigbluebuttonServer do
     server = FactoryGirl.create(:bigbluebutton_server)
     server.rooms.should be_empty
 
-    FactoryGirl.create(:bigbluebutton_room, :server => server)
+    r = FactoryGirl.create(:bigbluebutton_room, :server => server)
     server = BigbluebuttonServer.find(server.id)
-    server.rooms.should_not be_empty
+    server.rooms.should == [r]
   end
 
-  it "nullifies associated rooms" do
+  it "has associated recordings" do
     server = FactoryGirl.create(:bigbluebutton_server)
-    room = FactoryGirl.create(:bigbluebutton_room, :server => server)
-    expect {
-      expect {
-        server.destroy
-      }.to change{ BigbluebuttonServer.count }.by(-1)
-    }.to change{ BigbluebuttonRoom.count }.by(0)
-    BigbluebuttonRoom.find(room.id).server_id.should == nil
+    server.rooms.should be_empty
+
+    r = FactoryGirl.create(:bigbluebutton_recording, :server => server)
+    server = BigbluebuttonServer.find(server.id)
+    server.recordings.should == [r]
   end
 
   it { should ensure_length_of(:name).is_at_least(1).is_at_most(500) }
@@ -188,6 +187,88 @@ describe BigbluebuttonServer do
     it { server.meetings[2].external.should be_true }
     it { server.meetings[2].randomize_meetingid.should be_false }
     it { server.meetings[2].private.should be_true  }
+  end
+
+  describe "#send_publish_recordings" do
+    let(:server) { FactoryGirl.create(:bigbluebutton_server) }
+
+    it { should respond_to(:send_publish_recordings) }
+
+    context "sends publish_recordings" do
+      let(:recording1) { FactoryGirl.create(:bigbluebutton_recording, :published => false) }
+      let(:recording2) { FactoryGirl.create(:bigbluebutton_recording, :published => false) }
+      let(:ids) { "#{recording1.recordid},#{recording2.recordid}" }
+      let(:publish) { true }
+      before do
+        @api_mock = mock(BigBlueButton::BigBlueButtonApi)
+        server.stub(:api).and_return(@api_mock)
+        @api_mock.should_receive(:publish_recordings).with(ids, publish)
+      end
+      before(:each) { server.send_publish_recordings(ids, publish) }
+      it { BigbluebuttonRecording.find(recording1.id).published.should == true }
+      it { BigbluebuttonRecording.find(recording2.id).published.should == true }
+    end
+  end
+
+  describe "#send_delete_recordings" do
+    let(:server) { FactoryGirl.create(:bigbluebutton_server) }
+
+    it { should respond_to(:send_delete_recordings) }
+
+    context "sends delete_recordings" do
+      let(:ids) { "id1,id2,id3" }
+      before do
+        @api_mock = mock(BigBlueButton::BigBlueButtonApi)
+        server.stub(:api).and_return(@api_mock)
+        @api_mock.should_receive(:delete_recordings).with(ids)
+      end
+      it { server.send_delete_recordings(ids) }
+    end
+  end
+
+  describe "#fetch_recordings" do
+    let(:server) { FactoryGirl.create(:bigbluebutton_server) }
+    let(:params) { { :meetingID => "id1,id2,id3" } }
+    before do
+      @api_mock = mock(BigBlueButton::BigBlueButtonApi)
+      server.stub(:api).and_return(@api_mock)
+    end
+
+    it { should respond_to(:fetch_recordings) }
+
+    context "calls get_recordings" do
+      let(:response) { { :recordings => [1, 2] } }
+      before do
+        @api_mock.should_receive(:get_recordings).with(params).and_return(response)
+        BigbluebuttonRecording.should_receive(:sync).with(server, response[:recordings])
+      end
+      it { server.fetch_recordings(params) }
+    end
+
+    context "when the response is empty" do
+      let(:response) { { :recordings => [1, 2] } }
+      before do
+        @api_mock.should_receive(:get_recordings).with(params).and_return(nil)
+        BigbluebuttonRecording.should_not_receive(:sync)
+      end
+      it { server.fetch_recordings(params) }
+    end
+
+    context "when the response has no :recordings element" do
+      before do
+        @api_mock.should_receive(:get_recordings).with(params).and_return({})
+        BigbluebuttonRecording.should_not_receive(:sync)
+      end
+      it { server.fetch_recordings(params) }
+    end
+
+    context "works without parameters" do
+      before do
+        @api_mock.should_receive(:get_recordings).with({}).and_return(nil)
+        BigbluebuttonRecording.should_not_receive(:sync)
+      end
+      it { server.fetch_recordings }
+    end
   end
 
 end

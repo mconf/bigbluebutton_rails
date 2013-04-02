@@ -163,7 +163,10 @@ describe Bigbluebutton::RoomsController do
         }
         it { should respond_with(:error) }
         it { should respond_with_content_type(:json) }
-        it { should respond_with_json({ :message => msg }.to_json) }
+        it {
+          error_msg = I18n.t('bigbluebutton_rails.rooms.notice.destroy.success_with_bbb_error', :error => msg)
+          should respond_with_json({ :message => error_msg }.to_json)
+        }
       end
     end
 

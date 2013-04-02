@@ -1,0 +1,56 @@
+<div id="bbbrails_recordings_links">
+  <%= link_to('View server list', bigbluebutton_servers_path) %><br/>
+  <%= link_to('View room list', bigbluebutton_rooms_path) %>
+</div>
+
+<ul id="bbbrails_list">
+  <% @recordings.each do |recording| %>
+    <li>
+      <div class="field"><label><%= BigbluebuttonRecording.human_attribute_name(:id) %></label> <%= recording.id %></div>
+      <div class="field"><label><%= BigbluebuttonRecording.human_attribute_name(:recordid) %></label> <%= recording.recordid %></div>
+      <div class="field"><label><%= BigbluebuttonRecording.human_attribute_name(:name) %></label> <%= recording.name %></div>
+      <div class="field">
+        <label><%= BigbluebuttonRecording.human_attribute_name(:room_id) %></label> <%= recording.room_id %>
+        <%= link_to('(view room)', bigbluebutton_room_path(recording.room)) unless recording.room.nil? %>
+      </div>
+      <div class="field">
+        <label><%= BigbluebuttonRecording.human_attribute_name(:server_id) %></label> <%= recording.server_id %>
+        <%= link_to('(view server)', bigbluebutton_server_path(recording.server)) unless recording.server.nil? %>
+      </div>
+      <div class="field"><label><%= BigbluebuttonRecording.human_attribute_name(:meetingid) %></label> <%= recording.meetingid %></div>
+      <div class="field"><label><%= BigbluebuttonRecording.human_attribute_name(:published) %></label> <%= recording.published %></div>
+      <div class="field"><label><%= BigbluebuttonRecording.human_attribute_name(:available) %></label> <%= recording.available %></div>
+      <div class="field"><label><%= BigbluebuttonRecording.human_attribute_name(:start_time) %></label> <%= recording.start_time %></div>
+      <div class="field"><label><%= BigbluebuttonRecording.human_attribute_name(:end_time) %></label> <%= recording.end_time %></div>
+      <div class="field">
+        <label><%= BigbluebuttonRecording.human_attribute_name(:metadata) %></label>
+        <div>
+          <% recording.metadata.each do |metadata| %>
+            <%= metadata.attributes.except("id", "owner_id", "owner_type", "updated_at", "created_at") %>,
+          <% end %>
+        </div>
+      </div>
+      <div class="field">
+        <label><%= BigbluebuttonRecording.human_attribute_name(:playback_formats) %></label>
+        <div>
+          <% recording.playback_formats.each do |format| %>
+            <%= format.attributes.except("id", "recording_id", "updated_at", "created_at") %>,
+          <% end %>
+        </div>
+      </div>
+      <div class="field"><label>Access</label>
+        <%= link_to 'Show', bigbluebutton_recording_path(recording) %> |
+        <%= link_to 'Edit', edit_bigbluebutton_recording_path(recording) %> |
+        <%= link_to 'Publish', publish_bigbluebutton_recording_path(recording), :confirm => 'Are you sure?', :method => :post %> |
+        <%= link_to 'Unpublish', unpublish_bigbluebutton_recording_path(recording), :confirm => 'Are you sure?', :method => :post %> |
+        <%= link_to 'Destroy', bigbluebutton_recording_path(recording), :confirm => 'Are you sure?', :method => :delete %>
+      </div>
+      <div class="field"><label>Play</label>
+        <%= link_to "default", play_bigbluebutton_recording_path(recording) %>
+        <% recording.playback_formats.each do |format| %>
+          <%= link_to format.format_type, play_bigbluebutton_recording_path(recording, :type => format.format_type) %>
+        <% end %>
+      </div>
+    </li>
+  <% end %>
+</ul>

@@ -30,21 +30,31 @@ describe BigbluebuttonRails::Generators::ViewsGenerator do
 
   def assert_files(assert_exists=true, scope="bigbluebutton")
     files = [
-      "app/views/#{scope}/rooms/_form.html.erb",
       "app/views/#{scope}/rooms/edit.html.erb",
+      "app/views/#{scope}/rooms/external.html.erb",
+      "app/views/#{scope}/rooms/_form.html.erb",
       "app/views/#{scope}/rooms/index.html.erb",
       "app/views/#{scope}/rooms/invite.html.erb",
       "app/views/#{scope}/rooms/join.html.erb",
       "app/views/#{scope}/rooms/join_mobile.html.erb",
       "app/views/#{scope}/rooms/new.html.erb",
+      "app/views/#{scope}/rooms/_rooms.html.erb",
       "app/views/#{scope}/rooms/show.html.erb",
-      "app/views/#{scope}/servers/_activity_list.html.erb",
-      "app/views/#{scope}/servers/_form.html.erb",
       "app/views/#{scope}/servers/activity.html.erb",
+      "app/views/#{scope}/servers/_activity_list.html.erb",
       "app/views/#{scope}/servers/edit.html.erb",
+      "app/views/#{scope}/servers/_form.html.erb",
       "app/views/#{scope}/servers/index.html.erb",
       "app/views/#{scope}/servers/new.html.erb",
-      "app/views/#{scope}/servers/show.html.erb"
+      "app/views/#{scope}/servers/recordings.html.erb",
+      "app/views/#{scope}/servers/rooms.html.erb",
+      "app/views/#{scope}/servers/show.html.erb",
+      "app/views/#{scope}/recordings/edit.html.erb",
+      "app/views/#{scope}/recordings/_form.html.erb",
+      "app/views/#{scope}/recordings/index.html.erb",
+      "app/views/#{scope}/recordings/_recordings.html.erb",
+      "app/views/#{scope}/recordings/show.html.erb",
+      "app/assets/stylesheets/bigbluebutton_rails.css"
     ]
     if assert_exists
       files.each { |f| assert_file f }

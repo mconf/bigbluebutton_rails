@@ -2,7 +2,7 @@ class Bigbluebutton::ServersController < ApplicationController
 
   respond_to :html
   respond_to :json, :only => [:index, :show, :new, :create, :update, :destroy, :activity, :rooms]
-  before_filter :find_server, :only => [:show, :edit, :activity, :update, :destroy, :rooms]
+  before_filter :find_server, :except => [:index, :new, :create]
 
   def index
     respond_with(@servers = BigbluebuttonServer.all)
@@ -29,7 +29,7 @@ class Bigbluebutton::ServersController < ApplicationController
       end
     rescue BigBlueButton::BigBlueButtonException => e
       error = true
-      message = e.to_s
+      message = e.to_s[0..200]
     end
 
     # update_list works only for html
@@ -89,6 +89,7 @@ class Bigbluebutton::ServersController < ApplicationController
   end
 
   def destroy
+    # TODO: what if it fails?
     @server.destroy
 
     respond_with do |format|
@@ -97,14 +98,89 @@ class Bigbluebutton::ServersController < ApplicationController
     end
   end
 
+  def recordings
+    respond_with(@recordings = @server.recordings)
+  end
+
   def rooms
     respond_with(@rooms = @server.rooms)
+  end
+
+  def publish_recordings
+    self.publish_unpublish(params[:recordings], true)
+  end
+
+  def unpublish_recordings
+    self.publish_unpublish(params[:recordings], false)
+  end
+
+  # Accepts the following parameters in URL:
+  # meetings:: A list of meetingIDs to be used as filter.
+  # meta_*:: To filter by metadata, where "*" can be anything.
+  #
+  # For example: fetch_recordings?meetings=meeting1,meeting2&meta_name=value
+  def fetch_recordings
+    error = false
+    begin
+
+      # accept meetingID and meta_* filters
+      filter = {}
+      filter.merge!({ :meetingID => params[:meetings] }) if params[:meetings]
+      params.each do |key, value|
+        filter.merge!({ key.to_sym => value }) if key.match(/^meta_/)
+      end
+
+      @server.fetch_recordings(filter)
+      message = t('bigbluebutton_rails.servers.notice.fetch_recordings.success')
+    rescue BigBlueButton::BigBlueButtonException => e
+      error = true
+      message = e.to_s[0..200]
+    end
+
+    respond_with do |format|
+      format.html {
+        flash[error ? :error : :notice] = message
+        redirect_to bigbluebutton_server_path(@server)
+      }
+      format.json {
+        if error
+          render :json => { :message => message }, :status => :error
+        else
+          head :ok
+        end
+      }
+    end
   end
 
   protected
 
   def find_server
     @server = BigbluebuttonServer.find_by_param(params[:id])
+  end
+
+  def publish_unpublish(ids, publish)
+    begin
+      @server.send_publish_recordings(ids, publish)
+      respond_with do |format|
+        format.html {
+          if publish
+            message = t('bigbluebutton_rails.servers.notice.publish_recordings.success')
+          else
+            message = t('bigbluebutton_rails.servers.notice.unpublish_recordings.success')
+          end
+          redirect_to(recordings_bigbluebutton_server_path(@server), :notice => message)
+        }
+        format.json { render :json => message }
+      end
+    rescue BigBlueButton::BigBlueButtonException => e
+      respond_with do |format|
+        format.html {
+          flash[:error] = e.to_s[0..200]
+          redirect_to recordings_bigbluebutton_server_path(@server)
+        }
+        format.json { render :json => e.to_s, :status => :error }
+      end
+    end
   end
 
 end

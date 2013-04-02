@@ -2,11 +2,14 @@
 <html>
 <head>
   <title>RailsApp</title>
-  <%= stylesheet_link_tag :all %>
-  <%= javascript_include_tag 'application', 'jquery.min' %>
+  <%= stylesheet_link_tag "/stylesheets/scaffold" %>
+  <%= stylesheet_link_tag "bigbluebutton_rails" %>
+  <%= javascript_include_tag "application" %>
   <%= csrf_meta_tag %>
 </head>
 <body>
+
+<%= bbb_rails_error_explanation %>
 
 <%= yield %>
 
