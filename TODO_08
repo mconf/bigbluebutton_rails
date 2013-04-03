@@ -1,11 +1,12 @@
-TODO for BigBlueButton 0.8:
+TODOs for BigBlueButton 0.8:
+
+TODO:
+* Pre-upload of slides
+* 'userID' argument in 'join' and in the respone of 'getMeetingInfo'.
+* 'createTime' argument in 'join' and in the response of 'create'.
+* New return values (e.g). 'createTime'.
+* We don't need to randomize the meeting_id anymore (to confirm)
 
 See:
 * http://code.google.com/p/bigbluebutton/wiki/API#Version_0.80
 * http://groups.google.com/group/bigbluebutton-dev/browse_thread/thread/c214cbe9bdb2268a?pli=1
-
-TODO:
-* Pre-upload of slides
-* New arguments in some methods (e.g. userID, record, duration, meta_*)
-* New return values (e.g. createTime).
-* We don't need to randomize the meeting_id anymore (to confirm)
