@@ -1,5 +1,9 @@
 require "spec_helper"
 
+# store the standard File because GeneratorSpec::TestCase overrides it with its
+# own version that doesn't have some methods we need
+File_ = File
+
 describe BigbluebuttonRails::Generators::InstallGenerator do
   include GeneratorSpec::TestCase
   destination File.expand_path("../../../tmp", __FILE__)
@@ -46,8 +50,8 @@ describe BigbluebuttonRails::Generators::InstallGenerator do
 
     it "has the correct content" do
       assert_file "config/schedule.rb"
-      content = File.read(File.expand_path("../../../config/schedule.rb", __FILE__))
-      File.read("config/schedule.rb").should match(content)
+      content = File_.read(File_.expand_path("../../../config/schedule.rb", __FILE__))
+      File_.read("config/schedule.rb").should match(content)
     end
   end
 
