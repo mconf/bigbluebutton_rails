@@ -291,28 +291,15 @@ describe Bigbluebutton::RoomsController do
       end
     end
 
-    # verify the behaviour of .join_internal
-    # see support/shared_examples/rooms_controller.rb
-    context "calling .join_internal" do
-      let(:template) { :join }
-      let(:do_request) { get :join, :id => room.to_param }
-      before { controller.stub(:bigbluebutton_user).and_return(user) }
-      it_should_behave_like "internal join caller"
-    end
-
-    context "when :mobile => true" do
+    context "calls #join_internal" do
       before {
         controller.stub(:bigbluebutton_user) { user }
         controller.stub(:bigbluebutton_role) { :moderator }
-        BigbluebuttonRoom.stub(:find_by_param).and_return(room)
-        room.should_receive(:join).and_return("http://test.com/join/url")
+        controller.should_receive(:join_internal)
+          .with(user.name, :moderator, user.id, :join)
       }
-      before(:each) {
-        get :join, :id => room.to_param, :mobile => "1"
-      }
-      it { should redirect_to("bigbluebutton://test.com/join/url") }
+      it { get :join, :id => room.to_param }
     end
-
   end
 
   describe "#end" do
@@ -500,17 +487,17 @@ describe Bigbluebutton::RoomsController do
       end
     end
 
-    # verify the behaviour of .join_internal
-    # see support/shared_examples/rooms_controller.rb
-    context "calling .join_internal" do
-      let(:template) { :invite }
-      let(:hash) { { :name => user.name, :password => room.attendee_password } }
-      let(:do_request) { post :auth, :id => room.to_param, :user => hash }
+    context "calls #join_internal" do
+      let(:user) { FactoryGirl.build(:user) }
+      let(:hash) { { :name => user.name, :password => room.moderator_password } }
       before {
-        user.id = nil # there is no user logged, so the id should be nil
-        controller.stub(:bigbluebutton_user).and_return(nil)
+        controller.stub(:bigbluebutton_user) { nil }
+        controller.stub(:bigbluebutton_role) { :moderator }
+        controller.stub(:render) # prevent ActionView::MissingTemplate
+        controller.should_receive(:join_internal)
+          .with(user.name, :moderator, nil, :invite)
       }
-      it_should_behave_like "internal join caller"
+      it { post :auth, :id => room.to_param, :user => hash }
     end
   end
 
@@ -562,6 +549,7 @@ describe Bigbluebutton::RoomsController do
   end # #external
 
   describe "#external_auth" do
+    let(:user) { FactoryGirl.build(:user) }
     let(:user_hash) { { :name => "Any Name", :password => new_room.attendee_password } }
     let(:meetingid) { "my-meeting-id" }
     let(:new_room) { BigbluebuttonRoom.new(:meetingid => meetingid,
@@ -583,7 +571,9 @@ describe Bigbluebutton::RoomsController do
         mock_server_and_api
         mocked_server.should_receive(:fetch_meetings)
         mocked_server.should_receive(:meetings).and_return(meetings)
-        new_room.should_receive(:join)
+        new_room.should_receive(:fetch_is_running?)
+        new_room.should_receive(:is_running?).and_return(true)
+        new_room.should_receive(:join_url)
       }
       before(:each) { post :external_auth, :meeting => new_room.meetingid, :server_id => mocked_server.id, :user => user_hash }
       it { should assign_to(:room).with(new_room) }
@@ -660,40 +650,31 @@ describe Bigbluebutton::RoomsController do
         end
       end
 
-      context "calls room#join" do
-        context "and redirects to the url received" do
-          before {
-            new_room.should_receive(:join)
-              .with(anything, :attendee, anything, request)
-              .and_return("http://test.com/attendee/join")
-          }
-          before(:each) { post :external_auth, :meeting => new_room.meetingid, :server_id => mocked_server.id, :user => user_hash }
-          it { should respond_with(:redirect) }
-          it { should redirect_to("http://test.com/attendee/join") }
-        end
-
-        context "and shows error if it returns nil" do
-          before {
-            new_room.should_receive(:join)
-              .with(anything, :attendee, anything, request)
-              .and_return(nil)
-          }
-          before(:each) { post :external_auth, :meeting => new_room.meetingid, :server_id => mocked_server.id, :user => user_hash }
-          it { should respond_with(:success) }
-          it { should render_template(:external) }
-          it { should set_the_flash.to(I18n.t('bigbluebutton_rails.rooms.errors.auth.not_running')) }
-        end
-      end
-
       it "if there's a user logged, should use his name and id" do
         user = FactoryGirl.build(:user)
         controller.stub(:bigbluebutton_user).and_return(user)
-        new_room.should_receive(:join)
+        controller.stub(:render) # prevent ActionView::MissingTemplate
+        controller.should_receive(:join_internal)
           .with(user.name, anything, user.id, anything) # here's the validation
-          .and_return("http://test.com/attendee/join")
         post :external_auth, :meeting => new_room.meetingid, :server_id => mocked_server.id, :user => user_hash
       end
 
+    end
+
+    context "calls #join_internal" do
+      let(:user) { FactoryGirl.build(:user) }
+      before {
+        mock_server_and_api
+        mocked_server.should_receive(:fetch_meetings)
+        mocked_server.should_receive(:meetings).and_return(meetings)
+        controller.stub(:render) # prevent ActionView::MissingTemplate
+        controller.should_receive(:join_internal)
+          .with(user_hash[:name], :attendee, nil, :external)
+      }
+      it { post :external_auth, :meeting => new_room.meetingid,
+                                :server_id => mocked_server.id,
+                                :user => user_hash
+      }
     end
 
   end # #external_auth
@@ -787,6 +768,102 @@ describe Bigbluebutton::RoomsController do
         get :running, :id => room.to_param
         room.request_headers.should == headers
       }
+    end
+  end
+
+  # Test #join_internal using #join because it's easier and cleaner than the other
+  # actions that also call #join_internal.
+  describe "#join_internal" do
+    let(:user) { FactoryGirl.build(:user) }
+    before {
+      controller.stub(:bigbluebutton_user).and_return(user)
+      controller.stub(:bigbluebutton_role).and_return(:attendee)
+      BigbluebuttonRoom.stub(:find_by_param).and_return(room)
+      controller.send(:find_room)
+    }
+
+    context "when the user has permission to create the meeting" do
+      before {
+        room.should_receive(:fetch_is_running?)
+        room.should_receive(:is_running?).and_return(false)
+        controller.stub(:bigbluebutton_can_create?).with(room, :attendee)
+          .and_return(true)
+        room.should_receive(:create_meeting)
+          .with(user.name, user.id, controller.request)
+        room.should_receive(:join_url).and_return("http://test.com/join/url")
+      }
+      before(:each) { get :join, :id => room.to_param }
+      it { should respond_with(:redirect) }
+      it { should redirect_to("http://test.com/join/url") }
+    end
+
+    context "when the user doesn't have permission to create the meeting" do
+      before {
+        room.should_receive(:fetch_is_running?)
+        room.should_receive(:is_running?).and_return(false)
+        controller.stub(:bigbluebutton_can_create?).with(room, :attendee)
+          .and_return(false)
+        room.should_not_receive(:create_meeting)
+      }
+      before(:each) { get :join, :id => room.to_param }
+      it { should respond_with(:success) }
+      it { should render_template(:join) }
+      it { should set_the_flash.to(I18n.t('bigbluebutton_rails.rooms.errors.auth.cannot_create')) }
+    end
+
+    context "when the user has permission to join the meeting" do
+      before {
+        room.should_receive(:fetch_is_running?)
+        room.should_receive(:is_running?).and_return(true)
+        room.should_not_receive(:create_meeting)
+        room.should_receive(:join_url)
+          .with(user.name, :attendee)
+          .and_return("http://test.com/join/url")
+      }
+      before(:each) { get :join, :id => room.to_param }
+      it { should respond_with(:redirect) }
+      it { should redirect_to("http://test.com/join/url") }
+    end
+
+    context "when the user doesn't have permission to join the meeting" do
+      before {
+        room.should_receive(:fetch_is_running?)
+        room.should_receive(:is_running?).and_return(true)
+        room.should_not_receive(:create_meeting)
+        room.should_receive(:join_url)
+          .with(user.name, :attendee)
+          .and_return(nil)
+      }
+      before(:each) { get :join, :id => room.to_param }
+      it { should respond_with(:success) }
+      it { should render_template(:join) }
+      it { should set_the_flash.to(I18n.t('bigbluebutton_rails.rooms.errors.auth.not_running')) }
+    end
+
+    context "when the param ':mobile' is set" do
+      before {
+        room.should_receive(:fetch_is_running?)
+        room.should_receive(:is_running?).and_return(true)
+        room.should_not_receive(:create_meeting)
+        room.should_receive(:join_url)
+          .and_return("http://test.com/join/url")
+      }
+      let(:mobile_flag) { true }
+      before(:each) { get :join, :id => room.to_param, :mobile => true }
+      it { should respond_with(:redirect) }
+      it { should redirect_to("bigbluebutton://test.com/join/url") }
+    end
+
+    context "when an exception is thrown" do
+      let(:bbb_error_msg) { SecureRandom.hex(250) }
+      let(:bbb_error) { BigBlueButton::BigBlueButtonException.new(bbb_error_msg) }
+      before {
+        request.env["HTTP_REFERER"] = "/any"
+        room.should_receive(:fetch_is_running?) { raise bbb_error }
+      }
+      before(:each) { get :join, :id => room.to_param }
+      it { should respond_with(:redirect) }
+      it { should set_the_flash.to(bbb_error_msg[0..200]) }
     end
   end
 

@@ -591,70 +591,39 @@ describe BigbluebuttonRoom do
     end
   end
 
-  describe "#join" do
+  describe "#create_meeting" do
     let(:room) { FactoryGirl.create(:bigbluebutton_room) }
     let(:user) { FactoryGirl.build(:user) }
+    before { room.should_receive(:fetch_is_running?) }
 
-    context "for an attendee" do
-      before { room.should_receive(:fetch_is_running?) }
-
-      context "when the conference is running" do
-        before {
-          room.should_receive(:is_running?).and_return(true)
-          room.should_receive(:join_url).with(user.name, :attendee).
-          and_return("http://test.com/attendee/join")
-        }
-        subject { room.join(user.name, :attendee) }
-        it { should == "http://test.com/attendee/join" }
-      end
-
-      context "when the conference is not running" do
-        before { room.should_receive(:is_running?).and_return(false) }
-        subject { room.join(user.name, :attendee) }
-        it { should be_nil }
-      end
+    context "when the conference is running" do
+      before {
+        room.should_receive(:is_running?).and_return(true)
+      }
+      subject { room.create_meeting(user.name) }
+      it { should be_false }
     end
 
-    context "for a moderator" do
-      before { room.should_receive(:fetch_is_running?) }
-
-      context "when the conference is running" do
-        before {
-          room.should_receive(:is_running?).and_return(true)
-          room.should_receive(:join_url).with(user.name, :moderator).
-          and_return("http://test.com/moderator/join")
-        }
-        subject { room.join(user.name, :moderator) }
-        it { should == "http://test.com/moderator/join" }
-      end
-
-      context "when the conference is not running" do
-        before {
-          room.should_receive(:is_running?).and_return(false)
-          room.should_receive(:send_create).with(user.name, user.id)
-          room.should_receive(:join_url).with(user.name, :moderator).
-          and_return("http://test.com/moderator/join")
-        }
-        subject { room.join(user.name, :moderator, user.id) }
-        it { should == "http://test.com/moderator/join" }
-      end
-
-      context "when the arg 'request' is informed" do
-        let(:request) { stub(ActionDispatch::Request) }
-        before {
-          request.stub!(:protocol).and_return("HTTP://")
-          request.stub!(:host_with_port).and_return("test.com:80")
-          room.should_receive(:add_domain_to_logout_url).with("HTTP://", "test.com:80")
-          room.should_receive(:is_running?).and_return(true)
-          room.should_receive(:join_url).with(user.name, :moderator).
-          and_return("http://test.com/moderator/join")
-        }
-        subject { room.join(user.name, :moderator, nil, request) }
-        it { should == "http://test.com/moderator/join" }
-      end
-
+    context "when the conference is not running" do
+      before {
+        room.should_receive(:is_running?).and_return(false)
+        room.should_receive(:send_create).with(user.name, user.id)
+      }
+      subject { room.create_meeting(user.name, user.id) }
+      it { should be_true }
     end
 
+    context "when the arg 'request' is informed" do
+      let(:request) { stub(ActionDispatch::Request) }
+      before {
+        request.stub!(:protocol).and_return("HTTP://")
+        request.stub!(:host_with_port).and_return("test.com:80")
+        room.should_receive(:add_domain_to_logout_url).with("HTTP://", "test.com:80")
+        room.should_receive(:is_running?).and_return(false)
+      }
+      subject { room.create_meeting(user.name, user.id, request) }
+      it { should be_true }
+    end
   end
 
   describe "#full_logout_url" do

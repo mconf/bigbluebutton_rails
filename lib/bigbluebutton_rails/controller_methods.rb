@@ -83,6 +83,37 @@ module BigbluebuttonRails
           end
         end
 
+        # Method used called right before a meeting is created to check
+        # whether the current user ('bigbluebutton_user') is allowed to create
+        # the meeting in the target room.
+        # By default any moderator can create meetings.
+        # The parameter 'room' is the BigbluebuttonRoom where the meeting is about
+        # to be created. And 'role' is the role already defined for the user
+        # (:moderator, :attendee, etc).
+        #
+        # This method can also be used to run anything you may need to run
+        # right before a meeting is created, such as adapting the metadata.
+        # You can also, for instance, check if the user has permissions to record
+        # the meeting and set the flag 'record' accordingly.
+        #
+        # You may want to do override this in your ApplicationController to
+        # implement your own logic, for example:
+        #
+        #   def bigbluebutton_can_create?(room, role)
+        #     if role == :moderator
+        #       unless bigbluebutton_user.can_record_meeting?(room)
+        #         room.update_attributes(:record => false)
+        #       end
+        #       true
+        #     else
+        #       false
+        #     end
+        #   end
+        #
+        def bigbluebutton_can_create?(room, role)
+          role == :moderator
+        end
+
       end
     end
 

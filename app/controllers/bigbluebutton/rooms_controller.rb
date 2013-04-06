@@ -204,15 +204,8 @@ class Bigbluebutton::RoomsController < ApplicationController
     id = bigbluebutton_user.nil? ? nil : bigbluebutton_user.id
     role = @room.user_role(params[:user])
 
-    # FIXME: use join_internal ?
     unless role.nil? or name.nil? or name.empty?
-      url = @room.join(name, role, id, request)
-      unless url.nil?
-        redirect_to(url)
-      else
-        flash[:error] = t('bigbluebutton_rails.rooms.errors.auth.not_running')
-        render :external
-      end
+      join_internal(name, role, id, :external)
     else
       flash[:error] = t('bigbluebutton_rails.rooms.errors.auth.failure')
       render :external, :status => :unauthorized
@@ -330,14 +323,31 @@ class Bigbluebutton::RoomsController < ApplicationController
 
   def join_internal(username, role, id, wait_action)
     begin
-      url = @room.join(username, role, id, request)
+      # first check if we have to create the room and if the user can do it
+      @room.fetch_is_running?
+      unless @room.is_running?
+        if bigbluebutton_can_create?(@room, role)
+          @room.create_meeting(username, id, request)
+        else
+          flash[:error] = t('bigbluebutton_rails.rooms.errors.auth.cannot_create')
+          render wait_action
+          return
+        end
+      end
+
+      # room created and running, try to join it
+      url = @room.join_url(username, role)
       unless url.nil?
-        url.gsub!(/http:\/\//i, "bigbluebutton://") if BigbluebuttonRails::value_to_boolean(params[:mobile])
+        # change the protocol to join with BBB-Android/Mconf-Mobile if set
+        if BigbluebuttonRails::value_to_boolean(params[:mobile])
+          url.gsub!(/http:\/\//i, "bigbluebutton://")
+        end
         redirect_to(url)
       else
         flash[:error] = t('bigbluebutton_rails.rooms.errors.auth.not_running')
         render wait_action
       end
+
     rescue BigBlueButton::BigBlueButtonException => e
       flash[:error] = e.to_s[0..200]
       redirect_to :back
