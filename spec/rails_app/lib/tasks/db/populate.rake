@@ -74,9 +74,6 @@ namespace :db do
           # Basic metadata the gem always adds and should always be there
           basic_metadata =
             [{
-               :name => BigbluebuttonRails.metadata_room_id,
-               :content => room.uniqueid
-             }, {
                :name => BigbluebuttonRails.metadata_user_id,
                :content => Forgery(:basic).number(:at_most => 1000)
              }, {

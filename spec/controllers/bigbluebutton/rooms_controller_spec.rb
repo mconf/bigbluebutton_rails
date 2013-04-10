@@ -76,7 +76,7 @@ describe Bigbluebutton::RoomsController do
       it { should set_the_flash.to(I18n.t('bigbluebutton_rails.rooms.notice.create.success')) }
       it {
         saved = BigbluebuttonRoom.last
-        saved.should have_same_attributes_as(new_room, ['uniqueid'])
+        saved.should have_same_attributes_as(new_room)
       }
     end
 
@@ -117,7 +117,7 @@ describe Bigbluebutton::RoomsController do
       it {
         saved = BigbluebuttonRoom.last
         new_room.meetingid = new_room.name
-        saved.should have_same_attributes_as(new_room, ['uniqueid'])
+        saved.should have_same_attributes_as(new_room)
       }
     end
   end
@@ -139,7 +139,7 @@ describe Bigbluebutton::RoomsController do
       }
       it {
         saved = BigbluebuttonRoom.find(@room)
-        saved.should have_same_attributes_as(new_room, ['uniqueid'])
+        saved.should have_same_attributes_as(new_room)
       }
       it { should set_the_flash.to(I18n.t('bigbluebutton_rails.rooms.notice.update.success')) }
     end
@@ -686,7 +686,7 @@ describe Bigbluebutton::RoomsController do
       mock_server_and_api
     end
     let(:filter) {
-      { :"meta_#{BigbluebuttonRails.metadata_room_id}" => room.uniqueid }
+      { :meetingID => room.meetingid }
     }
 
     context "on success" do

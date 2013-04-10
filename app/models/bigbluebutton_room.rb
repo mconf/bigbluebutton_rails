@@ -37,11 +37,6 @@ class BigbluebuttonRoom < ActiveRecord::Base
             :format => { :with => /^[a-zA-Z\d_]+[a-zA-Z\d_-]*[a-zA-Z\d_]+$/,
                          :message => I18n.t('bigbluebutton_rails.rooms.errors.param_format') }
 
-  validates :uniqueid,
-            :presence => true, # not really needed, will be created before_validation if nil
-            :uniqueness => true,
-            :length => { :minimum => 16 }
-
   # Passwords are 16 character strings
   # See http://groups.google.com/group/bigbluebutton-dev/browse_thread/thread/9be5aae1648bcab?pli=1
   validates :attendee_password, :length => { :maximum => 16 }
@@ -61,7 +56,6 @@ class BigbluebuttonRoom < ActiveRecord::Base
 
   after_initialize :init
   before_validation :set_param
-  before_validation :generate_uniqueid
 
   # the full logout_url used when logout_url is a relative path
   attr_accessor :full_logout_url
@@ -281,7 +275,6 @@ class BigbluebuttonRoom < ActiveRecord::Base
   def init
     self[:meetingid] ||= unique_meetingid
     self[:voice_bridge] ||= random_voice_bridge
-    generate_uniqueid()
 
     @request_headers = {}
 
@@ -318,9 +311,6 @@ class BigbluebuttonRoom < ActiveRecord::Base
       :voiceBridge => self.voice_bridge
     }.merge(self.get_metadata_for_create)
 
-    # Add a globally unique identifier to match recordings when fetched
-    opts.merge!({ "meta_#{BigbluebuttonRails.metadata_room_id}" => self.uniqueid })
-
     # Add information about the user that is creating the meeting (if any)
     opts.merge!({ "meta_#{BigbluebuttonRails.metadata_user_id}" => userid }) unless userid.nil?
     opts.merge!({ "meta_#{BigbluebuttonRails.metadata_user_name}" => username }) unless username.nil?
@@ -348,13 +338,6 @@ class BigbluebuttonRoom < ActiveRecord::Base
     self.metadata.inject({}) { |result, meta|
       result["meta_#{meta.name}"] = meta.content; result
     }
-  end
-
-  def generate_uniqueid
-    # Automatically generated id that should be unique to identify this object
-    # in case more that one bigbluebutton_rails application is using the same
-    # web conference server.
-    self[:uniqueid] ||= "#{SecureRandom.hex(16)}-#{Time.now.to_i}"
   end
 
 end

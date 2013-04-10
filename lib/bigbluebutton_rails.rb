@@ -50,17 +50,13 @@ module BigbluebuttonRails
       @@metadata_user_id,
       @@metadata_user_name ]
 
-  # Finds the BigbluebuttonRoom associated with the recording data
-  # in 'data', if any.
+  # Finds the BigbluebuttonRoom associated with the recording data in 'data', if any.
   # TODO: if not found, remove the association or keep the old one?
   def self.match_room_recording(data)
     if block_given?
       yield
     else
-      param_name = BigbluebuttonRails.metadata_room_id
-      if data[:metadata] and data[:metadata][param_name]
-        BigbluebuttonRoom.find_by_uniqueid(data[:metadata][param_name].strip)
-      end
+      BigbluebuttonRoom.find_by_meetingid(data[:meetingid])
     end
   end
 

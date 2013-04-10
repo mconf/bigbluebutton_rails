@@ -277,7 +277,7 @@ class Bigbluebutton::RoomsController < ApplicationController
     else
       begin
         # filter only recordings created by this room
-        filter = { :"meta_#{BigbluebuttonRails.metadata_room_id}" => @room.uniqueid }
+        filter = { :meetingID => @room.meetingid }
         @room.server.fetch_recordings(filter)
         message = t('bigbluebutton_rails.rooms.notice.fetch_recordings.success')
       rescue BigBlueButton::BigBlueButtonException => e

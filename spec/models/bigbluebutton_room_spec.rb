@@ -52,9 +52,6 @@ describe BigbluebuttonRoom do
 
   it { should accept_nested_attributes_for(:metadata).allow_destroy(true) }
 
-  it { should validate_uniqueness_of(:uniqueid) }
-  it { should ensure_length_of(:uniqueid).is_at_least(16) }
-
   [:name, :server_id, :meetingid, :attendee_password,
    :moderator_password, :welcome_msg, :owner, :private, :logout_url,
    :dial_number, :voice_bridge, :max_participants, :owner_id,
@@ -63,7 +60,6 @@ describe BigbluebuttonRoom do
     it { should allow_mass_assignment_of(attribute) }
   end
   it { should_not allow_mass_assignment_of(:id) }
-  it { should_not allow_mass_assignment_of(:uniqueid) }
 
   # attr_accessors
   [:running, :participant_count, :moderator_count, :attendees,
@@ -168,10 +164,6 @@ describe BigbluebuttonRoom do
         end
       end
     end
-
-    it "#uniqueid" do
-      room.uniqueid.should_not be_blank
-    end
   end
 
   context "#param format" do
@@ -204,17 +196,6 @@ describe BigbluebuttonRoom do
     it "empty" do
       @room = FactoryGirl.build(:bigbluebutton_room, :param => "",
                             :name => "-My Name@ _Is Odd_-")
-    end
-  end
-
-  context "before validation" do
-    context "generates an uniqueid" do
-      before do
-        @room = FactoryGirl.build(:bigbluebutton_room)
-        @room.uniqueid = nil
-        @room.save!
-      end
-      it { @room.uniqueid.should_not be_nil }
     end
   end
 
@@ -677,7 +658,6 @@ def get_create_params(room, username=nil, userid=nil)
     :duration => room.duration
   }
   room.metadata.each { |meta| params["meta_#{meta.name}"] = meta.content }
-  params.merge!({ "meta_bbbrails-room-id" => room.uniqueid })
   params.merge!({ "meta_bbbrails-user-id" => userid }) unless userid.nil?
   params.merge!({ "meta_bbbrails-user-name" => username }) unless username.nil?
   params
