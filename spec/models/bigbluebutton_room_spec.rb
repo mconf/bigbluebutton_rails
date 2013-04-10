@@ -36,8 +36,6 @@ describe BigbluebuttonRoom do
 
   it { should be_boolean(:private) }
 
-  it { should be_boolean(:randomize_meetingid) }
-
   it { should be_boolean(:record) }
 
   it { should validate_presence_of(:duration) }
@@ -60,7 +58,7 @@ describe BigbluebuttonRoom do
   [:name, :server_id, :meetingid, :attendee_password,
    :moderator_password, :welcome_msg, :owner, :private, :logout_url,
    :dial_number, :voice_bridge, :max_participants, :owner_id,
-   :owner_type, :randomize_meetingid, :param, :metadata_attributes].
+   :owner_type, :param, :metadata_attributes].
     each do |attribute|
     it { should allow_mass_assignment_of(attribute) }
   end
@@ -418,39 +416,17 @@ describe BigbluebuttonRoom do
         end
       end
 
-      context "randomizes meetingid" do
-        let(:fail_hash) { { :returncode => true, :meetingID => "new id", :messageKey => "duplicateWarning" } }
-        let(:success_hash) { { :returncode => true, :meetingID => "new id", :messageKey => "" } }
+      context "generates a meetingid if nil" do
         let(:new_id) { "new id" }
         before {
-          room.randomize_meetingid = true
+          room.meetingid = nil
           room.stub(:select_server).and_return(mocked_server)
           room.server = mocked_server
         }
-
         it "before calling create" do
-          room.should_receive(:random_meetingid).and_return(new_id)
+          room.should_receive(:unique_meetingid).and_return(new_id)
           mocked_api.should_receive(:create_meeting)
             .with(room.name, new_id, get_create_params(room))
-          room.send_create
-        end
-
-        it "and tries again on error" do
-          # fails twice and then succeds
-          room.should_receive(:random_meetingid).exactly(3).times.and_return(new_id)
-          hash = hash_including(get_create_params(room))
-          mocked_api.should_receive(:create_meeting)
-            .with(room.name, new_id, hash).twice.and_return(fail_hash)
-          mocked_api.should_receive(:create_meeting)
-            .with(room.name, new_id, hash).once.and_return(success_hash)
-          room.send_create
-        end
-
-        it "and limits to 10 tries" do
-          room.should_receive(:random_meetingid).exactly(11).times.and_return(new_id)
-          mocked_api.should_receive(:create_meeting)
-            .with(room.name, new_id, get_create_params(room))
-            .exactly(10).times.and_return(fail_hash)
           room.send_create
         end
       end
@@ -472,7 +448,6 @@ describe BigbluebuttonRoom do
 
         context "and saves the result" do
           before do
-            room.randomize_meetingid = false # take the shortest path inside #send_create
             room.should_receive(:select_server).and_return(another_server)
             room.should_receive(:require_server)
             room.should_receive(:do_create_meeting)
@@ -485,7 +460,6 @@ describe BigbluebuttonRoom do
         context "and does not save when is a new record" do
           let(:new_room) { FactoryGirl.build(:bigbluebutton_room) }
           before do
-            new_room.randomize_meetingid = false # take the shortest path inside #send_create
             new_room.should_receive(:select_server).and_return(another_server)
             new_room.should_receive(:require_server)
             new_room.should_receive(:do_create_meeting).and_return(nil)

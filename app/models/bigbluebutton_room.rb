@@ -23,7 +23,6 @@ class BigbluebuttonRoom < ActiveRecord::Base
     :length => { :minimum => 1, :maximum => 150 }
   validates :welcome_msg, :length => { :maximum => 250 }
   validates :private, :inclusion => { :in => [true, false] }
-  validates :randomize_meetingid, :inclusion => { :in => [true, false] }
   validates :voice_bridge, :presence => true, :uniqueness => true
   validates :record, :inclusion => { :in => [true, false] }
 
@@ -53,7 +52,7 @@ class BigbluebuttonRoom < ActiveRecord::Base
 
   attr_accessible :name, :server_id, :meetingid, :attendee_password, :moderator_password,
                   :welcome_msg, :owner, :server, :private, :logout_url, :dial_number,
-                  :voice_bridge, :max_participants, :owner_id, :owner_type, :randomize_meetingid,
+                  :voice_bridge, :max_participants, :owner_id, :owner_type,
                   :external, :param, :record, :duration, :metadata_attributes
 
   # Note: these params need to be fetched from the server before being accessed
@@ -143,35 +142,13 @@ class BigbluebuttonRoom < ActiveRecord::Base
   #
   # Triggers API call: <tt>create</tt>.
   def send_create(username=nil, userid=nil)
-    # updates the server whenever a meeting will be created
+    # updates the server whenever a meeting will be created and guarantees it has a meetingid
     self.server = select_server
+    self.meetingid = unique_meetingid() if self.meetingid.nil?
     self.save unless self.new_record?
     require_server
 
-    unless self.randomize_meetingid
-      response = do_create_meeting(username, userid)
-
-    # create a new random meetingid everytime create fails with "duplicateWarning"
-    else
-      self.meetingid = random_meetingid
-
-      count = 0
-      try_again = true
-      while try_again and count < 10
-        response = do_create_meeting(username, userid)
-
-        count += 1
-        try_again = false
-        unless response.nil?
-          if response[:returncode] && response[:messageKey] == "duplicateWarning"
-            self.meetingid = random_meetingid
-            try_again = true
-          end
-        end
-
-      end
-    end
-
+    response = do_create_meeting(username, userid)
     unless response.nil?
       self.attendee_password = response[:attendeePW]
       self.moderator_password = response[:moderatorPW]
@@ -270,6 +247,13 @@ class BigbluebuttonRoom < ActiveRecord::Base
     end
   end
 
+  def unique_meetingid
+    # GUID
+    # Has to be globally unique in case more that one bigbluebutton_rails application is using
+    # the same web conference server.
+    "#{SecureRandom.uuid}-#{Time.now.to_i}"
+  end
+
   protected
 
   # Every room needs a server to be used.
@@ -295,7 +279,7 @@ class BigbluebuttonRoom < ActiveRecord::Base
   end
 
   def init
-    self[:meetingid] ||= random_meetingid
+    self[:meetingid] ||= unique_meetingid
     self[:voice_bridge] ||= random_voice_bridge
     generate_uniqueid()
 
@@ -309,15 +293,6 @@ class BigbluebuttonRoom < ActiveRecord::Base
     @start_time = nil
     @end_time = nil
     @attendees = []
-  end
-
-  def random_meetingid
-    # TODO temporarily using the name to get a friendlier meetingid
-    if self[:name].blank?
-      SecureRandom.hex(8)
-    else
-      self[:name] + '-' + SecureRandom.random_number(9999).to_s
-    end
   end
 
   def random_voice_bridge

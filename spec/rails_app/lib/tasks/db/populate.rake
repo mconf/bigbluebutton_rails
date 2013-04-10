@@ -34,7 +34,6 @@ namespace :db do
           :moderator_password => Forgery(:basic).password(:at_least => 10, :at_most => 16),
           :welcome_msg => Forgery(:lorem_ipsum).sentences(2),
           :private => false,
-          :randomize_meetingid => false,
           :param => "meeting-#{n1}-#{n2}",
           :external => false,
           :record => false,

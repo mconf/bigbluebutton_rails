@@ -39,6 +39,8 @@ class BigbluebuttonRailsTo130 < ActiveRecord::Migration
     end
     add_index :bigbluebutton_rooms, :uniqueid, :unique => true
 
+    remove_column :bigbluebutton_rooms, :randomize_meetingid
+
     # Ensure all rooms will have :uniqueid set
     BigbluebuttonRoom.all.each do |room|
       room.uniqueid = "#{SecureRandom.hex(16)}-#{Time.now.to_i}"
@@ -47,6 +49,7 @@ class BigbluebuttonRailsTo130 < ActiveRecord::Migration
   end
 
   def self.down
+    add_column :bigbluebutton_rooms, :randomize_meetingid
     remove_index :bigbluebutton_rooms, :uniqueid
     change_table(:bigbluebutton_rooms) do |t|
       t.remove :record

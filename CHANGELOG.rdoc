@@ -2,13 +2,14 @@
 
 * To learn how to migrate to 1.3.0 see: https://github.com/mconf/bigbluebutton_rails/wiki/Migrate-to-1.3.0
 
-* Support for recordings. Details at https://github.com/mconf/bigbluebutton_rails/wiki/How-Recordings-Work
+* Support for recordings. Details at https://github.com/mconf/bigbluebutton_rails/wiki/How-Recordings-Work. #459.
 * Updated most of the dependencies to their latest version.
 * Tested against Rails 3.2 (was Rails 3.0).
 * New option `:as` in router helpers (more at https://github.com/mconf/bigbluebutton_rails/wiki/How-to%3A-Routes)
 * New option `:only` in router helpers (more at https://github.com/mconf/bigbluebutton_rails/wiki/How-to%3A-Routes)
 * Set the HTTP header "x-forwarded-for" with the IP of the client so servers can know who is creating/joining a meeting, for example.
 * Removed assets (jquery, image) from the generator and from the gem.
+* Removed the option to randomize meeting IDs, now they are fixed and generated as a globally unique meeting ID. #734, #735.
 
 == 1.2.0
 

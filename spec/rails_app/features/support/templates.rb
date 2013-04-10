@@ -135,8 +135,6 @@ module TemplateHelpers
                 { :name => 'bigbluebutton_room[name]', :type => 'text' })
     has_element("input#bigbluebutton_room_meetingid",
                 { :name => 'bigbluebutton_room[meetingid]', :type => 'text' })
-    has_element("input#bigbluebutton_room_randomize_meetingid",
-                { :name => 'bigbluebutton_room[randomize_meetingid]', :type => 'checkbox' })
     has_element("input#bigbluebutton_room_private",
                 { :name => 'bigbluebutton_room[private]', :type => 'checkbox' })
     has_element("input#bigbluebutton_room_attendee_password",
@@ -159,7 +157,6 @@ module TemplateHelpers
                 { :name => 'bigbluebutton_room[voice_bridge]', :type => 'text' })
     has_element("label", { :for => 'bigbluebutton_room_name' })
     has_element("label", { :for => 'bigbluebutton_room_meetingid' })
-    has_element("label", { :for => 'bigbluebutton_room_randomize_meetingid' })
     has_element("label", { :for => 'bigbluebutton_room_private' })
     has_element("label", { :for => 'bigbluebutton_room_attendee_password' })
     has_element("label", { :for => 'bigbluebutton_room_moderator_password' })
@@ -180,7 +177,6 @@ module TemplateHelpers
     page_has_content(room.server_id)
     page_has_content(room.name)
     page_has_content(room.meetingid)
-    page_has_content(room.randomize_meetingid)
     page_has_content(room.private)
     page_has_content(room.attendee_password)
     page_has_content(room.moderator_password)

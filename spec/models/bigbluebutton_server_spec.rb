@@ -144,8 +144,8 @@ describe BigbluebuttonServer do
 
   context "fetching info from bbb" do
     let(:server) { FactoryGirl.create(:bigbluebutton_server) }
-    let(:room1) { FactoryGirl.create(:bigbluebutton_room, :server => server, :meetingid => "room1", :randomize_meetingid => true) }
-    let(:room2) { FactoryGirl.create(:bigbluebutton_room, :server => server, :meetingid => "room2", :randomize_meetingid => true) }
+    let(:room1) { FactoryGirl.create(:bigbluebutton_room, :server => server, :meetingid => "room1") }
+    let(:room2) { FactoryGirl.create(:bigbluebutton_room, :server => server, :meetingid => "room2") }
 
     # the hashes should be exactly as returned by bigbluebutton-api-ruby to be sure we are testing it right
     let(:meetings) {
@@ -185,7 +185,6 @@ describe BigbluebuttonServer do
     it { server.meetings[2].running.should == true }
     it { server.meetings[2].new_record?.should be_true }
     it { server.meetings[2].external.should be_true }
-    it { server.meetings[2].randomize_meetingid.should be_false }
     it { server.meetings[2].private.should be_true  }
   end
 
