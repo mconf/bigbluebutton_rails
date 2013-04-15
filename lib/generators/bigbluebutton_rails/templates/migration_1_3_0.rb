@@ -48,7 +48,7 @@ class BigbluebuttonRailsTo130 < ActiveRecord::Migration
     end
     drop_table :bigbluebutton_playback_formats
     drop_table :bigbluebutton_metadata
-    remove_index :bigbluebutton_recordings
+    remove_index :bigbluebutton_recordings, :room_id
     remove_index :bigbluebutton_recordings, :recordid
     drop_table :bigbluebutton_recordings
   end
