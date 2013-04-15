@@ -56,6 +56,7 @@ class BigbluebuttonRoom < ActiveRecord::Base
 
   after_initialize :init
   before_validation :set_param
+  before_validation :set_passwords
 
   # the full logout_url used when logout_url is a relative path
   attr_accessor :full_logout_url
@@ -331,6 +332,18 @@ class BigbluebuttonRoom < ActiveRecord::Base
   def set_param
     if self.param.blank?
       self.param = self.name.parameterize.downcase unless self.name.nil?
+    end
+  end
+
+  # When setting a room as private we generate passwords in case they don't exist.
+  def set_passwords
+    if self.private_changed? and self.private
+      if self.moderator_password.blank?
+        self.moderator_password = SecureRandom.hex(4)
+      end
+      if self.attendee_password.blank?
+        self.attendee_password = SecureRandom.hex(4)
+      end
     end
   end
 

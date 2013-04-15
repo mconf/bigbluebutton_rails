@@ -199,6 +199,22 @@ describe BigbluebuttonRoom do
     end
   end
 
+  context "when room set to private" do
+    context "sets passwords that are not yet defined" do
+      let(:room) { FactoryGirl.create(:bigbluebutton_room, :private => false, :moderator_password => nil, :attendee_password => nil) }
+      before(:each) { room.update_attributes(:private => true) }
+      it { room.moderator_password.should_not be_nil }
+      it { room.attendee_password.should_not be_nil }
+    end
+
+    context "only sets the passwords if the room was public before" do
+      let(:room) { FactoryGirl.create(:bigbluebutton_room, :private => true, :moderator_password => "123", :attendee_password => "321") }
+      before(:each) { room.update_attributes(:private => true) }
+      it { room.moderator_password.should == "123" }
+      it { room.attendee_password.should == "321" }
+    end
+  end
+
   context "using the api" do
     before { mock_server_and_api }
     let(:room) { FactoryGirl.create(:bigbluebutton_room) }
@@ -500,13 +516,13 @@ describe BigbluebuttonRoom do
 
   context "validates passwords" do
     context "for private rooms" do
-      let (:room) { FactoryGirl.build(:bigbluebutton_room, :private => true) }
+      let(:room) { FactoryGirl.create(:bigbluebutton_room, :private => true) }
       it { room.should_not allow_value('').for(:moderator_password) }
       it { room.should_not allow_value('').for(:attendee_password) }
     end
 
     context "for public rooms" do
-      let (:room) { FactoryGirl.build(:bigbluebutton_room, :private => false) }
+      let(:room) { FactoryGirl.create(:bigbluebutton_room, :private => false) }
       it { room.should allow_value('').for(:moderator_password) }
       it { room.should allow_value('').for(:attendee_password) }
     end
