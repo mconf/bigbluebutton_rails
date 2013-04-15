@@ -1,10 +1,9 @@
-class BigbluebuttonRailsTo130b < ActiveRecord::Migration
+class BigbluebuttonRailsTo130B < ActiveRecord::Migration
 
   def self.up
     # Generate a meetingID for every room
     BigbluebuttonRoom.all.each do |room|
-      room.meetingid = room.unique_meetingid
-      room.save!
+      room.update_attributes(:meetingid => room.unique_meetingid)
     end
   end
 

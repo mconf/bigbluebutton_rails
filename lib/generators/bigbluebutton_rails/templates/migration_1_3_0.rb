@@ -41,13 +41,15 @@ class BigbluebuttonRailsTo130 < ActiveRecord::Migration
   end
 
   def self.down
-    add_column :bigbluebutton_rooms, :randomize_meetingid
+    add_column :bigbluebutton_rooms, :randomize_meetingid, :boolean, :default => true
     change_table(:bigbluebutton_rooms) do |t|
       t.remove :record
       t.remove :duration
     end
     drop_table :bigbluebutton_playback_formats
     drop_table :bigbluebutton_metadata
+    remove_index :bigbluebutton_recordings
+    remove_index :bigbluebutton_recordings, :recordid
     drop_table :bigbluebutton_recordings
   end
 end
