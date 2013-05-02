@@ -33,7 +33,7 @@ class BigbluebuttonRoom < ActiveRecord::Base
   validates :param,
             :presence => true,
             :uniqueness => true,
-            :length => { :minimum => 3 },
+            :length => { :minimum => 1 },
             :format => { :with => /^[a-zA-Z\d_]+[a-zA-Z\d_-]*[a-zA-Z\d_]+$/,
                          :message => I18n.t('bigbluebutton_rails.rooms.errors.param_format') }
 
