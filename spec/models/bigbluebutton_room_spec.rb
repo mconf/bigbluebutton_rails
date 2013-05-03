@@ -591,6 +591,7 @@ describe BigbluebuttonRoom do
         request.stub!(:host_with_port).and_return("test.com:80")
         room.should_receive(:add_domain_to_logout_url).with("HTTP://", "test.com:80")
         room.should_receive(:is_running?).and_return(false)
+        room.should_receive(:send_create)
       }
       subject { room.create_meeting(user.name, user.id, request) }
       it { should be_true }
