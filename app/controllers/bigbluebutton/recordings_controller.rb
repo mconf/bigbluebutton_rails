@@ -51,9 +51,10 @@ class Bigbluebutton::RecordingsController < ApplicationController
     respond_with do |format|
       format.html {
         if error
-          redirect_to params[:redir_url] ||= bigbluebutton_recordings_url, :notice => message
+          flash[:error] = message
+          redirect_to params[:redir_url] ||= bigbluebutton_recordings_url
         else
-          redirect_to params[:redir_url] ||= bigbluebutton_recordings_url, :success => message
+          redirect_to params[:redir_url] ||= bigbluebutton_recordings_url, :notice => message
         end
       }
       format.json {
