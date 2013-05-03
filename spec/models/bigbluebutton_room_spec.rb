@@ -32,7 +32,7 @@ describe BigbluebuttonRoom do
 
   it { should validate_presence_of(:param) }
   it { should validate_uniqueness_of(:param) }
-  it { should ensure_length_of(:param).is_at_least(3) }
+  it { should ensure_length_of(:param).is_at_least(1) }
 
   it { should be_boolean(:private) }
 
@@ -177,10 +177,14 @@ describe BigbluebuttonRoom do
     it { should validate_format_of(:param).not_with("ábcd").with_message(msg) }
     it { should validate_format_of(:param).not_with("-abc").with_message(msg) }
     it { should validate_format_of(:param).not_with("abc-").with_message(msg) }
+    it { should validate_format_of(:param).not_with("-").with_message(msg) }
     it { should validate_format_of(:param).with("_abc").with_message(msg) }
     it { should validate_format_of(:param).with("abc_").with_message(msg) }
     it { should validate_format_of(:param).with("abc") }
     it { should validate_format_of(:param).with("123") }
+    it { should validate_format_of(:param).with("1") }
+    it { should validate_format_of(:param).with("a") }
+    it { should validate_format_of(:param).with("_") }
     it { should validate_format_of(:param).with("abc-123_d5") }
   end
 

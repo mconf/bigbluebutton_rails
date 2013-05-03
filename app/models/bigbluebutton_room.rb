@@ -34,7 +34,7 @@ class BigbluebuttonRoom < ActiveRecord::Base
             :presence => true,
             :uniqueness => true,
             :length => { :minimum => 1 },
-            :format => { :with => /^[a-zA-Z\d_]+[a-zA-Z\d_-]*[a-zA-Z\d_]+$/,
+            :format => { :with => /^([a-zA-Z\d_]|[a-zA-Z\d_]+[a-zA-Z\d_-]*[a-zA-Z\d_]+)$/,
                          :message => I18n.t('bigbluebutton_rails.rooms.errors.param_format') }
 
   # Passwords are 16 character strings
