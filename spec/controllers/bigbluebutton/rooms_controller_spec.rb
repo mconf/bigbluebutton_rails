@@ -319,6 +319,29 @@ describe Bigbluebutton::RoomsController do
       it { should redirect_to(bigbluebutton_room_path(room)) }
       it { should assign_to(:room).with(room) }
       it { should set_the_flash.to(I18n.t('bigbluebutton_rails.rooms.notice.end.success')) }
+
+      context ":redir_url => '/'" do
+        before {
+          mocked_api.should_receive(:is_meeting_running?).and_return(true)
+          mocked_api.should_receive(:end_meeting).with(room.meetingid, room.moderator_password)
+        }
+
+        before(:each) { get :end, :id => room.to_param, :redir_url => '/' }
+        it { should respond_with(:redirect) }
+        it { should redirect_to('/') }
+      end
+
+      context ":redir_url => '/example'" do
+        before {
+          mocked_api.should_receive(:is_meeting_running?).and_return(true)
+          mocked_api.should_receive(:end_meeting).with(room.meetingid, room.moderator_password)
+        }
+
+        before { get :end, :id => room.to_param, :redir_url => '/example' }
+        it { should respond_with(:redirect) }
+        it { should redirect_to('/example') }
+      end
+
     end
 
     context "room is not running" do
