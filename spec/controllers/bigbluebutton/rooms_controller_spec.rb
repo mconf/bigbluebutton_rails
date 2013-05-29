@@ -320,28 +320,28 @@ describe Bigbluebutton::RoomsController do
       it { should assign_to(:room).with(room) }
       it { should set_the_flash.to(I18n.t('bigbluebutton_rails.rooms.notice.end.success')) }
 
-      context ":redir_url => '/'" do
-        before {
-          mocked_api.should_receive(:is_meeting_running?).and_return(true)
-          mocked_api.should_receive(:end_meeting).with(room.meetingid, room.moderator_password)
-        }
+    end
 
-        before(:each) { get :end, :id => room.to_param, :redir_url => '/' }
-        it { should respond_with(:redirect) }
-        it { should redirect_to('/') }
-      end
+    context ":redir_url => '/'" do
+      before {
+        mocked_api.should_receive(:is_meeting_running?).and_return(true)
+        mocked_api.should_receive(:end_meeting).with(room.meetingid, room.moderator_password)
+      }
 
-      context ":redir_url => '/example'" do
-        before {
-          mocked_api.should_receive(:is_meeting_running?).and_return(true)
-          mocked_api.should_receive(:end_meeting).with(room.meetingid, room.moderator_password)
-        }
+      before(:each) { get :end, :id => room.to_param, :redir_url => '/' }
+      it { should respond_with(:redirect) }
+      it { should redirect_to('/') }
+    end
 
-        before { get :end, :id => room.to_param, :redir_url => '/example' }
-        it { should respond_with(:redirect) }
-        it { should redirect_to('/example') }
-      end
+    context ":redir_url => '/example'" do
+      before {
+        mocked_api.should_receive(:is_meeting_running?).and_return(true)
+        mocked_api.should_receive(:end_meeting).with(room.meetingid, room.moderator_password)
+      }
 
+      before { get :end, :id => room.to_param, :redir_url => '/example' }
+      it { should respond_with(:redirect) }
+      it { should redirect_to('/example') }
     end
 
     context "room is not running" do
