@@ -186,10 +186,12 @@ check out the test application at <tt>spec/rails_app/</tt>!
 Fork this repository, clone your fork and start by installing the dependencies:
 
   bundle install
+  
+Note: if you're getting an error installing <tt>capybara-webkit</tt>, most likely you need to install QT, see: https://github.com/thoughtbot/capybara-webkit/wiki/Installing-Qt-and-compiling-capybara-webkit
 
 Save <tt>spec/rails_app/features/config.yml.example</tt> as <tt>spec/rails_app/features/config.yml</tt> and edit it to set values for an existent BigBlueButton server. You will need it to run the integration tests. For more information see the page {Testing}[https://github.com/mconf/bigbluebutton_rails/wiki/Testing] in our wiki.
 
-Prepare the rails_app used for tests:
+Prepare the <tt>rails_app</tt> used for tests:
 
   rake rails_app:install
   rake rails_app:db SERVER=my-server # select a server you defined in 'config.yml'
@@ -214,6 +216,8 @@ You can also start the test application and navigate to <tt>localhost:3000</tt> 
 Develop. :)
 
 If you want your code to be integrated in this repository, please fork it, create a branch with your modifications and submit a pull request.
+
+* See more about testing {in our wiki page}[https://github.com/mconf/bigbluebutton_rails/wiki/Testing].
 
 === Test Coverage
 
