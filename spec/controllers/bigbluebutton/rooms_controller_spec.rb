@@ -829,7 +829,7 @@ describe Bigbluebutton::RoomsController do
         room.should_not_receive(:create_meeting)
       }
       before(:each) { get :join, :id => room.to_param }
-      it { should respond_with(:success) }
+      it { should respond_with(:unauthorized) }
       it { should render_template(:join) }
       it { should set_the_flash.to(I18n.t('bigbluebutton_rails.rooms.errors.auth.cannot_create')) }
     end

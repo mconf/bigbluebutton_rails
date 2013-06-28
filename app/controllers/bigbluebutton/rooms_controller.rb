@@ -330,7 +330,7 @@ class Bigbluebutton::RoomsController < ApplicationController
           @room.create_meeting(username, id, request)
         else
           flash[:error] = t('bigbluebutton_rails.rooms.errors.auth.cannot_create')
-          render wait_action
+          render wait_action, :status => :unauthorized
           return
         end
       end
