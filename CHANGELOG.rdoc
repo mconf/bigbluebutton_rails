@@ -1,4 +1,4 @@
-== 1.3.0.beta1
+== 1.3.0
 
 * To learn how to migrate to 1.3.0 see: https://github.com/mconf/bigbluebutton_rails/wiki/Migrate-to-1.3.0
 
