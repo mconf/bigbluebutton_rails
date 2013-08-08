@@ -54,5 +54,8 @@ module RailsApp
 
     # Version of your assets, change this if you want to expire all your assets
     config.assets.version = '1.0'
+
+    # Disabled rails 3.2 attr_accessible in favor of strong_parameters
+    config.active_record.whitelist_attributes = false
   end
 end

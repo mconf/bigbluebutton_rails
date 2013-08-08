@@ -1,4 +1,6 @@
 class BigbluebuttonRecording < ActiveRecord::Base
+  include ActiveModel::ForbiddenAttributesProtection
+
   belongs_to :server, :class_name => 'BigbluebuttonServer'
   belongs_to :room, :class_name => 'BigbluebuttonRoom'
 
@@ -7,9 +9,6 @@ class BigbluebuttonRecording < ActiveRecord::Base
   validates :recordid,
             :presence => true,
             :uniqueness => true
-
-  attr_accessible :recordid, :meetingid, :name, :published, :start_time,
-                  :end_time, :available
 
   has_many :metadata,
            :class_name => 'BigbluebuttonMetadata',

@@ -19,7 +19,7 @@ class Bigbluebutton::RecordingsController < ApplicationController
 
   def update
     respond_with @recording do |format|
-      if @recording.update_attributes(params[:bigbluebutton_recording])
+      if @recording.update_attributes(recording_params)
         format.html {
           message = t('bigbluebutton_rails.recordings.notice.update.success')
           redirect_to(@recording, :notice => message)
@@ -137,6 +137,14 @@ class Bigbluebutton::RecordingsController < ApplicationController
         format.json { render :json => e.to_s[0..200], :status => :error }
       end
     end
+  end
+
+  def recording_params
+    params[:bigbluebutton_recording].permit(*recording_allowed_params)
+  end
+
+  def recording_allowed_params
+    [ :recordid, :meetingid, :name, :published, :start_time, :end_time, :available ]
   end
 
 end

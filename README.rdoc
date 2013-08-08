@@ -38,7 +38,7 @@ Tested in rubies:
 
 === Rails
 
-To be used with *Rails 3* only (should work on 3.0, 3.1 and 3.2).
+To be used with <b>Rails 3</b> only (should work on 3.0, 3.1 and 3.2).
 Tested mainly with Rails 3.2.
 
 == Installation
@@ -66,6 +66,11 @@ You can easily generate the views and the css file in your application to later 
   rails generate bigbluebutton_rails:views
 
 To now more about the generators see {How to: Generators}[https://github.com/mconf/bigbluebutton_rails/wiki/How-to:-Generators]
+
+Since version 1.4.0, it's recommended that you use the gem {strong_parameters}[https://github.com/rails/strong_parameters] in your application.
+If you do, set the <tt>config.active_record.whitelist_attributes</tt> property in your <tt>config/application.rb</tt>:
+
+  config.active_record.whitelist_attributes = false
 
 === Routes
 
@@ -186,7 +191,7 @@ check out the test application at <tt>spec/rails_app/</tt>!
 Fork this repository, clone your fork and start by installing the dependencies:
 
   bundle install
-  
+
 Note: if you're getting an error installing <tt>capybara-webkit</tt>, most likely you need to install QT, see: https://github.com/thoughtbot/capybara-webkit/wiki/Installing-Qt-and-compiling-capybara-webkit
 
 Save <tt>spec/rails_app/features/config.yml.example</tt> as <tt>spec/rails_app/features/config.yml</tt> and edit it to set values for an existent BigBlueButton server. You will need it to run the integration tests. For more information see the page {Testing}[https://github.com/mconf/bigbluebutton_rails/wiki/Testing] in our wiki.

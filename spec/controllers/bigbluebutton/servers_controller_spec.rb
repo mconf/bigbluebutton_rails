@@ -34,16 +34,38 @@ describe Bigbluebutton::ServersController do
   end
 
   describe "#create" do
-    before :each do
-      expect {
-        post :create, :bigbluebutton_server => FactoryGirl.attributes_for(:bigbluebutton_server)
-      }.to change{ BigbluebuttonServer.count }.by(1)
+    context "on success" do
+      before :each do
+        expect {
+          post :create, :bigbluebutton_server => FactoryGirl.attributes_for(:bigbluebutton_server)
+        }.to change{ BigbluebuttonServer.count }.by(1)
+      end
+      it {
+        should respond_with(:redirect)
+        should redirect_to(bigbluebutton_server_path(BigbluebuttonServer.last))
+      }
+      it { should set_the_flash.to(I18n.t('bigbluebutton_rails.servers.notice.create.success')) }
     end
-    it {
-      should respond_with(:redirect)
-      should redirect_to(bigbluebutton_server_path(BigbluebuttonServer.last))
-    }
-    it { should set_the_flash.to(I18n.t('bigbluebutton_rails.servers.notice.create.success')) }
+
+    describe "params handling" do
+      let(:attrs) { FactoryGirl.attributes_for(:bigbluebutton_server) }
+      let(:params) { { :bigbluebutton_server => attrs } }
+      let(:allowed_params) {
+        [ :name, :url, :version, :salt, :param ]
+      }
+
+      it {
+        # we just check that the rails method 'permit' is being called on the hash with the
+        # correct parameters
+        server = BigbluebuttonServer.new
+        BigbluebuttonServer.stub(:new).and_return(server)
+        attrs.stub(:permit).and_return(attrs)
+        controller.stub(:params).and_return(params)
+
+        post :create, params
+        attrs.should have_received(:permit).with(*allowed_params)
+      }
+    end
   end
 
   describe "#update" do
@@ -75,6 +97,26 @@ describe Bigbluebutton::ServersController do
       end
       it { should render_template(:edit) }
       it { should assign_to(:server).with(@server) }
+    end
+
+    describe "params handling" do
+      let(:attrs) { FactoryGirl.attributes_for(:bigbluebutton_server) }
+      let(:params) { { :bigbluebutton_server => attrs } }
+      let(:allowed_params) {
+        [ :name, :url, :version, :salt, :param ]
+      }
+
+      it {
+        # we just check that the rails method 'permit' is being called on the hash with the
+        # correct parameters
+        BigbluebuttonServer.stub(:find_by_param).and_return(@server)
+        @server.stub(:update_attributes).and_return(true)
+        attrs.stub(:permit).and_return(attrs)
+        controller.stub(:params).and_return(params)
+
+        put :update, :id => @server.to_param, :bigbluebutton_server => attrs
+        attrs.should have_received(:permit).with(*allowed_params)
+      }
     end
  end
 

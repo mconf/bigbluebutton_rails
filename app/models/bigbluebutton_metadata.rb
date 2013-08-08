@@ -1,4 +1,6 @@
 class BigbluebuttonMetadata < ActiveRecord::Base
+  include ActiveModel::ForbiddenAttributesProtection
+
   belongs_to :owner, :polymorphic => true, :inverse_of => :metadata
 
   validates :owner_id, :presence => true
@@ -12,8 +14,6 @@ class BigbluebuttonMetadata < ActiveRecord::Base
   validates :name,
     :uniqueness => { :scope => [:owner_id, :owner_type] }
   validate :exclusion_of_name_in_reserved_metadata_keys
-
-  attr_accessible :name, :content
 
   # metadata keys are only invalid when the metadata belongs to a room,
   # metadata that will be used in a 'create' call
