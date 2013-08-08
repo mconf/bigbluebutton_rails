@@ -148,7 +148,7 @@ describe BigbluebuttonRoom do
         it { room.voice_bridge.should =~ /7[0-9]{4}/ }
         it "tries to randomize 10 times if voice_bridge already exists" do
           room = FactoryGirl.create(:bigbluebutton_room, :voice_bridge => "70000")
-          BigbluebuttonRoom.stub!(:find_by_voice_bridge).and_return(room)
+          BigbluebuttonRoom.stub(:find_by_voice_bridge).and_return(room)
           SecureRandom.should_receive(:random_number).exactly(10).and_return(0000)
           room2 = BigbluebuttonRoom.new # triggers the random_number calls
           room2.voice_bridge.should == "70000"
@@ -336,8 +336,7 @@ describe BigbluebuttonRoom do
         room.update_attributes(:welcome_msg => "Anything")
         FactoryGirl.create(:bigbluebutton_room_metadata, :owner => room)
         FactoryGirl.create(:bigbluebutton_room_metadata, :owner => room)
-
-        mocked_api.should_receive(:"request_headers=").any_number_of_times.with({})
+        mocked_api.stub(:"request_headers=")
       }
 
       it { should respond_to(:send_create) }
@@ -580,10 +579,10 @@ describe BigbluebuttonRoom do
     end
 
     context "when the arg 'request' is informed" do
-      let(:request) { stub(ActionDispatch::Request) }
+      let(:request) { double(ActionDispatch::Request) }
       before {
-        request.stub!(:protocol).and_return("HTTP://")
-        request.stub!(:host_with_port).and_return("test.com:80")
+        request.stub(:protocol).and_return("HTTP://")
+        request.stub(:host_with_port).and_return("test.com:80")
         room.should_receive(:add_domain_to_logout_url).with("HTTP://", "test.com:80")
         room.should_receive(:is_running?).and_return(false)
         room.should_receive(:send_create)
@@ -606,18 +605,18 @@ describe BigbluebuttonRoom do
     context "throws exception when the room has no server associated" do
       before { room.server = nil }
       it {
-        lambda {
+        expect {
           room.send(:require_server)
-        }.should raise_error(BigbluebuttonRails::ServerRequired)
+        }.to raise_error(BigbluebuttonRails::ServerRequired)
       }
     end
 
     context "does nothing if the room has a server associated" do
       before { room.server = FactoryGirl.create(:bigbluebutton_server) }
       it {
-        lambda {
+        expect {
           room.send(:require_server)
-        }.should_not raise_error(BigbluebuttonRails::ServerRequired)
+        }.not_to raise_error()
       }
     end
   end

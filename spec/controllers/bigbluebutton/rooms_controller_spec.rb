@@ -454,7 +454,7 @@ describe Bigbluebutton::RoomsController do
       let(:meetingid) { "my-meeting-id" }
       let(:http_referer) { bigbluebutton_server_path(mocked_server) }
       before {
-        mocked_api.stub!(:is_meeting_running?)
+        mocked_api.stub(:is_meeting_running?)
         request.env["HTTP_REFERER"] = http_referer
       }
 

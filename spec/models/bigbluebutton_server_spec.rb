@@ -157,7 +157,7 @@ describe BigbluebuttonServer do
     }
 
     before {
-      @api_mock = mock(BigBlueButton::BigBlueButtonApi)
+      @api_mock = double(BigBlueButton::BigBlueButtonApi)
       server.stub(:api).and_return(@api_mock)
       @api_mock.should_receive(:get_meetings).and_return(hash)
       server.fetch_meetings
@@ -194,7 +194,7 @@ describe BigbluebuttonServer do
       let(:ids) { "#{recording1.recordid},#{recording2.recordid}" }
       let(:publish) { true }
       before do
-        @api_mock = mock(BigBlueButton::BigBlueButtonApi)
+        @api_mock = double(BigBlueButton::BigBlueButtonApi)
         server.stub(:api).and_return(@api_mock)
         @api_mock.should_receive(:publish_recordings).with(ids, publish)
       end
@@ -212,7 +212,7 @@ describe BigbluebuttonServer do
     context "sends delete_recordings" do
       let(:ids) { "id1,id2,id3" }
       before do
-        @api_mock = mock(BigBlueButton::BigBlueButtonApi)
+        @api_mock = double(BigBlueButton::BigBlueButtonApi)
         server.stub(:api).and_return(@api_mock)
         @api_mock.should_receive(:delete_recordings).with(ids)
       end
@@ -224,7 +224,7 @@ describe BigbluebuttonServer do
     let(:server) { FactoryGirl.create(:bigbluebutton_server) }
     let(:params) { { :meetingID => "id1,id2,id3" } }
     before do
-      @api_mock = mock(BigBlueButton::BigBlueButtonApi)
+      @api_mock = double(BigBlueButton::BigBlueButtonApi)
       server.stub(:api).and_return(@api_mock)
     end
 

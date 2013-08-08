@@ -1,7 +1,7 @@
 def mock_server_and_api
   # standard server mocks
-  @api_mock = mock(BigBlueButton::BigBlueButtonApi)
-  @server_mock = mock_model(BigbluebuttonServer)
+  @api_mock = double(BigBlueButton::BigBlueButtonApi)
+  @server_mock = stub_model(BigbluebuttonServer, :id => 1, :param => "any")
   @server_mock.stub(:api) { @api_mock }
   BigbluebuttonServer.stub(:find) { @server_mock }
   BigbluebuttonServer.stub(:find_by_param) { @server_mock }

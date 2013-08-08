@@ -97,7 +97,7 @@ describe Bigbluebutton::ServersController do
       let(:room2) { FactoryGirl.create(:bigbluebutton_room, :server => server) }
       before do
         # so we return our mocked server
-        BigbluebuttonServer.stub!(:find_by_param).with(server.to_param).
+        BigbluebuttonServer.stub(:find_by_param).with(server.to_param).
           and_return(server)
       end
 
