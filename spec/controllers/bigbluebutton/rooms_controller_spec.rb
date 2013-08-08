@@ -120,6 +120,48 @@ describe Bigbluebutton::RoomsController do
         saved.should have_same_attributes_as(new_room)
       }
     end
+
+    describe "params handling" do
+      let(:attrs) {
+        # set all attributes that should be accepted and that should be ignored
+        attrs = FactoryGirl.attributes_for(:bigbluebutton_room)
+        attrs[:id] = 1
+        attrs[:owner] = 1
+        attrs[:owner_id] = 1
+        attrs[:owner_type] = 1
+        attrs[:server] = 1
+        attrs[:server_id] = 1
+        attrs[:metadata_attributes] = 1
+        attrs
+      }
+      before {
+        room = BigbluebuttonRoom.new
+        BigbluebuttonRoom.stub(:new).and_return(room)
+        post :create, :bigbluebutton_room => attrs
+      }
+      subject { BigbluebuttonRoom }
+      it { should have_received(:new).with(array_with_key(:name)) }
+      it { should have_received(:new).with(array_with_key(:server_id)) }
+      it { should have_received(:new).with(array_with_key(:attendee_password)) }
+      it { should have_received(:new).with(array_with_key(:moderator_password)) }
+      it { should have_received(:new).with(array_with_key(:meetingid)) }
+      it { should have_received(:new).with(array_with_key(:welcome_msg)) }
+      it { should have_received(:new).with(array_with_key(:private)) }
+      it { should have_received(:new).with(array_with_key(:logout_url)) }
+      it { should have_received(:new).with(array_with_key(:dial_number)) }
+      it { should have_received(:new).with(array_with_key(:voice_bridge)) }
+      it { should have_received(:new).with(array_with_key(:max_participants)) }
+      it { should have_received(:new).with(array_with_key(:external)) }
+      it { should have_received(:new).with(array_with_key(:param)) }
+      it { should have_received(:new).with(array_with_key(:record)) }
+      it { should have_received(:new).with(array_with_key(:duration)) }
+      it { should have_received(:new).with(array_with_key(:owner_id)) }
+      it { should have_received(:new).with(array_with_key(:owner_type)) }
+      it { should have_received(:new).with(array_with_key(:metadata_attributes)) }
+      it { should have_received(:new).with(array_without_key(:id)) }
+      it { should have_received(:new).with(array_without_key(:owner)) }
+      it { should have_received(:new).with(array_without_key(:server)) }
+     end
   end
 
   describe "#update" do

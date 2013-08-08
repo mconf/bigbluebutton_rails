@@ -14,11 +14,6 @@ describe BigbluebuttonRecording do
   it { should validate_presence_of(:recordid) }
   it { should validate_uniqueness_of(:recordid) }
 
-  [:recordid, :meetingid, :name, :published, :start_time,
-   :end_time, :available].each do |attribute|
-    it { should allow_mass_assignment_of(attribute) }
-  end
-
   it { should have_many(:metadata).dependent(:destroy) }
 
   it { should have_many(:playback_formats).dependent(:destroy) }

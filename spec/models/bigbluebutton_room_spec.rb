@@ -52,15 +52,6 @@ describe BigbluebuttonRoom do
 
   it { should accept_nested_attributes_for(:metadata).allow_destroy(true) }
 
-  [:name, :server_id, :meetingid, :attendee_password,
-   :moderator_password, :welcome_msg, :owner, :private, :logout_url,
-   :dial_number, :voice_bridge, :max_participants, :owner_id,
-   :owner_type, :param, :metadata_attributes].
-    each do |attribute|
-    it { should allow_mass_assignment_of(attribute) }
-  end
-  it { should_not allow_mass_assignment_of(:id) }
-
   # attr_accessors
   [:running, :participant_count, :moderator_count, :attendees,
    :has_been_forcibly_ended, :start_time, :end_time, :external,

@@ -13,5 +13,9 @@ FactoryGirl.define do
     r.external false
     r.record false
     r.duration 0
+    r.voice_bridge { (70000 + SecureRandom.random_number(9999)).to_s }
+    r.dial_number { SecureRandom.random_number(9999999).to_s }
+    r.sequence(:logout_url) { |n| "http://bigbluebutton#{n}.test.com/logout" }
+    r.sequence(:max_participants) { |n| n }
   end
 end

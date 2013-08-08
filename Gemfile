@@ -2,6 +2,8 @@ source "http://rubygems.org"
 
 gemspec
 
+gem "strong_parameters"
+
 group :development do
   gem "sqlite3-ruby"
   gem "forgery"

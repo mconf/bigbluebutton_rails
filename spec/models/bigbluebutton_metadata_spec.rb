@@ -38,10 +38,6 @@ describe BigbluebuttonMetadata do
 
   it { should_not validate_presence_of(:content) }
 
-  [:name, :content].each do |attribute|
-    it { should allow_mass_assignment_of(attribute) }
-  end
-
   context "reserved metadata keys" do
     before(:each) { subject.owner = FactoryGirl.create(:bigbluebutton_room) }
 

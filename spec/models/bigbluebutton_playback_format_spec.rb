@@ -15,8 +15,4 @@ describe BigbluebuttonPlaybackFormat do
 
   it { should_not validate_presence_of(:url) }
   it { should_not validate_presence_of(:length) }
-
-  [:recording_id, :format_type, :url, :length].each do |attribute|
-    it { should allow_mass_assignment_of(attribute) }
-  end
 end
