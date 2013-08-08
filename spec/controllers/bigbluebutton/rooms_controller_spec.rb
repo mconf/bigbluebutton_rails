@@ -275,7 +275,7 @@ describe Bigbluebutton::RoomsController do
       before { @api_mock.should_receive(:is_meeting_running?).and_return(true) }
       before(:each) { get :running, :id => room.to_param }
       it { should respond_with(:success) }
-      it { should respond_with_content_type(:json) }
+      it { should respond_with_content_type('application/json') }
       it { should assign_to(:room).with(room) }
       it { response.body.should == build_running_json(true) }
     end

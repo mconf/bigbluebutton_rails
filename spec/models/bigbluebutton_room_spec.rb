@@ -159,24 +159,24 @@ describe BigbluebuttonRoom do
 
   context "#param format" do
     let(:msg) { I18n.t('bigbluebutton_rails.rooms.errors.param_format') }
-    it { should validate_format_of(:param).not_with("123 321").with_message(msg) }
-    it { should validate_format_of(:param).not_with("").with_message(msg) }
-    it { should validate_format_of(:param).not_with("ab@c").with_message(msg) }
-    it { should validate_format_of(:param).not_with("ab#c").with_message(msg) }
-    it { should validate_format_of(:param).not_with("ab$c").with_message(msg) }
-    it { should validate_format_of(:param).not_with("ab%c").with_message(msg) }
-    it { should validate_format_of(:param).not_with("ábcd").with_message(msg) }
-    it { should validate_format_of(:param).not_with("-abc").with_message(msg) }
-    it { should validate_format_of(:param).not_with("abc-").with_message(msg) }
-    it { should validate_format_of(:param).not_with("-").with_message(msg) }
-    it { should validate_format_of(:param).with("_abc").with_message(msg) }
-    it { should validate_format_of(:param).with("abc_").with_message(msg) }
-    it { should validate_format_of(:param).with("abc") }
-    it { should validate_format_of(:param).with("123") }
-    it { should validate_format_of(:param).with("1") }
-    it { should validate_format_of(:param).with("a") }
-    it { should validate_format_of(:param).with("_") }
-    it { should validate_format_of(:param).with("abc-123_d5") }
+    it { should_not allow_value("123 321").for(:param).with_message(msg) }
+    it { should_not allow_value("").for(:param).with_message(msg) }
+    it { should_not allow_value("ab@c").for(:param).with_message(msg) }
+    it { should_not allow_value("ab#c").for(:param).with_message(msg) }
+    it { should_not allow_value("ab$c").for(:param).with_message(msg) }
+    it { should_not allow_value("ab%c").for(:param).with_message(msg) }
+    it { should_not allow_value("ábcd").for(:param).with_message(msg) }
+    it { should_not allow_value("-abc").for(:param).with_message(msg) }
+    it { should_not allow_value("abc-").for(:param).with_message(msg) }
+    it { should_not allow_value("-").for(:param).with_message(msg) }
+    it { should allow_value("_abc").for(:param).with_message(msg) }
+    it { should allow_value("abc_").for(:param).with_message(msg) }
+    it { should allow_value("abc").for(:param).with_message(msg) }
+    it { should allow_value("123").for(:param).with_message(msg) }
+    it { should allow_value("1").for(:param).with_message(msg) }
+    it { should allow_value("a").for(:param).with_message(msg) }
+    it { should allow_value("_").for(:param).with_message(msg) }
+    it { should allow_value("abc-123_d5").for(:param).with_message(msg) }
   end
 
   context "sets param as the downcased parameterized name if param is" do

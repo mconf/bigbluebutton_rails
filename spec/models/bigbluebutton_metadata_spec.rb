@@ -16,24 +16,24 @@ describe BigbluebuttonMetadata do
   it { should validate_uniqueness_of(:name).scoped_to([:owner_id, :owner_type]) }
   context "#name format" do
     let(:msg) { I18n.t('bigbluebutton_rails.metadata.errors.name_format') }
-    it { should validate_format_of(:name).not_with("a b").with_message(msg) }
-    it { should validate_format_of(:name).not_with("1a").with_message(msg) }
-    it { should validate_format_of(:name).not_with("").with_message(msg) }
-    it { should validate_format_of(:name).not_with("ab@c").with_message(msg) }
-    it { should validate_format_of(:name).not_with("ab#c").with_message(msg) }
-    it { should validate_format_of(:name).not_with("ab$c").with_message(msg) }
-    it { should validate_format_of(:name).not_with("ab%c").with_message(msg) }
-    it { should validate_format_of(:name).not_with("ábcd").with_message(msg) }
-    it { should validate_format_of(:name).not_with("-abc").with_message(msg) }
-    it { should validate_format_of(:name).not_with("_abc").with_message(msg) }
-    it { should validate_format_of(:name).not_with("abc_").with_message(msg) }
-    it { should validate_format_of(:name).not_with("abc-123_d5").with_message(msg) }
-    it { should validate_format_of(:name).with("abc-") }
-    it { should validate_format_of(:name).with("abc-0") }
-    it { should validate_format_of(:name).with("abc") }
-    it { should validate_format_of(:name).with("aBcD") }
-    it { should validate_format_of(:name).with("abc123") }
-    it { should validate_format_of(:name).with("abc-123-d5") }
+    it { should_not allow_value("a b").for(:name).with_message(msg) }
+    it { should_not allow_value("1a").for(:name).with_message(msg) }
+    it { should_not allow_value("").for(:name).with_message(msg) }
+    it { should_not allow_value("ab@c").for(:name).with_message(msg) }
+    it { should_not allow_value("ab#c").for(:name).with_message(msg) }
+    it { should_not allow_value("ab$c").for(:name).with_message(msg) }
+    it { should_not allow_value("ab%c").for(:name).with_message(msg) }
+    it { should_not allow_value("ábcd").for(:name).with_message(msg) }
+    it { should_not allow_value("-abc").for(:name).with_message(msg) }
+    it { should_not allow_value("_abc").for(:name).with_message(msg) }
+    it { should_not allow_value("abc_").for(:name).with_message(msg) }
+    it { should_not allow_value("abc-123_d5").for(:name).with_message(msg) }
+    it { should allow_value("abc-").for(:name) }
+    it { should allow_value("abc-0").for(:name) }
+    it { should allow_value("abc").for(:name) }
+    it { should allow_value("aBcD").for(:name) }
+    it { should allow_value("abc123").for(:name) }
+    it { should allow_value("abc-123-d5").for(:name) }
   end
 
   it { should_not validate_presence_of(:content) }

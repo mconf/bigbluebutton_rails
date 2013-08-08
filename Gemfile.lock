@@ -195,7 +195,7 @@ GEM
       multi_json (~> 1.0)
       rubyzip
     sexp_processor (4.1.2)
-    shoulda-matchers (1.4.1)
+    shoulda-matchers (2.2.0)
       activesupport (>= 3.0.0)
     simplecov (0.7.1)
       multi_json (~> 1.0)
