@@ -30,8 +30,9 @@ class Bigbluebutton::RoomsController < ApplicationController
   def create
     @room = BigbluebuttonRoom.new(room_params)
 
-    if !params[:bigbluebutton_room].has_key?(:meetingid) or
-        params[:bigbluebutton_room][:meetingid].blank?
+    if params[:bigbluebutton_room] and
+        (not params[:bigbluebutton_room].has_key?(:meetingid) or
+         params[:bigbluebutton_room][:meetingid].blank?)
       @room.meetingid = @room.name
     end
 
@@ -61,7 +62,8 @@ class Bigbluebutton::RoomsController < ApplicationController
       if @room.update_attributes(room_params)
         message = t('bigbluebutton_rails.rooms.notice.update.success')
         format.html {
-          redirect_to params[:redir_url] ||= bigbluebutton_room_path(@room), :notice => message
+          url = params[:redir_url] ||= bigbluebutton_room_path(@room)
+          redirect_to url, :notice => message
         }
         format.json { render :json => { :message => message } }
       else
@@ -355,7 +357,11 @@ class Bigbluebutton::RoomsController < ApplicationController
   end
 
   def room_params
-    params[:bigbluebutton_room].permit(*room_allowed_params)
+    unless params[:bigbluebutton_room].nil?
+      params[:bigbluebutton_room].permit(*room_allowed_params)
+    else
+      []
+    end
   end
 
   def room_allowed_params

@@ -184,7 +184,11 @@ class Bigbluebutton::ServersController < ApplicationController
   end
 
   def server_params
-    params[:bigbluebutton_server].permit(*server_allowed_params)
+    unless params[:bigbluebutton_server].nil?
+      params[:bigbluebutton_server].permit(*server_allowed_params)
+    else
+      []
+    end
   end
 
   def server_allowed_params

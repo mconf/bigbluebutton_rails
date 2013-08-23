@@ -76,6 +76,14 @@ describe Bigbluebutton::RecordingsController do
         attrs.should have_received(:permit).with(*allowed_params)
       }
     end
+
+    # to make sure it doesn't break if the hash informed doesn't have the key :bigbluebutton_recording
+    describe "if parameters are not informed" do
+      it {
+        put :update, :id => @recording.to_param
+        should redirect_to(bigbluebutton_recording_path(@recording))
+      }
+    end
   end
 
   describe "#destroy" do

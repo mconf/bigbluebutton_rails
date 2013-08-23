@@ -143,6 +143,16 @@ describe Bigbluebutton::RoomsController do
         attrs.should have_received(:permit).with(*allowed_params)
       }
     end
+
+    # to make sure it doesn't break if the hash informed doesn't have the key :bigbluebutton_room
+    describe "if parameters are not informed" do
+      it {
+        expect {
+          post :create
+        }.not_to change{ BigbluebuttonRoom.count }
+        should render_template(:new)
+      }
+    end
   end
 
   describe "#update" do
@@ -211,6 +221,15 @@ describe Bigbluebutton::RoomsController do
 
         put :update, :id => @room.to_param, :bigbluebutton_room => attrs
         attrs.should have_received(:permit).with(*allowed_params)
+      }
+    end
+
+    # to make sure it doesn't break if the hash informed doesn't have the key :bigbluebutton_room
+    describe "if parameters are not informed" do
+      before(:each) {}
+      it {
+        put :update, :id => @room.to_param
+        should redirect_to(bigbluebutton_room_path(@room))
       }
     end
   end

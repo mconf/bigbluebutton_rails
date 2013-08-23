@@ -47,6 +47,8 @@ describe Bigbluebutton::ServersController do
       it { should set_the_flash.to(I18n.t('bigbluebutton_rails.servers.notice.create.success')) }
     end
 
+    it "on failure"
+
     describe "params handling" do
       let(:attrs) { FactoryGirl.attributes_for(:bigbluebutton_server) }
       let(:params) { { :bigbluebutton_server => attrs } }
@@ -64,6 +66,14 @@ describe Bigbluebutton::ServersController do
 
         post :create, params
         attrs.should have_received(:permit).with(*allowed_params)
+      }
+    end
+
+    # to make sure it doesn't break if the hash informed doesn't have the key :bigbluebutton_server
+    describe "if parameters are not informed" do
+      it {
+        put :create
+        should render_template(:new)
       }
     end
   end
@@ -118,7 +128,15 @@ describe Bigbluebutton::ServersController do
         attrs.should have_received(:permit).with(*allowed_params)
       }
     end
- end
+
+    # to make sure it doesn't break if the hash informed doesn't have the key :bigbluebutton_server
+    describe "if parameters are not informed" do
+      it {
+        put :update, :id => @server.to_param
+        should redirect_to(bigbluebutton_server_path(@server))
+      }
+    end
+  end
 
 
   describe "#destroy" do

@@ -140,7 +140,11 @@ class Bigbluebutton::RecordingsController < ApplicationController
   end
 
   def recording_params
-    params[:bigbluebutton_recording].permit(*recording_allowed_params)
+    unless params[:bigbluebutton_recording].nil?
+      params[:bigbluebutton_recording].permit(*recording_allowed_params)
+    else
+      []
+    end
   end
 
   def recording_allowed_params
