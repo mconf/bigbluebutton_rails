@@ -22,9 +22,10 @@ group :test do
   gem "rspec-rails"
   gem "bbbot-ruby", :git => "git://github.com/mconf/bbbot-ruby.git"
 
+  gem "capybara"
   gem "capybara-mechanize" # for remote requests
-  gem "launchy"
   gem "capybara-webkit" # best option found for js
+  gem "launchy"
 end
 
 # Gems used by the test application

@@ -8,6 +8,8 @@ module LocalesHelpers
       key = 'bigbluebutton_rails.rooms.errors.auth.not_running'
     when /authentication failure/
       key = 'bigbluebutton_rails.rooms.errors.auth.failure'
+    when /you don't have permissions to start this meeting/
+      key = 'bigbluebutton_rails.rooms.errors.auth.cannot_create'
     else
       key = ''
     end

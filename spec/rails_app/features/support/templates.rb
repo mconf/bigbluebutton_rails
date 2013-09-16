@@ -138,9 +138,9 @@ module TemplateHelpers
     has_element("input#bigbluebutton_room_private",
                 { :name => 'bigbluebutton_room[private]', :type => 'checkbox' })
     has_element("input#bigbluebutton_room_attendee_password",
-                { :name => 'bigbluebutton_room[attendee_password]', :type => 'password' })
+                { :name => 'bigbluebutton_room[attendee_password]', :type => 'text' })
     has_element("input#bigbluebutton_room_moderator_password",
-                { :name => 'bigbluebutton_room[moderator_password]', :type => 'password' })
+                { :name => 'bigbluebutton_room[moderator_password]', :type => 'text' })
     has_element("input#bigbluebutton_room_welcome_msg",
                 { :name => 'bigbluebutton_room[welcome_msg]', :type => 'text' })
     has_element("input#bigbluebutton_room_logout_url",

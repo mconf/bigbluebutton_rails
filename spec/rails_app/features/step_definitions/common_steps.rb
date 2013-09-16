@@ -19,6 +19,12 @@ When /^a(n external)? room in this server$/i do |external|
   @room.send_create
 end
 
+When /^an external room in this server with a meeting running$/i do
+  @room = FactoryGirl.build(:bigbluebutton_room, :server => @server, :external => true)
+  # can't call a create to this run because the bot will do so
+  steps %Q{ When a meeting is running in this room with 1 attendees }
+end
+
 When /^a public room in this server$/i do
   steps %Q{ When a room in this server }
   @room.update_attributes(:private => false)
