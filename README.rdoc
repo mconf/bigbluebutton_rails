@@ -24,7 +24,7 @@ Possible future features:
 
 === BigBlueButton
 
-The current version of this gem supports *all* the following versions of BigBlueButton:
+The current version of this gem supports <tt>all</tt> the following versions of BigBlueButton:
 
 * 0.8: Altough not all features are supported yet, such as pre-upload of slides. See {TODO_08}[https://github.com/mconf/bigbluebutton_rails/blob/master/TODO_08].
 * 0.7: Including 0.7, 0.71 and 0.71a.
@@ -33,13 +33,14 @@ The current version of this gem supports *all* the following versions of BigBlue
 
 Tested in rubies:
 
-* ruby-1.9.2
-* ruby-1.9.3
+* ruby-1.9.2 (p290)
+* ruby-1.9.3 (p194)
+
+Use these versions to be sure it will work. Other varieties of 1.9.2 and 1.9.3 should work as well.
 
 === Rails
 
-To be used with *Rails 3* only (should work on 3.0, 3.1 and 3.2).
-Tested mainly with Rails 3.2.
+To be used with <tt>Rails 3</tt> only. Tested against Rails 3.2 (should work on 3.0, 3.1 and 3.2).
 
 == Installation
 
@@ -186,7 +187,7 @@ check out the test application at <tt>spec/rails_app/</tt>!
 Fork this repository, clone your fork and start by installing the dependencies:
 
   bundle install
-  
+
 Note: if you're getting an error installing <tt>capybara-webkit</tt>, most likely you need to install QT, see: https://github.com/thoughtbot/capybara-webkit/wiki/Installing-Qt-and-compiling-capybara-webkit
 
 Save <tt>spec/rails_app/features/config.yml.example</tt> as <tt>spec/rails_app/features/config.yml</tt> and edit it to set values for an existent BigBlueButton server. You will need it to run the integration tests. For more information see the page {Testing}[https://github.com/mconf/bigbluebutton_rails/wiki/Testing] in our wiki.
