@@ -41,6 +41,7 @@ describe Bigbluebutton::RecordingsController do
         }
         it { should respond_with(:success) }
         it { should respond_with_content_type(:json) }
+        it { response.body.should eq("true") }
       end
 
       context "on failure" do

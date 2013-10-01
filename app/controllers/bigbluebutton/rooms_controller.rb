@@ -295,7 +295,7 @@ class Bigbluebutton::RoomsController < ApplicationController
         if error
           render :json => { :message => message }, :status => :error
         else
-          head :ok
+          render :json => true, :status => :ok
         end
       }
     end

@@ -67,6 +67,7 @@ describe Bigbluebutton::ServersController do
         }
         it { should respond_with(:success) }
         it { should respond_with_content_type(:json) }
+        it { response.body.should eq("true") }
       end
 
       context "on failure" do
@@ -90,6 +91,7 @@ describe Bigbluebutton::ServersController do
       end
       it { should respond_with(:success) }
       it { should respond_with_content_type(:json) }
+      it { response.body.should eq("true") }
     end
 
     describe "#activity" do
@@ -153,6 +155,11 @@ describe Bigbluebutton::ServersController do
       it { should respond_with(:success) }
       it { should respond_with_content_type(:json) }
       it { should respond_with_json([@room1, @room2].to_json) }
+    end
+
+    describe "#fetch_recordings" do
+      it "on success"
+      it "on error"
     end
 
   end

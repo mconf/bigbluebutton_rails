@@ -24,7 +24,7 @@ class Bigbluebutton::RecordingsController < ApplicationController
           message = t('bigbluebutton_rails.recordings.notice.update.success')
           redirect_to(@recording, :notice => message)
         }
-        format.json { head :ok }
+        format.json { render :json => true, :status => :ok }
       else
         format.html { render :edit }
         format.json { render :json => @recording.errors.full_messages, :status => :unprocessable_entity }
