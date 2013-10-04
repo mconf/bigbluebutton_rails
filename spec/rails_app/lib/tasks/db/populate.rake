@@ -65,6 +65,8 @@ namespace :db do
             :start_time => Time.now - rand(5).hours,
             :end_time => Time.now + rand(5).hours
           }
+          time = params[:start_time].utc.to_formatted_s(:long)
+          params[:description] = I18n.t('bigbluebutton_rails.recordings.default.description', :time => time)
           puts "    - Creating recording #{params[:name]}"
           recording = BigbluebuttonRecording.create(params)
           recording.server = server

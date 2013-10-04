@@ -3,7 +3,6 @@ When /^(\d+) meetings running in this server$/ do |count|
   @rooms = []
   count.to_i.times do |i|
     room = FactoryGirl.create(:bigbluebutton_room, :server => @server)
-    room.send_create
     BigBlueButtonBot.new(@server.api, room.meetingid, msalt, 1,
                          FeaturesConfig.root['timeout_bot_start'])
     @rooms << room
@@ -15,7 +14,6 @@ When /^(\d+) meetings recently ended in this server$/ do |count|
   @ended_rooms = []
   count.to_i.times do |i|
     room = FactoryGirl.create(:bigbluebutton_room, :server => @server)
-    room.send_create
     BigBlueButtonBot.new(@server.api, room.meetingid, msalt, 1,
                          FeaturesConfig.root['timeout_bot_start'])
     BigBlueButtonBot.finalize(room.meetingid)

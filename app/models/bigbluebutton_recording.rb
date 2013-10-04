@@ -103,6 +103,7 @@ class BigbluebuttonRecording < ActiveRecord::Base
     recording.available = true
     recording.room = BigbluebuttonRails.match_room_recording(data)
     recording.server = server
+    recording.description = I18n.t('bigbluebutton_rails.recordings.default.description', :time => recording.start_time.utc.to_formatted_s(:long))
     recording.save!
 
     sync_additional_data(recording, data)

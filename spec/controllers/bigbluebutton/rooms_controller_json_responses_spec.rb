@@ -170,5 +170,10 @@ describe Bigbluebutton::RoomsController do
       end
     end
 
+    describe "#fetch_recordings" do
+      it "on success"
+      it "on error"
+    end
+
   end
 end

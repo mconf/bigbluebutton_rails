@@ -1,7 +1,5 @@
 <h1>Join the meeting <%= @room.name %></h1>
 
-<div id="error_explanation"><%= flash[:error] %></div>
-
 <p>This meeting was created from another application.<br/>You must provide a name and a password to join:</p>
 
 <%= form_tag external_bigbluebutton_rooms_path do %>

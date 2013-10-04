@@ -80,7 +80,7 @@ class Bigbluebutton::ServersController < ApplicationController
           message = t('bigbluebutton_rails.servers.notice.update.success')
           redirect_to(@server, :notice => message)
         }
-        format.json { head :ok }
+        format.json { render :json => true, :status => :ok }
       else
         format.html { render :edit }
         format.json { render :json => @server.errors.full_messages, :status => :unprocessable_entity }
@@ -94,7 +94,7 @@ class Bigbluebutton::ServersController < ApplicationController
 
     respond_with do |format|
       format.html { redirect_to(bigbluebutton_servers_url) }
-      format.json { head :ok }
+      format.json { render :json => true, :status => :ok }
     end
   end
 
@@ -146,7 +146,7 @@ class Bigbluebutton::ServersController < ApplicationController
         if error
           render :json => { :message => message }, :status => :error
         else
-          head :ok
+          render :json => true, :status => :ok
         end
       }
     end

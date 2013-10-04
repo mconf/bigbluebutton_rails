@@ -9,6 +9,7 @@ group :development do
   gem "forgery"
   gem "rdoc"
   gem "rails_best_practices"
+  gem "spork-rails"
 end
 
 group :test do
@@ -24,9 +25,10 @@ group :test do
   gem "rspec-rails"
   gem "bbbot-ruby", :git => "git://github.com/mconf/bbbot-ruby.git"
 
-  gem "capybara-mechanize" # for remote requests
-  gem "launchy"
+  gem "capybara", "~> 2.0.0"
+  gem "capybara-mechanize", "~> 1.0.0" # for remote requests
   gem "capybara-webkit" # best option found for js
+  gem "launchy"
 end
 
 # Gems used by the test application

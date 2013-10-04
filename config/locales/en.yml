@@ -11,6 +11,7 @@ en:
         length: Length
         url: URL
       bigbluebutton_recording:
+        description: "Description"
         end_time: "End Time"
         meetingid: "Meeting ID"
         metadata: Metadata
@@ -55,6 +56,8 @@ en:
       errors:
         name_format: "can only use letters, numbers and the symbols \"-\" or \"_\", but only letters at the beginning"
     recordings:
+      default:
+        description: "Meeting held on %{time} (UTC)"
       errors:
         check_for_server:
           no_server: "There's no server associated with this recording."

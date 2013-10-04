@@ -14,6 +14,11 @@ describe BigbluebuttonRecording do
   it { should validate_presence_of(:recordid) }
   it { should validate_uniqueness_of(:recordid) }
 
+  [:recordid, :meetingid, :name, :published, :start_time,
+   :end_time, :available].each do |attribute|
+    it { should allow_mass_assignment_of(attribute) }
+  end
+
   it { should have_many(:metadata).dependent(:destroy) }
 
   it { should have_many(:playback_formats).dependent(:destroy) }
@@ -39,7 +44,7 @@ describe BigbluebuttonRecording do
     }
   end
 
-  describe "#sync" do
+  describe ".sync" do
     let(:data) {
       [
        {
@@ -187,7 +192,7 @@ describe BigbluebuttonRecording do
     end
   end
 
-  describe "#update_recording" do
+  describe ".update_recording" do
     let(:old_attrs) { FactoryGirl.attributes_for(:bigbluebutton_recording) }
     let(:attrs) { FactoryGirl.attributes_for(:bigbluebutton_recording) }
     let(:recording) { FactoryGirl.create(:bigbluebutton_recording, old_attrs) }
@@ -221,7 +226,7 @@ describe BigbluebuttonRecording do
     it { recording.room.should == @room }
   end
 
-  describe "#create_recording" do
+  describe ".create_recording" do
     let(:attrs) { FactoryGirl.attributes_for(:bigbluebutton_recording) }
     let(:data) {
       {
@@ -252,9 +257,13 @@ describe BigbluebuttonRecording do
     it { @recording.start_time.utc.to_i.should == attrs[:start_time].utc.to_i }
     it { @recording.server.should == new_server }
     it { @recording.room.should == @room }
+    it {
+      time = data[:start_time].utc.to_formatted_s(:long)
+      @recording.description.should == I18n.t('bigbluebutton_rails.recordings.default.description', :time => time)
+    }
   end
 
-  describe "#adapt_recording_hash" do
+  describe ".adapt_recording_hash" do
     let(:before) {
       { :recordID => "anything",
         :meetingID => "anything",
@@ -277,7 +286,7 @@ describe BigbluebuttonRecording do
     it { should eq(after) }
   end
 
-  describe "#sync_additional_data" do
+  describe ".sync_additional_data" do
     let(:attrs) { FactoryGirl.attributes_for(:bigbluebutton_recording) }
     let(:recording) { FactoryGirl.create(:bigbluebutton_recording) }
     let(:data) {
@@ -322,7 +331,7 @@ describe BigbluebuttonRecording do
     end
   end
 
-  describe "#sync_metadata" do
+  describe ".sync_metadata" do
     let(:recording) { FactoryGirl.create(:bigbluebutton_recording) }
 
     context "updates metadata that are already in the db" do
@@ -381,7 +390,7 @@ describe BigbluebuttonRecording do
 
   end
 
-  describe "#sync_playback_formats" do
+  describe ".sync_playback_formats" do
     let(:recording) { FactoryGirl.create(:bigbluebutton_recording) }
 
     context "with several formats" do

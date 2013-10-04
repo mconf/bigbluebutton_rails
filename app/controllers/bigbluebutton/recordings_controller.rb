@@ -24,7 +24,7 @@ class Bigbluebutton::RecordingsController < ApplicationController
           message = t('bigbluebutton_rails.recordings.notice.update.success')
           redirect_to(@recording, :notice => message)
         }
-        format.json { head :ok }
+        format.json { render :json => true, :status => :ok }
       else
         format.html { render :edit }
         format.json { render :json => @recording.errors.full_messages, :status => :unprocessable_entity }
@@ -148,7 +148,7 @@ class Bigbluebutton::RecordingsController < ApplicationController
   end
 
   def recording_allowed_params
-    [ :recordid, :meetingid, :name, :published, :start_time, :end_time, :available ]
+    [ :recordid, :meetingid, :name, :published, :start_time, :end_time, :available, :description ]
   end
 
 end
