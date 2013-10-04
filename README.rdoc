@@ -196,7 +196,7 @@ Prepare the <tt>rails_app</tt> used for tests:
 
   rake rails_app:install
   rake rails_app:db SERVER=my-server # select a server you defined in 'config.yml'
-  rake rails_app:populate            # to create fake data
+  rake rails_app:populate            # to create fake data, optional
 
 Run the tests:
 
@@ -206,6 +206,10 @@ Run the tests:
 Or simply:
 
   rake SERVER=my-server
+
+If you're adding migrations to the gem, test them with:
+
+  rake spec:migrations
 
 Note: If you don't set the SERVER variable, the first server in <tt>config.yml</tt> will be used.
 

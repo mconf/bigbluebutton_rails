@@ -39,15 +39,8 @@ namespace :rails_app do
   desc 'Setup the db in the rails app used in tests.'
   task :db do
     cd File.join(File.dirname(__FILE__), "spec", "rails_app")
-    # base
-    sh "bundle exec rake db:drop:all"
-    sh "bundle exec rake db:create:all"
-    # development
-    sh "bundle exec rake db:migrate RAILS_ENV=development"
-    sh "bundle exec rake db:seed RAILS_ENV=development"
-    # test
-    sh "bundle exec rake db:migrate RAILS_ENV=test"
-    sh "bundle exec rake db:test:prepare RAILS_ENV=test"
+    sh "bundle exec rake db:drop db:create db:migrate db:seed RAILS_ENV=development"
+    sh "bundle exec rake db:drop db:create db:migrate db:test:prepare RAILS_ENV=test"
     cd File.dirname(__FILE__)
   end
 
@@ -92,6 +85,8 @@ namespace :spec do
     sh "bundle exec rails destroy bigbluebutton_rails:install"
     sh "bundle exec rails generate bigbluebutton_rails:install 0.0.4"
     sh "bundle exec rails generate bigbluebutton_rails:install 0.0.5 --migration-only"
+    sh "bundle exec rails generate bigbluebutton_rails:install 1.3.0 --migration-only"
+    sh "bundle exec rails generate bigbluebutton_rails:install 1.4.0 --migration-only"
 
     sh "bundle exec rake db:drop RAILS_ENV=test"
     sh "bundle exec rake db:create RAILS_ENV=test"
@@ -103,6 +98,8 @@ namespace :spec do
     Rake::Task["cucumber"].invoke
 
     cd "spec/rails_app/"
+    sh "bundle exec rails destroy bigbluebutton_rails:install 1.4.0 --migration-only"
+    sh "bundle exec rails destroy bigbluebutton_rails:install 1.3.0 --migration-only"
     sh "bundle exec rails destroy bigbluebutton_rails:install 0.0.5 --migration-only"
     sh "bundle exec rails destroy bigbluebutton_rails:install 0.0.4"
   end

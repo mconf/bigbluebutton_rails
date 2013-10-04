@@ -63,7 +63,8 @@ namespace :db do
             :published => true,
             :available => true,
             :start_time => Time.now - rand(5).hours,
-            :end_time => Time.now + rand(5).hours
+            :end_time => Time.now + rand(5).hours,
+            :description => "Meeting held at #{Time.now}"
           }
           puts "    - Creating recording #{params[:name]}"
           recording = BigbluebuttonRecording.create(params)
