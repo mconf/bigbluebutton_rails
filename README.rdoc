@@ -224,6 +224,16 @@ If you want your code to be integrated in this repository, please fork it, creat
 
 * See more about testing {in our wiki page}[https://github.com/mconf/bigbluebutton_rails/wiki/Testing].
 
+=== Spork
+
+{Spork}[https://github.com/sporkrb/spork-rails] allows you to run tests faster. Run this in a terminal to start spork:
+
+  bundle exec spork
+
+Then run the tests with:
+
+  bundle exec rspec -X spec/
+
 === Test Coverage
 
 Coverage is analyzed by default when you run:

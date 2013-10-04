@@ -7,6 +7,7 @@ group :development do
   gem "forgery"
   gem "rdoc"
   gem "rails_best_practices"
+  gem "spork-rails"
 end
 
 group :test do

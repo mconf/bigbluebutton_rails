@@ -205,6 +205,10 @@ GEM
       simplecov-html (~> 0.7.1)
     simplecov-html (0.7.1)
     spoon (0.0.1)
+    spork (1.0.0rc3)
+    spork-rails (3.2.1)
+      rails (>= 3.0.0, < 3.3.0)
+      spork (>= 1.0rc0)
     sprockets (2.2.1)
       hike (~> 1.2)
       multi_json (~> 1.0)
@@ -262,6 +266,7 @@ DEPENDENCIES
   sass-rails (~> 3.2.3)
   shoulda-matchers
   simplecov (>= 0.4.0)
+  spork-rails
   sqlite3-ruby
   therubyracer (~> 0.12.0)
   uglifier (>= 1.0.3)
