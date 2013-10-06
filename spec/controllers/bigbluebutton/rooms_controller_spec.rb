@@ -91,20 +91,25 @@ describe Bigbluebutton::RoomsController do
     end
 
     context "with :redir_url" do
-      it "on success" do
-        expect {
-          post :create, :bigbluebutton_room => new_room.attributes, :redir_url => bigbluebutton_servers_path
-        }.to change{ BigbluebuttonRoom.count }.by(1)
-        should respond_with(:redirect)
-        should redirect_to bigbluebutton_servers_path
+      context "on success" do
+        before(:each) {
+          expect {
+            post :create, :bigbluebutton_room => new_room.attributes, :redir_url => "/any"
+          }.to change{ BigbluebuttonRoom.count }.by(1)
+        }
+        it { should respond_with(:redirect) }
+        it { should redirect_to "/any" }
       end
-      it "on failure" do
-        new_room.name = nil # invalid
-        expect {
-          post :create, :bigbluebutton_room => new_room.attributes, :redir_url => bigbluebutton_servers_path
-        }.not_to change{ BigbluebuttonRoom.count }
-        should respond_with(:redirect)
-        should redirect_to bigbluebutton_servers_path
+
+      context "on failure" do
+        before(:each) {
+          new_room.name = nil # invalid
+          expect {
+            post :create, :bigbluebutton_room => new_room.attributes, :redir_url => "/any"
+          }.not_to change{ BigbluebuttonRoom.count }
+        }
+        it { should respond_with(:redirect) }
+        it { should redirect_to "/any" }
       end
     end
 
@@ -187,18 +192,21 @@ describe Bigbluebutton::RoomsController do
     end
 
     context "with :redir_url" do
-      it "on success" do
-        put :update, :id => @room.to_param, :bigbluebutton_room => new_room.attributes,
-                     :redir_url => bigbluebutton_servers_path
-        should respond_with(:redirect)
-        should redirect_to bigbluebutton_servers_path
+      context "on success" do
+        before(:each) {
+          put :update, :id => @room.to_param, :bigbluebutton_room => new_room.attributes, :redir_url => "/any"
+        }
+        it { should respond_with(:redirect) }
+        it { should redirect_to "/any" }
       end
-      it "on failure" do
-        new_room.name = nil # invalid
-        put :update, :id => @room.to_param, :bigbluebutton_room => new_room.attributes,
-                     :redir_url => bigbluebutton_servers_path
-        should respond_with(:redirect)
-        should redirect_to bigbluebutton_servers_path
+
+      context "on failure" do
+        before(:each) {
+          new_room.name = nil # invalid
+          put :update, :id => @room.to_param, :bigbluebutton_room => new_room.attributes, :redir_url => "/any"
+        }
+        it { should respond_with(:redirect) }
+        it { should redirect_to "/any" }
       end
     end
 
@@ -276,11 +284,11 @@ describe Bigbluebutton::RoomsController do
       before(:each) {
         expect {
           mocked_api.should_receive(:end_meeting)
-          delete :destroy, :id => room.to_param, :redir_url => bigbluebutton_servers_path
+          delete :destroy, :id => room.to_param, :redir_url => "/any"
         }.to change{ BigbluebuttonRoom.count }.by(-1)
       }
       it { should respond_with(:redirect) }
-      it { should redirect_to bigbluebutton_servers_path }
+      it { should redirect_to "/any" }
     end
 
   end
@@ -385,26 +393,14 @@ describe Bigbluebutton::RoomsController do
 
     end
 
-    context ":redir_url => '/'" do
+    context "with :redir_url" do
       before {
         mocked_api.should_receive(:is_meeting_running?).and_return(true)
         mocked_api.should_receive(:end_meeting).with(room.meetingid, room.moderator_password)
       }
-
-      before(:each) { get :end, :id => room.to_param, :redir_url => '/' }
+      before(:each) { get :end, :id => room.to_param, :redir_url => '/any' }
       it { should respond_with(:redirect) }
-      it { should redirect_to('/') }
-    end
-
-    context ":redir_url => '/example'" do
-      before {
-        mocked_api.should_receive(:is_meeting_running?).and_return(true)
-        mocked_api.should_receive(:end_meeting).with(room.meetingid, room.moderator_password)
-      }
-
-      before { get :end, :id => room.to_param, :redir_url => '/example' }
-      it { should respond_with(:redirect) }
-      it { should redirect_to('/example') }
+      it { should redirect_to('/any') }
     end
 
     context "room is not running" do
@@ -606,16 +602,16 @@ describe Bigbluebutton::RoomsController do
     end
 
     context "when params[:meeting].blank?" do
-      context "without params[:redir_url]" do
+      context "without :redir_url" do
         before(:each) { get :external, :server_id => server.id }
         it { should respond_with(:redirect) }
         it { should redirect_to bigbluebutton_rooms_path }
         it { should set_the_flash.to(I18n.t('bigbluebutton_rails.rooms.errors.external.blank_meetingid')) }
       end
 
-      context "with params[:redir_url]" do
-        before(:each) { get :external, :server_id => server.id, :redir_url => '/'}
-        it { should redirect_to '/' }
+      context "with :redir_url" do
+        before(:each) { get :external, :server_id => server.id, :redir_url => '/any'}
+        it { should redirect_to '/any' }
       end
     end
 
@@ -806,6 +802,26 @@ describe Bigbluebutton::RoomsController do
       it { should redirect_to(bigbluebutton_room_path(room)) }
       it { should set_the_flash.to(I18n.t('bigbluebutton_rails.rooms.error.fetch_recordings.no_server')) }
     end
+
+    context "with :redir_url" do
+      context "on success" do
+        before(:each) {
+          mocked_server.should_receive(:fetch_recordings).with(filter)
+          post :fetch_recordings, :id => room.to_param, :redir_url => "/any"
+        }
+        it {should respond_with(:redirect) }
+        it { should redirect_to "/any" }
+      end
+      context "on failure" do
+        before(:each) {
+          room.stub(:server) { nil }
+          post :fetch_recordings, :id => room.to_param, :redir_url => "/any"
+        }
+        it {should respond_with(:redirect) }
+        it { should redirect_to "/any" }
+      end
+    end
+
   end
 
   describe "#recordings" do

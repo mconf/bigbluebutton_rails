@@ -1,6 +1,7 @@
 require 'bigbluebutton_api'
 
 class Bigbluebutton::RoomsController < ApplicationController
+  include BigbluebuttonRails::InternalControllerMethods
 
   before_filter :find_room, :except => [:index, :create, :new, :auth, :external, :external_auth]
   before_filter :find_server, :only => [:external, :external_auth]
@@ -40,17 +41,15 @@ class Bigbluebutton::RoomsController < ApplicationController
       if @room.save
         message = t('bigbluebutton_rails.rooms.notice.create.success')
         format.html {
-          redirect_to params[:redir_url] ||= bigbluebutton_room_path(@room), :notice => message
+          redirect_to_using_params bigbluebutton_room_path(@room), :notice => message
         }
-        format.json { render :json => { :message => message }, :status => :created }
+        format.json {
+          render :json => { :message => message }, :status => :created
+        }
       else
         format.html {
-          unless params[:redir_url].blank?
-            message = t('bigbluebutton_rails.rooms.notice.create.failure')
-            redirect_to params[:redir_url], :error => message
-          else
-            render :new
-          end
+          message = t('bigbluebutton_rails.rooms.notice.create.failure')
+          redirect_to_params_or_render :new, :error => message
         }
         format.json { render :json => @room.errors.full_messages, :status => :unprocessable_entity }
       end
@@ -62,18 +61,13 @@ class Bigbluebutton::RoomsController < ApplicationController
       if @room.update_attributes(room_params)
         message = t('bigbluebutton_rails.rooms.notice.update.success')
         format.html {
-          url = params[:redir_url] ||= bigbluebutton_room_path(@room)
-          redirect_to url, :notice => message
+          redirect_to_using_params bigbluebutton_room_path(@room), :notice => message
         }
         format.json { render :json => { :message => message } }
       else
         format.html {
-          unless params[:redir_url].blank?
-            flash[:error] = t('bigbluebutton_rails.rooms.notice.update.failure')
-            redirect_to params[:redir_url]
-          else
-            render :edit
-          end
+          message = t('bigbluebutton_rails.rooms.notice.update.failure')
+          redirect_to_params_or_render :edit, :error => message
         }
         format.json { render :json => @room.errors.full_messages, :status => :unprocessable_entity }
       end
@@ -97,7 +91,7 @@ class Bigbluebutton::RoomsController < ApplicationController
     respond_with do |format|
       format.html {
         flash[:error] = message if error
-        redirect_to params[:redir_url] ||= bigbluebutton_rooms_url
+        redirect_to_using_params bigbluebutton_rooms_url
       }
       format.json {
         if error
@@ -175,7 +169,7 @@ class Bigbluebutton::RoomsController < ApplicationController
   def external
     if params[:meeting].blank?
       message = t('bigbluebutton_rails.rooms.errors.external.blank_meetingid')
-      redirect_to params[:redir_url] ||= bigbluebutton_rooms_path, :notice => message
+      redirect_to_using_params bigbluebutton_rooms_path, :notice => message
     end
     @room = BigbluebuttonRoom.new(:server => @server, :meetingid => params[:meeting])
   end
@@ -245,14 +239,14 @@ class Bigbluebutton::RoomsController < ApplicationController
       respond_with do |format|
         format.html {
           flash[:error] = message
-          redirect_to :back
+          redirect_to_using_params :back
         }
         format.json { render :json => message, :status => :error }
       end
     else
       respond_with do |format|
         format.html {
-          redirect_to(params[:redir_url] || bigbluebutton_room_path(@room), :notice => message)
+          redirect_to_using_params bigbluebutton_room_path(@room), :notice => message
         }
         format.json { render :json => message }
       end
@@ -291,7 +285,7 @@ class Bigbluebutton::RoomsController < ApplicationController
     respond_with do |format|
       format.html {
         flash[error ? :error : :notice] = message
-        redirect_to bigbluebutton_room_path(@room)
+        redirect_to_using_params bigbluebutton_room_path(@room)
       }
       format.json {
         if error
