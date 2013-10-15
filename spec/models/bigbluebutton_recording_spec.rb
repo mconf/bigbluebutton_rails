@@ -11,6 +11,8 @@ describe BigbluebuttonRecording do
 
   it { should belong_to(:room) }
 
+  it { should belong_to(:meeting) }
+
   it { should validate_presence_of(:recordid) }
   it { should validate_uniqueness_of(:recordid) }
 

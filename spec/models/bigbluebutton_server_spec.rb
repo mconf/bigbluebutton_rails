@@ -138,7 +138,7 @@ describe BigbluebuttonServer do
   it { should respond_to(:fetch_meetings) }
   it { should respond_to(:meetings) }
 
-  context "fetching info from bbb" do
+  describe "#fetch_meetings" do
     let(:server) { FactoryGirl.create(:bigbluebutton_server) }
     let(:room1) { FactoryGirl.create(:bigbluebutton_room, :server => server, :meetingid => "room1") }
     let(:room2) { FactoryGirl.create(:bigbluebutton_room, :server => server, :meetingid => "room2") }
@@ -182,6 +182,8 @@ describe BigbluebuttonServer do
     it { server.meetings[2].new_record?.should be_true }
     it { server.meetings[2].external.should be_true }
     it { server.meetings[2].private.should be_true  }
+
+    it "updates the meeting associated with this room"
   end
 
   describe "#send_publish_recordings" do

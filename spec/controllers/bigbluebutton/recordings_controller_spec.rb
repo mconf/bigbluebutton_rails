@@ -43,7 +43,7 @@ describe Bigbluebutton::RecordingsController do
       }
       it {
         saved = BigbluebuttonRecording.find(@recording)
-        saved.should have_same_attributes_as(new_recording, ['room_id', 'server_id'])
+        saved.should have_same_attributes_as(new_recording, ['room_id', 'server_id', 'meeting_id'])
       }
       it { should set_the_flash.to(I18n.t('bigbluebutton_rails.recordings.notice.update.success')) }
     end

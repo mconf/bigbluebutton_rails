@@ -218,27 +218,31 @@ describe BigbluebuttonRoom do
 
       it { should respond_to(:fetch_is_running?) }
 
-      context "fetches is_running? when not running" do
+      context "fetches 'running' when not running" do
         before {
           mocked_api.should_receive(:is_meeting_running?).with(room.meetingid).and_return(false)
           room.should_receive(:require_server)
           room.server = mocked_server
         }
-        before(:each) { room.fetch_is_running? }
-        it { room.running.should == false }
-        it { room.is_running?.should == false }
+        before(:each) { @response = room.fetch_is_running? }
+        it { room.running.should be_false }
+        it { room.is_running?.should be_false }
+        it { @response.should be_false }
       end
 
-      context "fetches is_running? when running" do
+      context "fetches 'running' when running" do
         before {
           mocked_api.should_receive(:is_meeting_running?).with(room.meetingid).and_return(true)
           room.should_receive(:require_server)
           room.server = mocked_server
         }
-        before(:each) { room.fetch_is_running? }
-        it { room.running.should == true }
-        it { room.is_running?.should == true }
+        before(:each) { @response = room.fetch_is_running? }
+        it { room.running.should be_true }
+        it { room.is_running?.should be_true }
+        it { @response.should be_true }
       end
+
+      it "updates the meeting associated with this room"
 
     end
 
@@ -308,6 +312,8 @@ describe BigbluebuttonRoom do
           end
         }
       end
+
+      it "updates the meeting associated with this room"
 
     end
 
@@ -652,6 +658,62 @@ describe BigbluebuttonRoom do
       result = { "meta_#{@m1.name}" => @m1.content, "meta_#{@m2.name}" => @m2.content }
       room.send(:get_metadata_for_create).should == result
     }
+  end
+
+  describe "#update_associated_meeting" do
+    let(:room) { FactoryGirl.create(:bigbluebutton_room) }
+
+    context "if @start_time is not set in the room" do
+      before { room.start_time = nil }
+      subject { room.update_associated_meeting }
+      it("doesn't create a meeting") {
+        BigbluebuttonMeeting.find_by_room_id(room.id).should be_nil
+      }
+    end
+
+    context "if @start_time is set" do
+      before {
+        room.start_time = Time.now.utc
+        room.running = !room.running # to change its default value
+        room.record = !room.record   # to change its default value
+      }
+
+      context "if there's no meeting associated yet creates one" do
+        before(:each) {
+          expect {
+            room.update_associated_meeting
+          }.to change{ BigbluebuttonMeeting.count }.by(1)
+        }
+        subject { BigbluebuttonMeeting.find_by_room_id(room.id) }
+        it("sets server") { subject.server.should eq(room.server) }
+        it("sets room") { subject.room.should eq(room) }
+        it("sets meetingid") { subject.meetingid.should eq(room.meetingid) }
+        it("sets name") { subject.name.should eq(room.name) }
+        it("sets record") { subject.record.should eq(room.record) }
+        it("sets running") { subject.running.should eq(room.running) }
+        it("sets start_time") { subject.start_time.utc.to_i.should eq(room.start_time.utc.to_i) }
+      end
+
+      context "if there's already a meeting associated updates it" do
+        before {
+          FactoryGirl.create(:bigbluebutton_meeting, :room => room, :start_time => room.start_time)
+        }
+        before(:each) {
+          expect {
+            room.update_associated_meeting
+          }.not_to change{ BigbluebuttonMeeting.count }
+        }
+        subject { BigbluebuttonMeeting.find_by_room_id(room.id) }
+        it("sets server") { subject.server.should eq(room.server) }
+        it("sets room") { subject.room.should eq(room) }
+        it("sets meetingid") { subject.meetingid.should eq(room.meetingid) }
+        it("sets name") { subject.name.should eq(room.name) }
+        it("sets record") { subject.record.should eq(room.record) }
+        it("sets running") { subject.running.should eq(room.running) }
+        it("sets start_time") { subject.start_time.utc.to_i.should eq(room.start_time.utc.to_i) }
+      end
+    end
+
   end
 
 end

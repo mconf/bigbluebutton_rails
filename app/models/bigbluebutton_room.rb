@@ -102,6 +102,8 @@ class BigbluebuttonRoom < ActiveRecord::Base
       @attendees << attendee
     end
 
+    update_associated_meeting
+
     response
   end
 
@@ -111,6 +113,8 @@ class BigbluebuttonRoom < ActiveRecord::Base
   def fetch_is_running?
     require_server
     @running = self.server.api.is_meeting_running?(self.meetingid)
+    update_associated_meeting
+    @running
   end
 
   # Sends a call to the BBB server to end the meeting.
@@ -244,6 +248,27 @@ class BigbluebuttonRoom < ActiveRecord::Base
     # Has to be globally unique in case more that one bigbluebutton_rails application is using
     # the same web conference server.
     "#{SecureRandom.uuid}-#{Time.now.to_i}"
+  end
+
+  def update_associated_meeting
+    unless self.start_time.nil?
+      attrs = {
+        :server => self.server,
+        :meetingid => self.meetingid,
+        :name => self.name,
+        :record => self.record,
+        :running => self.running
+      }
+      meeting = BigbluebuttonMeeting.find_by_room_id_and_start_time(self.id, self.start_time.utc)
+      unless meeting.nil?
+        meeting.update_attributes(attrs)
+      else
+        attrs.merge!({ :room => self, :start_time => self.start_time.utc })
+        meeting = BigbluebuttonMeeting.create(attrs)
+      end
+    else
+      # TODO: not enough information to find the meeting, do what?
+    end
   end
 
   protected

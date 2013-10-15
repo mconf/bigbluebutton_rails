@@ -3,6 +3,7 @@ class BigbluebuttonRecording < ActiveRecord::Base
 
   belongs_to :server, :class_name => 'BigbluebuttonServer'
   belongs_to :room, :class_name => 'BigbluebuttonRoom'
+  belongs_to :meeting, :class_name => 'BigbluebuttonMeeting'
 
   validates :server, :presence => true
 

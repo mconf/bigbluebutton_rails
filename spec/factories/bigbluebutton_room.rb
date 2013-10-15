@@ -1,5 +1,5 @@
 FactoryGirl.define do
-  factory  :bigbluebutton_room do |r|
+  factory :bigbluebutton_room do |r|
     # meetingid with a random factor to avoid duplicated ids in consecutive test runs
     r.sequence(:meetingid) { |n| "meeting-#{n}-" + SecureRandom.hex(4) }
 
@@ -13,7 +13,7 @@ FactoryGirl.define do
     r.external false
     r.record false
     r.duration 0
-    r.sequence(:voice_bridge) { |n| "#{70000 + SecureRandom.random_number(9999) + n}" }
+    r.sequence(:voice_bridge) { |n| "7#{n.to_s.rjust(4, '0')}" }
     r.dial_number { SecureRandom.random_number(9999999).to_s }
     r.sequence(:logout_url) { |n| "http://bigbluebutton#{n}.test.com/logout" }
     r.sequence(:max_participants) { |n| n }
