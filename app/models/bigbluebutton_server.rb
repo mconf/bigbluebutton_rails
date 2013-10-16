@@ -79,7 +79,7 @@ class BigbluebuttonServer < ActiveRecord::Base
                                :moderator_password => attr[:moderatorPW])
       end
       room.running = attr[:running]
-      room.update_associated_meeting
+      room.update_current_meeting
 
       @meetings << room
     end

@@ -338,7 +338,13 @@ class Bigbluebutton::RoomsController < ApplicationController
         if BigbluebuttonRails::value_to_boolean(params[:mobile])
           url.gsub!(/http:\/\//i, "bigbluebutton://")
         end
-        redirect_to(url)
+
+        # enqueue an update in the meetings for later on
+        # note: this is the only update that is not in the model, but has to be here
+        # because the model doesn't know when a user joined a room
+        Resque.enqueue(::BigbluebuttonMeetingUpdater, @room.id, 15.seconds)
+
+        redirect_to url
       else
         flash[:error] = t('bigbluebutton_rails.rooms.errors.auth.not_running')
         render wait_action
@@ -348,6 +354,7 @@ class Bigbluebutton::RoomsController < ApplicationController
       flash[:error] = e.to_s[0..200]
       redirect_to :back
     end
+
   end
 
   def room_params

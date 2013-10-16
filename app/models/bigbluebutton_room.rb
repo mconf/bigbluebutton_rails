@@ -102,8 +102,6 @@ class BigbluebuttonRoom < ActiveRecord::Base
       @attendees << attendee
     end
 
-    update_associated_meeting
-
     response
   end
 
@@ -113,8 +111,6 @@ class BigbluebuttonRoom < ActiveRecord::Base
   def fetch_is_running?
     require_server
     @running = self.server.api.is_meeting_running?(self.meetingid)
-    update_associated_meeting
-    @running
   end
 
   # Sends a call to the BBB server to end the meeting.
@@ -122,7 +118,12 @@ class BigbluebuttonRoom < ActiveRecord::Base
   # Triggers API call: <tt>end</tt>.
   def send_end
     require_server
-    self.server.api.end_meeting(self.meetingid, self.moderator_password)
+    response = self.server.api.end_meeting(self.meetingid, self.moderator_password)
+
+    # enqueue an update in the meetings for later on
+    Resque.enqueue(::BigbluebuttonMeetingUpdater, self.id, 15.seconds)
+
+    response
   end
 
   # Sends a call to the BBB server to create the meeting.
@@ -165,12 +166,15 @@ class BigbluebuttonRoom < ActiveRecord::Base
 
     case role
     when :moderator
-      self.server.api.join_meeting_url(self.meetingid, username, self.moderator_password)
+      r = self.server.api.join_meeting_url(self.meetingid, username, self.moderator_password)
     when :attendee
-      self.server.api.join_meeting_url(self.meetingid, username, self.attendee_password)
+      r = self.server.api.join_meeting_url(self.meetingid, username, self.attendee_password)
     else
-      self.server.api.join_meeting_url(self.meetingid, username, password)
+      r = self.server.api.join_meeting_url(self.meetingid, username, password)
     end
+
+    r.strip! unless r.nil?
+    r
   end
 
 
@@ -250,7 +254,8 @@ class BigbluebuttonRoom < ActiveRecord::Base
     "#{SecureRandom.uuid}-#{Time.now.to_i}"
   end
 
-  def update_associated_meeting
+  # Updates the current meeting associated with this room
+  def update_current_meeting
     unless self.start_time.nil?
       attrs = {
         :server => self.server,
@@ -260,15 +265,25 @@ class BigbluebuttonRoom < ActiveRecord::Base
         :running => self.running
       }
       meeting = BigbluebuttonMeeting.find_by_room_id_and_start_time(self.id, self.start_time.utc)
-      unless meeting.nil?
+      if !meeting.nil?
         meeting.update_attributes(attrs)
-      else
+
+      # only create a new meeting if it is running
+      elsif self.running
         attrs.merge!({ :room => self, :start_time => self.start_time.utc })
         meeting = BigbluebuttonMeeting.create(attrs)
+
       end
     else
       # TODO: not enough information to find the meeting, do what?
     end
+  end
+
+  # Sets all meetings related to this room as not running
+  def finish_meetings
+    BigbluebuttonMeeting.where(:running => true)
+      .find_by_room_id(room_id)
+      .update_attributes(:running => false)
   end
 
   protected
@@ -339,7 +354,12 @@ class BigbluebuttonRoom < ActiveRecord::Base
     opts.merge!({ "meta_#{BigbluebuttonRails.metadata_user_name}" => username }) unless username.nil?
 
     self.server.api.request_headers = @request_headers # we need the client's IP
-    self.server.api.create_meeting(self.name, self.meetingid, opts)
+    response = self.server.api.create_meeting(self.name, self.meetingid, opts)
+
+    # enqueue an update in the meetings to start now
+    Resque.enqueue(::BigbluebuttonMeetingUpdater, self.id)
+
+    response
   end
 
   # Returns the default welcome message to be shown in a conference in case

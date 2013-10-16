@@ -922,9 +922,24 @@ describe Bigbluebutton::RoomsController do
           .with(user.name, :attendee)
           .and_return("http://test.com/join/url")
       }
-      before(:each) { get :join, :id => room.to_param }
-      it { should respond_with(:redirect) }
-      it { should redirect_to("http://test.com/join/url") }
+
+      context "redirects to the join url" do
+        before(:each) { get :join, :id => room.to_param }
+        it { should respond_with(:redirect) }
+        it { should redirect_to("http://test.com/join/url") }
+      end
+
+      context "schedules a BigbluebuttonMeetingUpdater" do
+        before(:each) {
+          expect {
+            get :join, :id => room.to_param
+          }.to change{ Resque.info[:pending] }.by(1)
+        }
+        subject { Resque.peek(:bigbluebutton_rails) }
+        it("should have a job schedule") { subject.should_not be_nil }
+        it("the job should be the right one") { subject['class'].should eq('BigbluebuttonMeetingUpdater') }
+        it("the job should have the correct parameters") { subject['args'].should eq([room.id, 15]) }
+      end
     end
 
     context "when the user doesn't have permission to join the meeting" do
@@ -967,6 +982,7 @@ describe Bigbluebutton::RoomsController do
       it { should respond_with(:redirect) }
       it { should set_the_flash.to(bbb_error_msg[0..200]) }
     end
+
   end
 
 end

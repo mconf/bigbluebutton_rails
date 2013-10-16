@@ -242,8 +242,6 @@ describe BigbluebuttonRoom do
         it { @response.should be_true }
       end
 
-      it "updates the meeting associated with this room"
-
     end
 
     describe "#fetch_meeting_info" do
@@ -313,18 +311,31 @@ describe BigbluebuttonRoom do
         }
       end
 
-      it "updates the meeting associated with this room"
-
     end
 
     describe "#send_end" do
       it { should respond_to(:send_end) }
 
-      it "send end_meeting" do
-        mocked_api.should_receive(:end_meeting).with(room.meetingid, room.moderator_password)
-        room.should_receive(:require_server)
-        room.server = mocked_server
-        room.send_end
+      context "calls end_meeting" do
+        before {
+          mocked_api.should_receive(:end_meeting).with(room.meetingid, room.moderator_password)
+          room.should_receive(:require_server)
+          room.server = mocked_server
+        }
+        it { room.send_end }
+      end
+
+      context "schedules a BigbluebuttonMeetingUpdater" do
+        before { mocked_api.should_receive(:end_meeting) }
+        before(:each) {
+          expect {
+            room.send_end
+          }.to change{ Resque.info[:pending] }.by(1)
+        }
+        subject { Resque.peek(:bigbluebutton_rails) }
+        it("should have a job schedule") { subject.should_not be_nil }
+        it("the job should be the right one") { subject['class'].should eq('BigbluebuttonMeetingUpdater') }
+        it("the job should have the correct parameters") { subject['args'].should eq([room.id, 15]) }
       end
     end
 
@@ -486,29 +497,53 @@ describe BigbluebuttonRoom do
 
       it { should respond_to(:join_url) }
 
-      context do
-        before { room.should_receive(:require_server) }
-
-        it "with moderator role" do
-          mocked_api.should_receive(:join_meeting_url).
-            with(room.meetingid, username, room.moderator_password)
+      context "with moderator role" do
+        let(:expected) { 'expected-url' }
+        before {
+          room.should_receive(:require_server)
+          mocked_api.should_receive(:join_meeting_url)
+            .with(room.meetingid, username, room.moderator_password)
+            .and_return(expected)
           room.server = mocked_server
-          room.join_url(username, :moderator)
-        end
+        }
+        subject { room.join_url(username, :moderator) }
+        it("returns the correct url") { subject.should eq(expected) }
+      end
 
-        it "with attendee role" do
-          mocked_api.should_receive(:join_meeting_url).
-            with(room.meetingid, username, room.attendee_password)
+      context "with attendee role" do
+        let(:expected) { 'expected-url' }
+        before {
+          room.should_receive(:require_server)
+          mocked_api.should_receive(:join_meeting_url)
+            .with(room.meetingid, username, room.attendee_password)
+            .and_return(expected)
           room.server = mocked_server
-          room.join_url(username, :attendee)
-        end
+        }
+        subject { room.join_url(username, :attendee) }
+        it("returns the correct url") { subject.should eq(expected) }
+      end
 
-        it "without a role" do
-          mocked_api.should_receive(:join_meeting_url).
-            with(room.meetingid, username, 'pass')
+      context "without a role" do
+        let(:expected) { 'expected-url' }
+        before {
+          room.should_receive(:require_server)
+          mocked_api.should_receive(:join_meeting_url)
+            .with(room.meetingid, username, 'pass')
+            .and_return(expected)
           room.server = mocked_server
-          room.join_url(username, nil, 'pass')
-        end
+        }
+        subject { room.join_url(username, nil, 'pass') }
+        it("returns the correct url") { subject.should eq(expected) }
+      end
+
+      context "strips the url before returning it" do
+        before {
+          room.should_receive(:require_server)
+          mocked_api.should_receive(:join_meeting_url).and_return(" my.url/with/spaces \t ")
+          room.server = mocked_server
+        }
+        subject { room.join_url(username, :moderator) }
+        it("returns the url stripped") { subject.should eq('my.url/with/spaces') }
       end
     end
 
@@ -660,12 +695,12 @@ describe BigbluebuttonRoom do
     }
   end
 
-  describe "#update_associated_meeting" do
+  describe "#update_current_meeting" do
     let(:room) { FactoryGirl.create(:bigbluebutton_room) }
 
     context "if @start_time is not set in the room" do
       before { room.start_time = nil }
-      subject { room.update_associated_meeting }
+      subject { room.update_current_meeting }
       it("doesn't create a meeting") {
         BigbluebuttonMeeting.find_by_room_id(room.id).should be_nil
       }
@@ -679,9 +714,10 @@ describe BigbluebuttonRoom do
       }
 
       context "if there's no meeting associated yet creates one" do
+        before { room.running = true }
         before(:each) {
           expect {
-            room.update_associated_meeting
+            room.update_current_meeting
           }.to change{ BigbluebuttonMeeting.count }.by(1)
         }
         subject { BigbluebuttonMeeting.find_by_room_id(room.id) }
@@ -694,13 +730,24 @@ describe BigbluebuttonRoom do
         it("sets start_time") { subject.start_time.utc.to_i.should eq(room.start_time.utc.to_i) }
       end
 
+      context "if there's no meeting associated yet but the meeting is not running" do
+        before { room.running = false }
+        before(:each) {
+          expect {
+            room.update_current_meeting
+          }.not_to change{ BigbluebuttonMeeting.count }
+        }
+        subject { BigbluebuttonMeeting.find_by_room_id(room.id) }
+        it("shouldn't create a meeting") { subject.should be_nil }
+      end
+
       context "if there's already a meeting associated updates it" do
         before {
           FactoryGirl.create(:bigbluebutton_meeting, :room => room, :start_time => room.start_time)
         }
         before(:each) {
           expect {
-            room.update_associated_meeting
+            room.update_current_meeting
           }.not_to change{ BigbluebuttonMeeting.count }
         }
         subject { BigbluebuttonMeeting.find_by_room_id(room.id) }
@@ -714,6 +761,38 @@ describe BigbluebuttonRoom do
       end
     end
 
+  end
+
+  describe "#finish_meetings" do
+    it "finishes all meetings related to this room that are still running"
+  end
+
+  describe "#do_create_meeting" do
+    it "creates the correct hash of parameters"
+    it "adds metadata with the user's id"
+    it "adds metadata with the user's name"
+    it "sets the request headers"
+    it "calls api.create_meeting"
+
+    context "schedules a BigbluebuttonMeetingUpdater" do
+      before { mock_server_and_api }
+      let(:room) { FactoryGirl.create(:bigbluebutton_room) }
+
+      before {
+        mocked_api.stub(:create_meeting)
+        mocked_api.stub(:"request_headers=")
+        room.server = mocked_server
+      }
+      before(:each) {
+        expect {
+          room.send(:do_create_meeting)
+        }.to change{ Resque.info[:pending] }.by(1)
+      }
+      subject { Resque.peek(:bigbluebutton_rails) }
+      it("should have a job schedule") { subject.should_not be_nil }
+      it("the job should be the right one") { subject['class'].should eq('BigbluebuttonMeetingUpdater') }
+      it("the job should have the correct parameters") { subject['args'].should eq([room.id]) }
+    end
   end
 
 end
