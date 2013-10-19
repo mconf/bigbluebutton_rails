@@ -311,6 +311,8 @@ describe BigbluebuttonRoom do
         }
       end
 
+      it "calls #update_current_meeting after the information is fetched"
+
     end
 
     describe "#send_end" do

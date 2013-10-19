@@ -102,6 +102,9 @@ class BigbluebuttonRoom < ActiveRecord::Base
       @attendees << attendee
     end
 
+    # a 'shortcut' to update meetings since we have all information we need
+    update_current_meeting
+
     response
   end
 
