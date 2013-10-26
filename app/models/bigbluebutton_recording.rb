@@ -69,7 +69,8 @@ class BigbluebuttonRecording < ActiveRecord::Base
 
   protected
 
-  # Adapt keys in 'hash' from bigbluebutton-api-ruby's format to ours
+  # Adapt keys in 'hash' from bigbluebutton-api-ruby's (the way they are returned by
+  # BigBlueButton's API) format to ours (more rails-like).
   def self.adapt_recording_hash(hash)
     new_hash = hash.clone
     mappings = {
@@ -105,6 +106,7 @@ class BigbluebuttonRecording < ActiveRecord::Base
     recording.room = BigbluebuttonRails.match_room_recording(data)
     recording.server = server
     recording.description = I18n.t('bigbluebutton_rails.recordings.default.description', :time => recording.start_time.utc.to_formatted_s(:long))
+    recording.meeting = BigbluebuttonRecording.find_matching_meeting(recording)
     recording.save!
 
     sync_additional_data(recording, data)
@@ -187,6 +189,28 @@ class BigbluebuttonRecording < ActiveRecord::Base
         BigbluebuttonPlaybackFormat.create!(attrs)
       end
     end
+  end
+
+  # Finds the BigbluebuttonMeeting that generated this recording. The meeting is searched using
+  # the room associated with this recording and the create time of the meeting, taken from
+  # the recording's ID.
+  def self.find_matching_meeting(recording)
+    meeting = nil
+
+    unless recording.nil? or recording.room.nil?
+
+      # recordid is something like: 'dd2816950ce2f1e0a928c1a5b8d5b526e9b3e32c-1381978014526'
+      # the create time of the meeting is the timestamp at the end
+      start_time = recording.recordid.match(/-(\d*)$/)
+      unless start_time.nil?
+        start_time = start_time[1]
+        start_time = Time.at(start_time.to_i).to_datetime.utc
+        meeting = BigbluebuttonMeeting.where(:room_id => recording.room.id, :start_time => start_time).last
+        logger.info "Recording: meeting found for the recording #{recording.inspect}: #{meeting.inspect}"
+      end
+    end
+
+    meeting
   end
 
 end
