@@ -43,6 +43,10 @@ Use these versions to be sure it will work. Other varieties of 1.9.2 and 1.9.3 s
 To be used with <b>Rails 3</b> only (should work on 3.0, 3.1 and 3.2).
 Tested mainly with Rails 3.2.
 
+=== Database
+
+We recommend the use of MySQL in your application, since this gem is developed and tested using it.
+
 == Installation
 
 You can install the latest version of BigbluebuttonRails using RubyGems:
@@ -195,6 +199,8 @@ Fork this repository, clone your fork and start by installing the dependencies:
   bundle install
 
 Note: if you're getting an error installing <tt>capybara-webkit</tt>, most likely you need to install QT, see: https://github.com/thoughtbot/capybara-webkit/wiki/Installing-Qt-and-compiling-capybara-webkit
+
+First copy <tt>spec/rails_app/config/database.yml.example</tt> to <tt>spec/rails_app/config/database.yml</tt>. It uses MySQL since this is the database recommended for the applications that use this gem. You have to set the appropriate password for your MySQL user.
 
 Save <tt>spec/rails_app/features/config.yml.example</tt> as <tt>spec/rails_app/features/config.yml</tt> and edit it to set values for an existent BigBlueButton server. You will need it to run the integration tests. For more information see the page {Testing}[https://github.com/mconf/bigbluebutton_rails/wiki/Testing] in our wiki.
 

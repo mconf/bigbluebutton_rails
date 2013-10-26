@@ -5,6 +5,7 @@ pkg
 log
 *.gem
 spec/rails_app/features/config.yml
+spec/rails_app/config/database.yml
 coverage/
 rails_best_practices_output.html
 bot.log

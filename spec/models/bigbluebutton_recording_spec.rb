@@ -263,8 +263,7 @@ describe BigbluebuttonRecording do
     it("sets start_time") { @recording.start_time.utc.to_i.should == attrs[:start_time].utc.to_i }
     it("sets server") { @recording.server.should == new_server }
     it("sets room") { @recording.room.should == @room }
-    # TODO: need mysql
-    # it("sets meeting") { @recording.meeting.should == @meeting }
+    it("sets meeting") { @recording.meeting.should == @meeting }
     it("sets description") {
       time = data[:start_time].utc.to_formatted_s(:long)
       @recording.description.should == I18n.t('bigbluebutton_rails.recordings.default.description', :time => time)
@@ -479,26 +478,25 @@ describe BigbluebuttonRecording do
       it { subject.should be_nil }
     end
 
-    # TODO: need mysql
-    # context "if found a start time in recordid" do
-    #   let(:meeting_start_time) { DateTime.now }
-    #   let(:recording) {
-    #     FactoryGirl.create(:bigbluebutton_recording, :recordid => "#{SecureRandom.uuid}-#{meeting_start_time.to_i}")
-    #   }
+    context "if found a start time in recordid" do
+      let(:meeting_start_time) { DateTime.now }
+      let(:recording) {
+        FactoryGirl.create(:bigbluebutton_recording, :recordid => "#{SecureRandom.uuid}-#{meeting_start_time.to_i}")
+      }
 
-    #   context "when there's no associated meeting" do
-    #     subject { BigbluebuttonRecording.send(:find_matching_meeting, recording) }
-    #     it { subject.should be_nil }
-    #   end
+      context "when there's no associated meeting" do
+        subject { BigbluebuttonRecording.send(:find_matching_meeting, recording) }
+        it { subject.should be_nil }
+      end
 
-    #   context "when there's one associated meeting" do
-    #     before {
-    #       @meeting = FactoryGirl.create(:bigbluebutton_meeting, :room => recording.room, :start_time => meeting_start_time)
-    #     }
-    #     subject { BigbluebuttonRecording.send(:find_matching_meeting, recording) }
-    #     it { subject.should eq(@meeting) }
-    #   end
-    # end
+      context "when there's one associated meeting" do
+        before {
+          @meeting = FactoryGirl.create(:bigbluebutton_meeting, :room => recording.room, :start_time => meeting_start_time)
+        }
+        subject { BigbluebuttonRecording.send(:find_matching_meeting, recording) }
+        it { subject.should eq(@meeting) }
+      end
+    end
 
   end
 

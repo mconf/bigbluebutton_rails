@@ -6,7 +6,6 @@ gem "strong_parameters"
 gem "resque"
 
 group :development do
-  gem "sqlite3-ruby"
   gem "forgery"
   gem "rdoc"
   gem "rails_best_practices"
@@ -43,6 +42,7 @@ group :assets do
   gem 'uglifier', '>= 1.0.3'
 end
 group :development do
+  gem 'mysql2'
   gem "jquery-rails"
   gem "whenever"
 end

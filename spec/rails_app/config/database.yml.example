@@ -1,0 +1,28 @@
+# Uses mysql for all dbs
+
+development:
+  adapter: mysql2
+  database: bigbluebutton_rails_development
+  username: root
+  password: my-password
+  socket: /var/run/mysqld/mysqld.sock
+
+# Warning: The database defined as "test" will be erased and
+# re-generated from your development database when you run "rake".
+# Do not set this db to the same as development or production.
+test: &test
+  adapter: mysql2
+  database: bigbluebutton_rails_test
+  username: root
+  password: my-password
+  socket: /var/run/mysqld/mysqld.sock
+
+# production:
+#   adapter: mysql2
+#   database: bigbluebutton_rails_production
+#   username: root
+#   password: daileon
+#   socket: /var/run/mysqld/mysqld.sock
+
+cucumber:
+  <<: *test
