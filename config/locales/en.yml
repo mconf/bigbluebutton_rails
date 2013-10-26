@@ -82,6 +82,8 @@ en:
           wrong_params: "Wrong params in your request."
         external:
           blank_meetingid: "You must specify the meetingid of the meeting you want to join"
+          inexistent_meeting: "The meeting you're trying to join doesn't exist"
+          wrong_params: "Wrong parameters in your request"
         fetch_recordings:
           no_server: "There's no server associated with this room."
         param_format: "can only use letters, numbers and the symbols \"-\" or \"_\" (not at the begin or end)"
