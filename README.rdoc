@@ -73,10 +73,28 @@ You can easily generate the views and the css file in your application to later 
 
 To now more about the generators see {How to: Generators}[https://github.com/mconf/bigbluebutton_rails/wiki/How-to:-Generators]
 
-Since version 1.4.0, it's recommended that you use the gem {strong_parameters}[https://github.com/rails/strong_parameters] in your application.
-If you do, set the <tt>config.active_record.whitelist_attributes</tt> property in your <tt>config/application.rb</tt>:
+==== Dependencies
 
-  config.active_record.whitelist_attributes = false
+Notice: Since version 1.4.0, new dependencies were added to applications that use this gem.
+
+Include the following gems in your Gemfile:
+
+  gem 'whenever'
+  gem 'strong_parameters'
+  gem 'resque'
+
+{whenever}[https://github.com/javan/whenever] is used to schedule cron jobs from the application. Cron jobs are used in BigbluebuttonRails
+to update the list of recordings periodically.
+
+{strong_parameters}[https://github.com/rails/strong_parameters] is used to validate which parameters can be updated in a model. With
+it you can, for example, allow admins to update anything on a web conference rooms while normal users can only update the rooms name.
+This gem is used by default in Rails 4.
+
+{resque}[https://github.com/defunkt/resque] is used to schedule workers that will control the list of meetings. A meeting is a model that is
+created whenever a meeting is held in a room. We need workers to run these tasks in background and check when meetings start and stop.
+
+Read more about some of these dependencies below.
+
 
 === Routes
 
@@ -119,7 +137,7 @@ For more information see:
 
 * {How to: Routes}[https://github.com/mconf/bigbluebutton_rails/wiki/How-to:-Routes]
 
-=== Basic configurations
+=== Basic configuration
 
 There are some basic assumptions made by BigbluebuttonRails:
 
@@ -181,6 +199,24 @@ For more information see:
 
 * {How recordings work}[https://github.com/mconf/bigbluebutton_rails/wiki/How-Recordings-Work]
 
+
+=== Updating the list of meetings
+
+Meetings (<tt>BigbluebuttonMeeting</tt> models) in BigbluebuttonRails are instances of meetings that were held in web conference rooms. A meeting is created whenever
+is detected that a user joined a room and that he's the first user. Meetings are never removed, they are kept as a registry of
+what happened in the web conference servers connected to BigbluebuttonRails.
+
+The creating of these objects is done in background using a gem called {resque}[https://github.com/defunkt/resque]. Whenever a user
+clicks in the button to join a meeting, a resque worker is scheduled. This worker will wait for a while until the meeting is created and
+running in the web conference server, and will then create the correponding <tt>BigbluebuttonMeeting</tt> object.
+
+To keep track of meetings, you have to run the resque workers (in development and production):
+
+  rake resque:work QUEUE='bigbluebutton_rails'
+
+The list of meetigns is also periodically synchronized using cron tasks, as done for the list of recordings (see the section above).
+
+
 === Example application
 
 If you need more help to set up the gem or just want to see an example of it working,
@@ -229,6 +265,10 @@ You can also start the test application and navigate to <tt>localhost:3000</tt> 
 
   cd spec/rails_app/
   rails server
+
+If you need to keep track of meetings, run the resque workers with:
+
+  rake resque:work QUEUE='bigbluebutton_rails'
 
 Develop. :)
 
