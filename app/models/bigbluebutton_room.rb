@@ -15,6 +15,15 @@ class BigbluebuttonRoom < ActiveRecord::Base
            :dependent => :destroy,
            :inverse_of => :owner
 
+  has_one  :room_options,
+           :class_name => 'BigbluebuttonRoomOptions',
+           :foreign_key => 'room_id',
+           :autosave => true,
+           :dependent => :destroy
+
+  delegate :default_layout, :default_layout=, :to => :room_options
+  delegate :getAvailableLayouts, :to => :room_options
+
   accepts_nested_attributes_for :metadata,
     :allow_destroy => true,
     :reject_if => :all_blank
@@ -52,6 +61,7 @@ class BigbluebuttonRoom < ActiveRecord::Base
                 :has_been_forcibly_ended, :start_time, :end_time
 
   after_initialize :init
+  after_create :create_room_options
   before_validation :set_param
   before_validation :set_passwords
 
@@ -290,6 +300,10 @@ class BigbluebuttonRoom < ActiveRecord::Base
   end
 
   protected
+
+  def create_room_options
+    BigbluebuttonRoomOptions.create(:room => self)
+  end
 
   # Every room needs a server to be used.
   # The server of a room can change during the room's lifespan, but

@@ -2,6 +2,7 @@ source "http://rubygems.org"
 
 gemspec
 
+gem "bigbluebutton-api-ruby", :git => "git@github.com:mconf/bigbluebutton-api-ruby.git", :branch => "1129-bbb081"
 gem "strong_parameters"
 gem "resque"
 

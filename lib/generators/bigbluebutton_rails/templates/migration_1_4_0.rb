@@ -14,10 +14,18 @@ class BigbluebuttonRailsTo140 < ActiveRecord::Migration
       t.timestamps
     end
     add_index :bigbluebutton_meetings, [:meetingid, :start_time], :unique => true
+
+    create_table :bigbluebutton_room_options do |t|
+      t.integer :room_id
+      t.string :default_layout, :default => "Default"
+      t.timestamps
+    end
+    add_index :bigbluebutton_room_options, :room_id
   end
 
   def self.down
     drop_table :bigbluebutton_meetings
+    drop_table :bigbluebutton_room_options
     remove_column :bigbluebutton_recordings, :meeting_id
     remove_column :bigbluebutton_recordings, :description
   end
