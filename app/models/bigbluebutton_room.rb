@@ -299,6 +299,20 @@ class BigbluebuttonRoom < ActiveRecord::Base
       .update_attributes(:running => false)
   end
 
+  # Return the new token with the self options for join
+  def getNewToken
+    # get the XML from API and parse it
+    config_xml = self.server.api.get_default_config_xml
+    config_xml = BigBlueButton::BigBlueButtonConfigXml.new(config_xml)
+
+    # set the new value of default layout on the XML
+    config_xml.set_attribute("layout", "defaultLayout", self.default_layout, false)
+
+    # get the new token for the room, and return it
+    token = self.server.api.set_config_xml(self.meetingid, config_xml)
+    return token
+  end
+
   protected
 
   def create_room_options

@@ -331,6 +331,8 @@ class Bigbluebutton::RoomsController < ApplicationController
         end
       end
 
+      #token = @room.getNewToken()
+
       # room created and running, try to join it
       url = @room.join_url(username, role)
       unless url.nil?
