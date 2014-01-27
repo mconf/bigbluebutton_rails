@@ -22,7 +22,7 @@ class BigbluebuttonRoom < ActiveRecord::Base
            :dependent => :destroy
 
   delegate :default_layout, :default_layout=, :to => :room_options
-  delegate :getAvailableLayouts, :to => :room_options
+  delegate :get_available_layouts, :to => :room_options
 
   accepts_nested_attributes_for :metadata,
     :allow_destroy => true,
@@ -172,18 +172,19 @@ class BigbluebuttonRoom < ActiveRecord::Base
   # username:: Name of the user
   # role:: Role of the user in this room. Can be <tt>[:moderator, :attendee]</tt>
   # password:: Password to be use (in case role == nil)
+  # options:: Additional options to use when generating the URL
   #
   # Uses the API but does not require a request to the server.
-  def join_url(username, role, password=nil)
+  def join_url(username, role, password=nil, options={})
     require_server
 
     case role
     when :moderator
-      r = self.server.api.join_meeting_url(self.meetingid, username, self.moderator_password)
+      r = self.server.api.join_meeting_url(self.meetingid, username, self.moderator_password, options)
     when :attendee
-      r = self.server.api.join_meeting_url(self.meetingid, username, self.attendee_password)
+      r = self.server.api.join_meeting_url(self.meetingid, username, self.attendee_password, options)
     else
-      r = self.server.api.join_meeting_url(self.meetingid, username, password)
+      r = self.server.api.join_meeting_url(self.meetingid, username, password, options)
     end
 
     r.strip! unless r.nil?
@@ -299,13 +300,30 @@ class BigbluebuttonRoom < ActiveRecord::Base
       .update_attributes(:running => false)
   end
 
-  # Return the new token with the self options for join
-  def getNewToken
+  # Gets a 'configToken' to use when joining the room.
+  # Returns a string with the token generated or nil if there's no need
+  # for a token (the options set in the room are the default options) or
+  # if an error occurred.
+  #
+  # The entire process consists in these steps:
+  # * Go to the server get the default config.xml;
+  # * Modify the config.xml based on the room options set in the room;
+  # * Go to the server set the new config.xml;
+  # * Get the token identifier and return it.
+  #
+  # Triggers API call: <tt>getDefaultConfigXML</tt>.
+  # Triggers API call: <tt>setConfigXML</tt>.
+  #
+  # TODO: if there's no option set in the options model, should return nil
+  # TODO: if the XML generated is exactly the same as the default, should return nil
+  def fetch_new_token
     # get the XML from API and parse it
     config_xml = self.server.api.get_default_config_xml
     config_xml = BigBlueButton::BigBlueButtonConfigXml.new(config_xml)
 
     # set the new value of default layout on the XML
+    # TODO: add a method in BigbluebuttonRoomOptions to set everything from the model
+    #   in a config.xml, will make it easier when more options are added
     config_xml.set_attribute("layout", "defaultLayout", self.default_layout, false)
 
     # get the new token for the room, and return it

@@ -331,10 +331,12 @@ class Bigbluebutton::RoomsController < ApplicationController
         end
       end
 
-      #token = @room.getNewToken()
+      # gets the token with the configurations for this user/room
+      token = @room.fetch_new_token()
+      options = if token.nil? then {} else { configToken: token } end
 
       # room created and running, try to join it
-      url = @room.join_url(username, role)
+      url = @room.join_url(username, role, nil, options)
       unless url.nil?
         # change the protocol to join with BBB-Android/Mconf-Mobile if set
         if BigbluebuttonRails::value_to_boolean(params[:mobile])
