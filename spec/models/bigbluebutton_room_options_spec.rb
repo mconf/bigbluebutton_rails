@@ -24,14 +24,13 @@ describe BigbluebuttonRoomOptions do
 
   describe "set_on_config_xml" do
     let(:config_xml) { '<config></config>' }
-    before {
-      BigBlueButton::BigBlueButtonConfigXml.any_instance
-        .should_receive(:set_attribute)
-        .with('layout', 'defaultLayout', room_options.default_layout, false)
-    }
 
     context "if the xml changed" do
       before {
+        room_options.update_attributes(:default_layout => "AnyLayout")
+        BigBlueButton::BigBlueButtonConfigXml.any_instance
+          .should_receive(:set_attribute)
+          .with('layout', 'defaultLayout', "AnyLayout", false)
         BigBlueButton::BigBlueButtonConfigXml.any_instance
           .should_receive(:is_modified?).and_return(true)
         BigBlueButton::BigBlueButtonConfigXml.any_instance
@@ -43,12 +42,39 @@ describe BigbluebuttonRoomOptions do
 
     context "if the xml did not change" do
       before {
+        room_options.update_attributes(:default_layout => "AnyLayout")
+        BigBlueButton::BigBlueButtonConfigXml.any_instance
+          .should_receive(:set_attribute)
+          .with('layout', 'defaultLayout', "AnyLayout", false)
         BigBlueButton::BigBlueButtonConfigXml.any_instance
           .should_receive(:is_modified?).and_return(false)
       }
       subject { room_options.set_on_config_xml(config_xml) }
       it("returns false") { should be_false }
     end
+
+    context "if #default_layout is" do
+      context "nil" do
+        before {
+          room_options.update_attributes(:default_layout => nil)
+          BigBlueButton::BigBlueButtonConfigXml.any_instance
+            .should_not_receive(:set_attribute)
+            .with('layout', 'defaultLayout', anything, anything)
+        }
+        it("doesn't set the property in the xml") { room_options.set_on_config_xml(config_xml) }
+      end
+
+      context "empty string" do
+        before {
+          room_options.update_attributes(:default_layout => "")
+          BigBlueButton::BigBlueButtonConfigXml.any_instance
+            .should_not_receive(:set_attribute)
+            .with('layout', 'defaultLayout', anything, anything)
+        }
+        it("doesn't set the property in the xml") { room_options.set_on_config_xml(config_xml) }
+      end
+    end
+
   end
 
   describe "is_modified?" do

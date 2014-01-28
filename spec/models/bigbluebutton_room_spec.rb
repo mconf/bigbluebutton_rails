@@ -596,8 +596,10 @@ describe BigbluebuttonRoom do
         context "and the xml generated is not equal the default one" do
           before {
             room.room_options.should_receive(:set_on_config_xml)
-              .with(config_xml).and_return(true)
-            mocked_api.should_receive(:set_config_xml).and_return('fake-token')
+              .with(config_xml).and_return('fake-config-xml')
+            mocked_api.should_receive(:set_config_xml)
+              .with(room.meetingid, 'fake-config-xml')
+              .and_return('fake-token')
           }
           it("returns the token generated") { room.fetch_new_token.should eql('fake-token') }
         end
@@ -619,7 +621,6 @@ describe BigbluebuttonRoom do
           mocked_api.should_not_receive(:get_default_config_xml)
           mocked_api.should_not_receive(:set_config_xml)
         }
-
         it("returns nil") { room.fetch_new_token.should be_nil }
       end
     end

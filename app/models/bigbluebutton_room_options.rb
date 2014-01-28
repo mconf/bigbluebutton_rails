@@ -17,7 +17,9 @@ class BigbluebuttonRoomOptions < ActiveRecord::Base
   # xml (string):: The config.xml in which the attributes will be set
   def set_on_config_xml(xml)
     config_xml = BigBlueButton::BigBlueButtonConfigXml.new(xml)
-    config_xml.set_attribute("layout", "defaultLayout", self.default_layout, false)
+    unless self.default_layout.blank?
+      config_xml.set_attribute("layout", "defaultLayout", self.default_layout, false)
+    end
     if config_xml.is_modified?
       config_xml.as_string
     else

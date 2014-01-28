@@ -321,8 +321,8 @@ class BigbluebuttonRoom < ActiveRecord::Base
 
       # set the options on the XML
       # returns true if something was changed
-      xml_changed = self.room_options.set_on_config_xml(config_xml)
-      if xml_changed
+      config_xml = self.room_options.set_on_config_xml(config_xml)
+      if config_xml
 
         # get the new token for the room, and return it
         self.server.api.set_config_xml(self.meetingid, config_xml)
