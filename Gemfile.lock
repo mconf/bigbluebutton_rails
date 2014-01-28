@@ -6,7 +6,7 @@ GIT
 
 GIT
   remote: git@github.com:mconf/bigbluebutton-api-ruby.git
-  revision: 54f002c0ef81570e9c02d2fef8abf83132422bc2
+  revision: ca187cd09c260e18cf0c9b7a11963a492f9014a0
   branch: 1129-bbb081
   specs:
     bigbluebutton-api-ruby (1.2.0)

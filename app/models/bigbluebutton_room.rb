@@ -302,8 +302,8 @@ class BigbluebuttonRoom < ActiveRecord::Base
 
   # Gets a 'configToken' to use when joining the room.
   # Returns a string with the token generated or nil if there's no need
-  # for a token (the options set in the room are the default options) or
-  # if an error occurred.
+  # for a token (the options set in the room are the default options or there
+  # are no options set in the room) or if an error occurred.
   #
   # The entire process consists in these steps:
   # * Go to the server get the default config.xml;
@@ -313,22 +313,25 @@ class BigbluebuttonRoom < ActiveRecord::Base
   #
   # Triggers API call: <tt>getDefaultConfigXML</tt>.
   # Triggers API call: <tt>setConfigXML</tt>.
-  #
-  # TODO: if there's no option set in the options model, should return nil
-  # TODO: if the XML generated is exactly the same as the default, should return nil
   def fetch_new_token
-    # get the XML from API and parse it
-    config_xml = self.server.api.get_default_config_xml
-    config_xml = BigBlueButton::BigBlueButtonConfigXml.new(config_xml)
+    if self.room_options.is_modified?
 
-    # set the new value of default layout on the XML
-    # TODO: add a method in BigbluebuttonRoomOptions to set everything from the model
-    #   in a config.xml, will make it easier when more options are added
-    config_xml.set_attribute("layout", "defaultLayout", self.default_layout, false)
+      # get the default XML we will use to create a new one
+      config_xml = self.server.api.get_default_config_xml
 
-    # get the new token for the room, and return it
-    token = self.server.api.set_config_xml(self.meetingid, config_xml)
-    return token
+      # set the options on the XML
+      # returns true if something was changed
+      xml_changed = self.room_options.set_on_config_xml(config_xml)
+      if xml_changed
+
+        # get the new token for the room, and return it
+        self.server.api.set_config_xml(self.meetingid, config_xml)
+      else
+        nil
+      end
+    else
+      nil
+    end
   end
 
   protected

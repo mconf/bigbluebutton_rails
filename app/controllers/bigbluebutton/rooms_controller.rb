@@ -332,8 +332,8 @@ class Bigbluebutton::RoomsController < ApplicationController
       end
 
       # gets the token with the configurations for this user/room
-      token = @room.fetch_new_token()
-      options = if token.nil? then {} else { configToken: token } end
+      token = @room.fetch_new_token
+      options = if token.nil? then {} else { :configToken => token } end
 
       # room created and running, try to join it
       url = @room.join_url(username, role, nil, options)

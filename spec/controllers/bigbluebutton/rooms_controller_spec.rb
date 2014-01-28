@@ -47,10 +47,12 @@ describe Bigbluebutton::RoomsController do
       room.server = mocked_server
       controller.stub(:bigbluebutton_user) { user }
       controller.should_receive(:bigbluebutton_role).and_return(:moderator)
-      controller.should_receive(:join_bigbluebutton_room_url).with(room, :mobile => '1').
-        and_return("http://test.com/join/url?mobile=1")
-      mocked_api.should_receive(:join_meeting_url).with(room.meetingid, user.name, room.moderator_password).
-        and_return("bigbluebutton://test.com/open/url/for/qrcode")
+      controller.should_receive(:join_bigbluebutton_room_url)
+        .with(room, :mobile => '1')
+        .and_return("http://test.com/join/url?mobile=1")
+      mocked_api.should_receive(:join_meeting_url)
+        .with(room.meetingid, user.name, room.moderator_password, anything)
+        .and_return("bigbluebutton://test.com/open/url/for/qrcode")
     }
     before(:each) { get :join_mobile, :id => room.to_param }
     it { should respond_with(:success) }
@@ -132,7 +134,7 @@ describe Bigbluebutton::RoomsController do
       let(:allowed_params) {
         [ :name, :server_id, :meetingid, :attendee_password, :moderator_password, :welcome_msg,
           :private, :logout_url, :dial_number, :voice_bridge, :max_participants, :owner_id,
-          :owner_type, :external, :param, :record, :duration,
+          :owner_type, :external, :param, :record, :duration, :default_layout,
           :metadata_attributes => [ :id, :name, :content, :_destroy, :owner_id ] ]
       }
 
@@ -216,7 +218,7 @@ describe Bigbluebutton::RoomsController do
       let(:allowed_params) {
         [ :name, :server_id, :meetingid, :attendee_password, :moderator_password, :welcome_msg,
           :private, :logout_url, :dial_number, :voice_bridge, :max_participants, :owner_id,
-          :owner_type, :external, :param, :record, :duration,
+          :owner_type, :external, :param, :record, :duration, :default_layout,
           :metadata_attributes => [ :id, :name, :content, :_destroy, :owner_id ] ]
       }
       it {
@@ -509,9 +511,9 @@ describe Bigbluebutton::RoomsController do
       hash = { :name => "Elftor", :password => room.attendee_password }
       controller.stub(:bigbluebutton_user).and_return(user)
       mocked_api.should_receive(:is_meeting_running?).and_return(true)
-      mocked_api.should_receive(:join_meeting_url).
-        with(room.meetingid, user.name, room.attendee_password). # here's the validation
-        and_return("http://test.com/attendee/join")
+      mocked_api.should_receive(:join_meeting_url)
+        .with(room.meetingid, user.name, room.attendee_password, anything) # here's the validation
+        .and_return("http://test.com/attendee/join")
       post :auth, :id => room.to_param, :user => hash
     end
 
@@ -528,9 +530,9 @@ describe Bigbluebutton::RoomsController do
       controller.stub(:bigbluebutton_role) { :attendee }
       hash = { :name => "Elftor", :password => nil }
       mocked_api.should_receive(:is_meeting_running?).and_return(true)
-      mocked_api.should_receive(:join_meeting_url).
-        with(anything, anything, room.attendee_password).
-        and_return("http://test.com/attendee/join")
+      mocked_api.should_receive(:join_meeting_url)
+        .with(anything, anything, room.attendee_password, anything)
+        .and_return("http://test.com/attendee/join")
       post :auth, :id => room.to_param, :user => hash
       should respond_with(:redirect)
       should redirect_to("http://test.com/attendee/join")
@@ -654,6 +656,7 @@ describe Bigbluebutton::RoomsController do
         mocked_server.should_receive(:fetch_meetings)
         mocked_server.should_receive(:meetings).and_return(meetings)
         new_room.should_receive(:fetch_is_running?)
+        new_room.should_receive(:fetch_new_token)
         new_room.should_receive(:is_running?).and_return(true)
         new_room.should_receive(:join_url)
       }
@@ -892,6 +895,7 @@ describe Bigbluebutton::RoomsController do
           .and_return(true)
         room.should_receive(:create_meeting)
           .with(user.name, user.id, controller.request)
+        room.should_receive(:fetch_new_token).and_return(nil)
         room.should_receive(:join_url).and_return("http://test.com/join/url")
       }
       before(:each) { get :join, :id => room.to_param }
@@ -918,8 +922,9 @@ describe Bigbluebutton::RoomsController do
         room.should_receive(:fetch_is_running?)
         room.should_receive(:is_running?).and_return(true)
         room.should_not_receive(:create_meeting)
+        room.should_receive(:fetch_new_token).and_return(nil)
         room.should_receive(:join_url)
-          .with(user.name, :attendee)
+          .with(user.name, :attendee, anything, anything)
           .and_return("http://test.com/join/url")
       }
 
@@ -942,13 +947,42 @@ describe Bigbluebutton::RoomsController do
       end
     end
 
+    context "gets a new config token before joining" do
+      before {
+        room.should_receive(:fetch_is_running?)
+        room.should_receive(:is_running?).and_return(true)
+        room.should_not_receive(:create_meeting)
+      }
+
+      context "if the token is not nil" do
+        before(:each) {
+          room.should_receive(:fetch_new_token).and_return('fake-token')
+          room.should_receive(:join_url)
+            .with(user.name, :attendee, nil, hash_including(:configToken  => 'fake-token'))
+            .and_return("http://test.com/join/url")
+        }
+        it("uses the token") { get :join, :id => room.to_param }
+      end
+
+      context "if the token is nil" do
+        before(:each) {
+          room.should_receive(:fetch_new_token).and_return(nil)
+          room.should_receive(:join_url)
+            .with(user.name, :attendee, nil, {})
+            .and_return("http://test.com/join/url")
+        }
+        it("does not use the token") { get :join, :id => room.to_param }
+      end
+    end
+
     context "when the user doesn't have permission to join the meeting" do
       before {
         room.should_receive(:fetch_is_running?)
         room.should_receive(:is_running?).and_return(true)
         room.should_not_receive(:create_meeting)
+        room.should_receive(:fetch_new_token).and_return(nil)
         room.should_receive(:join_url)
-          .with(user.name, :attendee)
+          .with(user.name, :attendee, anything, anything)
           .and_return(nil)
       }
       before(:each) { get :join, :id => room.to_param }
@@ -962,6 +996,7 @@ describe Bigbluebutton::RoomsController do
         room.should_receive(:fetch_is_running?)
         room.should_receive(:is_running?).and_return(true)
         room.should_not_receive(:create_meeting)
+        room.should_receive(:fetch_new_token).and_return(nil)
         room.should_receive(:join_url)
           .and_return("http://test.com/join/url")
       }

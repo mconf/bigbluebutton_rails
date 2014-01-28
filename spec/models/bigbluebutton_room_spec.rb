@@ -19,6 +19,13 @@ describe BigbluebuttonRoom do
 
   it { should have_many(:metadata).dependent(:destroy) }
 
+  it { should have_one(:room_options).dependent(:destroy) }
+
+  it { should delegate(:default_layout).to(:room_options) }
+  it { should delegate(:"default_layout=").to(:room_options) }
+
+  it { should delegate(:get_available_layouts).to(:room_options) }
+
   it { should validate_presence_of(:meetingid) }
   it { should validate_uniqueness_of(:meetingid) }
   it { should ensure_length_of(:meetingid).is_at_least(1).is_at_most(100) }
@@ -153,6 +160,22 @@ describe BigbluebuttonRoom do
           room2 = BigbluebuttonRoom.new # triggers the random_number calls
           room2.voice_bridge.should == "70000"
         end
+      end
+    end
+  end
+
+  describe "#create_room_options" do
+    it "is called when the room is created" do
+      room = FactoryGirl.create(:bigbluebutton_room)
+      room.room_options.should_not be_nil
+      room.room_options.should be_an_instance_of(BigbluebuttonRoomOptions)
+    end
+
+    context "creates #room_options" do
+      let(:room) { FactoryGirl.create(:bigbluebutton_room) }
+
+      it "with the room associated to it" do
+        room.room_options.room.should eql(room)
       end
     end
   end
@@ -496,6 +519,7 @@ describe BigbluebuttonRoom do
 
     describe "#join_url" do
       let(:username) { Forgery(:name).full_name }
+      let(:join_options) { { :any_key => 'any value' } }
 
       it { should respond_to(:join_url) }
 
@@ -504,11 +528,11 @@ describe BigbluebuttonRoom do
         before {
           room.should_receive(:require_server)
           mocked_api.should_receive(:join_meeting_url)
-            .with(room.meetingid, username, room.moderator_password)
+            .with(room.meetingid, username, room.moderator_password, join_options)
             .and_return(expected)
           room.server = mocked_server
         }
-        subject { room.join_url(username, :moderator) }
+        subject { room.join_url(username, :moderator, nil, join_options) }
         it("returns the correct url") { subject.should eq(expected) }
       end
 
@@ -517,11 +541,11 @@ describe BigbluebuttonRoom do
         before {
           room.should_receive(:require_server)
           mocked_api.should_receive(:join_meeting_url)
-            .with(room.meetingid, username, room.attendee_password)
+            .with(room.meetingid, username, room.attendee_password, join_options)
             .and_return(expected)
           room.server = mocked_server
         }
-        subject { room.join_url(username, :attendee) }
+        subject { room.join_url(username, :attendee, nil, join_options) }
         it("returns the correct url") { subject.should eq(expected) }
       end
 
@@ -530,22 +554,73 @@ describe BigbluebuttonRoom do
         before {
           room.should_receive(:require_server)
           mocked_api.should_receive(:join_meeting_url)
-            .with(room.meetingid, username, 'pass')
+            .with(room.meetingid, username, 'pass', join_options)
             .and_return(expected)
           room.server = mocked_server
         }
-        subject { room.join_url(username, nil, 'pass') }
+        subject { room.join_url(username, nil, 'pass', join_options) }
         it("returns the correct url") { subject.should eq(expected) }
       end
 
       context "strips the url before returning it" do
         before {
           room.should_receive(:require_server)
-          mocked_api.should_receive(:join_meeting_url).and_return(" my.url/with/spaces \t ")
+          mocked_api.should_receive(:join_meeting_url)
+            .and_return(" my.url/with/spaces \t ")
           room.server = mocked_server
         }
         subject { room.join_url(username, :moderator) }
         it("returns the url stripped") { subject.should eq('my.url/with/spaces') }
+      end
+    end
+
+    describe "#fetch_new_token" do
+      let(:config_xml) {
+        '<config>
+           <localeversion suppressWarning="false">0.8</localeversion>
+           <version>0.8</version>
+           <layout showLogButton="false" showVideoLayout="false" showResetLayout="false" defaultLayout="Webinar" showToolbar="true" showFooter="true" showMeetingName="true" showHelpButton="true" showLogoutWindow="true" showLayoutTools="true" showNetworkMonitor="true" confirmLogout="true"/>
+           <modules>
+             <module name="LayoutModule" url="http://server.test/client/LayoutModule.swf?v=15" uri="rtmp://server.test/bigbluebutton" layoutConfig="http://server.test/client/conf/layout.xml" enableEdit="true"/>
+           </modules>
+         </config>'
+      }
+
+      context "if room options is modified" do
+        before {
+          room.room_options.should_receive(:is_modified?)
+            .and_return(true)
+          mocked_api.should_receive(:get_default_config_xml).and_return(config_xml)
+        }
+
+        context "and the xml generated is not equal the default one" do
+          before {
+            room.room_options.should_receive(:set_on_config_xml)
+              .with(config_xml).and_return(true)
+            mocked_api.should_receive(:set_config_xml).and_return('fake-token')
+          }
+          it("returns the token generated") { room.fetch_new_token.should eql('fake-token') }
+        end
+
+        context "and the xml generated is equal the default one" do
+          before {
+            room.room_options.should_receive(:set_on_config_xml)
+              .with(config_xml).and_return(false)
+            mocked_api.should_not_receive(:set_config_xml)
+          }
+          it("returns nil") { room.fetch_new_token.should be_nil }
+        end
+      end
+
+      context "if room options is not modified" do
+        before {
+          room.room_options.should_receive(:is_modified?)
+            .and_return(false)
+          mocked_api.should_not_receive(:get_default_config_xml)
+          mocked_api.should_not_receive(:set_config_xml)
+        }
+
+        it("returns nil") { room.fetch_new_token.should be_nil }
       end
     end
 
@@ -762,7 +837,6 @@ describe BigbluebuttonRoom do
         it("sets start_time") { subject.start_time.utc.to_i.should eq(room.start_time.utc.to_i) }
       end
     end
-
   end
 
   describe "#finish_meetings" do
