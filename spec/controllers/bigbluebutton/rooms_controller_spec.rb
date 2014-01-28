@@ -41,25 +41,45 @@ describe Bigbluebutton::RoomsController do
   describe "#join_mobile" do
     let(:user) { FactoryGirl.build(:user) }
     let(:room) { FactoryGirl.create(:bigbluebutton_room) }
+
     before {
       controller.should_receive(:set_request_headers)
       mock_server_and_api
       room.server = mocked_server
       controller.stub(:bigbluebutton_user) { user }
       controller.should_receive(:bigbluebutton_role).and_return(:moderator)
-      controller.should_receive(:join_bigbluebutton_room_url)
-        .with(room, :mobile => '1')
-        .and_return("http://test.com/join/url?mobile=1")
-      mocked_api.should_receive(:join_meeting_url)
-        .with(room.meetingid, user.name, room.moderator_password, anything)
-        .and_return("bigbluebutton://test.com/open/url/for/qrcode")
     }
-    before(:each) { get :join_mobile, :id => room.to_param }
-    it { should respond_with(:success) }
-    it { should assign_to(:room).with(room) }
-    it { should assign_to(:join_url).with("bigbluebutton://test.com/join/url?mobile=1") }
-    it { should assign_to(:qrcode_url).with("bigbluebutton://test.com/open/url/for/qrcode") }
-    it { should render_template(:join_mobile) }
+
+    context "when using http" do
+      before {
+        controller.should_receive(:join_bigbluebutton_room_url)
+          .with(room, :mobile => '1')
+          .and_return("http://test.com/join/url?mobile=1")
+        mocked_api.should_receive(:join_meeting_url)
+          .with(room.meetingid, user.name, room.moderator_password, anything)
+          .and_return("http://test.com/open/url/for/qrcode")
+      }
+      before(:each) { get :join_mobile, :id => room.to_param }
+      it("is successful") { should respond_with(:success) }
+      it("assigns room") { should assign_to(:room).with(room) }
+      it("assigns join_url") { should assign_to(:join_url).with("http://test.com/join/url?mobile=1") }
+      it("assigns qrcode_url") { should assign_to(:qrcode_url).with("bigbluebutton://test.com/open/url/for/qrcode") }
+      it { should render_template(:join_mobile) }
+    end
+
+    context "when using another protocol" do
+      before {
+        controller.should_receive(:join_bigbluebutton_room_url)
+          .with(room, :mobile => '1')
+          .and_return("any://test.com/join/url?mobile=1")
+        mocked_api.should_receive(:join_meeting_url)
+          .with(room.meetingid, user.name, room.moderator_password, anything)
+          .and_return("any://test.com/open/url/for/qrcode")
+      }
+      before(:each) { get :join_mobile, :id => room.to_param }
+      it("assigns join_url without changing the protocol") { should assign_to(:join_url).with("any://test.com/join/url?mobile=1") }
+      it("assigns qrcode_url changing the protocol") { should assign_to(:qrcode_url).with("bigbluebutton://test.com/open/url/for/qrcode") }
+    end
   end
 
   describe "#create" do
@@ -997,13 +1017,27 @@ describe Bigbluebutton::RoomsController do
         room.should_receive(:is_running?).and_return(true)
         room.should_not_receive(:create_meeting)
         room.should_receive(:fetch_new_token).and_return(nil)
-        room.should_receive(:join_url)
-          .and_return("http://test.com/join/url")
       }
-      let(:mobile_flag) { true }
-      before(:each) { get :join, :id => room.to_param, :mobile => true }
-      it { should respond_with(:redirect) }
-      it { should redirect_to("bigbluebutton://test.com/join/url") }
+
+      context "and the url uses 'http'" do
+        before {
+          room.should_receive(:join_url)
+            .and_return("http://test.com/join/url")
+        }
+        before(:each) { get :join, :id => room.to_param, :mobile => true }
+        it { should respond_with(:redirect) }
+        it { should redirect_to("bigbluebutton://test.com/join/url") }
+      end
+
+      context "and the url a protocol other than 'http'" do
+        before {
+          room.should_receive(:join_url)
+            .and_return("any://test.com/join/url")
+        }
+        before(:each) { get :join, :id => room.to_param, :mobile => true }
+        it { should respond_with(:redirect) }
+        it { should redirect_to("bigbluebutton://test.com/join/url") }
+      end
     end
 
     context "when an exception is thrown" do
