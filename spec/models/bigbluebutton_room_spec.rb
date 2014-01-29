@@ -164,19 +164,30 @@ describe BigbluebuttonRoom do
     end
   end
 
-  describe "#create_room_options" do
-    it "is called when the room is created" do
+  describe "#room_options" do
+    it "is created when the room is created" do
       room = FactoryGirl.create(:bigbluebutton_room)
       room.room_options.should_not be_nil
       room.room_options.should be_an_instance_of(BigbluebuttonRoomOptions)
+      room.room_options.room.should eql(room)
     end
 
-    context "creates #room_options" do
-      let(:room) { FactoryGirl.create(:bigbluebutton_room) }
-
-      it "with the room associated to it" do
-        room.room_options.room.should eql(room)
-      end
+    context "if it was not created, is built when accessed" do
+      before(:each) {
+        @room = FactoryGirl.create(:bigbluebutton_room)
+        @room.room_options.destroy
+        @room.reload
+        @room.room_options # access it so the new obj is created
+      }
+      it { @room.room_options.should_not be_nil }
+      it("is not promptly saved") {
+        @room.room_options.new_record?.should be_true
+      }
+      it("is saved when the room is saved") {
+        @room.save!
+        @room.reload
+        @room.room_options.new_record?.should be_false
+      }
     end
   end
 

@@ -15,11 +15,11 @@ class BigbluebuttonRoom < ActiveRecord::Base
            :dependent => :destroy,
            :inverse_of => :owner
 
-  has_one  :room_options,
-           :class_name => 'BigbluebuttonRoomOptions',
-           :foreign_key => 'room_id',
-           :autosave => true,
-           :dependent => :destroy
+  has_one :room_options,
+          :class_name => 'BigbluebuttonRoomOptions',
+          :foreign_key => 'room_id',
+          :autosave => true,
+          :dependent => :destroy
 
   delegate :default_layout, :default_layout=, :to => :room_options
   delegate :get_available_layouts, :to => :room_options
@@ -72,6 +72,13 @@ class BigbluebuttonRoom < ActiveRecord::Base
   # in all GET/POST requests to a webconf server.
   # Currently used to send the client's IP to the load balancer.
   attr_accessor :request_headers
+
+  # In case there's no room_options created yet, build one
+  # (happens usually when an old database is migrated).
+  def room_options_with_initialize
+    room_options_without_initialize || build_room_options
+  end
+  alias_method_chain :room_options, :initialize
 
   # Convenience method to access the attribute <tt>running</tt>
   def is_running?
