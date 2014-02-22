@@ -13,7 +13,6 @@ if RUBY_VERSION >= "1.9"
 end
 
 require File.expand_path("../rails_app/config/environment", __FILE__)
-require "rails/test_help"
 require "rspec/rails"
 require 'shoulda/matchers/integrations/rspec'
 require "shoulda-matchers"
