@@ -31,7 +31,6 @@ describe BigbluebuttonRails::Generators::ViewsGenerator do
   def assert_files(assert_exists=true, scope="bigbluebutton")
     files = [
       "app/views/#{scope}/rooms/edit.html.erb",
-      "app/views/#{scope}/rooms/external.html.erb",
       "app/views/#{scope}/rooms/_form.html.erb",
       "app/views/#{scope}/rooms/index.html.erb",
       "app/views/#{scope}/rooms/invite.html.erb",

@@ -605,185 +605,6 @@ describe Bigbluebutton::RoomsController do
     end
   end
 
-  describe "#external" do
-    let(:server) { FactoryGirl.create(:bigbluebutton_server) }
-    let(:meetingid) { 'my-meeting-id' }
-
-    context "on success" do
-      before {
-        controller.stub(:bigbluebutton_user).and_return(nil)
-        BigbluebuttonServer.stub(:find).and_return(server)
-      }
-      before(:each) { get :external, :meeting => meetingid, :server_id => server.id }
-      it { should respond_with(:success) }
-      it { should render_template(:external) }
-      it { should assign_to(:server).with(server) }
-      it { should assign_to(:room).with_kind_of(BigbluebuttonRoom) }
-      it { assigns(:room).meetingid.should be(meetingid) }
-      it { assigns(:room).server_id.should be(server.id) }
-    end
-
-    context "when params[:meeting].blank?" do
-      context "without :redir_url" do
-        before(:each) { get :external, :server_id => server.id }
-        it { should respond_with(:redirect) }
-        it { should redirect_to bigbluebutton_rooms_path }
-        it { should set_the_flash.to(I18n.t('bigbluebutton_rails.rooms.errors.external.blank_meetingid')) }
-      end
-
-      context "with :redir_url" do
-        before(:each) { get :external, :server_id => server.id, :redir_url => '/any'}
-        it { should redirect_to '/any' }
-      end
-    end
-
-    context "when params[:server_id]" do
-      it "is blank" do
-        lambda {
-            get :external, :meeting => meetingid
-        }.should raise_error(ActiveRecord::RecordNotFound)
-      end
-
-      it "is invalid" do
-        lambda {
-            get :external, :meeting => meetingid, :server_id => server.id + 10
-        }.should raise_error(ActiveRecord::RecordNotFound)
-      end
-    end
-  end # #external
-
-  describe "#external_auth" do
-    let(:user) { FactoryGirl.build(:user) }
-    let(:user_hash) { { :name => "Any Name", :password => new_room.attendee_password } }
-    let(:meetingid) { "my-meeting-id" }
-    let(:new_room) { BigbluebuttonRoom.new(:meetingid => meetingid,
-                                           :attendee_password => Forgery(:basic).password,
-                                           :moderator_password => Forgery(:basic).password,
-                                           :server => mocked_server) }
-    let(:meetings) { [ new_room ] }
-    before { controller.stub(:bigbluebutton_user).and_return(nil) }
-
-    it "shows error when params[:server_id] is invalid" do
-      lambda {
-        post :external_auth, :meeting => new_room.meetingid, :server_id => nil, :user => user_hash
-      }.should raise_error(ActiveRecord::RecordNotFound)
-    end
-
-    context "assigns @server and @room if params[:meeting] and params[:user] and params[:server_id]" do
-      before {
-        controller.should_receive(:set_request_headers)
-        mock_server_and_api
-        mocked_server.should_receive(:fetch_meetings)
-        mocked_server.should_receive(:meetings).and_return(meetings)
-        new_room.should_receive(:fetch_is_running?)
-        new_room.should_receive(:fetch_new_token)
-        new_room.should_receive(:is_running?).and_return(true)
-        new_room.should_receive(:join_url)
-      }
-      before(:each) { post :external_auth, :meeting => new_room.meetingid, :server_id => mocked_server.id, :user => user_hash }
-      it { should assign_to(:room).with(new_room) }
-      it { should assign_to(:server).with(mocked_server) }
-    end
-
-    context "shows error" do
-      let(:http_referer) { bigbluebutton_server_path(mocked_server) }
-      before {
-        controller.should_receive(:set_request_headers)
-        mock_server_and_api
-        request.env["HTTP_REFERER"] = http_referer
-      }
-
-      context "if not params[:meeting]" do
-        let(:message) { I18n.t('bigbluebutton_rails.rooms.errors.external.wrong_params') }
-        before(:each) { post :external_auth, :meeting => nil, :server_id => mocked_server.id, :user => user_hash }
-        it { should assign_to(:room).with(nil) }
-        it { should respond_with(:redirect) }
-        it { should redirect_to(http_referer) }
-        it { should set_the_flash.to(message) }
-      end
-
-      context "if not params[:user]" do
-        let(:message) { I18n.t('bigbluebutton_rails.rooms.errors.external.wrong_params') }
-        before(:each) { post :external_auth, :meeting => new_room.meetingid, :server_id => mocked_server.id, :user => nil }
-        it { should assign_to(:room).with(nil) }
-        it { should respond_with(:redirect) }
-        it { should redirect_to(http_referer) }
-        it { should set_the_flash.to(message) }
-      end
-    end
-
-    context "with @server and @room assigned" do
-      before {
-        controller.should_receive(:set_request_headers)
-        mock_server_and_api
-        mocked_server.should_receive(:fetch_meetings)
-        mocked_server.should_receive(:meetings).and_return(meetings)
-      }
-
-      it "block access if bigbluebutton_role returns nil" do
-        controller.stub(:bigbluebutton_role) { nil }
-        lambda {
-          post :external_auth, :meeting => new_room.meetingid, :server_id => mocked_server.id, :user => user_hash
-        }.should raise_error(BigbluebuttonRails::RoomAccessDenied)
-      end
-
-      context "validates user input and shows error" do
-        before(:each) { post :external_auth, :meeting => new_room.meetingid, :server_id => mocked_server.id, :user => user_hash }
-
-        context "when name is not set" do
-          let(:user_hash) { { :password => room.moderator_password } }
-          it { should respond_with(:unauthorized) }
-          it { should assign_to(:room).with(new_room) }
-          it { should render_template(:external) }
-          it { should set_the_flash.to(I18n.t('bigbluebutton_rails.rooms.errors.auth.failure')) }
-        end
-
-        context "when name is empty not set" do
-          let(:user_hash) { { :password => room.moderator_password, :name => "" } }
-          it { should respond_with(:unauthorized) }
-          it { should assign_to(:room).with(new_room) }
-          it { should render_template(:external) }
-          it { should set_the_flash.to(I18n.t('bigbluebutton_rails.rooms.errors.auth.failure')) }
-        end
-
-        context "when the password is wrong" do
-          let(:user_hash) { { :name => "Elftor", :password => nil } }
-          it { should respond_with(:unauthorized) }
-          it { should assign_to(:room).with(new_room) }
-          it { should render_template(:external) }
-          it { should set_the_flash.to(I18n.t('bigbluebutton_rails.rooms.errors.auth.failure')) }
-        end
-      end
-
-      it "if there's a user logged, should use his name and id" do
-        user = FactoryGirl.build(:user)
-        controller.stub(:bigbluebutton_user).and_return(user)
-        controller.stub(:render) # prevent ActionView::MissingTemplate
-        controller.should_receive(:join_internal)
-          .with(user.name, anything, user.id, anything) # here's the validation
-        post :external_auth, :meeting => new_room.meetingid, :server_id => mocked_server.id, :user => user_hash
-      end
-
-    end
-
-    context "calls #join_internal" do
-      let(:user) { FactoryGirl.build(:user) }
-      before {
-        mock_server_and_api
-        mocked_server.should_receive(:fetch_meetings)
-        mocked_server.should_receive(:meetings).and_return(meetings)
-        controller.stub(:render) # prevent ActionView::MissingTemplate
-        controller.should_receive(:join_internal)
-          .with(user_hash[:name], :attendee, nil, :external)
-      }
-      it { post :external_auth, :meeting => new_room.meetingid,
-                                :server_id => mocked_server.id,
-                                :user => user_hash
-      }
-    end
-
-  end # #external_auth
-
   describe "#fetch_recordings" do
     # setup basic server and API mocks
     before do
@@ -865,21 +686,14 @@ describe Bigbluebutton::RoomsController do
 
   describe "before filter :set_request_headers" do
     let(:headers) { {"x-forwarded-for" => "0.0.0.0"} }
-    before {
-      mock_server_and_api
-    }
-
     let(:make_request) {  }
 
-    # uses any action that triggers this before filter
+    # uses any action that does not trigger this before filter
     # just to make sure the before filter won't break before an action that is not covered
     # by the find_room filter
     context "when @room is nil" do
-      before {
-        controller.should_receive(:set_request_headers)
-        request.env["HTTP_REFERER"] = "/any"
-      }
-      before(:each) { post :external_auth, :server_id => mocked_server.id }
+      before { request.env["HTTP_REFERER"] = "/any" }
+      before(:each) { post :auth, :id => 'invalid' }
       it { should redirect_to("/any") }
     end
 

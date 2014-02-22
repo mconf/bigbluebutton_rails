@@ -197,21 +197,6 @@ module TemplateHelpers
     has_element("a", { :href => bigbluebutton_room_path(room), :"data-method" => 'delete' }) # destroy
   end
 
-  # rooms/external
-  def check_join_external_room(options)
-    room = options[:room] || BigbluebuttonRoom.last
-
-    within(form_selector(external_bigbluebutton_rooms_path, 'post')) do
-      has_element("input#server_id", { :name => 'server_id', :type => 'hidden', :value => room.server_id })
-      has_element("input#meeting", { :name => 'meeting', :type => 'hidden', :value => room.meetingid })
-      has_element("input#user_name", { :name => 'user[name]', :type => 'text' })
-      has_element("input#user_password", { :name => 'user[password]', :type => 'password' })
-      has_element("label", { :for => 'user_name' })
-      has_element("label", { :for => 'user_password' })
-      has_element("input", { :name => 'commit', :type => 'submit' })
-    end
-  end
-
   # rooms/:id/invite
   def check_invite_room(options)
     room = options[:room] || BigbluebuttonRoom.last

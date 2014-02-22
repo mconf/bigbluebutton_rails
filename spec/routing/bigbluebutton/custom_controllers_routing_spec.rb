@@ -81,14 +81,6 @@ describe ActionController do
       should route_to(:controller => "custom_rooms", :action => "destroy", :id => "1")
     }
     it {
-      {:get => "/custom/rooms/external"}.
-      should route_to(:controller => "custom_rooms", :action => "external")
-    }
-    it {
-      {:post => "/custom/rooms/external"}.
-      should route_to(:controller => "custom_rooms", :action => "external_auth")
-    }
-    it {
       {:get => "/custom/rooms/1/join"}.
       should route_to(:controller => "custom_rooms", :action => "join", :id => "1")
     }
@@ -162,7 +154,6 @@ describe ActionController do
       it { new_custom_name_room_path.should == "/custom/rooms/new" }
       it { edit_custom_name_room_path(room).should == "/custom/rooms/#{room.to_param}/edit" }
       it { custom_name_room_path(room).should == "/custom/rooms/#{room.to_param}" }
-      it { external_custom_name_rooms_path.should == "/custom/rooms/external" }
       it { join_custom_name_room_path(room).should == "/custom/rooms/#{room.to_param}/join" }
       it { join_mobile_custom_name_room_path(room).should == "/custom/rooms/#{room.to_param}/join_mobile" }
       it { end_custom_name_room_path(room).should == "/custom/rooms/#{room.to_param}/end" }

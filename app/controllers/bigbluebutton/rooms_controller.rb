@@ -3,11 +3,10 @@ require 'bigbluebutton_api'
 class Bigbluebutton::RoomsController < ApplicationController
   include BigbluebuttonRails::InternalControllerMethods
 
-  before_filter :find_room, :except => [:index, :create, :new, :auth, :external, :external_auth]
-  before_filter :find_server, :only => [:external, :external_auth]
+  before_filter :find_room, :except => [:index, :create, :new, :auth]
 
   # set headers only in actions that might trigger api calls
-  before_filter :set_request_headers, :only => [:join_mobile, :end, :running, :join, :destroy, :auth, :external_auth]
+  before_filter :set_request_headers, :only => [:join_mobile, :end, :running, :join, :destroy, :auth]
 
   respond_to :html, :except => :running
   respond_to :json, :only => [:running, :show, :new, :index, :create, :update]
@@ -164,50 +163,6 @@ class Bigbluebutton::RoomsController < ApplicationController
     end
   end
 
-  # receives :server_id to indicate the server and :meeting to indicate the
-  # MeetingID of the meeting that should be joined
-  def external
-    if params[:meeting].blank?
-      message = t('bigbluebutton_rails.rooms.errors.external.blank_meetingid')
-      redirect_to_using_params bigbluebutton_rooms_path, :notice => message
-    end
-    @room = BigbluebuttonRoom.new(:server => @server, :meetingid => params[:meeting])
-  end
-
-  # Authenticates an user using name and password passed in the params from #external
-  # Uses params[:meeting] to get the meetingID of the target room
-  def external_auth
-    # check :meeting and :user
-    if !params[:meeting].blank? && !params[:user].blank?
-      @server.fetch_meetings
-      @room = @server.meetings.select{ |r| r.meetingid == params[:meeting] }.first
-      message = t('bigbluebutton_rails.rooms.errors.external.inexistent_meeting') if @room.nil?
-    else
-      message = t('bigbluebutton_rails.rooms.errors.external.wrong_params')
-    end
-
-    unless message.nil?
-      @room = nil
-      redirect_to :back, :notice => message
-      return
-    end
-
-    # This is just to check if the room is not blocked, not to get the actual role
-    raise BigbluebuttonRails::RoomAccessDenied.new if bigbluebutton_role(@room).nil?
-
-    # if there's a user logged, use his name instead of the name in the params
-    name = bigbluebutton_user.nil? ? params[:user][:name] : bigbluebutton_user.name
-    id = bigbluebutton_user.nil? ? nil : bigbluebutton_user.id
-    role = @room.user_role(params[:user])
-
-    unless role.nil? or name.nil? or name.empty?
-      join_internal(name, role, id, :external)
-    else
-      flash[:error] = t('bigbluebutton_rails.rooms.errors.auth.failure')
-      render :external, :status => :unauthorized
-    end
-  end
-
   def running
     begin
       @room.fetch_is_running?
@@ -304,10 +259,6 @@ class Bigbluebutton::RoomsController < ApplicationController
 
   def find_room
     @room = BigbluebuttonRoom.find_by_param(params[:id])
-  end
-
-  def find_server
-    @server = BigbluebuttonServer.find(params[:server_id])
   end
 
   def set_request_headers
