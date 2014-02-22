@@ -1,24 +1,25 @@
 = BigBlueButton on Rails
-{<img src="https://secure.travis-ci.org/mconf/bigbluebutton_rails.png?branch=master" alt="Build Status" />}[https://travis-ci.org/mconf/bigbluebutton_rails]
 
 {BigBlueButton}[http://bigbluebutton.org] integration for Ruby on Rails 3.
 
 Features:
 * Allows multiple servers and multiple conference rooms.
 * Full API access using {bigbluebutton-api-ruby}[https://github.com/mconf/bigbluebutton-api-ruby].
-* Easy way to join conferences: simply create a room and call the "join" action.
-* Easy integration with authentication and authorization mechanisms, such as Devise and CanCan.
+* Easy way to join conferences: simply create a room and call the <tt>join</tt> action.
+* Easy integration with authentication and authorization mechanisms, such as {Devise}[https://github.com/plataformatec/devise] and {CanCan}[https://github.com/ryanb/cancan].
 * Support for recordings: meetings can be recorded, the list of recordings retrieved and recordings can be played.
 * Possibility to create private rooms, that require a password to join.
 * Deals with visitors (users that are not logged), allowing (or forbidding) them to join rooms.
-* Random meeting IDs to avoid problems with "end", timeouts and reuse of URLs.
-* Server activity monitor.
-* "On-the-fly" server selection when a meeting is started.
+* Uses static meeting IDs generated as a globally unique identifier (e.g. "36mskja87-029i-lsk9-b96e-98278407e145-1365703324").
+* Server activity monitor that shows what's happening in the server.
+* Stores a registry of meetings that happened and associates them with the recording that was generated for it (if any).
+* Allows rooms to be configured dynamically using the <tt>{config.xml}[https://code.google.com/p/bigbluebutton/wiki/ClientConfiguration]</tt> feature.
 
 Possible future features:
 * Limit the number of users per room and rooms per server.
-* Server administration (modify config.xml, use bbb-conf, etc.).
+* Server administration (use bbb-conf, etc.).
 * Pre-upload of slides.
+* See {TODO.rdoc}[https://github.com/mconf/bigbluebutton_rails/blob/master/TODO.rdoc].
 
 == Supported versions
 
@@ -26,8 +27,8 @@ Possible future features:
 
 The current version of this gem supports <tt>all</tt> the following versions of BigBlueButton:
 
-* 0.81: Altough not all features are supported yet. See {TODO_08}[https://github.com/mconf/bigbluebutton_rails/blob/master/TODO_08].
-* 0.8: Altough not all features are supported yet, such as pre-upload of slides. See {TODO_08}[https://github.com/mconf/bigbluebutton_rails/blob/master/TODO_08].
+* 0.81: Altough not all features are supported yet. (See {TODO.rdoc}[https://github.com/mconf/bigbluebutton_rails/blob/master/TODO.rdoc].)
+* 0.8: Altough not all features are supported yet, such as pre-upload of slides. (See {TODO.rdoc}[https://github.com/mconf/bigbluebutton_rails/blob/master/TODO.rdoc].)
 * 0.7: Including 0.7, 0.71 and 0.71a.
 
 === Ruby
@@ -37,7 +38,7 @@ Tested in rubies:
 * ruby-1.9.3 (p484) *recommended*
 * ruby-1.9.2 (p290)
 
-Use these versions to be sure it will work. Other varieties of 1.9.2 and 1.9.3 should work as well.
+Use these versions to be sure it will work. Other patches of 1.9.2 and 1.9.3 should work as well.
 
 === Rails
 
@@ -204,18 +205,18 @@ For more information see:
 === Updating the list of meetings
 
 Meetings (<tt>BigbluebuttonMeeting</tt> models) in BigbluebuttonRails are instances of meetings that were held in web conference rooms. A meeting is created whenever
-is detected that a user joined a room and that he's the first user. Meetings are never removed, they are kept as a registry of
+the application detects that a user joined a room and that he's the first user. Meetings are never removed, they are kept as a registry of
 what happened in the web conference servers connected to BigbluebuttonRails.
 
 The creating of these objects is done in background using a gem called {resque}[https://github.com/defunkt/resque]. Whenever a user
 clicks in the button to join a meeting, a resque worker is scheduled. This worker will wait for a while until the meeting is created and
 running in the web conference server, and will then create the correponding <tt>BigbluebuttonMeeting</tt> object.
 
-To keep track of meetings, you have to run the resque workers (in development and production):
+To keep track of meetings, you have to run the resque workers (this is needed both in development and in production):
 
   rake resque:work QUEUE='bigbluebutton_rails'
 
-The list of meetigns is also periodically synchronized using cron tasks, as done for the list of recordings (see the section above).
+The list of meetings is also periodically synchronized using cron tasks, as is done for the list of recordings (see the section above).
 
 
 === Example application

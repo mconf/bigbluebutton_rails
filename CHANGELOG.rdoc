@@ -1,16 +1,37 @@
+== 1.4.0 (in development)
+
+To learn how to migrate to 1.4.0 see: https://github.com/mconf/bigbluebutton_rails/wiki/Migrate-to-1.4.0
+
+* New dependencies:
+  * resque: To keep track of meetings that happened.
+  * strong_parameters: To allow controllers to decide which parameters can be modified and which can't. Default in Rails 4, should also be used in Rails 3.
+* With strong_parameters in all controllers now the application can decide which parameters can be accessed and which can't. You can have different logics for different types of users.
+* Use <tt>params[:redir_url]</tt> (if present) to redirect the user to a custom URL in all actions where possible. This can be set by the application to redirect the user to a custom location after updating a model, for instance.
+* Register meetings that happened: new model BigbluebuttonMeeting that stores instances of meetings that happened in a room. Uses resque to monitor when meetings started. They are also associated with recordings, so the application can show a registry of meetings that happened and their respective recording.
+* MySQL as a default database (was sqlite).
+* First logic layout to set a custom config.xml when joining a room:
+  * Every room has an associated BigbluebuttonRoomOptions model;
+  * This model contains custom options that will be set in the config.xml when a user joins the associated room;
+  * When the user joins, the library will get the default config.xml from the server, modify it according to the BigbluebuttonRoomOptions, and set it on the server to use it in the <tt>join</tt> API call;
+  * Currently the only parameter that can be customized is the <tt>default layout</tt>.
+* Fixed the mobile urls generated in <tt>join_mobile</tt>.
+* Updated ruby to 1.9.3-p484.
+
 == 1.3.0
 
-* To learn how to migrate to 1.3.0 see: https://github.com/mconf/bigbluebutton_rails/wiki/Migrate-to-1.3.0
+To learn how to migrate to 1.3.0 see: https://github.com/mconf/bigbluebutton_rails/wiki/Migrate-to-1.3.0
 
+* New dependency:
+  * whenever: To configure cron to trigger resque.
 * Support for recordings. Details at https://github.com/mconf/bigbluebutton_rails/wiki/How-Recordings-Work. #459.
 * Updated most of the dependencies to their latest version.
 * Tested against Rails 3.2 (was Rails 3.0).
-* New option `:as` in router helpers (more at https://github.com/mconf/bigbluebutton_rails/wiki/How-to%3A-Routes)
-* New option `:only` in router helpers (more at https://github.com/mconf/bigbluebutton_rails/wiki/How-to%3A-Routes)
-* Set the HTTP header "x-forwarded-for" with the IP of the client so servers can know who is creating/joining a meeting, for example.
+* New option <tt>:as</tt> in router helpers (more at https://github.com/mconf/bigbluebutton_rails/wiki/How-to%3A-Routes)
+* New option <tt>:only</tt> in router helpers (more at https://github.com/mconf/bigbluebutton_rails/wiki/How-to%3A-Routes)
+* Set the HTTP header <tt>x-forwarded-for</tt> with the IP of the client so servers can know who is creating/joining a meeting, for example.
 * Removed assets (jquery, image) from the generator and from the gem.
-* Removed the option to randomize meeting IDs, now they are fixed and generated as a globally unique meeting ID (`#{SecureRandom.uuid}-#{Time.now.to_i}`). #734, #735.
-* Added logic to control who can create meetings (method called `bigbluebutton_can_create?`).
+* Removed the option to randomize meeting IDs, now they are fixed and generated as a globally unique meeting ID (<tt>"#{SecureRandom.uuid}-#{Time.now.to_i}"</tt>). #734, #735.
+* Added logic to control who can create meetings (method called <tt>bigbluebutton_can_create?</tt>).
 
 == 1.2.0
 
