@@ -26,6 +26,7 @@ Possible future features:
 
 The current version of this gem supports <tt>all</tt> the following versions of BigBlueButton:
 
+* 0.81: Altough not all features are supported yet. See {TODO_08}[https://github.com/mconf/bigbluebutton_rails/blob/master/TODO_08].
 * 0.8: Altough not all features are supported yet, such as pre-upload of slides. See {TODO_08}[https://github.com/mconf/bigbluebutton_rails/blob/master/TODO_08].
 * 0.7: Including 0.7, 0.71 and 0.71a.
 
@@ -33,8 +34,8 @@ The current version of this gem supports <tt>all</tt> the following versions of 
 
 Tested in rubies:
 
+* ruby-1.9.3 (p484) *recommended*
 * ruby-1.9.2 (p290)
-* ruby-1.9.3 (p194)
 
 Use these versions to be sure it will work. Other varieties of 1.9.2 and 1.9.3 should work as well.
 
