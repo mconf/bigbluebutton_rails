@@ -16,6 +16,7 @@ To learn how to migrate to 1.4.0 see: https://github.com/mconf/bigbluebutton_rai
   * Currently the only parameter that can be customized is the <tt>default layout</tt>.
 * Fixed the mobile urls generated in <tt>join_mobile</tt>.
 * Updated ruby to 1.9.3-p484.
+* New controller method <tt>bigbluebutton_create_options</tt>. Can return a hash of parameters that will override the parameters in the database when sending a create call. Can be used to force some options when creating a meeting without needing to save it to the database.
 
 == 1.3.0
 

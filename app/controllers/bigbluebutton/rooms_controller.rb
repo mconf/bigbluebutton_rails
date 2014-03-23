@@ -102,7 +102,7 @@ class Bigbluebutton::RoomsController < ApplicationController
     end
   end
 
-  # Used by logged users to join public rooms.
+  # Used by logged users to join rooms.
   def join
     @user_role = bigbluebutton_role(@room)
     if @user_role.nil?
@@ -270,10 +270,10 @@ class Bigbluebutton::RoomsController < ApplicationController
   def join_internal(username, role, id, wait_action)
     begin
       # first check if we have to create the room and if the user can do it
-      @room.fetch_is_running?
-      unless @room.is_running?
+      unless @room.fetch_is_running?
         if bigbluebutton_can_create?(@room, role)
-          @room.create_meeting(username, id, request)
+          user_opts = bigbluebutton_create_options(@room)
+          @room.create_meeting(bigbluebutton_user, request, user_opts)
         else
           flash[:error] = t('bigbluebutton_rails.rooms.errors.auth.cannot_create')
           render wait_action, :status => :unauthorized

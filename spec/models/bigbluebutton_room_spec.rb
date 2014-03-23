@@ -444,15 +444,31 @@ describe BigbluebuttonRoom do
           it("and do not save the record") { new_room.new_record?.should be_true }
         end
 
-        context "passing the user's name and id" do
+        context "passing the user" do
           let(:user) { FactoryGirl.build(:user) }
           before do
             mocked_api.should_receive(:create_meeting)
-              .with(room.name, room.meetingid, get_create_params(room, user.name, user.id))
+              .with(room.name, room.meetingid, get_create_params(room, user))
               .and_return(hash_create)
             room.stub(:select_server).and_return(mocked_server)
             room.server = mocked_server
-            room.send_create(user.name, user.id)
+            room.send_create(user)
+          end
+          it { room.attendee_password.should be(attendee_password) }
+          it { room.moderator_password.should be(moderator_password) }
+          it { room.changed?.should be_false }
+        end
+
+        context "passing additional options" do
+          let(:user) { FactoryGirl.build(:user) }
+          let(:user_opts) { { :record => false, :other => true } }
+          before do
+            mocked_api.should_receive(:create_meeting)
+              .with(room.name, room.meetingid, get_create_params(room, user).merge(user_opts))
+              .and_return(hash_create)
+            room.stub(:select_server).and_return(mocked_server)
+            room.server = mocked_server
+            room.send_create(user, user_opts)
           end
           it { room.attendee_password.should be(attendee_password) }
           it { room.moderator_password.should be(moderator_password) }
@@ -494,7 +510,7 @@ describe BigbluebuttonRoom do
           before do
             room.should_receive(:select_server).and_return(another_server)
             room.should_receive(:require_server)
-            room.should_receive(:do_create_meeting)
+            room.should_receive(:internal_create_meeting)
             room.server = mocked_server
             room.send_create
           end
@@ -506,7 +522,7 @@ describe BigbluebuttonRoom do
           before do
             new_room.should_receive(:select_server).and_return(another_server)
             new_room.should_receive(:require_server)
-            new_room.should_receive(:do_create_meeting).and_return(nil)
+            new_room.should_receive(:internal_create_meeting).and_return(nil)
             new_room.should_not_receive(:save)
             new_room.server = mocked_server
             new_room.send_create
@@ -695,20 +711,20 @@ describe BigbluebuttonRoom do
       before {
         room.should_receive(:is_running?).and_return(true)
       }
-      subject { room.create_meeting(user.name) }
+      subject { room.create_meeting(user) }
       it { should be_false }
     end
 
     context "when the conference is not running" do
       before {
         room.should_receive(:is_running?).and_return(false)
-        room.should_receive(:send_create).with(user.name, user.id)
+        room.should_receive(:send_create).with(user, {})
       }
-      subject { room.create_meeting(user.name, user.id) }
+      subject { room.create_meeting(user) }
       it { should be_true }
     end
 
-    context "when the arg 'request' is informed" do
+    context "when the parameter 'request' is informed" do
       let(:request) { double(ActionDispatch::Request) }
       before {
         request.stub(:protocol).and_return("HTTP://")
@@ -717,9 +733,22 @@ describe BigbluebuttonRoom do
         room.should_receive(:is_running?).and_return(false)
         room.should_receive(:send_create)
       }
-      subject { room.create_meeting(user.name, user.id, request) }
+      subject { room.create_meeting(user, request) }
       it { should be_true }
     end
+
+    # context "when the parameter 'request' is informed" do
+    #   let(:request) { double(ActionDispatch::Request) }
+    #   before {
+    #     request.stub(:protocol).and_return("HTTP://")
+    #     request.stub(:host_with_port).and_return("test.com:80")
+    #     room.should_receive(:add_domain_to_logout_url).with("HTTP://", "test.com:80")
+    #     room.should_receive(:is_running?).and_return(false)
+    #     room.should_receive(:send_create)
+    #   }
+    #   subject { room.create_meeting(user.name, user.id, request) }
+    #   it { should be_true }
+    # end
   end
 
   describe "#full_logout_url" do
@@ -855,12 +884,13 @@ describe BigbluebuttonRoom do
     it "finishes all meetings related to this room that are still running"
   end
 
-  describe "#do_create_meeting" do
+  describe "#internal_create_meeting" do
     it "creates the correct hash of parameters"
     it "adds metadata with the user's id"
     it "adds metadata with the user's name"
     it "sets the request headers"
     it "calls api.create_meeting"
+    it "accepts additional user options to override the options in the database"
 
     context "schedules a BigbluebuttonMeetingUpdater" do
       before { mock_server_and_api }
@@ -873,7 +903,7 @@ describe BigbluebuttonRoom do
       }
       before(:each) {
         expect {
-          room.send(:do_create_meeting)
+          room.send(:internal_create_meeting)
         }.to change{ Resque.info[:pending] }.by(1)
       }
       subject { Resque.peek(:bigbluebutton_rails) }
@@ -885,7 +915,7 @@ describe BigbluebuttonRoom do
 
 end
 
-def get_create_params(room, username=nil, userid=nil)
+def get_create_params(room, user=nil)
   params = {
     :moderatorPW => room.moderator_password,
     :attendeePW => room.attendee_password,
@@ -898,7 +928,11 @@ def get_create_params(room, username=nil, userid=nil)
     :duration => room.duration
   }
   room.metadata.each { |meta| params["meta_#{meta.name}"] = meta.content }
-  params.merge!({ "meta_bbbrails-user-id" => userid }) unless userid.nil?
-  params.merge!({ "meta_bbbrails-user-name" => username }) unless username.nil?
+  unless user.nil?
+    userid = user.send(:id)
+    username = user.send(:name)
+    params.merge!({ "meta_bbbrails-user-id" => userid })
+    params.merge!({ "meta_bbbrails-user-name" => username })
+  end
   params
 end

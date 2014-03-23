@@ -91,19 +91,11 @@ module BigbluebuttonRails
         # to be created. And 'role' is the role already defined for the user
         # (:moderator, :attendee, etc).
         #
-        # This method can also be used to run anything you may need to run
-        # right before a meeting is created, such as adapting the metadata.
-        # You can also, for instance, check if the user has permissions to record
-        # the meeting and set the flag 'record' accordingly.
-        #
-        # You may want to do override this in your ApplicationController to
+        # You may want to override this in your ApplicationController to
         # implement your own logic, for example:
         #
         #   def bigbluebutton_can_create?(room, role)
-        #     if role == :moderator
-        #       unless bigbluebutton_user.can_record_meeting?(room)
-        #         room.update_attributes(:record => false)
-        #       end
+        #     if role == :moderator && bigbluebutton_user.admin?
         #       true
         #     else
         #       false
@@ -112,6 +104,33 @@ module BigbluebuttonRails
         #
         def bigbluebutton_can_create?(room, role)
           role == :moderator
+        end
+
+        # Method called right before a meeting is created to get options that should receive
+        # priority over the options saved in the database when sending the <tt>create</tt>API
+        # call.
+        # The parameter 'room' is the BigbluebuttonRoom where the meeting is about
+        # to be created.
+        #
+        # By default, all options send in a 'create' API call are taken from the
+        # options saved in the database for the target room. This includes, for example,
+        # the meeting's name, dial number, welcome message, if it should be recorded or not.
+        # This method can return a hash of options to force some of these options to be
+        # different from what is stored in the database. For example, if a room should *not* be
+        # recorded in case unprivileged users create it, this method can return <tt>{ record: false }</tt>
+        # to force the <tt>record</tt> flag to be false.
+        #
+        # You may want to override this in your ApplicationController to implement your own
+        # own logic, if needed. For example:
+        #
+        #   def bigbluebutton_create_options(room)
+        #     can_record = room.record && bigbluebutton_user.can_record?
+        #     { record: can_record }
+        #     end
+        #   end
+        #
+        def bigbluebutton_create_options(room)
+          {}
         end
 
       end

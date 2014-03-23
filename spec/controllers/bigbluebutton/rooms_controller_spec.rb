@@ -723,12 +723,13 @@ describe Bigbluebutton::RoomsController do
 
     context "when the user has permission to create the meeting" do
       before {
-        room.should_receive(:fetch_is_running?)
-        room.should_receive(:is_running?).and_return(false)
+        room.should_receive(:fetch_is_running?).and_return(false)
         controller.stub(:bigbluebutton_can_create?).with(room, :attendee)
           .and_return(true)
+        controller.stub(:bigbluebutton_create_options).with(room)
+          .and_return({ custom: true })
         room.should_receive(:create_meeting)
-          .with(user.name, user.id, controller.request)
+          .with(user, controller.request, { custom: true })
         room.should_receive(:fetch_new_token).and_return(nil)
         room.should_receive(:join_url).and_return("http://test.com/join/url")
       }
@@ -739,8 +740,7 @@ describe Bigbluebutton::RoomsController do
 
     context "when the user doesn't have permission to create the meeting" do
       before {
-        room.should_receive(:fetch_is_running?)
-        room.should_receive(:is_running?).and_return(false)
+        room.should_receive(:fetch_is_running?).and_return(false)
         controller.stub(:bigbluebutton_can_create?).with(room, :attendee)
           .and_return(false)
         room.should_not_receive(:create_meeting)
@@ -753,8 +753,7 @@ describe Bigbluebutton::RoomsController do
 
     context "when the user has permission to join the meeting" do
       before {
-        room.should_receive(:fetch_is_running?)
-        room.should_receive(:is_running?).and_return(true)
+        room.should_receive(:fetch_is_running?).and_return(true)
         room.should_not_receive(:create_meeting)
         room.should_receive(:fetch_new_token).and_return(nil)
         room.should_receive(:join_url)
@@ -783,8 +782,7 @@ describe Bigbluebutton::RoomsController do
 
     context "gets a new config token before joining" do
       before {
-        room.should_receive(:fetch_is_running?)
-        room.should_receive(:is_running?).and_return(true)
+        room.should_receive(:fetch_is_running?).and_return(true)
         room.should_not_receive(:create_meeting)
       }
 
@@ -811,8 +809,7 @@ describe Bigbluebutton::RoomsController do
 
     context "when the user doesn't have permission to join the meeting" do
       before {
-        room.should_receive(:fetch_is_running?)
-        room.should_receive(:is_running?).and_return(true)
+        room.should_receive(:fetch_is_running?).and_return(true)
         room.should_not_receive(:create_meeting)
         room.should_receive(:fetch_new_token).and_return(nil)
         room.should_receive(:join_url)
@@ -827,8 +824,7 @@ describe Bigbluebutton::RoomsController do
 
     context "when the param ':mobile' is set" do
       before {
-        room.should_receive(:fetch_is_running?)
-        room.should_receive(:is_running?).and_return(true)
+        room.should_receive(:fetch_is_running?).and_return(true)
         room.should_not_receive(:create_meeting)
         room.should_receive(:fetch_new_token).and_return(nil)
       }

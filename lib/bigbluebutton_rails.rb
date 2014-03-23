@@ -51,6 +51,16 @@ module BigbluebuttonRails
       @@metadata_user_id,
       @@metadata_user_name ]
 
+  # Name of the attribute of a user that defines his name/username.
+  # Has to be a symbol!
+  mattr_accessor :user_attr_name
+  @@user_attr_name = :'name'
+
+  # Name of the attribute of a user that defines his ID.
+  # Has to be a symbol!
+  mattr_accessor :user_attr_id
+  @@user_attr_id = :'id'
+
   # Finds the BigbluebuttonRoom associated with the recording data in 'data', if any.
   # TODO: if not found, remove the association or keep the old one?
   def self.match_room_recording(data)
