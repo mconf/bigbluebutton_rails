@@ -58,7 +58,7 @@ class BigbluebuttonRoom < ActiveRecord::Base
 
   # Note: these params need to be fetched from the server before being accessed
   attr_accessor :running, :participant_count, :moderator_count, :attendees,
-                :has_been_forcibly_ended, :start_time, :end_time
+                :has_been_forcibly_ended, :start_time, :end_time, :user_creator
 
   after_initialize :init
   after_create :create_room_options
@@ -117,6 +117,12 @@ class BigbluebuttonRoom < ActiveRecord::Base
       attendee = BigbluebuttonAttendee.new
       attendee.from_hash(att)
       @attendees << attendee
+    end
+    unless response[:metadata].nil?
+      @user_creator = {
+        :id => response[:metadata][:'bbbrails-user-id'].to_i,
+        :name => response[:metadata][:'bbbrails-user-name']
+      }
     end
 
     # a 'shortcut' to update meetings since we have all information we need
