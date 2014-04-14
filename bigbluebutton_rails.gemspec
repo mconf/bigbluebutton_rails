@@ -10,6 +10,7 @@ Gem::Specification.new do |s|
   s.homepage    = "http://github.com/mconf/bigbluebutton_rails"
   s.description = "It allows you to interact with BigBlueButton from your Ruby on Rails application"
   s.authors     = ['Mconf', 'Leonardo Crauss Daronco']
+  s.license     = 'MIT'
 
   s.files         = `git ls-files`.split("\n")
   s.test_files    = `git ls-files -- {test,spec,features}/*`.split("\n")
