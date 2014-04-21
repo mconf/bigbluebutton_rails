@@ -5,6 +5,7 @@ gemspec
 gem "bigbluebutton-api-ruby", :git => "https://github.com/mconf/bigbluebutton-api-ruby.git", :branch => "master"
 gem "strong_parameters"
 gem "resque"
+gem "browser"
 
 group :development do
   gem "forgery"
