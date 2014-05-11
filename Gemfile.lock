@@ -4,18 +4,11 @@ GIT
   specs:
     bbbot-ruby (0.0.1)
 
-GIT
-  remote: https://github.com/mconf/bigbluebutton-api-ruby.git
-  revision: 09668f9d056d99ba32f6f20a863906dc88392fe7
-  branch: master
-  specs:
-    bigbluebutton-api-ruby (1.2.0)
-      xml-simple (>= 1.1.1)
-
 PATH
   remote: .
   specs:
     bigbluebutton_rails (1.3.0)
+      bigbluebutton-api-ruby (~> 1.3.0)
       browser (~> 0.4.0)
       rails (>= 3.0.0)
       resque (~> 1.25.1)
@@ -54,6 +47,8 @@ GEM
     addressable (2.3.2)
     arel (3.0.2)
     awesome_print (1.1.0)
+    bigbluebutton-api-ruby (1.3.0)
+      xml-simple (>= 1.1.1)
     browser (0.4.1)
     builder (3.0.4)
     capybara (2.0.3)
@@ -280,7 +275,6 @@ PLATFORMS
 
 DEPENDENCIES
   bbbot-ruby!
-  bigbluebutton-api-ruby!
   bigbluebutton_rails!
   browser
   capybara (~> 2.0.0)
