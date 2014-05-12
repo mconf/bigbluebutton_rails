@@ -47,38 +47,37 @@ describe Bigbluebutton::RoomsController do
       mock_server_and_api
       room.server = mocked_server
       controller.stub(:bigbluebutton_user) { user }
-      controller.should_receive(:bigbluebutton_role).and_return(:moderator)
     }
 
     context "when using http" do
       before {
         controller.should_receive(:join_bigbluebutton_room_url)
-          .with(room, :mobile => '1')
-          .and_return("http://test.com/join/url?mobile=1")
-        mocked_api.should_receive(:join_meeting_url)
-          .with(room.meetingid, user.name, room.moderator_password, anything)
-          .and_return("http://test.com/open/url/for/qrcode")
+          .once.with(room, :auto_join => '1')
+          .and_return("http://test.com/join/url?auto_join=1")
+        controller.should_receive(:join_bigbluebutton_room_url)
+          .once.with(room, :desktop => '1')
+          .and_return("http://test.com/join/url?desktop=1")
       }
       before(:each) { get :join_mobile, :id => room.to_param }
       it("is successful") { should respond_with(:success) }
       it("assigns room") { should assign_to(:room).with(room) }
-      it("assigns join_url") { should assign_to(:join_url).with("http://test.com/join/url?mobile=1") }
-      it("assigns qrcode_url") { should assign_to(:qrcode_url).with("bigbluebutton://test.com/open/url/for/qrcode") }
+      it("assigns join_url") { should assign_to(:join_url).with("http://test.com/join/url?auto_join=1") }
+      it("assigns join_desktop") { should assign_to(:join_desktop).with("http://test.com/join/url?desktop=1") }
       it { should render_template(:join_mobile) }
     end
 
     context "when using another protocol" do
       before {
         controller.should_receive(:join_bigbluebutton_room_url)
-          .with(room, :mobile => '1')
-          .and_return("any://test.com/join/url?mobile=1")
-        mocked_api.should_receive(:join_meeting_url)
-          .with(room.meetingid, user.name, room.moderator_password, anything)
-          .and_return("any://test.com/open/url/for/qrcode")
+          .once.with(room, :auto_join => '1')
+          .and_return("any://test.com/join/url?auto_join=1")
+        controller.should_receive(:join_bigbluebutton_room_url)
+          .once.with(room, :desktop => '1')
+          .and_return("any://test.com/join/url?desktop=1")
       }
       before(:each) { get :join_mobile, :id => room.to_param }
-      it("assigns join_url without changing the protocol") { should assign_to(:join_url).with("any://test.com/join/url?mobile=1") }
-      it("assigns qrcode_url changing the protocol") { should assign_to(:qrcode_url).with("bigbluebutton://test.com/open/url/for/qrcode") }
+      it("assigns join_url without changing the protocol") { should assign_to(:join_url).with("any://test.com/join/url?auto_join=1") }
+      it("assigns join_desktop without changing the protocol") { should assign_to(:join_desktop).with("any://test.com/join/url?desktop=1") }
     end
   end
 
@@ -384,6 +383,52 @@ describe Bigbluebutton::RoomsController do
       end
     end
 
+    context "in a mobile device" do
+      before {
+        controller.stub(:bigbluebutton_role) { :moderator }
+        browser = double()
+        browser.should_receive(:mobile?).and_return(true)
+        controller.stub(:browser).and_return(browser)
+      }
+      before(:each) { get :join, :id => room.to_param }
+      it { should respond_with(:redirect) }
+      it { should redirect_to(join_mobile_bigbluebutton_room_path(room)) }
+    end
+
+    context "when ':auto_join' is set" do
+      before {
+        controller.stub(:bigbluebutton_user) { user }
+        controller.stub(:bigbluebutton_role) { :moderator }
+
+        # make sure it's in a mobile device
+        browser = double()
+        browser.should_receive(:mobile?).and_return(true)
+        controller.stub(:browser).and_return(browser)
+
+        # here's the real verification
+        controller.should_receive(:join_internal)
+          .with(user.name, :moderator, user.id, :join)
+      }
+      it { get :join, :id => room.to_param, :auto_join => true }
+    end
+
+    context "when ':desktop' is set" do
+      before {
+        controller.stub(:bigbluebutton_user) { user }
+        controller.stub(:bigbluebutton_role) { :moderator }
+
+        # make sure it's in a mobile device
+        browser = double()
+        browser.should_receive(:mobile?).and_return(true)
+        controller.stub(:browser).and_return(browser)
+
+        # here's the real verification
+        controller.should_receive(:join_internal)
+          .with(user.name, :moderator, user.id, :join)
+      }
+      it { get :join, :id => room.to_param, :desktop => true }
+    end
+
     context "calls #join_internal" do
       before {
         controller.stub(:bigbluebutton_user) { user }
@@ -644,7 +689,7 @@ describe Bigbluebutton::RoomsController do
       }
       it { should respond_with(:redirect) }
       it { should redirect_to(bigbluebutton_room_path(room)) }
-      it { should set_the_flash.to(I18n.t('bigbluebutton_rails.rooms.error.fetch_recordings.no_server')) }
+      it { should set_the_flash.to(I18n.t('bigbluebutton_rails.rooms.errors.fetch_recordings.no_server')) }
     end
 
     context "with :redir_url" do
@@ -822,11 +867,14 @@ describe Bigbluebutton::RoomsController do
       it { should set_the_flash.to(I18n.t('bigbluebutton_rails.rooms.errors.auth.not_running')) }
     end
 
-    context "when the param ':mobile' is set" do
+    context "in a mobile device" do
       before {
         room.should_receive(:fetch_is_running?).and_return(true)
         room.should_not_receive(:create_meeting)
         room.should_receive(:fetch_new_token).and_return(nil)
+        browser = double()
+        browser.should_receive(:mobile?).twice.and_return(true)
+        controller.stub(:browser).and_return(browser)
       }
 
       context "and the url uses 'http'" do
@@ -834,7 +882,7 @@ describe Bigbluebutton::RoomsController do
           room.should_receive(:join_url)
             .and_return("http://test.com/join/url")
         }
-        before(:each) { get :join, :id => room.to_param, :mobile => true }
+        before(:each) { get :join, :id => room.to_param, :auto_join => true }
         it { should respond_with(:redirect) }
         it { should redirect_to("bigbluebutton://test.com/join/url") }
       end
@@ -844,9 +892,19 @@ describe Bigbluebutton::RoomsController do
           room.should_receive(:join_url)
             .and_return("any://test.com/join/url")
         }
-        before(:each) { get :join, :id => room.to_param, :mobile => true }
+        before(:each) { get :join, :id => room.to_param, :auto_join => true }
         it { should respond_with(:redirect) }
         it { should redirect_to("bigbluebutton://test.com/join/url") }
+      end
+
+      context "and the flag :desktop is set" do
+        before {
+          room.should_receive(:join_url)
+            .and_return("http://test.com/join/url")
+        }
+        before(:each) { get :join, :id => room.to_param, :auto_join => true, :desktop => true }
+        it { should respond_with(:redirect) }
+        it { should redirect_to("http://test.com/join/url") }
       end
     end
 

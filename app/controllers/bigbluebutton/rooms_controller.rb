@@ -113,11 +113,11 @@ class Bigbluebutton::RoomsController < ApplicationController
       redirect_to :action => :invite
 
     else
-      # for mobile devices we render a view that will show some information about the mobile
-      # application and automatically launch it
+      # for mobile devices the join is in two steps: we render a view that will show some
+      # information about the mobile application and then automatically launch it
       # skip the page directly to the join if `auto_join` or `force_desktop` are set in the URL
       if browser.mobile? && !BigbluebuttonRails::value_to_boolean(params[:auto_join]) &&
-          !BigbluebuttonRails::value_to_boolean(params[:force_desktop])
+          !BigbluebuttonRails::value_to_boolean(params[:desktop])
         redirect_to :action => :join_mobile
       else
         join_internal(bigbluebutton_user.name, @user_role, bigbluebutton_user.id, :join)
@@ -219,6 +219,7 @@ class Bigbluebutton::RoomsController < ApplicationController
 
   def join_mobile
     @join_url = join_bigbluebutton_room_url(@room, :auto_join => '1')
+    @join_desktop = join_bigbluebutton_room_url(@room, :desktop => '1')
   end
 
   def fetch_recordings
@@ -226,7 +227,7 @@ class Bigbluebutton::RoomsController < ApplicationController
 
     if @room.server.nil?
       error = true
-      message = t('bigbluebutton_rails.rooms.error.fetch_recordings.no_server')
+      message = t('bigbluebutton_rails.rooms.errors.fetch_recordings.no_server')
     else
       begin
         # filter only recordings created by this room
