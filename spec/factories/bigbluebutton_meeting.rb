@@ -7,5 +7,7 @@ FactoryGirl.define do
     m.record false
     m.running false
     m.start_time { Time.now - rand(5).hours }
+    # m.creator_id
+    # m.creator_name
   end
 end

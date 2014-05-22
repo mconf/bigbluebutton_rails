@@ -11,6 +11,8 @@ class BigbluebuttonRailsTo140 < ActiveRecord::Migration
       t.datetime :start_time
       t.boolean :running, :default => false
       t.boolean :record, :default => false
+      t.integer :creator_id
+      t.string :creator_name
       t.timestamps
     end
     add_index :bigbluebutton_meetings, [:meetingid, :start_time], :unique => true

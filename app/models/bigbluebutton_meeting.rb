@@ -15,4 +15,14 @@ class BigbluebuttonMeeting < ActiveRecord::Base
 
   validates :start_time, :presence => true
   validates :start_time, :uniqueness => { :scope => :room_id }
+
+  # Whether the meeting was created by the `user` or not.
+  def created_by?(user)
+    unless user.nil?
+      userid = user.send(BigbluebuttonRails.user_attr_id)
+      self.creator_id == userid
+    else
+      false
+    end
+  end
 end

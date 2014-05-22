@@ -279,6 +279,7 @@ describe BigbluebuttonRoom do
     end
 
     describe "#fetch_meeting_info" do
+      let(:user) { FactoryGirl.build(:user) }
 
       # these hashes should be exactly as returned by bigbluebutton-api-ruby to be sure we are testing it right
       let(:hash_info) {
@@ -295,10 +296,16 @@ describe BigbluebuttonRoom do
          {:userID=>"rbepbovolsxt", :fullName=>"Trinity", :role=>:viewer}
         ]
       }
+      let(:metadata) {
+        m = {}
+        m[BigbluebuttonRails.metadata_user_id] = user.id
+        m[BigbluebuttonRails.metadata_user_name] = user.name
+        m
+      }
       let(:hash_info2) {
         { :returncode=>true, :meetingID=>"test_id", :attendeePW=>"1234", :moderatorPW=>"4321",
           :running=>true, :hasBeenForciblyEnded=>false, :startTime=>DateTime.parse("Wed Apr 06 17:09:57 UTC 2011"),
-          :endTime=>nil, :participantCount=>4, :moderatorCount=>2,
+          :endTime=>nil, :participantCount=>4, :moderatorCount=>2, :metadata=>metadata,
           :attendees=>users, :messageKey=>{ }, :message=>{ }
         }
       }
@@ -345,8 +352,18 @@ describe BigbluebuttonRoom do
         }
       end
 
-      it "calls #update_current_meeting after the information is fetched"
+      context "calls #update_current_meeting after the information is fetched" do
+        before {
+          mocked_api.should_receive(:get_meeting_info).
+            with(room.meetingid, room.moderator_password).and_return(hash_info2)
+          room.should_receive(:require_server)
+          room.server = mocked_server
 
+          # here's the validation
+          room.should_receive(:update_current_meeting).with(metadata)
+        }
+        it { room.fetch_meeting_info }
+      end
     end
 
     describe "#send_end" do
@@ -813,6 +830,24 @@ describe BigbluebuttonRoom do
     }
   end
 
+  describe "#get_current_meeting" do
+    let(:room) { FactoryGirl.create(:bigbluebutton_room, :server => nil) }
+
+    context "if there's no start_time set in the room" do
+      before { room.start_time = nil }
+      it { room.get_current_meeting.should be_nil }
+    end
+
+    context "if the room has a start_time set" do
+      before {
+        @m1 = FactoryGirl.create(:bigbluebutton_meeting, :room => room, :start_time => Time.now.utc - 2.minutes)
+        @m2 = FactoryGirl.create(:bigbluebutton_meeting, :room => room, :start_time => Time.now.utc)
+        room.start_time = @m1.start_time
+      }
+      it("returns the correct BigbluebuttonMeeting") { room.get_current_meeting.should eql(@m1) }
+    end
+  end
+
   describe "#update_current_meeting" do
     let(:room) { FactoryGirl.create(:bigbluebutton_room) }
 
@@ -825,6 +860,13 @@ describe BigbluebuttonRoom do
     end
 
     context "if @start_time is set" do
+      let(:user) { FactoryGirl.build(:user) }
+      let(:metadata) {
+        m = {}
+        m[BigbluebuttonRails.metadata_user_id] = user.id
+        m[BigbluebuttonRails.metadata_user_name] = user.name
+        m
+      }
       before {
         room.start_time = Time.now.utc
         room.running = !room.running # to change its default value
@@ -832,20 +874,36 @@ describe BigbluebuttonRoom do
       }
 
       context "if there's no meeting associated yet creates one" do
-        before { room.running = true }
-        before(:each) {
-          expect {
-            room.update_current_meeting
-          }.to change{ BigbluebuttonMeeting.count }.by(1)
-        }
-        subject { BigbluebuttonMeeting.find_by_room_id(room.id) }
-        it("sets server") { subject.server.should eq(room.server) }
-        it("sets room") { subject.room.should eq(room) }
-        it("sets meetingid") { subject.meetingid.should eq(room.meetingid) }
-        it("sets name") { subject.name.should eq(room.name) }
-        it("sets record") { subject.record.should eq(room.record) }
-        it("sets running") { subject.running.should eq(room.running) }
-        it("sets start_time") { subject.start_time.utc.to_i.should eq(room.start_time.utc.to_i) }
+        context "and no metadata was passed" do
+          before { room.running = true }
+          before(:each) {
+            expect {
+              room.update_current_meeting
+            }.to change{ BigbluebuttonMeeting.count }.by(1)
+          }
+          subject { BigbluebuttonMeeting.find_by_room_id(room.id) }
+          it("sets server") { subject.server.should eq(room.server) }
+          it("sets room") { subject.room.should eq(room) }
+          it("sets meetingid") { subject.meetingid.should eq(room.meetingid) }
+          it("sets name") { subject.name.should eq(room.name) }
+          it("sets record") { subject.record.should eq(room.record) }
+          it("sets running") { subject.running.should eq(room.running) }
+          it("sets start_time") { subject.start_time.utc.to_i.should eq(room.start_time.utc.to_i) }
+          it("doesn't set creator_id") { subject.creator_id.should be_nil }
+          it("doesn't set creator_name") { subject.creator_name.should be_nil }
+        end
+
+        context "and metadata was passed" do
+          before { room.running = true }
+          before(:each) {
+            expect {
+              room.update_current_meeting(metadata)
+            }.to change{ BigbluebuttonMeeting.count }.by(1)
+          }
+          subject { BigbluebuttonMeeting.find_by_room_id(room.id) }
+          it("sets creator_id") { subject.creator_id.should eq(user.id) }
+          it("sets creator_name") { subject.creator_name.should eq(user.name) }
+        end
       end
 
       context "if there's no meeting associated yet but the meeting is not running" do
@@ -860,22 +918,40 @@ describe BigbluebuttonRoom do
       end
 
       context "if there's already a meeting associated updates it" do
-        before {
-          FactoryGirl.create(:bigbluebutton_meeting, :room => room, :start_time => room.start_time)
-        }
-        before(:each) {
-          expect {
-            room.update_current_meeting
-          }.not_to change{ BigbluebuttonMeeting.count }
-        }
-        subject { BigbluebuttonMeeting.find_by_room_id(room.id) }
-        it("sets server") { subject.server.should eq(room.server) }
-        it("sets room") { subject.room.should eq(room) }
-        it("sets meetingid") { subject.meetingid.should eq(room.meetingid) }
-        it("sets name") { subject.name.should eq(room.name) }
-        it("sets record") { subject.record.should eq(room.record) }
-        it("sets running") { subject.running.should eq(room.running) }
-        it("sets start_time") { subject.start_time.utc.to_i.should eq(room.start_time.utc.to_i) }
+        context "and no metadata was passed" do
+          before {
+            FactoryGirl.create(:bigbluebutton_meeting, :room => room, :start_time => room.start_time)
+          }
+          before(:each) {
+            expect {
+              room.update_current_meeting
+            }.not_to change{ BigbluebuttonMeeting.count }
+          }
+          subject { BigbluebuttonMeeting.find_by_room_id(room.id) }
+          it("sets server") { subject.server.should eq(room.server) }
+          it("sets room") { subject.room.should eq(room) }
+          it("sets meetingid") { subject.meetingid.should eq(room.meetingid) }
+          it("sets name") { subject.name.should eq(room.name) }
+          it("sets record") { subject.record.should eq(room.record) }
+          it("sets running") { subject.running.should eq(room.running) }
+          it("sets start_time") { subject.start_time.utc.to_i.should eq(room.start_time.utc.to_i) }
+          it("doesn't set creator_id") { subject.creator_id.should be_nil }
+          it("doesn't set creator_name") { subject.creator_name.should be_nil }
+        end
+
+        context "and metadata was passed" do
+          before {
+            FactoryGirl.create(:bigbluebutton_meeting, :room => room, :start_time => room.start_time)
+          }
+          before(:each) {
+            expect {
+              room.update_current_meeting(metadata)
+            }.not_to change{ BigbluebuttonMeeting.count }
+          }
+          subject { BigbluebuttonMeeting.find_by_room_id(room.id) }
+          it("sets creator_id") { subject.creator_id.should eq(user.id) }
+          it("sets creator_name") { subject.creator_name.should eq(user.name) }
+        end
       end
     end
   end

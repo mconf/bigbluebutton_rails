@@ -58,7 +58,7 @@ class BigbluebuttonRoom < ActiveRecord::Base
 
   # Note: these params need to be fetched from the server before being accessed
   attr_accessor :running, :participant_count, :moderator_count, :attendees,
-                :has_been_forcibly_ended, :start_time, :end_time, :user_creator
+                :has_been_forcibly_ended, :start_time, :end_time
 
   after_initialize :init
   after_create :create_room_options
@@ -118,15 +118,9 @@ class BigbluebuttonRoom < ActiveRecord::Base
       attendee.from_hash(att)
       @attendees << attendee
     end
-    unless response[:metadata].nil?
-      @user_creator = {
-        :id => response[:metadata][:'bbbrails-user-id'].to_i,
-        :name => response[:metadata][:'bbbrails-user-name']
-      }
-    end
 
     # a 'shortcut' to update meetings since we have all information we need
-    update_current_meeting
+    update_current_meeting(response[:metadata])
 
     response
   end
@@ -283,8 +277,17 @@ class BigbluebuttonRoom < ActiveRecord::Base
     "#{SecureRandom.uuid}-#{Time.now.to_i}"
   end
 
+  # Returns the current meeting running on this room, if any.
+  def get_current_meeting
+    unless self.start_time.nil?
+      BigbluebuttonMeeting.find_by_room_id_and_start_time(self.id, self.start_time.utc)
+    else
+      nil
+    end
+  end
+
   # Updates the current meeting associated with this room
-  def update_current_meeting
+  def update_current_meeting(metadata=nil)
     unless self.start_time.nil?
       attrs = {
         :server => self.server,
@@ -293,7 +296,17 @@ class BigbluebuttonRoom < ActiveRecord::Base
         :record => self.record,
         :running => self.running
       }
-      meeting = BigbluebuttonMeeting.find_by_room_id_and_start_time(self.id, self.start_time.utc)
+      unless metadata.nil?
+        begin
+          attrs[:creator_id] = metadata[BigbluebuttonRails.metadata_user_id].to_i
+          attrs[:creator_name] = metadata[BigbluebuttonRails.metadata_user_name]
+        rescue
+          attrs[:creator_id] = nil
+          attrs[:creator_name] = nil
+        end
+      end
+
+      meeting = self.get_current_meeting
       if !meeting.nil?
         meeting.update_attributes(attrs)
 

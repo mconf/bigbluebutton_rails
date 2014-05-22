@@ -2,7 +2,7 @@ require 'spec_helper'
 
 describe BigbluebuttonAttendee do
 
-  it "should be reconized" do
+  it "should be recognized" do
     lambda { BigbluebuttonAttendee.new }.should_not raise_error
   end
 
