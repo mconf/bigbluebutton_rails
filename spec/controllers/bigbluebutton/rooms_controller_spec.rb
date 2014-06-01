@@ -61,7 +61,7 @@ describe Bigbluebutton::RoomsController do
       before(:each) { get :join_mobile, :id => room.to_param }
       it("is successful") { should respond_with(:success) }
       it("assigns room") { should assign_to(:room).with(room) }
-      it("assigns join_url") { should assign_to(:join_url).with("http://test.com/join/url?auto_join=1") }
+      it("assigns join_mobile") { should assign_to(:join_mobile).with("http://test.com/join/url?auto_join=1") }
       it("assigns join_desktop") { should assign_to(:join_desktop).with("http://test.com/join/url?desktop=1") }
       it { should render_template(:join_mobile) }
     end
@@ -76,7 +76,7 @@ describe Bigbluebutton::RoomsController do
           .and_return("any://test.com/join/url?desktop=1")
       }
       before(:each) { get :join_mobile, :id => room.to_param }
-      it("assigns join_url without changing the protocol") { should assign_to(:join_url).with("any://test.com/join/url?auto_join=1") }
+      it("assigns join_mobile without changing the protocol") { should assign_to(:join_mobile).with("any://test.com/join/url?auto_join=1") }
       it("assigns join_desktop without changing the protocol") { should assign_to(:join_desktop).with("any://test.com/join/url?desktop=1") }
     end
   end

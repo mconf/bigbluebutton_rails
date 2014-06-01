@@ -218,7 +218,7 @@ class Bigbluebutton::RoomsController < ApplicationController
   end
 
   def join_mobile
-    @join_url = join_bigbluebutton_room_url(@room, :auto_join => '1')
+    @join_mobile = join_bigbluebutton_room_url(@room, :auto_join => '1')
     @join_desktop = join_bigbluebutton_room_url(@room, :desktop => '1')
   end
 
