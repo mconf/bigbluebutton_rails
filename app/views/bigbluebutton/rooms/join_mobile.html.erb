@@ -1,9 +1,28 @@
+<script type="text/javascript">
+  $(document).ready(function(){
+    window.location.href = "<%= @join_mobile %>";
+  });
+</script>
+
 <h1>Mobile access to <%= @room.name %></h1>
 
 <div style="text-align:center; width:250px;">
-  <a href="<%= @join_url %>"><b>Click here</b><br/>to join from a mobile device</a><br><br/>
-  <span>Or scan the code below:</span><br/>
-  <img src="<%= qrcode_url(@qrcode_url) %>" style="float:left; border:1px solid #ccc;"/>
+  <span>You are being redirected to the conference in your mobile device.</span>
+  <br/>
+  <div>
+    <span>If you are not redirected, please make sure you have the Android mobile client installed:</span>
+    <div>
+      <%= link_to(mobile_google_play_link, :class => "mobile-download-image") do %>
+       <%= image_tag mobile_google_play_image, :alt => "Download the Android client", :title => "Download the Android client" %>
+       <% end %>
+    </div>
+  </div>
+  <br/>
+  <div>
+    <%= link_to "You have the application but still hasn't been redirected? Click here to try again.", @join_mobile %>
+  </div>
+  <br/>
+  <div>
+    <%= link_to "If you are not on a mobile client, click here to log in using the default desktop client.", @join_desktop %>
+  </div>
 </div>
-
-

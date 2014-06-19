@@ -4,6 +4,7 @@ gemspec
 
 gem "strong_parameters"
 gem "resque"
+gem "browser"
 
 group :development do
   gem "forgery"

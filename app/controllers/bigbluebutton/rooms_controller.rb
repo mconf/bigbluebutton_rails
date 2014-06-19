@@ -110,10 +110,18 @@ class Bigbluebutton::RoomsController < ApplicationController
 
     # anonymous users or users with the role :password join through #invite
     elsif bigbluebutton_user.nil? or @user_role == :password
-      redirect_to :action => :invite, :mobile => params[:mobile]
+      redirect_to :action => :invite
 
     else
-      join_internal(bigbluebutton_user.name, @user_role, bigbluebutton_user.id, :join)
+      # for mobile devices the join is in two steps: we render a view that will show some
+      # information about the mobile application and then automatically launch it
+      # skip the page directly to the join if `auto_join` or `force_desktop` are set in the URL
+      if browser.mobile? && !BigbluebuttonRails::value_to_boolean(params[:auto_join]) &&
+          !BigbluebuttonRails::value_to_boolean(params[:desktop])
+        redirect_to :action => :join_mobile
+      else
+        join_internal(bigbluebutton_user.name, @user_role, bigbluebutton_user.id, :join)
+      end
     end
   end
 
@@ -210,12 +218,8 @@ class Bigbluebutton::RoomsController < ApplicationController
   end
 
   def join_mobile
-    @join_url = join_bigbluebutton_room_url(@room, :mobile => '1')
-
-    # TODO: we can't use the mconf url because the mobile client scanning the qrcode is not
-    #   logged. so we are using the full BBB url for now.
-    @qrcode_url = @room.join_url(bigbluebutton_user.name, bigbluebutton_role(@room))
-    @qrcode_url.gsub!(/^[^:]*:\/\//i, "bigbluebutton://")
+    @join_mobile = join_bigbluebutton_room_url(@room, :auto_join => '1')
+    @join_desktop = join_bigbluebutton_room_url(@room, :desktop => '1')
   end
 
   def fetch_recordings
@@ -223,7 +227,7 @@ class Bigbluebutton::RoomsController < ApplicationController
 
     if @room.server.nil?
       error = true
-      message = t('bigbluebutton_rails.rooms.error.fetch_recordings.no_server')
+      message = t('bigbluebutton_rails.rooms.errors.fetch_recordings.no_server')
     else
       begin
         # filter only recordings created by this room
@@ -288,8 +292,8 @@ class Bigbluebutton::RoomsController < ApplicationController
       # room created and running, try to join it
       url = @room.join_url(username, role, nil, options)
       unless url.nil?
-        # change the protocol to join with BBB-Android/Mconf-Mobile if set
-        if BigbluebuttonRails::value_to_boolean(params[:mobile])
+        # change the protocol to join with a mobile device
+        if browser.mobile? && !BigbluebuttonRails::value_to_boolean(params[:desktop])
           url.gsub!(/^[^:]*:\/\//i, "bigbluebutton://")
         end
 

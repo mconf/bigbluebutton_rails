@@ -21,4 +21,14 @@ module BigbluebuttonRailsHelper
     room
   end
 
+  # Link to download the Android application from Google Play.
+  def mobile_google_play_link
+    "https://play.google.com/store/apps/details?id=air.com.mconf.mconfmobile"
+  end
+
+  # Google Play image to show together with the link to download the Android client.
+  def mobile_google_play_image
+    "https://developer.android.com/images/brand/#{I18n.locale}_generic_rgb_wo_45.png"
+  end
+
 end
