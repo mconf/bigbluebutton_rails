@@ -295,7 +295,10 @@ class Bigbluebutton::RoomsController < ApplicationController
   # adds new parameters that might be needed.
   def select_params_for_join_mobile(params)
     ret = params.blank? ? {} : params.slice(:user, "user")
-    ret[:redir_url] = request.env["HTTP_REFERER"]
+    begin
+      ret[:redir_url] = Addressable::URI.parse(request.env["HTTP_REFERER"]).path
+    rescue
+    end
     ret
   end
 
