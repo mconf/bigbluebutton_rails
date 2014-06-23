@@ -106,7 +106,7 @@ module ActionDispatch::Routing
           get :end
           get :invite
           get :join_mobile
-          post :join, :action => :auth
+          post :join
           post :fetch_recordings
           get :recordings
         end

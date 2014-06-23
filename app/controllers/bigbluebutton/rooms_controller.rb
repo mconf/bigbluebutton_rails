@@ -1,3 +1,4 @@
+# -*- coding: utf-8 -*-
 require 'bigbluebutton_api'
 
 class Bigbluebutton::RoomsController < ApplicationController
@@ -7,6 +8,11 @@ class Bigbluebutton::RoomsController < ApplicationController
 
   # set headers only in actions that might trigger api calls
   before_filter :set_request_headers, :only => [:join_mobile, :end, :running, :join, :destroy, :auth]
+
+  before_filter :join_check_room, :only => :join
+  before_filter :join_user_params, :only => :join
+  before_filter :join_check_can_create, :only => :join
+  before_filter :join_check_redirect_to_mobile, :only => :join
 
   respond_to :html, :except => :running
   respond_to :json, :only => [:running, :show, :new, :index, :create, :update]
@@ -102,27 +108,10 @@ class Bigbluebutton::RoomsController < ApplicationController
     end
   end
 
-  # Used by logged users to join rooms.
+  # Used to join users into a meeting. Most of the work is done in before filters.
+  # Can be called via GET or POST and accepts parameters in the POST data and URL.
   def join
-    @user_role = bigbluebutton_role(@room)
-    if @user_role.nil?
-      raise BigbluebuttonRails::RoomAccessDenied.new
-
-    # anonymous users or users with the role :password join through #invite
-    elsif bigbluebutton_user.nil? or @user_role == :password
-      redirect_to :action => :invite
-
-    else
-      # for mobile devices the join is in two steps: we render a view that will show some
-      # information about the mobile application and then automatically launch it
-      # skip the page directly to the join if `auto_join` or `force_desktop` are set in the URL
-      if browser.mobile? && !BigbluebuttonRails::value_to_boolean(params[:auto_join]) &&
-          !BigbluebuttonRails::value_to_boolean(params[:desktop])
-        redirect_to :action => :join_mobile
-      else
-        join_internal(bigbluebutton_user.name, @user_role, bigbluebutton_user.id, :join)
-      end
-    end
+    join_internal(@user_name, @user_role, @user_id)
   end
 
   # Used to join private rooms or to invite anonymous users (not logged)
@@ -136,38 +125,6 @@ class Bigbluebutton::RoomsController < ApplicationController
         format.html
       end
 
-    end
-  end
-
-  # Authenticates an user using name and password passed in the params from #invite
-  # Uses params[:id] to get the target room
-  def auth
-    @room = BigbluebuttonRoom.find_by_param(params[:id]) unless params[:id].blank?
-    if @room.nil?
-      message = t('bigbluebutton_rails.rooms.errors.auth.wrong_params')
-      redirect_to :back, :notice => message
-      return
-    end
-
-    # gets the user information, given priority to a possible logged user
-    name = bigbluebutton_user.nil? ? params[:user][:name] : bigbluebutton_user.name
-    id = bigbluebutton_user.nil? ? nil : bigbluebutton_user.id
-    # the role: nil means access denied, :password means check the room
-    # password, otherwise just use it
-    @user_role = bigbluebutton_role(@room)
-    if @user_role.nil?
-      raise BigbluebuttonRails::RoomAccessDenied.new
-    elsif @user_role == :password
-      role = @room.user_role(params[:user])
-    else
-      role = @user_role
-    end
-
-    unless role.nil? or name.nil? or name.empty?
-      join_internal(name, role, id, :invite)
-    else
-      flash[:error] = t('bigbluebutton_rails.rooms.errors.auth.failure')
-      render :invite, :status => :unauthorized
     end
   end
 
@@ -218,8 +175,8 @@ class Bigbluebutton::RoomsController < ApplicationController
   end
 
   def join_mobile
-    @join_mobile = join_bigbluebutton_room_url(@room, :auto_join => '1')
-    @join_desktop = join_bigbluebutton_room_url(@room, :desktop => '1')
+    @join_mobile = join_bigbluebutton_room_url(@room, params.merge({:auto_join => '1' }))
+    @join_desktop = join_bigbluebutton_room_url(@room, params.merge({:desktop => '1' }))
   end
 
   def fetch_recordings
@@ -271,7 +228,84 @@ class Bigbluebutton::RoomsController < ApplicationController
     end
   end
 
-  def join_internal(username, role, id, wait_action)
+  def join_check_room
+    @room = BigbluebuttonRoom.find_by_param(params[:id]) unless params[:id].blank?
+    if @room.nil?
+      message = t('bigbluebutton_rails.rooms.errors.auth.wrong_params')
+      redirect_to :back, :notice => message
+    end
+  end
+
+  # Checks the parameters received when calling `join` and sets them in variables to
+  # be accessed by other methods. Sets the user's name, id and role. Gives priority to
+  # a logged user over the information provided in the params.
+  def join_user_params
+    # gets the user information, given priority to a possible logged user
+    if bigbluebutton_user.nil?
+      @user_name = params[:user].blank? ? nil : params[:user][:name]
+      @user_id = nil
+    else
+      @user_name = bigbluebutton_user.name
+      @user_id = bigbluebutton_user.id
+    end
+
+    # the role: nil means access denied, :password means check the room
+    # password, otherwise just use it
+    @user_role = bigbluebutton_role(@room)
+    if @user_role.nil?
+      raise BigbluebuttonRails::RoomAccessDenied.new
+    elsif @user_role == :password
+      @user_role = @room.user_role(params[:user])
+    end
+
+    if @user_role.nil? or @user_name.blank?
+      flash[:error] = t('bigbluebutton_rails.rooms.errors.auth.failure')
+      redirect_to_on_join_error
+    end
+  end
+
+  # Aborts and redirects to an error if the user can't create a meeting in
+  # the room and it needs to be created.
+  def join_check_can_create
+    unless @room.fetch_is_running?
+      unless bigbluebutton_can_create?(@room, @user_role)
+        flash[:error] = t('bigbluebutton_rails.rooms.errors.auth.cannot_create')
+        redirect_to_on_join_error
+      end
+    end
+  end
+
+  # If the user called the join from a mobile device, he will be redirected to
+  # an intermediary page with information about the mobile client. A few flags set
+  # in the params can override this behavior and skip this intermediary page.
+  def join_check_redirect_to_mobile
+    if browser.mobile? &&
+        !BigbluebuttonRails::value_to_boolean(params[:auto_join]) &&
+        !BigbluebuttonRails::value_to_boolean(params[:desktop])
+
+      # since we're redirecting to an intermediary page, we set in the params the params
+      # we received, including the referer, so we can go back to the previous page if needed
+      filtered_params = select_params_for_join_mobile(params.clone)
+
+      redirect_to join_mobile_bigbluebutton_room_path(@room, filtered_params)
+    end
+  end
+
+  # Selects the params from `params` that should be passed in a redirect to `join_mobile` and
+  # adds new parameters that might be needed.
+  def select_params_for_join_mobile(params)
+    ret = params.blank? ? {} : params.slice(:user, "user")
+    ret[:redir_url] = request.env["HTTP_REFERER"]
+    ret
+  end
+
+  # Default method to redirect after an error in the action `join`.
+  def redirect_to_on_join_error
+    redirect_to_using_params_or_back(invite_bigbluebutton_room_path(@room))
+  end
+
+  # The internal process to join a meeting.
+  def join_internal(username, role, id)
     begin
       # first check if we have to create the room and if the user can do it
       unless @room.fetch_is_running?
@@ -280,7 +314,7 @@ class Bigbluebutton::RoomsController < ApplicationController
           @room.create_meeting(bigbluebutton_user, request, user_opts)
         else
           flash[:error] = t('bigbluebutton_rails.rooms.errors.auth.cannot_create')
-          render wait_action, :status => :unauthorized
+          redirect_to_on_join_error
           return
         end
       end
@@ -292,6 +326,7 @@ class Bigbluebutton::RoomsController < ApplicationController
       # room created and running, try to join it
       url = @room.join_url(username, role, nil, options)
       unless url.nil?
+
         # change the protocol to join with a mobile device
         if browser.mobile? && !BigbluebuttonRails::value_to_boolean(params[:desktop])
           url.gsub!(/^[^:]*:\/\//i, "bigbluebutton://")
@@ -305,14 +340,13 @@ class Bigbluebutton::RoomsController < ApplicationController
         redirect_to url
       else
         flash[:error] = t('bigbluebutton_rails.rooms.errors.auth.not_running')
-        render wait_action
+        redirect_to_on_join_error
       end
 
     rescue BigBlueButton::BigBlueButtonException => e
       flash[:error] = e.to_s[0..200]
-      redirect_to :back
+      redirect_to_on_join_error
     end
-
   end
 
   def room_params
