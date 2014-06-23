@@ -10,11 +10,16 @@
   <span>You are being redirected to the conference in your mobile device.</span>
   <br/>
   <div>
-    <span>If you are not redirected, please make sure you have the Android mobile client installed:</span>
+    <span>If you are not redirected, please make sure you have the mobile client installed:</span>
     <div>
       <%= link_to(mobile_google_play_link, :class => "mobile-download-image") do %>
-       <%= image_tag mobile_google_play_image, :alt => "Download the Android client", :title => "Download the Android client" %>
-       <% end %>
+        <%= image_tag mobile_google_play_image, :alt => "Download the Android client", :title => "Download the Android client" %>
+      <% end %>
+    </div>
+    <div>
+      <%= link_to(mobile_apple_store_link, :class => "mobile-download-image") do %>
+        <%= image_tag mobile_apple_store_image, :alt => "Download the iOS client", :title => "Download the iOS client" %>
+      <% end %>
     </div>
   </div>
   <br/>

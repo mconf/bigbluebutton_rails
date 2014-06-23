@@ -28,7 +28,17 @@ module BigbluebuttonRailsHelper
 
   # Google Play image to show together with the link to download the Android client.
   def mobile_google_play_image
-    "https://developer.android.com/images/brand/#{I18n.locale}_generic_rgb_wo_45.png"
+    "badges/google_play_#{I18n.locale}.png"
+  end
+
+  # Link to download the iOS application from Apple Store.
+  def mobile_apple_store_link
+    "https://itunes.apple.com/us/app/mconf-mobile/id864391260"
+  end
+
+  # Apple Store image to show together with the link to download the iOS client.
+  def mobile_apple_store_image
+    "badges/apple_store_#{I18n.locale}.png"
   end
 
 end
