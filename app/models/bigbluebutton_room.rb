@@ -207,7 +207,7 @@ class BigbluebuttonRoom < ActiveRecord::Base
   # params:: Hash with a key :password
   def user_role(params)
     role = nil
-    if params.has_key?(:password)
+    if params && params.has_key?(:password)
       if self.moderator_password == params[:password]
         role = :moderator
       elsif self.attendee_password == params[:password]

@@ -51,7 +51,7 @@ describe ActionController do
     }
     it {
       {:post => "/only-rooms/bigbluebutton/rooms/1/join"}.
-      should route_to(:controller => "bigbluebutton/rooms", :action => "auth", :id => "1")
+      should route_to(:controller => "bigbluebutton/rooms", :action => "join", :id => "1")
     }
 
   end

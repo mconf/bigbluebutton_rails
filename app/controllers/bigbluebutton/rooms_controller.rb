@@ -4,10 +4,10 @@ require 'bigbluebutton_api'
 class Bigbluebutton::RoomsController < ApplicationController
   include BigbluebuttonRails::InternalControllerMethods
 
-  before_filter :find_room, :except => [:index, :create, :new, :auth]
+  before_filter :find_room, :except => [:index, :create, :new, :join]
 
   # set headers only in actions that might trigger api calls
-  before_filter :set_request_headers, :only => [:join_mobile, :end, :running, :join, :destroy, :auth]
+  before_filter :set_request_headers, :only => [:join_mobile, :end, :running, :join, :destroy]
 
   before_filter :join_check_room, :only => :join
   before_filter :join_user_params, :only => :join
@@ -109,7 +109,7 @@ class Bigbluebutton::RoomsController < ApplicationController
   end
 
   # Used to join users into a meeting. Most of the work is done in before filters.
-  # Can be called via GET or POST and accepts parameters in the POST data and URL.
+  # Can be called via GET or POST and accepts parameters both in the POST data and URL.
   def join
     join_internal(@user_name, @user_role, @user_id)
   end
@@ -175,8 +175,9 @@ class Bigbluebutton::RoomsController < ApplicationController
   end
 
   def join_mobile
-    @join_mobile = join_bigbluebutton_room_url(@room, params.merge({:auto_join => '1' }))
-    @join_desktop = join_bigbluebutton_room_url(@room, params.merge({:desktop => '1' }))
+    filtered_params = select_params_for_join_mobile(params.clone)
+    @join_mobile = join_bigbluebutton_room_url(@room, filtered_params.merge({:auto_join => '1' }))
+    @join_desktop = join_bigbluebutton_room_url(@room, filtered_params.merge({:desktop => '1' }))
   end
 
   def fetch_recordings
@@ -231,7 +232,7 @@ class Bigbluebutton::RoomsController < ApplicationController
   def join_check_room
     @room = BigbluebuttonRoom.find_by_param(params[:id]) unless params[:id].blank?
     if @room.nil?
-      message = t('bigbluebutton_rails.rooms.errors.auth.wrong_params')
+      message = t('bigbluebutton_rails.rooms.errors.join.wrong_params')
       redirect_to :back, :notice => message
     end
   end
@@ -259,7 +260,7 @@ class Bigbluebutton::RoomsController < ApplicationController
     end
 
     if @user_role.nil? or @user_name.blank?
-      flash[:error] = t('bigbluebutton_rails.rooms.errors.auth.failure')
+      flash[:error] = t('bigbluebutton_rails.rooms.errors.join.failure')
       redirect_to_on_join_error
     end
   end
@@ -267,11 +268,16 @@ class Bigbluebutton::RoomsController < ApplicationController
   # Aborts and redirects to an error if the user can't create a meeting in
   # the room and it needs to be created.
   def join_check_can_create
-    unless @room.fetch_is_running?
-      unless bigbluebutton_can_create?(@room, @user_role)
-        flash[:error] = t('bigbluebutton_rails.rooms.errors.auth.cannot_create')
-        redirect_to_on_join_error
+    begin
+      unless @room.fetch_is_running?
+        unless bigbluebutton_can_create?(@room, @user_role)
+          flash[:error] = t('bigbluebutton_rails.rooms.errors.join.cannot_create')
+          redirect_to_on_join_error
+        end
       end
+    rescue BigBlueButton::BigBlueButtonException => e
+      flash[:error] = e.to_s[0..200]
+      redirect_to_on_join_error
     end
   end
 
@@ -286,6 +292,10 @@ class Bigbluebutton::RoomsController < ApplicationController
       # since we're redirecting to an intermediary page, we set in the params the params
       # we received, including the referer, so we can go back to the previous page if needed
       filtered_params = select_params_for_join_mobile(params.clone)
+      begin
+        filtered_params[:redir_url] = Addressable::URI.parse(request.env["HTTP_REFERER"]).path
+      rescue
+      end
 
       redirect_to join_mobile_bigbluebutton_room_path(@room, filtered_params)
     end
@@ -294,12 +304,7 @@ class Bigbluebutton::RoomsController < ApplicationController
   # Selects the params from `params` that should be passed in a redirect to `join_mobile` and
   # adds new parameters that might be needed.
   def select_params_for_join_mobile(params)
-    ret = params.blank? ? {} : params.slice(:user, "user")
-    begin
-      ret[:redir_url] = Addressable::URI.parse(request.env["HTTP_REFERER"]).path
-    rescue
-    end
-    ret
+    params.blank? ? {} : params.slice("user", "redir_url")
   end
 
   # Default method to redirect after an error in the action `join`.
@@ -316,7 +321,7 @@ class Bigbluebutton::RoomsController < ApplicationController
           user_opts = bigbluebutton_create_options(@room)
           @room.create_meeting(bigbluebutton_user, request, user_opts)
         else
-          flash[:error] = t('bigbluebutton_rails.rooms.errors.auth.cannot_create')
+          flash[:error] = t('bigbluebutton_rails.rooms.errors.join.cannot_create')
           redirect_to_on_join_error
           return
         end
@@ -342,7 +347,7 @@ class Bigbluebutton::RoomsController < ApplicationController
 
         redirect_to url
       else
-        flash[:error] = t('bigbluebutton_rails.rooms.errors.auth.not_running')
+        flash[:error] = t('bigbluebutton_rails.rooms.errors.join.not_running')
         redirect_to_on_join_error
       end
 

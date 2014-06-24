@@ -85,6 +85,8 @@ describe BigbluebuttonRoom do
     it { room.user_role({ :password => "wrong" }).should == nil }
     it { room.user_role({ :password => nil }).should == nil }
     it { room.user_role({ :not_password => "any" }).should == nil }
+    it { room.user_role({ }).should == nil }
+    it { room.user_role(nil).should == nil }
   end
 
   describe "#instance_variables_compare" do

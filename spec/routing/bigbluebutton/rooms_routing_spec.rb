@@ -54,7 +54,7 @@ describe Bigbluebutton::RoomsController do
       }
       it {
         {:post => "/#{prefix}/rooms/room-1/join"}.
-        should route_to(:controller => "bigbluebutton/rooms", :action => "auth", :id => "room-1")
+        should route_to(:controller => "bigbluebutton/rooms", :action => "join", :id => "room-1")
       }
       it {
         {:post => "/#{prefix}/rooms/room-1/fetch_recordings"}.
@@ -125,7 +125,7 @@ describe Bigbluebutton::RoomsController do
     }
     it {
       { :post => "/users/1/rooms/room-1/join" }.
-      should route_to(:controller => "bigbluebutton/rooms", :action => "auth",
+      should route_to(:controller => "bigbluebutton/rooms", :action => "join",
                       :user_id => "1", :id => "room-1")
     }
     it {
@@ -197,7 +197,7 @@ describe Bigbluebutton::RoomsController do
     }
     it {
       { :post => "/users/1/spaces/2/rooms/room-1/join" }.
-      should route_to(:controller => "bigbluebutton/rooms", :action => "auth",
+      should route_to(:controller => "bigbluebutton/rooms", :action => "join",
                       :user_id => "1", :space_id => "2", :id => "room-1")
     }
     it {

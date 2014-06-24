@@ -41,23 +41,25 @@ describe Bigbluebutton::RoomsController do
   describe "#join_mobile" do
     let(:user) { FactoryGirl.build(:user) }
     let(:room) { FactoryGirl.create(:bigbluebutton_room) }
-
+    let(:http_referer) { bigbluebutton_room_path(room) }
     before {
+      request.env["HTTP_REFERER"] = http_referer
       controller.should_receive(:set_request_headers)
       mock_server_and_api
       room.server = mocked_server
       controller.stub(:bigbluebutton_user) { user }
     }
 
-    context "when using http" do
+    context "with no parameters in the URL" do
       before {
         controller.should_receive(:join_bigbluebutton_room_url)
-          .once.with(room, :auto_join => '1')
+          .once.with(room, { "auto_join" => '1' })
           .and_return("http://test.com/join/url?auto_join=1")
         controller.should_receive(:join_bigbluebutton_room_url)
-          .once.with(room, :desktop => '1')
+          .once.with(room, { "desktop" => '1' })
           .and_return("http://test.com/join/url?desktop=1")
       }
+
       before(:each) { get :join_mobile, :id => room.to_param }
       it("is successful") { should respond_with(:success) }
       it("assigns room") { should assign_to(:room).with(room) }
@@ -66,18 +68,24 @@ describe Bigbluebutton::RoomsController do
       it { should render_template(:join_mobile) }
     end
 
-    context "when using another protocol" do
+    context "with parameters in the URL" do
       before {
+        # here are the validations that the parameters received by #join_mobile are used in the URLs
+        # it generates
         controller.should_receive(:join_bigbluebutton_room_url)
-          .once.with(room, :auto_join => '1')
-          .and_return("any://test.com/join/url?auto_join=1")
+          .once.with(room, { "user" => { "name" => "Name" }, "redir_url" => http_referer, "auto_join" => '1' })
+          .and_return("http://test.com/join/url?auto_join=1")
         controller.should_receive(:join_bigbluebutton_room_url)
-          .once.with(room, :desktop => '1')
-          .and_return("any://test.com/join/url?desktop=1")
+          .once.with(room, { "user" => { "name" => "Name" }, "redir_url" => http_referer, "desktop" => '1' })
+          .and_return("http://test.com/join/url?desktop=1")
       }
-      before(:each) { get :join_mobile, :id => room.to_param }
-      it("assigns join_mobile without changing the protocol") { should assign_to(:join_mobile).with("any://test.com/join/url?auto_join=1") }
-      it("assigns join_desktop without changing the protocol") { should assign_to(:join_desktop).with("any://test.com/join/url?desktop=1") }
+
+      before(:each) { get :join_mobile, :id => room.to_param, :redir_url => http_referer, :user => { :name => "Name" }, :other => "to-be-removed" }
+      it("is successful") { should respond_with(:success) }
+      it("assigns room") { should assign_to(:room).with(room) }
+      it("assigns join_mobile") { should assign_to(:join_mobile).with("http://test.com/join/url?auto_join=1") }
+      it("assigns join_desktop") { should assign_to(:join_desktop).with("http://test.com/join/url?desktop=1") }
+      it { should render_template(:join_mobile) }
     end
   end
 
@@ -346,97 +354,232 @@ describe Bigbluebutton::RoomsController do
     end
   end
 
+
   describe "#join" do
     let(:user) { FactoryGirl.build(:user) }
+    let(:http_referer) { bigbluebutton_room_path(room) }
     before {
+      request.env["HTTP_REFERER"] = http_referer
       controller.should_receive(:set_request_headers)
       mock_server_and_api
     }
 
-    context "for an anonymous user" do
-      before { controller.stub(:bigbluebutton_user) { nil } }
-      before { controller.stub(:bigbluebutton_role) { :password } }
-      before(:each) { get :join, :id => room.to_param }
-      it { should assign_to(:user_role).with(:password) }
-      it { should respond_with(:redirect) }
-      it { should redirect_to(invite_bigbluebutton_room_path(room)) }
-    end
+    for method in [:get, :post]
+      context "via #{method}" do
 
-    context "when the user's role" do
-      before { controller.stub(:bigbluebutton_user) { user } }
+        context "before filter #join_check_room" do
+          let(:user_hash) { { :name => "Elftor", :password => room.attendee_password } }
+          let(:meetingid) { "my-meeting-id" }
 
-      context "should be defined with a password" do
-        before { controller.stub(:bigbluebutton_role) { :password } }
-        before(:each) { get :join, :id => room.to_param }
-        it { should respond_with(:redirect) }
-        it { should assign_to(:user_role).with(:password) }
-        it { should redirect_to(invite_bigbluebutton_room_path(room)) }
+          context "if params[:id]" do
+            before {
+              # ignore the join, just need to before filters to run
+              controller.should_receive(:join_internal)
+              mocked_api.should_receive(:is_meeting_running?).and_return(true)
+            }
+            before(:each) { send(method, :join, :id => room.to_param, :user => user_hash) }
+            it { should assign_to(:room).with(room) }
+          end
+
+          context "if params[:id] doesn't exists" do
+            let(:message) { I18n.t('bigbluebutton_rails.rooms.errors.join.wrong_params') }
+            before(:each) {
+              BigbluebuttonRoom.stub(:find_by_param).and_return(nil)
+              send(method, :join, :id => "inexistent-room-id", :user => user_hash)
+            }
+            it { should assign_to(:room).with(nil) }
+            it { should respond_with(:redirect) }
+            it { should redirect_to(http_referer) }
+            it { should set_the_flash.to(message) }
+          end
+        end
+
+        context "before filter #join_user_params" do
+
+          context "block access if bigbluebutton_role returns nil" do
+            let(:hash) { { :name => "Elftor", :password => room.attendee_password } }
+            before { controller.stub(:bigbluebutton_role) { nil } }
+            it {
+              lambda {
+                send(method, :join, :id => room.to_param, :user => hash)
+              }.should raise_error(BigbluebuttonRails::RoomAccessDenied)
+            }
+          end
+
+          it "if there's a user logged, should use his name" do
+            controller.stub(:bigbluebutton_role) { :password }
+            hash = { :name => "Elftor", :password => room.attendee_password }
+            controller.stub(:bigbluebutton_user).and_return(user)
+            mocked_api.should_receive(:is_meeting_running?).at_least(:once).and_return(true)
+            mocked_api.should_receive(:join_meeting_url)
+              .with(room.meetingid, user.name, room.attendee_password, anything) # here's the validation
+              .and_return("http://test.com/attendee/join")
+            send(method, :join, :id => room.to_param, :user => hash)
+          end
+
+          context "uses bigbluebutton_role when the return is not :password" do
+            let(:hash) { { :name => "Elftor", :password => nil } }
+            before {
+              controller.stub(:bigbluebutton_user).and_return(nil)
+              controller.stub(:bigbluebutton_role) { :attendee }
+              mocked_api.should_receive(:is_meeting_running?).at_least(:once).and_return(true)
+              mocked_api.should_receive(:join_meeting_url)
+                .with(anything, anything, room.attendee_password, anything)
+                .and_return("http://test.com/attendee/join")
+            }
+            before(:each) { send(method, :join, :id => room.to_param, :user => hash) }
+            it { should respond_with(:redirect) }
+            it { should redirect_to("http://test.com/attendee/join") }
+            it { should assign_to(:user_role).with(:attendee) }
+            it { should assign_to(:user_name).with("Elftor") }
+            it { should assign_to(:user_id).with(nil) }
+          end
+
+          context "validates user input and shows error" do
+            before {
+              controller.stub(:bigbluebutton_user).and_return(nil)
+              controller.should_receive(:bigbluebutton_role).once { :password }
+            }
+            before(:each) { send(method, :join, :id => room.to_param, :user => user_hash) }
+
+            context "when name is not set" do
+              let(:user_hash) { { :password => room.moderator_password } }
+              it { should respond_with(:redirect) }
+              it { should redirect_to(http_referer) }
+              it { should assign_to(:room).with(room) }
+              it { should assign_to(:user_role).with(:moderator) }
+              it { should assign_to(:user_name).with(nil) }
+              it { should assign_to(:user_id).with(nil) }
+              it { should set_the_flash.to(I18n.t('bigbluebutton_rails.rooms.errors.join.failure')) }
+            end
+
+            context "when name is set but empty" do
+              let(:user_hash) { { :password => room.moderator_password, :name => "" } }
+              it { should respond_with(:redirect) }
+              it { should redirect_to(http_referer) }
+              it { should assign_to(:room).with(room) }
+              it { should assign_to(:user_role).with(:moderator) }
+              it { should assign_to(:user_name).with("") }
+              it { should assign_to(:user_id).with(nil) }
+              it { should set_the_flash.to(I18n.t('bigbluebutton_rails.rooms.errors.join.failure')) }
+            end
+
+            context "when the password is wrong" do
+              let(:user_hash) { { :name => "Elftor", :password => nil } }
+              it { should respond_with(:redirect) }
+              it { should redirect_to(http_referer) }
+              it { should assign_to(:user_role).with(nil) }
+              it { should assign_to(:user_name).with("Elftor") }
+              it { should assign_to(:user_id).with(nil) }
+              it { should assign_to(:room).with(room) }
+              it { should set_the_flash.to(I18n.t('bigbluebutton_rails.rooms.errors.join.failure')) }
+            end
+          end
+
+        end
+
+        context "before filter #join_check_can_create" do
+          let(:user_hash) { { :password => room.moderator_password, :name => "Elftor" } }
+          before {
+            controller.stub(:bigbluebutton_user).and_return(nil)
+            controller.should_receive(:bigbluebutton_role).once { :moderator }
+          }
+
+          context "if the room is not running and the user can't create it" do
+            before {
+              room.should_receive(:fetch_is_running?).and_return(false)
+              controller.should_receive(:bigbluebutton_can_create?)
+                .with(room, :moderator)
+                .and_return(false)
+            }
+            before(:each) { send(method, :join, :id => room.to_param, :user => user_hash) }
+            it { should respond_with(:redirect) }
+            it { should redirect_to(http_referer) }
+            it { should set_the_flash.to(I18n.t('bigbluebutton_rails.rooms.errors.join.cannot_create')) }
+          end
+        end
+
+        context "before filter #join_check_redirect_to_mobile" do
+          before {
+            mocked_api.should_receive(:is_meeting_running?).at_least(:once).and_return(true)
+          }
+
+          context "in a mobile device with no flags set" do
+            before {
+              controller.stub(:bigbluebutton_role) { :moderator }
+              browser = double()
+              browser.should_receive(:mobile?).and_return(true)
+              controller.stub(:browser).and_return(browser)
+            }
+
+            context "with no parameters in the url" do
+              before(:each) { send(method, :join, :id => room.to_param) }
+              it { should respond_with(:redirect) }
+              it { should redirect_to(join_mobile_bigbluebutton_room_path(room, :redir_url => http_referer)) }
+            end
+
+            context "with extra parameters in the url it selects only the parameters needed" do
+              before(:each) { send(method, :join, :id => room.to_param, :user => { :name => "User name" }, :random => "i-will-be-removed") }
+              it { should respond_with(:redirect) }
+              it { should redirect_to(join_mobile_bigbluebutton_room_path(room, :user => { :name => "User name" }, :redir_url => http_referer)) }
+            end
+
+            context "with a full URL in the request referer it uses only the path in the parameters" do
+              before { request.env["HTTP_REFERER"] = "http://mconf.org/webconf/test" }
+              before(:each) { send(method, :join, :id => room.to_param) }
+              it { should respond_with(:redirect) }
+              it { should redirect_to(join_mobile_bigbluebutton_room_path(room, :redir_url => "/webconf/test")) }
+            end
+          end
+
+          context "when ':auto_join' is set" do
+            before {
+              controller.stub(:bigbluebutton_user) { user }
+              controller.stub(:bigbluebutton_role) { :moderator }
+
+              # make sure it's in a mobile device
+              browser = double()
+              browser.should_receive(:mobile?).and_return(true)
+              controller.stub(:browser).and_return(browser)
+
+              # here's the real verification
+              controller.should_receive(:join_internal).with(user.name, :moderator, user.id)
+            }
+            it { send(method, :join, :id => room.to_param, :auto_join => true) }
+          end
+
+          context "when ':desktop' is set" do
+            before {
+              controller.stub(:bigbluebutton_user) { user }
+              controller.stub(:bigbluebutton_role) { :moderator }
+
+              # make sure it's in a mobile device
+              browser = double()
+              browser.should_receive(:mobile?).and_return(true)
+              controller.stub(:browser).and_return(browser)
+
+              # here's the real verification
+              controller.should_receive(:join_internal).with(user.name, :moderator, user.id)
+            }
+            it { send(method, :join, :id => room.to_param, :desktop => true) }
+          end
+
+        end
+
+        context "calls #join_internal" do
+          before {
+            controller.stub(:bigbluebutton_user) { user }
+            controller.stub(:bigbluebutton_role) { :moderator }
+            mocked_api.should_receive(:is_meeting_running?).at_least(:once).and_return(true)
+
+            # here's the validation
+            controller.should_receive(:join_internal)
+              .with(user.name, :moderator, user.id)
+          }
+          it { send(method, :join, :id => room.to_param) }
+        end
+
       end
-
-      context "is undefined, the access should be blocked" do
-        before { controller.stub(:bigbluebutton_role) { nil } }
-        it {
-          lambda {
-            get :join, :id => room.to_param
-          }.should raise_error(BigbluebuttonRails::RoomAccessDenied)
-        }
-      end
-    end
-
-    context "in a mobile device" do
-      before {
-        controller.stub(:bigbluebutton_role) { :moderator }
-        browser = double()
-        browser.should_receive(:mobile?).and_return(true)
-        controller.stub(:browser).and_return(browser)
-      }
-      before(:each) { get :join, :id => room.to_param }
-      it { should respond_with(:redirect) }
-      it { should redirect_to(join_mobile_bigbluebutton_room_path(room)) }
-    end
-
-    context "when ':auto_join' is set" do
-      before {
-        controller.stub(:bigbluebutton_user) { user }
-        controller.stub(:bigbluebutton_role) { :moderator }
-
-        # make sure it's in a mobile device
-        browser = double()
-        browser.should_receive(:mobile?).and_return(true)
-        controller.stub(:browser).and_return(browser)
-
-        # here's the real verification
-        controller.should_receive(:join_internal)
-          .with(user.name, :moderator, user.id, :join)
-      }
-      it { get :join, :id => room.to_param, :auto_join => true }
-    end
-
-    context "when ':desktop' is set" do
-      before {
-        controller.stub(:bigbluebutton_user) { user }
-        controller.stub(:bigbluebutton_role) { :moderator }
-
-        # make sure it's in a mobile device
-        browser = double()
-        browser.should_receive(:mobile?).and_return(true)
-        controller.stub(:browser).and_return(browser)
-
-        # here's the real verification
-        controller.should_receive(:join_internal)
-          .with(user.name, :moderator, user.id, :join)
-      }
-      it { get :join, :id => room.to_param, :desktop => true }
-    end
-
-    context "calls #join_internal" do
-      before {
-        controller.stub(:bigbluebutton_user) { user }
-        controller.stub(:bigbluebutton_role) { :moderator }
-        controller.should_receive(:join_internal)
-          .with(user.name, :moderator, user.id, :join)
-      }
-      it { get :join, :id => room.to_param }
     end
   end
 
@@ -525,131 +668,6 @@ describe Bigbluebutton::RoomsController do
     end
   end
 
-  describe "#auth" do
-    let(:user) { FactoryGirl.build(:user) }
-    before {
-      controller.should_receive(:set_request_headers)
-      mock_server_and_api
-      controller.stub(:bigbluebutton_user).and_return(nil)
-    }
-
-    context "assigns @room" do
-      let(:user_hash) { { :name => "Elftor", :password => room.attendee_password } }
-      let(:meetingid) { "my-meeting-id" }
-      let(:http_referer) { bigbluebutton_server_path(mocked_server) }
-      before {
-        mocked_api.stub(:is_meeting_running?)
-        request.env["HTTP_REFERER"] = http_referer
-      }
-
-      context "if params[:id]" do
-        before(:each) { post :auth, :id => room.to_param, :user => user_hash }
-        it { should assign_to(:room).with(room) }
-      end
-
-      context "if params[:id] doesn't exists" do
-        let(:message) { I18n.t('bigbluebutton_rails.rooms.errors.auth.wrong_params') }
-        before(:each) {
-          BigbluebuttonRoom.should_receive(:find_by_param)
-                           .with("inexistent-room-id") { nil }
-          post :auth, :id => "inexistent-room-id", :user => user_hash
-        }
-        it { should assign_to(:room).with(nil) }
-        it { should respond_with(:redirect) }
-        it { should redirect_to(http_referer) }
-        it { should set_the_flash.to(message) }
-      end
-    end
-
-    context "block access if bigbluebutton_role returns nil" do
-      let(:hash) { { :name => "Elftor", :password => room.attendee_password } }
-      before { controller.stub(:bigbluebutton_role) { nil } }
-      it {
-        lambda {
-          post :auth, :id => room.to_param, :user => hash
-        }.should raise_error(BigbluebuttonRails::RoomAccessDenied)
-      }
-    end
-
-    it "if there's a user logged, should use his name" do
-      controller.stub(:bigbluebutton_role) { :password }
-      hash = { :name => "Elftor", :password => room.attendee_password }
-      controller.stub(:bigbluebutton_user).and_return(user)
-      mocked_api.should_receive(:is_meeting_running?).and_return(true)
-      mocked_api.should_receive(:join_meeting_url)
-        .with(room.meetingid, user.name, room.attendee_password, anything) # here's the validation
-        .and_return("http://test.com/attendee/join")
-      post :auth, :id => room.to_param, :user => hash
-    end
-
-    it "redirects to the correct join_url" do
-      hash = { :name => "Elftor", :password => room.attendee_password }
-      mocked_api.should_receive(:is_meeting_running?).and_return(true)
-      mocked_api.should_receive(:join_meeting_url).and_return("http://test.com/attendee/join")
-      post :auth, :id => room.to_param, :user => hash
-      should respond_with(:redirect)
-      should redirect_to("http://test.com/attendee/join")
-    end
-
-    it "uses bigbluebutton_role when the return is not :password" do
-      controller.stub(:bigbluebutton_role) { :attendee }
-      hash = { :name => "Elftor", :password => nil }
-      mocked_api.should_receive(:is_meeting_running?).and_return(true)
-      mocked_api.should_receive(:join_meeting_url)
-        .with(anything, anything, room.attendee_password, anything)
-        .and_return("http://test.com/attendee/join")
-      post :auth, :id => room.to_param, :user => hash
-      should respond_with(:redirect)
-      should redirect_to("http://test.com/attendee/join")
-      should assign_to(:user_role).with(:attendee)
-    end
-
-    context "validates user input and shows error" do
-      before { controller.should_receive(:bigbluebutton_role).once { :password } }
-      before(:each) { post :auth, :id => room.to_param, :user => user_hash }
-
-      context "when name is not set" do
-        let(:user_hash) { { :password => room.moderator_password } }
-        it { should respond_with(:unauthorized) }
-        it { should assign_to(:room).with(room) }
-        it { should assign_to(:user_role).with(:password) }
-        it { should render_template(:invite) }
-        it { should set_the_flash.to(I18n.t('bigbluebutton_rails.rooms.errors.auth.failure')) }
-      end
-
-      context "when name is set but empty" do
-        let(:user_hash) { { :password => room.moderator_password, :name => "" } }
-        it { should respond_with(:unauthorized) }
-        it { should assign_to(:room).with(room) }
-        it { should assign_to(:user_role).with(:password) }
-        it { should render_template(:invite) }
-        it { should set_the_flash.to(I18n.t('bigbluebutton_rails.rooms.errors.auth.failure')) }
-      end
-
-      context "when the password is wrong" do
-        let(:user_hash) { { :name => "Elftor", :password => nil } }
-        it { should respond_with(:unauthorized) }
-        it { should assign_to(:user_role).with(:password) }
-        it { should assign_to(:room).with(room) }
-        it { should render_template(:invite) }
-        it { should set_the_flash.to(I18n.t('bigbluebutton_rails.rooms.errors.auth.failure')) }
-      end
-    end
-
-    context "calls #join_internal" do
-      let(:user) { FactoryGirl.build(:user) }
-      let(:hash) { { :name => user.name, :password => room.moderator_password } }
-      before {
-        controller.stub(:bigbluebutton_user) { nil }
-        controller.stub(:bigbluebutton_role) { :moderator }
-        controller.stub(:render) # prevent ActionView::MissingTemplate
-        controller.should_receive(:join_internal)
-          .with(user.name, :moderator, nil, :invite)
-      }
-      it { post :auth, :id => room.to_param, :user => hash }
-    end
-  end
-
   describe "#fetch_recordings" do
     # setup basic server and API mocks
     before do
@@ -733,12 +751,12 @@ describe Bigbluebutton::RoomsController do
     let(:headers) { {"x-forwarded-for" => "0.0.0.0"} }
     let(:make_request) {  }
 
-    # uses any action that does not trigger this before filter
+    # uses any action that does trigger this before filter
     # just to make sure the before filter won't break before an action that is not covered
     # by the find_room filter
     context "when @room is nil" do
       before { request.env["HTTP_REFERER"] = "/any" }
-      before(:each) { post :auth, :id => 'invalid' }
+      before(:each) { post :join, :id => 'invalid' }
       it { should redirect_to("/any") }
     end
 
@@ -759,7 +777,9 @@ describe Bigbluebutton::RoomsController do
   # actions that also call #join_internal.
   describe "#join_internal" do
     let(:user) { FactoryGirl.build(:user) }
+    let(:http_referer) { bigbluebutton_room_path(room) }
     before {
+      request.env["HTTP_REFERER"] = http_referer
       controller.stub(:bigbluebutton_user).and_return(user)
       controller.stub(:bigbluebutton_role).and_return(:attendee)
       BigbluebuttonRoom.stub(:find_by_param).and_return(room)
@@ -768,7 +788,7 @@ describe Bigbluebutton::RoomsController do
 
     context "when the user has permission to create the meeting" do
       before {
-        room.should_receive(:fetch_is_running?).and_return(false)
+        room.should_receive(:fetch_is_running?).at_least(:once).and_return(false)
         controller.stub(:bigbluebutton_can_create?).with(room, :attendee)
           .and_return(true)
         controller.stub(:bigbluebutton_create_options).with(room)
@@ -785,20 +805,20 @@ describe Bigbluebutton::RoomsController do
 
     context "when the user doesn't have permission to create the meeting" do
       before {
-        room.should_receive(:fetch_is_running?).and_return(false)
+        room.should_receive(:fetch_is_running?).at_least(:once).and_return(false)
         controller.stub(:bigbluebutton_can_create?).with(room, :attendee)
           .and_return(false)
         room.should_not_receive(:create_meeting)
       }
       before(:each) { get :join, :id => room.to_param }
-      it { should respond_with(:unauthorized) }
-      it { should render_template(:join) }
+      it { should respond_with(:redirect) }
+      it { should redirect_to(http_referer) }
       it { should set_the_flash.to(I18n.t('bigbluebutton_rails.rooms.errors.auth.cannot_create')) }
     end
 
     context "when the user has permission to join the meeting" do
       before {
-        room.should_receive(:fetch_is_running?).and_return(true)
+        room.should_receive(:fetch_is_running?).at_least(:once).and_return(true)
         room.should_not_receive(:create_meeting)
         room.should_receive(:fetch_new_token).and_return(nil)
         room.should_receive(:join_url)
@@ -827,7 +847,7 @@ describe Bigbluebutton::RoomsController do
 
     context "gets a new config token before joining" do
       before {
-        room.should_receive(:fetch_is_running?).and_return(true)
+        room.should_receive(:fetch_is_running?).at_least(:once).and_return(true)
         room.should_not_receive(:create_meeting)
       }
 
@@ -854,7 +874,7 @@ describe Bigbluebutton::RoomsController do
 
     context "when the user doesn't have permission to join the meeting" do
       before {
-        room.should_receive(:fetch_is_running?).and_return(true)
+        room.should_receive(:fetch_is_running?).at_least(:once).and_return(true)
         room.should_not_receive(:create_meeting)
         room.should_receive(:fetch_new_token).and_return(nil)
         room.should_receive(:join_url)
@@ -862,14 +882,14 @@ describe Bigbluebutton::RoomsController do
           .and_return(nil)
       }
       before(:each) { get :join, :id => room.to_param }
-      it { should respond_with(:success) }
-      it { should render_template(:join) }
+      it { should respond_with(:redirect) }
+      it { should redirect_to(http_referer) }
       it { should set_the_flash.to(I18n.t('bigbluebutton_rails.rooms.errors.auth.not_running')) }
     end
 
     context "in a mobile device" do
       before {
-        room.should_receive(:fetch_is_running?).and_return(true)
+        room.should_receive(:fetch_is_running?).at_least(:once).and_return(true)
         room.should_not_receive(:create_meeting)
         room.should_receive(:fetch_new_token).and_return(nil)
         browser = double()
@@ -912,11 +932,12 @@ describe Bigbluebutton::RoomsController do
       let(:bbb_error_msg) { SecureRandom.hex(250) }
       let(:bbb_error) { BigBlueButton::BigBlueButtonException.new(bbb_error_msg) }
       before {
-        request.env["HTTP_REFERER"] = "/any"
-        room.should_receive(:fetch_is_running?) { raise bbb_error }
+        room.should_receive(:fetch_is_running?).at_least(:once).and_return(true)
+        room.should_receive(:join_url) { raise bbb_error }
       }
       before(:each) { get :join, :id => room.to_param }
       it { should respond_with(:redirect) }
+      it { should redirect_to(http_referer) }
       it { should set_the_flash.to(bbb_error_msg[0..200]) }
     end
 

@@ -102,7 +102,7 @@ describe ActionController do
     }
     it {
       {:post => "/custom/rooms/1/join"}.
-      should route_to(:controller => "custom_rooms", :action => "auth", :id => "1")
+      should route_to(:controller => "custom_rooms", :action => "join", :id => "1")
     }
     it {
       {:post => "/custom/rooms/1/fetch_recordings"}.
