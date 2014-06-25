@@ -813,7 +813,7 @@ describe Bigbluebutton::RoomsController do
       before(:each) { get :join, :id => room.to_param }
       it { should respond_with(:redirect) }
       it { should redirect_to(http_referer) }
-      it { should set_the_flash.to(I18n.t('bigbluebutton_rails.rooms.errors.auth.cannot_create')) }
+      it { should set_the_flash.to(I18n.t('bigbluebutton_rails.rooms.errors.join.cannot_create')) }
     end
 
     context "when the user has permission to join the meeting" do
@@ -884,7 +884,7 @@ describe Bigbluebutton::RoomsController do
       before(:each) { get :join, :id => room.to_param }
       it { should respond_with(:redirect) }
       it { should redirect_to(http_referer) }
-      it { should set_the_flash.to(I18n.t('bigbluebutton_rails.rooms.errors.auth.not_running')) }
+      it { should set_the_flash.to(I18n.t('bigbluebutton_rails.rooms.errors.join.not_running')) }
     end
 
     context "in a mobile device" do
