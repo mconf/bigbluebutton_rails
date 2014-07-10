@@ -24,6 +24,9 @@ describe BigbluebuttonRoom do
   it { should delegate(:default_layout).to(:room_options) }
   it { should delegate(:"default_layout=").to(:room_options) }
 
+  it { should delegate(:presenter_share_only).to(:room_options) }
+  it { should delegate(:"presenter_share_only=").to(:room_options) }
+
   it { should delegate(:get_available_layouts).to(:room_options) }
 
   it { should validate_presence_of(:meetingid) }

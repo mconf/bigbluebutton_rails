@@ -22,6 +22,7 @@ class BigbluebuttonRoom < ActiveRecord::Base
           :dependent => :destroy
 
   delegate :default_layout, :default_layout=, :to => :room_options
+  delegate :presenter_share_only, :presenter_share_only=, :to => :room_options
   delegate :get_available_layouts, :to => :room_options
 
   accepts_nested_attributes_for :metadata,

@@ -22,15 +22,22 @@ describe BigbluebuttonRoomOptions do
     end
   end
 
-  describe "set_on_config_xml" do
+  describe "#set_on_config_xml" do
     let(:config_xml) { '<config></config>' }
 
     context "if the xml changed" do
       before {
-        room_options.update_attributes(:default_layout => "AnyLayout")
+        room_options.update_attributes(:default_layout => "AnyLayout",
+                                       :presenter_share_only => false)
         BigBlueButton::BigBlueButtonConfigXml.any_instance
           .should_receive(:set_attribute)
           .with('layout', 'defaultLayout', "AnyLayout", false)
+        BigBlueButton::BigBlueButtonConfigXml.any_instance
+          .should_receive(:set_attribute)
+          .with('VideoconfModule', 'presenterShareOnly', false, true)
+        BigBlueButton::BigBlueButtonConfigXml.any_instance
+          .should_receive(:set_attribute)
+          .with('PhoneModule', 'presenterShareOnly', false, true)
         BigBlueButton::BigBlueButtonConfigXml.any_instance
           .should_receive(:is_modified?).and_return(true)
         BigBlueButton::BigBlueButtonConfigXml.any_instance
@@ -42,10 +49,17 @@ describe BigbluebuttonRoomOptions do
 
     context "if the xml did not change" do
       before {
-        room_options.update_attributes(:default_layout => "AnyLayout")
+        room_options.update_attributes(:default_layout => "AnyLayout",
+                                       :presenter_share_only => false)
         BigBlueButton::BigBlueButtonConfigXml.any_instance
           .should_receive(:set_attribute)
           .with('layout', 'defaultLayout', "AnyLayout", false)
+        BigBlueButton::BigBlueButtonConfigXml.any_instance
+          .should_receive(:set_attribute)
+          .with('VideoconfModule', 'presenterShareOnly', false, true)
+        BigBlueButton::BigBlueButtonConfigXml.any_instance
+          .should_receive(:set_attribute)
+          .with('PhoneModule', 'presenterShareOnly', false, true)
         BigBlueButton::BigBlueButtonConfigXml.any_instance
           .should_receive(:is_modified?).and_return(false)
       }
@@ -75,18 +89,44 @@ describe BigbluebuttonRoomOptions do
       end
     end
 
+    context "if #presenter_share_only is" do
+      context "nil" do
+        before {
+          room_options.update_attributes(:presenter_share_only => nil)
+          BigBlueButton::BigBlueButtonConfigXml.any_instance
+            .should_not_receive(:set_attribute)
+            .with('VideoconfModule', 'presenterShareOnly', anything, anything)
+          BigBlueButton::BigBlueButtonConfigXml.any_instance
+            .should_not_receive(:set_attribute)
+            .with('PhoneModule', 'presenterShareOnly', anything, anything)
+        }
+        it("doesn't set the property in the xml") { room_options.set_on_config_xml(config_xml) }
+      end
+    end
+
   end
 
-  describe "is_modified?" do
+  describe "#is_modified?" do
     context "if default_layout is set" do
       before { room_options.update_attributes(:default_layout => 'Any') }
       subject { room_options.is_modified? }
       it("returns true") { should be_true }
     end
 
-    context "if default _layout is not set" do
+    context "if default_layout is not set" do
       subject { room_options.is_modified? }
-      it("returns true") { should be_false }
+      it("returns false") { should be_false }
+    end
+
+    context "if presenter_share_only is set" do
+      before { room_options.update_attributes(:presenter_share_only => true) }
+      subject { room_options.is_modified? }
+      it("returns true") { should be_true}
+    end
+
+    context "if presenter_share_only is not set" do
+      subject { room_options.is_modified? }
+      it("returns false") { should be_false }
     end
   end
 

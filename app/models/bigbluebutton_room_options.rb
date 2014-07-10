@@ -20,6 +20,10 @@ class BigbluebuttonRoomOptions < ActiveRecord::Base
     unless self.default_layout.blank?
       config_xml.set_attribute("layout", "defaultLayout", self.default_layout, false)
     end
+    unless self.presenter_share_only.nil?
+      config_xml.set_attribute("VideoconfModule", "presenterShareOnly", self.presenter_share_only, true)
+      config_xml.set_attribute("PhoneModule", "presenterShareOnly", self.presenter_share_only, true)
+    end
     if config_xml.is_modified?
       config_xml.as_string
     else
@@ -30,6 +34,6 @@ class BigbluebuttonRoomOptions < ActiveRecord::Base
   # Returns true if any of the attributes was set. Is used to check whether the options
   # have to be sent to the server (setConfigXML) or not.
   def is_modified?
-    !self.default_layout.nil?
+    !self.default_layout.nil? || !self.presenter_share_only.nil?
   end
 end
