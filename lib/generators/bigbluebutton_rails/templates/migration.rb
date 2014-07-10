@@ -37,6 +37,7 @@ class CreateBigbluebuttonRails < ActiveRecord::Migration
     create_table :bigbluebutton_room_options do |t|
       t.integer :room_id
       t.string :default_layout
+      t.boolean :presenter_share_only
       t.timestamps
     end
     add_index :bigbluebutton_room_options, :room_id
