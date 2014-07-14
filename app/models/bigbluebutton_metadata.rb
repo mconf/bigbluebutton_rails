@@ -8,7 +8,7 @@ class BigbluebuttonMetadata < ActiveRecord::Base
 
   validates :name, :presence => true
   validates :name, :format => {
-    :with => /^[a-zA-Z]+[a-zA-Z\d-]*$/,
+    :with => /\A[a-zA-Z]+[a-zA-Z\d-]*\z/,
     :message => I18n.t('bigbluebutton_rails.metadata.errors.name_format')
   }
   validates :name,
