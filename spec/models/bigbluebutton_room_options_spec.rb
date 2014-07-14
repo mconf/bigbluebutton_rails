@@ -28,7 +28,9 @@ describe BigbluebuttonRoomOptions do
     context "if the xml changed" do
       before {
         room_options.update_attributes(:default_layout => "AnyLayout",
-                                       :presenter_share_only => false)
+                                       :presenter_share_only => false,
+                                       :auto_start_video => false,
+                                       :auto_start_audio => false)
         BigBlueButton::BigBlueButtonConfigXml.any_instance
           .should_receive(:set_attribute)
           .with('layout', 'defaultLayout', "AnyLayout", false)
@@ -38,6 +40,12 @@ describe BigbluebuttonRoomOptions do
         BigBlueButton::BigBlueButtonConfigXml.any_instance
           .should_receive(:set_attribute)
           .with('PhoneModule', 'presenterShareOnly', false, true)
+        BigBlueButton::BigBlueButtonConfigXml.any_instance
+          .should_receive(:set_attribute)
+          .with('VideoconfModule', 'autoStart', false, true)
+        BigBlueButton::BigBlueButtonConfigXml.any_instance
+          .should_receive(:set_attribute)
+          .with('PhoneModule', 'autoJoin', false, true)
         BigBlueButton::BigBlueButtonConfigXml.any_instance
           .should_receive(:is_modified?).and_return(true)
         BigBlueButton::BigBlueButtonConfigXml.any_instance
@@ -50,7 +58,9 @@ describe BigbluebuttonRoomOptions do
     context "if the xml did not change" do
       before {
         room_options.update_attributes(:default_layout => "AnyLayout",
-                                       :presenter_share_only => false)
+                                       :presenter_share_only => false,
+                                       :auto_start_video => false,
+                                       :auto_start_audio => false)
         BigBlueButton::BigBlueButtonConfigXml.any_instance
           .should_receive(:set_attribute)
           .with('layout', 'defaultLayout', "AnyLayout", false)
@@ -60,6 +70,12 @@ describe BigbluebuttonRoomOptions do
         BigBlueButton::BigBlueButtonConfigXml.any_instance
           .should_receive(:set_attribute)
           .with('PhoneModule', 'presenterShareOnly', false, true)
+        BigBlueButton::BigBlueButtonConfigXml.any_instance
+          .should_receive(:set_attribute)
+          .with('VideoconfModule', 'autoStart', false, true)
+        BigBlueButton::BigBlueButtonConfigXml.any_instance
+          .should_receive(:set_attribute)
+          .with('PhoneModule', 'autoJoin', false, true)
         BigBlueButton::BigBlueButtonConfigXml.any_instance
           .should_receive(:is_modified?).and_return(false)
       }
@@ -104,6 +120,30 @@ describe BigbluebuttonRoomOptions do
       end
     end
 
+    context "if #auto_start_video is" do
+      context "nil" do
+        before {
+          room_options.update_attributes(:auto_start_video => nil)
+          BigBlueButton::BigBlueButtonConfigXml.any_instance
+            .should_not_receive(:set_attribute)
+            .with('VideoconfModule', 'autoStart', anything, anything)
+        }
+        it("doesn't set the property in the xml") { room_options.set_on_config_xml(config_xml) }
+      end
+    end
+
+    context "if #auto_start_audio is" do
+      context "nil" do
+        before {
+          room_options.update_attributes(:auto_start_audio => nil)
+          BigBlueButton::BigBlueButtonConfigXml.any_instance
+            .should_not_receive(:set_attribute)
+            .with('PhoneModule', 'autoJoin', anything, anything)
+        }
+        it("doesn't set the property in the xml") {room_options.set_on_config_xml(config_xml) }
+      end
+    end
+
   end
 
   describe "#is_modified?" do
@@ -128,6 +168,30 @@ describe BigbluebuttonRoomOptions do
       subject { room_options.is_modified? }
       it("returns false") { should be_false }
     end
+
+    context "if auto_start_video is set" do
+      before { room_options.update_attributes(:auto_start_video => true) }
+      subject { room_options.is_modified? }
+      it("returns true") { should be_true}
+    end
+
+    context "if auto_start_video is not set" do
+      subject { room_options.is_modified? }
+      it("returns false" ) { should be_false }
+    end
+    
+    context "if auto_start_audio is set" do
+      before { room_options.update_attributes(:auto_start_audio => true) }
+      subject { room_options.is_modified? }
+      it("returns true") { should be_true}
+    end
+
+    context "if auto_start_audio is not set" do
+      subject { room_options.is_modified? }
+      it("returns false" ) { should be_false }
+    end
+
+
   end
 
 end
