@@ -27,8 +27,8 @@ group :test do
   # to use redis in-memory and clean it in-between tests, used for resque
   gem "fakeredis", :require => "fakeredis/rspec"
 
-  gem "capybara", "~> 2.0.0"
-  gem "capybara-mechanize", "~> 1.0.0" # for remote requests
+  gem "capybara", "~> 2.2.0"
+  gem "capybara-mechanize" # for remote requests
   gem "capybara-webkit" # best option found for js
   gem "launchy"
 end
