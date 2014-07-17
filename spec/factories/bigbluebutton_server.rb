@@ -6,4 +6,9 @@ FactoryGirl.define do
     s.version '0.8'
     s.sequence(:param) { |n| "server-#{n}" }
   end
+
+  after(:create) do |s|
+    s.updated_at = s.updated_at.change(:usec => 0)
+    s.created_at = s.created_at.change(:usec => 0)
+  end
 end
