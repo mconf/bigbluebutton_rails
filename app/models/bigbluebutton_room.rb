@@ -36,7 +36,7 @@ class BigbluebuttonRoom < ActiveRecord::Base
   validates :welcome_msg, :length => { :maximum => 250 }
   validates :private, :inclusion => { :in => [true, false] }
   validates :voice_bridge, :presence => true, :uniqueness => true
-  validates :record, :inclusion => { :in => [true, false] }
+  validates :record_meeting, :inclusion => { :in => [true, false] }
 
   validates :duration,
     :presence => true,
@@ -294,7 +294,7 @@ class BigbluebuttonRoom < ActiveRecord::Base
         :server => self.server,
         :meetingid => self.meetingid,
         :name => self.name,
-        :record => self.record,
+        :recorded => self.record_meeting,
         :running => self.running
       }
       unless metadata.nil?
@@ -419,7 +419,7 @@ class BigbluebuttonRoom < ActiveRecord::Base
 
   def internal_create_meeting(user=nil, user_opts={})
     opts = {
-      :record => self.record,
+      :recorded => self.record_meeting,
       :duration => self.duration,
       :moderatorPW => self.moderator_password,
       :attendeePW => self.attendee_password,

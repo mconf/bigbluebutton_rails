@@ -36,7 +36,7 @@ namespace :db do
           :private => false,
           :param => "meeting-#{n1}-#{n2}",
           :external => false,
-          :record => false,
+          :record_meeting => false,
           :duration => 0
         }
         puts "  - Creating room #{params[:name]}"
