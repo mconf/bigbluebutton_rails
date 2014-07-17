@@ -33,7 +33,14 @@ RSpec::Matchers.define :delegate do |method|
         raise "#{@delegator}'s' #{@to} method does not have zero or -1 arity (it expects parameters)"
       end
       @delegator.stub(@to).and_return receiver_double(method)
-      @delegator.send(@method) == :called
+
+      # in case it's a writer method
+      if @method.to_s[-1] == '='
+        param = true
+        @delegator.send(@method, true) == param
+      else
+        @delegator.send(@method) == :called
+      end
     else
       raise "#{@delegator} does not respond to #{@to}"
     end
