@@ -30,8 +30,8 @@ module Shoulda # :nodoc:
 
           # remove the selected attributes
           @ignored.each do |attr|
-            @actual.gsub!(/.#{attr}.:[^{,]*[,]+/, "")
-            @expected.gsub!(/.#{attr}.:[^{,]*[,]+/, "")
+            @actual.gsub!(/.#{attr}.:[^{,]*[,]*/, "")
+            @expected.gsub!(/.#{attr}.:[^{,]*[,]*/, "")
           end
           # remove the values of all attributes
           if @no_values
