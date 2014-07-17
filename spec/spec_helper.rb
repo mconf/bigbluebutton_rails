@@ -1,7 +1,5 @@
 require 'rubygems'
 
-#uncomment the following line to use spork with the debugger
-
 # Configure Rails Envinronment
 ENV["RAILS_ENV"] = "test"
 
@@ -46,5 +44,6 @@ Dir["#{ File.dirname(__FILE__)}/factories/*.rb"].each { |f| require f }
 RSpec.configure do |config|
   config.mock_with :rspec
   config.use_transactional_fixtures = true
+  config.include RSpec::Rails::ViewRendering
   config.include FactoryGirl::Syntax::Methods
 end
