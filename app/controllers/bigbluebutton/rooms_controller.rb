@@ -361,7 +361,7 @@ class Bigbluebutton::RoomsController < ApplicationController
     unless params[:bigbluebutton_room].nil?
       params[:bigbluebutton_room].permit(*room_allowed_params)
     else
-      []
+      {}
     end
   end
 
