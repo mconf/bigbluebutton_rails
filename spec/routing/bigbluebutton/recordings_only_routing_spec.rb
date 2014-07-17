@@ -3,7 +3,7 @@ require 'spec_helper'
 describe ActionController do
   include Shoulda::Matchers::ActionController
 
-  describe "routing with :only => 'recordings'" do
+  describe "routing with :only => 'recordings'", :type => :routing do
 
     it {
       {:get => "/only-recordings/bigbluebutton/recordings"}.
@@ -26,7 +26,7 @@ describe ActionController do
       should route_to(:controller => "bigbluebutton/recordings", :action => "destroy", :id => "rec-1")
     }
     it {
-      {:get => "/only-recordings/bigbluebutton/recordings/rec-1/play?type=any"}.
+      {:get => "/only-recordings/bigbluebutton/recordings/rec-1/play"}.
       should route_to(:controller => "bigbluebutton/recordings", :action => "play", :id => "rec-1")
     }
     it {

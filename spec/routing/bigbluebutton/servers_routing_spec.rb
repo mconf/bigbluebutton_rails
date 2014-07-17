@@ -3,7 +3,7 @@ require 'spec_helper'
 describe Bigbluebutton::ServersController do
   include Shoulda::Matchers::ActionController
 
-  describe "routing" do
+  describe "routing", :type => :routing do
 
     # default and scoped routes
     ['bigbluebutton', 'webconference'].each do |prefix|

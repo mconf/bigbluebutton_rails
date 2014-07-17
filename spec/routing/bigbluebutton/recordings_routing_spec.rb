@@ -3,7 +3,7 @@ require 'spec_helper'
 describe Bigbluebutton::RecordingsController do
   include Shoulda::Matchers::ActionController
 
-  describe "routing" do
+  describe "routing", :type => :routing do
 
     # default and scoped routes
     ['bigbluebutton', 'webconference'].each do |prefix|
@@ -29,7 +29,7 @@ describe Bigbluebutton::RecordingsController do
       }
       it {
         {:get => "/#{prefix}/recordings/rec-1/play?type=any"}.
-        should route_to(:controller => "bigbluebutton/recordings", :action => "play", :id => "rec-1")
+        should route_to(:controller => "bigbluebutton/recordings", :action => "play", :id => "rec-1", :type => "any")
       }
       it {
         {:post => "/#{prefix}/recordings/rec-1/publish"}.

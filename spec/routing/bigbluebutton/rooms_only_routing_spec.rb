@@ -3,7 +3,7 @@ require 'spec_helper'
 describe ActionController do
   include Shoulda::Matchers::ActionController
 
-  describe "routing with :only => 'rooms'" do
+  describe "routing with :only => 'rooms'", :type => :routing do
 
     it {
       {:get => "/only-rooms/bigbluebutton/rooms"}.

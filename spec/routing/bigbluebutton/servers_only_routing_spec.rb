@@ -3,7 +3,7 @@ require 'spec_helper'
 describe ActionController do
   include Shoulda::Matchers::ActionController
 
-  describe "routing with :only => 'servers'" do
+  describe "routing with :only => 'servers'", :type => :routing do
 
     it {
       {:get => "/only-servers/bigbluebutton/servers"}.

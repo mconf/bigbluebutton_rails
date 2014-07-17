@@ -3,7 +3,7 @@ require 'spec_helper'
 describe ActionController do
   include Shoulda::Matchers::ActionController
 
-  describe "routing" do
+  describe "routing", :type => :routing do
 
     # custom controllers - servers
     it {
