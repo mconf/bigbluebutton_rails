@@ -7,16 +7,19 @@ To learn how to migrate to 1.4.0 see: https://github.com/mconf/bigbluebutton_rai
   * strong_parameters: To allow controllers to decide which parameters can be modified and which can't. Default in Rails 4, should also be used in Rails 3.
 * With strong_parameters in all controllers now the application can decide which parameters can be accessed and which can't. You can have different logics for different types of users.
 * Use <tt>params[:redir_url]</tt> (if present) to redirect the user to a custom URL in all actions where possible. This can be set by the application to redirect the user to a custom location after updating a model, for instance.
-* Register meetings that happened: new model BigbluebuttonMeeting that stores instances of meetings that happened in a room. Uses resque to monitor when meetings started. They are also associated with recordings, so the application can show a registry of meetings that happened and their respective recording.
+* Register meetings that happened: new model <tt>BigbluebuttonMeeting</tt> that stores instances of meetings that happened in a room. Uses resque to monitor when meetings started. They are also associated with recordings, so the application can show a registry of meetings that happened and their respective recording.
 * MySQL as a default database (was sqlite).
 * First logic layout to set a custom config.xml when joining a room:
   * Every room has an associated BigbluebuttonRoomOptions model;
   * This model contains custom options that will be set in the config.xml when a user joins the associated room;
   * When the user joins, the library will get the default config.xml from the server, modify it according to the BigbluebuttonRoomOptions, and set it on the server to use it in the <tt>join</tt> API call;
-  * Currently the only parameter that can be customized is the <tt>default layout</tt>.
+  * Currently the only parameters that can be customized are: <tt>default layout</tt>, <tt>presenter_share_only</tt>, <tt>auto_start_audio</tt>, and <tt>auto_start_video</tt>.
 * Fixed the mobile urls generated in <tt>join_mobile</tt>.
 * Updated ruby to 1.9.3-p484.
 * New controller method <tt>bigbluebutton_create_options</tt>. Can return a hash of parameters that will override the parameters in the database when sending a create call. Can be used to force some options when creating a meeting without needing to save it to the database.
+* Removed the routes to join external rooms. This feature was never really used, so was just consuming space and time. Removed the actions <tt>RoomsController#external</tt> and <tt>RoomsController#external_auth</tt>. The flag <tt>external</tt> in <tt>BigbluebuttonRoom</tt> is still there, since it is used to identify external meetings when fetching the meetings from a server.
+* New logic to join meetings from mobile devices: now there's no specific page to join from a mobile. Once /join is called, if the user is in a mobile device (detected using the user's "user-agent") then a page will be rendered and the user will be automatically redirected to the conference using the mobile client. This page has also more information just in case the user is not properly redirected (if the mobile client is not installed, for example).
+* Removed the login via QR Code.
 
 == 1.3.0
 
