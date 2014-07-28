@@ -124,7 +124,7 @@ describe Bigbluebutton::RoomsController do
       context "throwing an exception" do
         let(:msg) { "any error message" }
         before {
-          mocked_api.should_receive(:is_meeting_running?).and_return{ raise BigBlueButton::BigBlueButtonException.new(msg) }
+          mocked_api.should_receive(:is_meeting_running?) { raise BigBlueButton::BigBlueButtonException.new(msg) }
         }
         before(:each) { get :end, :id => room.to_param, :format => 'json' }
         it { should respond_with(:error) }
@@ -156,7 +156,7 @@ describe Bigbluebutton::RoomsController do
       context "throwing error" do
         let(:msg) { "any error message" }
         before {
-          mocked_api.should_receive(:is_meeting_running?).and_return{ raise BigBlueButton::BigBlueButtonException.new(msg) }
+          mocked_api.should_receive(:is_meeting_running?) { raise BigBlueButton::BigBlueButtonException.new(msg) }
         }
         before(:each) {
           delete :destroy, :id => room.to_param, :format => 'json'

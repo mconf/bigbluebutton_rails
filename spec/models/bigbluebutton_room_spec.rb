@@ -787,7 +787,7 @@ describe BigbluebuttonRoom do
 
   describe "#require_server" do
     let(:room) { FactoryGirl.create(:bigbluebutton_room) }
-    it { should respond_to(:require_server) }
+    it { room.respond_to?(:require_server, true).should be(true) }
 
     context "throws exception when the room has no server associated" do
       before { room.server = nil }
@@ -810,7 +810,7 @@ describe BigbluebuttonRoom do
 
   describe "#select_server" do
     let(:room) { FactoryGirl.create(:bigbluebutton_room, :server => nil) }
-    it { should respond_to(:select_server) }
+    it { room.respond_to?(:select_server, true).should be(true) }
 
     context "selects the server with less rooms" do
       before {

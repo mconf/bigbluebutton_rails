@@ -10,15 +10,15 @@ describe BigbluebuttonRails do
   end
 
   describe "#value_to_boolean" do
-    it { BigbluebuttonRails::value_to_boolean("true").should be_true }
-    it { BigbluebuttonRails::value_to_boolean("1").should be_true }
-    it { BigbluebuttonRails::value_to_boolean(1).should be_true }
-    it { BigbluebuttonRails::value_to_boolean(true).should be_true }
-    it { BigbluebuttonRails::value_to_boolean("t").should be_true }
-    it { BigbluebuttonRails::value_to_boolean("false").should be_false }
-    it { BigbluebuttonRails::value_to_boolean("0").should be_false }
-    it { BigbluebuttonRails::value_to_boolean(0).should be_false }
-    it { BigbluebuttonRails::value_to_boolean(false).should be_false }
-    it { BigbluebuttonRails::value_to_boolean("f").should be_false }
+    it { BigbluebuttonRails::value_to_boolean("true").should be_truthy }
+    it { BigbluebuttonRails::value_to_boolean("1").should be_truthy }
+    it { BigbluebuttonRails::value_to_boolean(1).should be_truthy }
+    it { BigbluebuttonRails::value_to_boolean(true).should be_truthy }
+    it { BigbluebuttonRails::value_to_boolean("t").should be_truthy }
+    it { BigbluebuttonRails::value_to_boolean("false").should be_falsey }
+    it { BigbluebuttonRails::value_to_boolean("0").should be_falsey }
+    it { BigbluebuttonRails::value_to_boolean(0).should be_falsey }
+    it { BigbluebuttonRails::value_to_boolean(false).should be_falsey }
+    it { BigbluebuttonRails::value_to_boolean("f").should be_falsey }
   end
 end
