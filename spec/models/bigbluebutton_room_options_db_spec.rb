@@ -9,6 +9,8 @@ describe BigbluebuttonRoomOptions do
     it { should have_db_column(:created_at).of_type(:datetime) }
     it { should have_db_column(:updated_at).of_type(:datetime) }
     it { should have_db_column(:presenter_share_only).of_type(:boolean)}
+    it { should have_db_column(:auto_start_video).of_type(:boolean) }
+    it { should have_db_column(:auto_start_audio).of_type(:boolean) }
   end
 
 end

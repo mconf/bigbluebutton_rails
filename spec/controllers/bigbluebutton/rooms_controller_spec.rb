@@ -162,7 +162,7 @@ describe Bigbluebutton::RoomsController do
         [ :name, :server_id, :meetingid, :attendee_password, :moderator_password, :welcome_msg,
           :private, :logout_url, :dial_number, :voice_bridge, :max_participants, :owner_id,
           :owner_type, :external, :param, :record_meeting, :duration, :default_layout, :presenter_share_only,
-          :metadata_attributes => [ :id, :name, :content, :_destroy, :owner_id ] ]
+          :auto_start_video, :auto_start_audio, :metadata_attributes => [ :id, :name, :content, :_destroy, :owner_id ] ]
       }
 
       it {
@@ -246,7 +246,7 @@ describe Bigbluebutton::RoomsController do
         [ :name, :server_id, :meetingid, :attendee_password, :moderator_password, :welcome_msg,
           :private, :logout_url, :dial_number, :voice_bridge, :max_participants, :owner_id,
           :owner_type, :external, :param, :record_meeting, :duration, :default_layout, :presenter_share_only,
-          :metadata_attributes => [ :id, :name, :content, :_destroy, :owner_id ] ]
+          :auto_start_video, :auto_start_audio, :metadata_attributes => [ :id, :name, :content, :_destroy, :owner_id ] ]
       }
       it {
         # we just check that the rails method 'permit' is being called on the hash with the

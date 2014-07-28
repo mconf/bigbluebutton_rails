@@ -21,6 +21,8 @@ class BigbluebuttonRailsTo140 < ActiveRecord::Migration
       t.integer :room_id
       t.string :default_layout
       t.boolean :presenter_share_only
+      t.boolean :auto_start_video
+      t.boolean :auto_start_audio
       t.timestamps
     end
     add_index :bigbluebutton_room_options, :room_id
