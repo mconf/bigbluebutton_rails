@@ -62,14 +62,12 @@ namespace :rails_app do
 end
 
 task :cucumber do
-  if File.exists? "features/"
-    puts "* Gem features"
-    sh "bundle exec cucumber features/"
-  end
+  # Disable all features that need the bot. It isn't working since BigBlueButton 0.81.
+  tags = "~@need-bot"
 
   puts "* Dummy app features"
   cd File.join(File.dirname(__FILE__), "spec", "rails_app")
-  sh "bundle exec cucumber features/"
+  sh "bundle exec cucumber features/ --tags #{tags}"
   cd File.dirname(__FILE__)
 end
 
