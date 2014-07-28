@@ -55,4 +55,6 @@ RailsApp::Application.configure do
 
   # Generate digests for assets URLs
   config.assets.digest = true
+
+  config.eager_load = true
 end

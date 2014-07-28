@@ -11,11 +11,16 @@ FactoryGirl.define do
     r.private false
     r.sequence(:param) { |n| "meeting-#{n}" }
     r.external false
-    r.record false
+    r.record_meeting false
     r.duration 0
     r.sequence(:voice_bridge) { |n| "7#{n.to_s.rjust(4, '0')}" }
     r.dial_number { SecureRandom.random_number(9999999).to_s }
     r.sequence(:logout_url) { |n| "http://bigbluebutton#{n}.test.com/logout" }
     r.sequence(:max_participants) { |n| n }
+
+    after(:create) do |r|
+      r.updated_at = r.updated_at.change(:usec => 0)
+      r.created_at = r.created_at.change(:usec => 0)
+    end
   end
 end

@@ -29,7 +29,7 @@ class BigbluebuttonServer < ActiveRecord::Base
             :presence => true,
             :uniqueness => true,
             :length => { :minimum => 3 },
-            :format => { :with => /^[a-zA-Z\d_]+[a-zA-Z\d_-]*[a-zA-Z\d_]+$/,
+            :format => { :with => /\A[a-zA-Z\d_]+[a-zA-Z\d_-]*[a-zA-Z\d_]+\z/,
                          :message => I18n.t('bigbluebutton_rails.servers.errors.param_format') }
 
   validates :salt,

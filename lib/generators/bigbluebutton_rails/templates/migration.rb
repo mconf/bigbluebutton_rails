@@ -26,7 +26,7 @@ class CreateBigbluebuttonRails < ActiveRecord::Migration
       t.boolean :private, :default => false
       t.boolean :external, :default => false
       t.string :param
-      t.boolean :record, :default => false
+      t.boolean :record_meeting, :default => false
       t.integer :duration, :default => 0
       t.timestamps
     end
@@ -84,7 +84,7 @@ class CreateBigbluebuttonRails < ActiveRecord::Migration
       t.string :name
       t.datetime :start_time
       t.boolean :running, :default => false
-      t.boolean :record, :default => false
+      t.boolean :recorded, :default => false
       t.integer :creator_id
       t.string :creator_name
       t.timestamps

@@ -52,7 +52,7 @@ describe BigbluebuttonRoom do
 
   it { should be_boolean(:private) }
 
-  it { should be_boolean(:record) }
+  it { should be_boolean(:record_meeting) }
 
   it { should validate_presence_of(:duration) }
   it { should validate_numericality_of(:duration).only_integer }
@@ -71,7 +71,7 @@ describe BigbluebuttonRoom do
   # attr_accessors
   [:running, :participant_count, :moderator_count, :attendees,
    :has_been_forcibly_ended, :start_time, :end_time, :external,
-   :server, :request_headers, :record, :duration].each do |attr|
+   :server, :request_headers, :record_meeting, :duration].each do |attr|
     it { should respond_to(attr) }
     it { should respond_to("#{attr}=") }
   end
@@ -489,7 +489,7 @@ describe BigbluebuttonRoom do
 
         context "passing additional options" do
           let(:user) { FactoryGirl.build(:user) }
-          let(:user_opts) { { :record => false, :other => true } }
+          let(:user_opts) { { :record_meeting => false, :other => true } }
           before do
             mocked_api.should_receive(:create_meeting)
               .with(room.name, room.meetingid, get_create_params(room, user).merge(user_opts))
@@ -881,7 +881,7 @@ describe BigbluebuttonRoom do
       before {
         room.start_time = Time.now.utc
         room.running = !room.running # to change its default value
-        room.record = !room.record   # to change its default value
+        room.record_meeting = !room.record_meeting   # to change its default value
       }
 
       context "if there's no meeting associated yet creates one" do
@@ -897,7 +897,7 @@ describe BigbluebuttonRoom do
           it("sets room") { subject.room.should eq(room) }
           it("sets meetingid") { subject.meetingid.should eq(room.meetingid) }
           it("sets name") { subject.name.should eq(room.name) }
-          it("sets record") { subject.record.should eq(room.record) }
+          it("sets recorded") { subject.recorded.should eq(room.record_meeting) }
           it("sets running") { subject.running.should eq(room.running) }
           it("sets start_time") { subject.start_time.utc.to_i.should eq(room.start_time.utc.to_i) }
           it("doesn't set creator_id") { subject.creator_id.should be_nil }
@@ -943,7 +943,7 @@ describe BigbluebuttonRoom do
           it("sets room") { subject.room.should eq(room) }
           it("sets meetingid") { subject.meetingid.should eq(room.meetingid) }
           it("sets name") { subject.name.should eq(room.name) }
-          it("sets record") { subject.record.should eq(room.record) }
+          it("sets recorded") { subject.recorded.should eq(room.record_meeting) }
           it("sets running") { subject.running.should eq(room.running) }
           it("sets start_time") { subject.start_time.utc.to_i.should eq(room.start_time.utc.to_i) }
           it("doesn't set creator_id") { subject.creator_id.should be_nil }
@@ -1011,7 +1011,7 @@ def get_create_params(room, user=nil)
     :logoutURL => room.logout_url,
     :maxParticipants => room.max_participants,
     :voiceBridge => room.voice_bridge,
-    :record => room.record,
+    :recorded => room.record_meeting,
     :duration => room.duration
   }
   room.metadata.each { |meta| params["meta_#{meta.name}"] = meta.content }

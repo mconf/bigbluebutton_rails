@@ -4,7 +4,7 @@ FactoryGirl.define do
     m.association :server, :factory => :bigbluebutton_server
     m.association :room, :factory => :bigbluebutton_room
     m.sequence(:name) { |n| "Name#{n}" }
-    m.record false
+    m.recorded false
     m.running false
     m.start_time { Time.now - rand(5).hours }
     # m.creator_id

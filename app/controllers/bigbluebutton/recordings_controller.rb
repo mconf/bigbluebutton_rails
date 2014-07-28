@@ -146,7 +146,7 @@ class Bigbluebutton::RecordingsController < ApplicationController
     unless params[:bigbluebutton_recording].nil?
       params[:bigbluebutton_recording].permit(*recording_allowed_params)
     else
-      []
+      {}
     end
   end
 

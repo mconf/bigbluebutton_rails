@@ -239,11 +239,11 @@ describe Bigbluebutton::ServersController do
       context "with params[:update_list]" do
         context "and :format nil" do
           before(:each) { get :activity, :id => server.to_param, :update_list => true }
-          it { should render_template(:activity_list) }
+          it { should render_template('bigbluebutton/servers/_activity_list') }
         end
         context "and :format = 'html'" do
           before(:each) { get :activity, :id => server.to_param, :update_list => true, :format => "html" }
-          it { should render_template(:activity_list) }
+          it { should render_template('bigbluebutton/servers/_activity_list') }
         end
       end
 

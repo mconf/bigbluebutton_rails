@@ -1,3 +1,3 @@
 module BigbluebuttonRails
-  VERSION = "1.4.0.beta1".freeze
+  VERSION = "2.0.0".freeze
 end
