@@ -28,8 +28,8 @@ describe BigbluebuttonRoom do
     it { should have_db_index(:voice_bridge).unique(true) }
     it "default values" do
       room = BigbluebuttonRoom.new
-      room.private.should be_false
-      room.external.should be_false
+      room.private.should be_falsey
+      room.external.should be_falsey
       room.meetingid.should_not be_nil
     end
   end

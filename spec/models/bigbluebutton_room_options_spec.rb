@@ -81,7 +81,7 @@ describe BigbluebuttonRoomOptions do
           .should_receive(:is_modified?).and_return(false)
       }
       subject { room_options.set_on_config_xml(config_xml) }
-      it("returns false") { should be_false }
+      it("returns false") { should be_falsey }
     end
 
     context "if #default_layout is" do
@@ -151,55 +151,55 @@ describe BigbluebuttonRoomOptions do
     context "if default_layout is set" do
       before { room_options.update_attributes(:default_layout => 'Any') }
       subject { room_options.is_modified? }
-      it("returns true") { should be_true }
+      it("returns true") { should be_truthy }
     end
 
     context "if default_layout is not set" do
       before { room_options.update_attributes(:default_layout => nil) }
       subject { room_options.is_modified? }
-      it("returns false") { should be_false }
+      it("returns false") { should be_falsey }
     end
 
     context "if default_layout is empty" do
       before { room_options.update_attributes(:default_layout => "") }
       subject { room_options.is_modified? }
-      it("returns true") { should be_true }
+      it("returns true") { should be_truthy }
     end
 
     context "if presenter_share_only is set" do
       before { room_options.update_attributes(:presenter_share_only => true) }
       subject { room_options.is_modified? }
-      it("returns true") { should be_true}
+      it("returns true") { should be_truthy}
     end
 
     context "if presenter_share_only is not set" do
       before { room_options.update_attributes(:presenter_share_only => nil) }
       subject { room_options.is_modified? }
-      it("returns false") { should be_false }
+      it("returns false") { should be_falsey }
     end
 
     context "if auto_start_video is set" do
       before { room_options.update_attributes(:auto_start_video => true) }
       subject { room_options.is_modified? }
-      it("returns true") { should be_true}
+      it("returns true") { should be_truthy}
     end
 
     context "if auto_start_video is not set" do
       before { room_options.update_attributes(:auto_start_video => nil) }
       subject { room_options.is_modified? }
-      it("returns false" ) { should be_false }
+      it("returns false" ) { should be_falsey }
     end
 
     context "if auto_start_audio is set" do
       before { room_options.update_attributes(:auto_start_audio => true) }
       subject { room_options.is_modified? }
-      it("returns true") { should be_true}
+      it("returns true") { should be_truthy}
     end
 
     context "if auto_start_audio is not set" do
       before { room_options.update_attributes(:auto_start_audio => nil) }
       subject { room_options.is_modified? }
-      it("returns false" ) { should be_false }
+      it("returns false" ) { should be_falsey }
     end
   end
 

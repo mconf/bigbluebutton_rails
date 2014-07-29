@@ -47,9 +47,9 @@ end
 When /^he should see one meeting running and the other meeting not running$/ do
   # first was ended, second is running
   @rooms.first.fetch_is_running?
-  @rooms.first.is_running?.should be_false
+  @rooms.first.is_running?.should be_falsey
   @rooms.last.fetch_is_running?
-  @rooms.last.is_running?.should be_true
+  @rooms.last.is_running?.should be_truthy
 
   # the ended meeting won't appear in the list in BBB 0.8
   @rooms.delete(@rooms.first) if @server.version >= "0.8"

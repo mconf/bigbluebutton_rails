@@ -16,8 +16,8 @@ describe BigbluebuttonMeeting do
     it { should have_db_index([:meetingid, :start_time]).unique(true) }
     it "default values" do
       room = BigbluebuttonRoom.new
-      room.running.should be_false
-      room.record_meeting.should be_false
+      room.running.should be_falsey
+      room.record_meeting.should be_falsey
     end
   end
 

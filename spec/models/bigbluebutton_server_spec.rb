@@ -90,7 +90,7 @@ describe BigbluebuttonServer do
 
   context "sets param as the downcased parameterized name if param is" do
     after :each do
-      @server.save.should be_true
+      @server.save.should be_truthy
       @server.param.should == @server.name.downcase.parameterize
     end
     it "nil" do
@@ -179,9 +179,9 @@ describe BigbluebuttonServer do
     it { server.meetings[2].attendee_password.should == "pass" }
     it { server.meetings[2].moderator_password.should == "pass" }
     it { server.meetings[2].running.should == true }
-    it { server.meetings[2].new_record?.should be_true }
-    it { server.meetings[2].external.should be_true }
-    it { server.meetings[2].private.should be_true  }
+    it { server.meetings[2].new_record?.should be_truthy }
+    it { server.meetings[2].external.should be_truthy }
+    it { server.meetings[2].private.should be_truthy  }
 
     it "updates the meeting associated with this room"
   end

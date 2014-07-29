@@ -20,7 +20,7 @@ describe BigbluebuttonRecording do
     it { should have_db_index(:recordid).unique(true) }
     it "default values" do
       room = BigbluebuttonRecording.new
-      room.published.should be_false
+      room.published.should be_falsey
     end
   end
 

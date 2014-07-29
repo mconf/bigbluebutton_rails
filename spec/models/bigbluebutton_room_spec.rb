@@ -119,18 +119,18 @@ describe BigbluebuttonRoom do
     let(:room) { BigbluebuttonRoom.last }
     let(:room2) { BigbluebuttonRoom.last }
     it { should respond_to(:attr_equal?) }
-    it { room.attr_equal?(room2).should be_true }
+    it { room.attr_equal?(room2).should be_truthy }
     it "differentiates instance variables" do
       room2.running = !room.running
-      room.attr_equal?(room2).should be_false
+      room.attr_equal?(room2).should be_falsey
     end
     it "differentiates attributes" do
       room2.private = !room.private
-      room.attr_equal?(room2).should be_false
+      room.attr_equal?(room2).should be_falsey
     end
     it "differentiates objects" do
       room2 = room.dup
-      room.attr_equal?(room2).should be_false
+      room.attr_equal?(room2).should be_falsey
     end
   end
 
@@ -140,8 +140,8 @@ describe BigbluebuttonRoom do
     it "fetched attributes before they are fetched" do
       room.participant_count.should be(0)
       room.moderator_count.should be(0)
-      room.running.should be_false
-      room.has_been_forcibly_ended.should be_false
+      room.running.should be_falsey
+      room.has_been_forcibly_ended.should be_falsey
       room.start_time.should be_nil
       room.end_time.should be_nil
       room.attendees.should eql([])
@@ -192,12 +192,12 @@ describe BigbluebuttonRoom do
       }
       it { @room.room_options.should_not be_nil }
       it("is not promptly saved") {
-        @room.room_options.new_record?.should be_true
+        @room.room_options.new_record?.should be_truthy
       }
       it("is saved when the room is saved") {
         @room.save!
         @room.reload
-        @room.room_options.new_record?.should be_false
+        @room.room_options.new_record?.should be_falsey
       }
     end
   end
@@ -226,7 +226,7 @@ describe BigbluebuttonRoom do
 
   context "sets param as the downcased parameterized name if param is" do
     after :each do
-      @room.save.should be_true
+      @room.save.should be_truthy
       @room.param.should == @room.name.downcase.parameterize
     end
     it "nil" do
@@ -270,9 +270,9 @@ describe BigbluebuttonRoom do
           room.server = mocked_server
         }
         before(:each) { @response = room.fetch_is_running? }
-        it { room.running.should be_false }
-        it { room.is_running?.should be_false }
-        it { @response.should be_false }
+        it { room.running.should be_falsey }
+        it { room.is_running?.should be_falsey }
+        it { @response.should be_falsey }
       end
 
       context "fetches 'running' when running" do
@@ -282,9 +282,9 @@ describe BigbluebuttonRoom do
           room.server = mocked_server
         }
         before(:each) { @response = room.fetch_is_running? }
-        it { room.running.should be_true }
-        it { room.is_running?.should be_true }
-        it { @response.should be_true }
+        it { room.running.should be_truthy }
+        it { room.is_running?.should be_truthy }
+        it { @response.should be_truthy }
       end
 
     end
@@ -454,7 +454,7 @@ describe BigbluebuttonRoom do
           end
           it { room.attendee_password.should be(attendee_password) }
           it { room.moderator_password.should be(moderator_password) }
-          it { room.changed?.should be_false }
+          it { room.changed?.should be_falsey }
         end
 
         context "for a new record" do
@@ -469,7 +469,7 @@ describe BigbluebuttonRoom do
           end
           it { new_room.attendee_password.should be(attendee_password) }
           it { new_room.moderator_password.should be(moderator_password) }
-          it("and do not save the record") { new_room.new_record?.should be_true }
+          it("and do not save the record") { new_room.new_record?.should be_truthy }
         end
 
         context "passing the user" do
@@ -484,7 +484,7 @@ describe BigbluebuttonRoom do
           end
           it { room.attendee_password.should be(attendee_password) }
           it { room.moderator_password.should be(moderator_password) }
-          it { room.changed?.should be_false }
+          it { room.changed?.should be_falsey }
         end
 
         context "passing additional options" do
@@ -500,7 +500,7 @@ describe BigbluebuttonRoom do
           end
           it { room.attendee_password.should be(attendee_password) }
           it { room.moderator_password.should be(moderator_password) }
-          it { room.changed?.should be_false }
+          it { room.changed?.should be_falsey }
         end
       end
 
@@ -555,7 +555,7 @@ describe BigbluebuttonRoom do
             new_room.server = mocked_server
             new_room.send_create
           end
-          it { new_room.new_record?.should be_true }
+          it { new_room.new_record?.should be_truthy }
         end
       end
 
@@ -740,7 +740,7 @@ describe BigbluebuttonRoom do
         room.should_receive(:is_running?).and_return(true)
       }
       subject { room.create_meeting(user) }
-      it { should be_false }
+      it { should be_falsey }
     end
 
     context "when the conference is not running" do
@@ -749,7 +749,7 @@ describe BigbluebuttonRoom do
         room.should_receive(:send_create).with(user, {})
       }
       subject { room.create_meeting(user) }
-      it { should be_true }
+      it { should be_truthy }
     end
 
     context "when the parameter 'request' is informed" do
@@ -762,7 +762,7 @@ describe BigbluebuttonRoom do
         room.should_receive(:send_create)
       }
       subject { room.create_meeting(user, request) }
-      it { should be_true }
+      it { should be_truthy }
     end
 
     # context "when the parameter 'request' is informed" do
@@ -775,7 +775,7 @@ describe BigbluebuttonRoom do
     #     room.should_receive(:send_create)
     #   }
     #   subject { room.create_meeting(user.name, user.id, request) }
-    #   it { should be_true }
+    #   it { should be_truthy }
     # end
   end
 

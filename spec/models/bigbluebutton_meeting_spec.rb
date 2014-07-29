@@ -26,7 +26,7 @@ describe BigbluebuttonMeeting do
     let(:target) { FactoryGirl.create(:bigbluebutton_meeting) }
 
     context "if the user informed is nil" do
-      it { target.created_by?(nil).should be_false }
+      it { target.created_by?(nil).should be_falsey }
     end
 
     context "with a valid user informed" do
@@ -34,18 +34,18 @@ describe BigbluebuttonMeeting do
 
       context "if the meeting has no creator_id" do
         before { target.update_attributes(:creator_id => nil) }
-        it { target.created_by?(user).should be_false }
+        it { target.created_by?(user).should be_falsey }
       end
 
       context "if it wasn't the user that created the meeting" do
         let(:user2) { FactoryGirl.build(:user) }
         before { target.update_attributes(:creator_id => user2.id, :creator_name => user2.name) }
-        it { target.created_by?(user).should be_false }
+        it { target.created_by?(user).should be_falsey }
       end
 
       context "if it was the user that created the meeting" do
         before { target.update_attributes(:creator_id => user.id, :creator_name => user.name) }
-        it { target.created_by?(user).should be_true }
+        it { target.created_by?(user).should be_truthy }
       end
     end
   end
