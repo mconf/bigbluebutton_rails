@@ -1,6 +1,6 @@
 = BigBlueButton on Rails
 
-{BigBlueButton}[http://bigbluebutton.org] integration for Ruby on Rails 3.
+{BigBlueButton}[http://bigbluebutton.org] integration for Ruby on Rails 4. (For Rails <= 3.2, see versions <= 1.4.0.)
 
 Features:
 * Allows multiple servers and multiple conference rooms.
@@ -10,14 +10,14 @@ Features:
 * Support for recordings: meetings can be recorded, the list of recordings retrieved and recordings can be played.
 * Possibility to create private rooms, that require a password to join.
 * Deals with visitors (users that are not logged), allowing (or forbidding) them to join rooms.
-* Uses static meeting IDs generated as a globally unique identifier (e.g. "36mskja87-029i-lsk9-b96e-98278407e145-1365703324").
-* Server activity monitor that shows what's happening in the server.
+* Uses static meeting IDs generated as a globally unique identifier (e.g. <tt>36mskja87-029i-lsk9-b96e-98278407e145-1365703324</tt>).
 * Stores a registry of meetings that happened and associates them with the recording that was generated for it (if any).
 * Allows rooms to be configured dynamically using the <tt>{config.xml}[https://code.google.com/p/bigbluebutton/wiki/ClientConfiguration]</tt> feature.
+* Automatic detection of the user-agent to automatically trigger the {mobile client}[https://github.com/bigbluebutton/bbb-air-client] when joining a conference from a mobile device.
 
 Possible future features:
 * Limit the number of users per room and rooms per server.
-* Server administration (use bbb-conf, etc.).
+* Server administration (use <tt>bbb-conf</tt>, etc).
 * Pre-upload of slides.
 * See {TODO.rdoc}[https://github.com/mconf/bigbluebutton_rails/blob/master/TODO.rdoc].
 
@@ -35,15 +35,19 @@ The current version of this gem supports <tt>all</tt> the following versions of 
 
 Tested in rubies:
 
-* ruby-1.9.3 (p484) *recommended*
-* ruby-1.9.2 (p290)
+Requires ruby >= 1.9.3 since Rails 4 requires it.
 
-Use these versions to be sure it will work. Other patches of 1.9.2 and 1.9.3 should work as well.
+* ruby-2.1.2 *recommended*
+* ruby-1.9.3 (p484)
+
+Use these versions to be sure it will work. Other patches of these versions should work as well.
 
 === Rails
 
-To be used with <b>Rails 3</b> only (should work on 3.0, 3.1 and 3.2).
-Tested mainly with Rails 3.2.
+To be used with <b>Rails 4</b> only.
+
+Version 1.4.0 was the last one to support Rails 3.2. To use it, use the tag <tt>{v1.4.0}[https://github.com/mconf/bigbluebutton_rails/tree/v1.4.0]</tt>
+or the branch <tt>{branch-v1.4.0}[https://github.com/mconf/bigbluebutton_rails/tree/branch-v1.4.0]</tt>.
 
 === Database
 
@@ -82,15 +86,10 @@ Notice: Since version 1.4.0, new dependencies were added to applications that us
 Include the following gems in your Gemfile:
 
   gem 'whenever'
-  gem 'strong_parameters'
   gem 'resque'
 
 {whenever}[https://github.com/javan/whenever] is used to schedule cron jobs from the application. Cron jobs are used in BigbluebuttonRails
 to update the list of recordings periodically.
-
-{strong_parameters}[https://github.com/rails/strong_parameters] is used to validate which parameters can be updated in a model. With
-it you can, for example, allow admins to update anything on a web conference rooms while normal users can only update the rooms name.
-This gem is used by default in Rails 4.
 
 {resque}[https://github.com/defunkt/resque] is used to schedule workers that will control the list of meetings. A meeting is a model that is
 created whenever a meeting is held in a room. We need workers to run these tasks in background and check when meetings start and stop.
@@ -277,16 +276,6 @@ Develop. :)
 If you want your code to be integrated in this repository, please fork it, create a branch with your modifications and submit a pull request.
 
 * See more about testing {in our wiki page}[https://github.com/mconf/bigbluebutton_rails/wiki/Testing].
-
-=== Spork
-
-{Spork}[https://github.com/sporkrb/spork-rails] allows you to run tests faster. Run this in a terminal to start spork:
-
-  bundle exec spork
-
-Then run the tests with:
-
-  bundle exec rspec -X spec/
 
 === Test Coverage
 
