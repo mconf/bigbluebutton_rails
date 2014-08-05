@@ -53,11 +53,11 @@ class BigbluebuttonRoom < ActiveRecord::Base
 
   # Passwords are 16 character strings
   # See http://groups.google.com/group/bigbluebutton-dev/browse_thread/thread/9be5aae1648bcab?pli=1
-  validates :attendee_password, :length => { :maximum => 16 }
-  validates :moderator_password, :length => { :maximum => 16 }
+  validates :attendee_key, :length => { :maximum => 16 }
+  validates :moderator_key, :length => { :maximum => 16 }
 
-  validates :attendee_password, :presence => true, :if => :private?
-  validates :moderator_password, :presence => true, :if => :private?
+  validates :attendee_key, :presence => true, :if => :private?
+  validates :moderator_key, :presence => true, :if => :private?
 
   # Note: these params need to be fetched from the server before being accessed
   attr_accessor :running, :participant_count, :moderator_count, :attendees,
@@ -66,7 +66,7 @@ class BigbluebuttonRoom < ActiveRecord::Base
   after_initialize :init
   after_create :create_room_options
   before_validation :set_param
-  before_validation :set_passwords
+  before_validation :set_keys
 
   # the full logout_url used when logout_url is a relative path
   attr_accessor :full_logout_url
@@ -107,7 +107,7 @@ class BigbluebuttonRoom < ActiveRecord::Base
   def fetch_meeting_info
     require_server
 
-    response = self.server.api.get_meeting_info(self.meetingid, self.moderator_password)
+    response = self.server.api.get_meeting_info(self.meetingid, self.moderator_key)
 
     @participant_count = response[:participantCount]
     @moderator_count = response[:moderatorCount]
@@ -141,7 +141,7 @@ class BigbluebuttonRoom < ActiveRecord::Base
   # Triggers API call: <tt>end</tt>.
   def send_end
     require_server
-    response = self.server.api.end_meeting(self.meetingid, self.moderator_password)
+    response = self.server.api.end_meeting(self.meetingid, self.moderator_key)
 
     # enqueue an update in the meetings for later on
     Resque.enqueue(::BigbluebuttonMeetingUpdater, self.id, 15.seconds)
@@ -159,8 +159,8 @@ class BigbluebuttonRoom < ActiveRecord::Base
   # will be created. If a server is selected, the model is saved.
   #
   # With the response, updates the following attributes:
-  # * <tt>attendee_password</tt>
-  # * <tt>moderator_password</tt>
+  # * <tt>attendee_key</tt>
+  # * <tt>moderator_key</tt>
   #
   # Triggers API call: <tt>create</tt>.
   def send_create(user=nil, user_opts={})
@@ -172,8 +172,8 @@ class BigbluebuttonRoom < ActiveRecord::Base
 
     response = internal_create_meeting(user, user_opts)
     unless response.nil?
-      self.attendee_password = response[:attendeePW]
-      self.moderator_password = response[:moderatorPW]
+      self.attendee_key = response[:attendeeKEY]
+      self.moderator_key = response[:moderatorKEY]
       self.save unless self.new_record?
     end
 
@@ -183,20 +183,20 @@ class BigbluebuttonRoom < ActiveRecord::Base
   # Returns the URL to join this room.
   # username:: Name of the user
   # role:: Role of the user in this room. Can be <tt>[:moderator, :attendee]</tt>
-  # password:: Password to be use (in case role == nil)
+  # key:: Key to be use (in case role == nil)
   # options:: Additional options to use when generating the URL
   #
   # Uses the API but does not require a request to the server.
-  def join_url(username, role, password=nil, options={})
+  def join_url(username, role, key=nil, options={})
     require_server
 
     case role
     when :moderator
-      r = self.server.api.join_meeting_url(self.meetingid, username, self.moderator_password, options)
+      r = self.server.api.join_meeting_url(self.meetingid, username, self.moderator_key, options)
     when :attendee
-      r = self.server.api.join_meeting_url(self.meetingid, username, self.attendee_password, options)
+      r = self.server.api.join_meeting_url(self.meetingid, username, self.attendee_key, options)
     else
-      r = self.server.api.join_meeting_url(self.meetingid, username, password, options)
+      r = self.server.api.join_meeting_url(self.meetingid, username, key, options)
     end
 
     r.strip! unless r.nil?
@@ -204,16 +204,16 @@ class BigbluebuttonRoom < ActiveRecord::Base
   end
 
 
-  # Returns the role of the user based on the password given.
+  # Returns the role of the user based on the key given.
   # The return value can be <tt>:moderator</tt>, <tt>:attendee</tt>, or
-  # nil if the password given does not match any of the room passwords.
-  # params:: Hash with a key :password
+  # nil if the key given does not match any of the room keys.
+  # params:: Hash with a key :key
   def user_role(params)
     role = nil
-    if params && params.has_key?(:password)
-      if self.moderator_password == params[:password]
+    if params && params.has_key?(:key)
+      if self.moderator_key == params[:key]
         role = :moderator
-      elsif self.attendee_password == params[:password]
+      elsif self.attendee_key == params[:key]
         role = :attendee
       end
     end
@@ -423,8 +423,8 @@ class BigbluebuttonRoom < ActiveRecord::Base
     opts = {
       :recorded => self.record_meeting,
       :duration => self.duration,
-      :moderatorPW => self.moderator_password,
-      :attendeePW => self.attendee_password,
+      :moderatorKEY => self.moderator_key,
+      :attendeeKEY => self.attendee_key,
       :welcome => self.welcome_msg.blank? ? default_welcome_message : self.welcome_msg,
       :dialNumber => self.dial_number,
       :logoutURL => self.full_logout_url || self.logout_url,
@@ -466,14 +466,14 @@ class BigbluebuttonRoom < ActiveRecord::Base
     end
   end
 
-  # When setting a room as private we generate passwords in case they don't exist.
-  def set_passwords
+  # When setting a room as private we generate keys in case they don't exist.
+  def set_keys
     if self.private_changed? and self.private
-      if self.moderator_password.blank?
-        self.moderator_password = SecureRandom.hex(4)
+      if self.moderator_key.blank?
+        self.moderator_key = SecureRandom.hex(4)
       end
-      if self.attendee_password.blank?
-        self.attendee_password = SecureRandom.hex(4)
+      if self.attendee_key.blank?
+        self.attendee_key = SecureRandom.hex(4)
       end
     end
   end

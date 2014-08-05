@@ -105,7 +105,7 @@ describe Bigbluebutton::RoomsController do
       context "room is running" do
         before {
           mocked_api.should_receive(:is_meeting_running?).and_return(true)
-          mocked_api.should_receive(:end_meeting).with(room.meetingid, room.moderator_password)
+          mocked_api.should_receive(:end_meeting).with(room.meetingid, room.moderator_key)
         }
         before(:each) { get :end, :id => room.to_param, :format => 'json' }
         it { should respond_with(:success) }

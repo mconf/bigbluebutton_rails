@@ -137,10 +137,10 @@ module TemplateHelpers
                 { :name => 'bigbluebutton_room[meetingid]', :type => 'text' })
     has_element("input#bigbluebutton_room_private",
                 { :name => 'bigbluebutton_room[private]', :type => 'checkbox' })
-    has_element("input#bigbluebutton_room_attendee_password",
-                { :name => 'bigbluebutton_room[attendee_password]', :type => 'text' })
-    has_element("input#bigbluebutton_room_moderator_password",
-                { :name => 'bigbluebutton_room[moderator_password]', :type => 'text' })
+    has_element("input#bigbluebutton_room_attendee_key",
+                { :name => 'bigbluebutton_room[attendee_key]', :type => 'text' })
+    has_element("input#bigbluebutton_room_moderator_key",
+                { :name => 'bigbluebutton_room[moderator_key]', :type => 'text' })
     has_element("input#bigbluebutton_room_welcome_msg",
                 { :name => 'bigbluebutton_room[welcome_msg]', :type => 'text' })
     has_element("input#bigbluebutton_room_logout_url",
@@ -158,8 +158,8 @@ module TemplateHelpers
     has_element("label", { :for => 'bigbluebutton_room_name' })
     has_element("label", { :for => 'bigbluebutton_room_meetingid' })
     has_element("label", { :for => 'bigbluebutton_room_private' })
-    has_element("label", { :for => 'bigbluebutton_room_attendee_password' })
-    has_element("label", { :for => 'bigbluebutton_room_moderator_password' })
+    has_element("label", { :for => 'bigbluebutton_room_attendee_key' })
+    has_element("label", { :for => 'bigbluebutton_room_moderator_key' })
     has_element("label", { :for => 'bigbluebutton_room_welcome_msg' })
     has_element("label", { :for => 'bigbluebutton_room_logout_url' })
     has_element("label", { :for => 'bigbluebutton_room_dial_number' })
@@ -178,8 +178,8 @@ module TemplateHelpers
     page_has_content(room.name)
     page_has_content(room.meetingid)
     page_has_content(room.private)
-    page_has_content(room.attendee_password)
-    page_has_content(room.moderator_password)
+    page_has_content(room.attendee_key)
+    page_has_content(room.moderator_key)
     page_has_content(room.welcome_msg)
     page_has_content(room.logout_url)
     page_has_content(room.dial_number)
@@ -203,9 +203,9 @@ module TemplateHelpers
 
     within(form_selector(join_bigbluebutton_room_path(room), 'post')) do
       has_element("input#user_name", { :name => 'user[name]', :type => 'text' })
-      has_element("input#user_password", { :name => 'user[password]', :type => 'password' })
+      has_element("input#user_key", { :name => 'user[key]', :type => 'password' })
       has_element("label", { :for => 'user_name' })
-      has_element("label", { :for => 'user_password' })
+      has_element("label", { :for => 'user_key' })
       has_element("input", { :name => 'commit', :type => 'submit' })
     end
   end
@@ -223,8 +223,8 @@ module TemplateHelpers
         has_content(room.server_id) unless room.server.nil?
         has_content(room.name)
         has_content(room.meetingid)
-        has_content(room.attendee_password)
-        has_content(room.moderator_password)
+        has_content(room.attendee_key)
+        has_content(room.moderator_key)
         has_content(room.logout_url)
         has_content(room.dial_number)
         has_content(room.voice_bridge)

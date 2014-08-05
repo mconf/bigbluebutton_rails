@@ -4,8 +4,8 @@ When /^registers a new room$/i do
   fill_in("bigbluebutton_room[name]", :with => attrs[:name])
   fill_in("bigbluebutton_room[meetingid]", :with => attrs[:meetingid])
   check("bigbluebutton_room[private]") if attrs[:private]
-  fill_in("bigbluebutton_room[attendee_password]", :with => attrs[:attendee_password])
-  fill_in("bigbluebutton_room[moderator_password]", :with => attrs[:moderator_password])
+  fill_in("bigbluebutton_room[attendee_key]", :with => attrs[:attendee_key])
+  fill_in("bigbluebutton_room[moderator_key]", :with => attrs[:moderator_key])
   fill_in("bigbluebutton_room[welcome_msg]", :with => attrs[:welcome_msg])
   fill_in("bigbluebutton_room[logout_url]", :with => attrs[:logout_url])
   fill_in("bigbluebutton_room[dial_number]", :with => attrs[:dial_number])
@@ -21,8 +21,8 @@ When /^registers a new room with wrong parameters$/i do
   fill_in("bigbluebutton_room[name]", :with => nil) # invalid
   fill_in("bigbluebutton_room[meetingid]", :with => attrs[:meetingid])
   check("bigbluebutton_room[private]") if attrs[:private]
-  fill_in("bigbluebutton_room[attendee_password]", :with => attrs[:attendee_password])
-  fill_in("bigbluebutton_room[moderator_password]", :with => attrs[:moderator_password])
+  fill_in("bigbluebutton_room[attendee_key]", :with => attrs[:attendee_key])
+  fill_in("bigbluebutton_room[moderator_key]", :with => attrs[:moderator_key])
   fill_in("bigbluebutton_room[welcome_msg]", :with => attrs[:welcome_msg])
   fill_in("bigbluebutton_room[logout_url]", :with => attrs[:logout_url])
   fill_in("bigbluebutton_room[dial_number]", :with => attrs[:dial_number])
