@@ -9,8 +9,8 @@ describe BigbluebuttonRoom do
     it { should have_db_column(:owner_type).of_type(:string) }
     it { should have_db_column(:meetingid).of_type(:string) }
     it { should have_db_column(:name).of_type(:string) }
-    it { should have_db_column(:attendee_password).of_type(:string) }
-    it { should have_db_column(:moderator_password).of_type(:string) }
+    it { should have_db_column(:attendee_key).of_type(:string) }
+    it { should have_db_column(:moderator_key).of_type(:string) }
     it { should have_db_column(:welcome_msg).of_type(:string) }
     it { should have_db_column(:dial_number).of_type(:string) }
     it { should have_db_column(:logout_url).of_type(:string) }

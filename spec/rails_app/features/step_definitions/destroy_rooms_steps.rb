@@ -9,8 +9,8 @@ When /^the removed room should not be listed$/i do
   # check params that are specific for this server
   doesnt_have_content(@room.meetingid)
   doesnt_have_content(@room.name)
-  doesnt_have_content(@room.attendee_password)
-  doesnt_have_content(@room.moderator_password)
+  doesnt_have_content(@room.attendee_key)
+  doesnt_have_content(@room.moderator_key)
   doesnt_have_content(@room.voice_bridge)
   doesnt_have_content(@room.param)
 end

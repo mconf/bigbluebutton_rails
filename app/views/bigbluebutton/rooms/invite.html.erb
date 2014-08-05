@@ -43,7 +43,7 @@ $(document).ready(function(){
   <% end %>
 </div>
 
-<p><%= @room.name %> requires a name and/or password to join:</p>
+<p><%= @room.name %> requires a name and/or key to join:</p>
 <%= form_tag join_bigbluebutton_room_path(@room, :mobile => params[:mobile]) do %>
 
   <div class="field">
@@ -55,13 +55,13 @@ $(document).ready(function(){
     <% end %>
   </div>
   <div class="field">
-    <label for="user_password">Password:</label><br />
+    <label for="user_key">Key:</label><br />
     <% if @user_role == :attendee %>
-      <%= password_field_tag "user[password]", @room.attendee_password, :readonly => true %>
+      <%= password_field_tag "user[key]", @room.attendee_key, :readonly => true %>
     <% elsif @user_role == :moderator %>
-      <%= password_field_tag "user[password]", @room.moderator_password, :readonly => true %>
+      <%= password_field_tag "user[key]", @room.moderator_key, :readonly => true %>
     <% else %>
-      <%= password_field_tag "user[password]", "" %>
+      <%= password_field_tag "user[key]", "" %>
     <% end %>
   </div>
 
