@@ -146,9 +146,9 @@ describe BigbluebuttonServer do
     # the hashes should be exactly as returned by bigbluebutton-api-ruby to be sure we are testing it right
     let(:meetings) {
       [
-       { :meetingID => room1.meetingid, :attendeeKEY => "ap", :moderatorKEY => "mp", :hasBeenForciblyEnded => false, :running => true},
-       { :meetingID => room2.meetingid, :attendeeKEY => "pass", :moderatorKEY => "pass", :hasBeenForciblyEnded => true, :running => false},
-       { :meetingID => "im not in the db", :attendeeKEY => "pass", :moderatorKEY => "pass", :hasBeenForciblyEnded => true, :running => true}
+       { :meetingID => room1.meetingid, :attendeePW => "ap", :moderatorPW => "mp", :hasBeenForciblyEnded => false, :running => true},
+       { :meetingID => room2.meetingid, :attendeePW => "pass", :moderatorPW => "pass", :hasBeenForciblyEnded => true, :running => false},
+       { :meetingID => "im not in the db", :attendeePW => "pass", :moderatorPW => "pass", :hasBeenForciblyEnded => true, :running => true}
       ]
     }
     let(:hash) {
@@ -164,10 +164,10 @@ describe BigbluebuttonServer do
       server.fetch_meetings
 
       # the keys are updated during fetch_meetings
-      room1.moderator_key = "mp"
-      room1.attendee_key = "ap"
-      room2.moderator_key = "pass"
-      room2.attendee_key = "pass"
+      room1.moderator_api_password = "mp"
+      room1.attendee_api_password = "ap"
+      room2.moderator_api_password = "pass"
+      room2.attendee_api_password = "pass"
     }
 
     it { server.meetings.count.should be(3) }
@@ -176,8 +176,8 @@ describe BigbluebuttonServer do
     it { server.meetings[2].meetingid.should == "im not in the db" }
     it { server.meetings[2].name.should == "im not in the db" }
     it { server.meetings[2].server.should == server }
-    it { server.meetings[2].attendee_key.should == "pass" }
-    it { server.meetings[2].moderator_key.should == "pass" }
+    it { server.meetings[2].attendee_api_password.should == "pass" }
+    it { server.meetings[2].moderator_api_password.should == "pass" }
     it { server.meetings[2].running.should == true }
     it { server.meetings[2].new_record?.should be_truthy }
     it { server.meetings[2].external.should be_truthy }

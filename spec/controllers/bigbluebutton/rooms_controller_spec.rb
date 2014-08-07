@@ -105,6 +105,8 @@ describe Bigbluebutton::RoomsController do
       it { should set_the_flash.to(I18n.t('bigbluebutton_rails.rooms.notice.create.success')) }
       it {
         saved = BigbluebuttonRoom.last
+        puts "==========room attributes #{new_room.attributes.inspect}"
+        puts "==========saved attributes #{saved.attributes.inspect}"
         saved.should have_same_attributes_as(new_room)
       }
     end
@@ -281,7 +283,7 @@ describe Bigbluebutton::RoomsController do
 
     context "on success" do
       before(:each) {
-        mocked_api.should_receive(:end_meeting).with(room.meetingid, room.moderator_key)
+        mocked_api.should_receive(:end_meeting).with(room.meetingid, room.moderator_api_password)
         expect {
           delete :destroy, :id => room.to_param
         }.to change{ BigbluebuttonRoom.count }.by(-1)
@@ -412,7 +414,7 @@ describe Bigbluebutton::RoomsController do
             controller.stub(:bigbluebutton_user).and_return(user)
             mocked_api.should_receive(:is_meeting_running?).at_least(:once).and_return(true)
             mocked_api.should_receive(:join_meeting_url)
-              .with(room.meetingid, user.name, room.attendee_key, anything) # here's the validation
+              .with(room.meetingid, user.name, room.attendee_api_password, anything) # here's the validation
               .and_return("http://test.com/attendee/join")
             send(method, :join, :id => room.to_param, :user => hash)
           end
@@ -424,7 +426,7 @@ describe Bigbluebutton::RoomsController do
               controller.stub(:bigbluebutton_role) { :attendee }
               mocked_api.should_receive(:is_meeting_running?).at_least(:once).and_return(true)
               mocked_api.should_receive(:join_meeting_url)
-                .with(anything, anything, room.attendee_key, anything)
+                .with(anything, anything, room.attendee_api_password, anything)
                 .and_return("http://test.com/attendee/join")
             }
             before(:each) { send(method, :join, :id => room.to_param, :user => hash) }
@@ -593,7 +595,7 @@ describe Bigbluebutton::RoomsController do
     context "room is running" do
       before {
         mocked_api.should_receive(:is_meeting_running?).and_return(true)
-        mocked_api.should_receive(:end_meeting).with(room.meetingid, room.moderator_key)
+        mocked_api.should_receive(:end_meeting).with(room.meetingid, room.moderator_api_password)
       }
       before(:each) { get :end, :id => room.to_param }
       it { should respond_with(:redirect) }
@@ -606,7 +608,7 @@ describe Bigbluebutton::RoomsController do
     context "with :redir_url" do
       before {
         mocked_api.should_receive(:is_meeting_running?).and_return(true)
-        mocked_api.should_receive(:end_meeting).with(room.meetingid, room.moderator_key)
+        mocked_api.should_receive(:end_meeting).with(room.meetingid, room.moderator_api_password)
       }
       before(:each) { get :end, :id => room.to_param, :redir_url => '/any' }
       it { should respond_with(:redirect) }

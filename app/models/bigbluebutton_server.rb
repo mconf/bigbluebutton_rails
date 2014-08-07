@@ -72,11 +72,11 @@ class BigbluebuttonServer < ActiveRecord::Base
       # TODO: there might be more attributes returned by the API, review them all
       if room.nil?
         room = BigbluebuttonRoom.new(:server => self, :meetingid => attr[:meetingID],
-                                     :name => attr[:meetingID], :attendee_key => attr[:attendeeKEY],
-                                     :moderator_key => attr[:moderatorKEY], :external => true, :private => true)
+                                     :name => attr[:meetingID], :attendee_api_password => attr[:attendeePW],
+                                     :moderator_api_password => attr[:moderatorPW], :external => true, :private => true)
       else
-        room.update_attributes(:attendee_key => attr[:attendeeKEY],
-                               :moderator_key => attr[:moderatorKEY])
+        room.update_attributes(:attendee_api_password => attr[:attendeePW],
+                               :moderator_api_password => attr[:moderatorPW])
       end
       room.running = attr[:running]
       room.update_current_meeting

@@ -294,7 +294,7 @@ describe BigbluebuttonRoom do
 
       # these hashes should be exactly as returned by bigbluebutton-api-ruby to be sure we are testing it right
       let(:hash_info) {
-        { :returncode=>true, :meetingID=>"test_id", :attendeeKEY=>"1234", :moderatorKEY=>"4321",
+        { :returncode=>true, :meetingID=>"test_id", :attendeePW=>"1234", :moderatorPW=>"4321",
           :running=>false, :hasBeenForciblyEnded=>false, :startTime=>nil, :endTime=>nil,
           :participantCount=>0, :moderatorCount=>0, :attendees=>[], :messageKey=>"", :message=>""
         }
@@ -314,7 +314,7 @@ describe BigbluebuttonRoom do
         m
       }
       let(:hash_info2) {
-        { :returncode=>true, :meetingID=>"test_id", :attendeeKEY=>"1234", :moderatorKEY=>"4321",
+        { :returncode=>true, :meetingID=>"test_id", :attendeePW=>"1234", :moderatorPW=>"4321",
           :running=>true, :hasBeenForciblyEnded=>false, :startTime=>DateTime.parse("Wed Apr 06 17:09:57 UTC 2011"),
           :endTime=>nil, :participantCount=>4, :moderatorCount=>2, :metadata=>metadata,
           :attendees=>users, :messageKey=>{ }, :message=>{ }
@@ -326,7 +326,7 @@ describe BigbluebuttonRoom do
       context "fetches meeting info when the meeting is not running" do
         before {
           mocked_api.should_receive(:get_meeting_info).
-            with(room.meetingid, room.moderator_key).and_return(hash_info)
+            with(room.meetingid, room.moderator_api_password).and_return(hash_info)
           room.should_receive(:require_server)
           room.server = mocked_server
         }
@@ -343,7 +343,7 @@ describe BigbluebuttonRoom do
       context "fetches meeting info when the meeting is running" do
         before {
           mocked_api.should_receive(:get_meeting_info).
-            with(room.meetingid, room.moderator_key).and_return(hash_info2)
+            with(room.meetingid, room.moderator_api_password).and_return(hash_info2)
           room.should_receive(:require_server)
           room.server = mocked_server
         }
@@ -366,7 +366,7 @@ describe BigbluebuttonRoom do
       context "calls #update_current_meeting after the information is fetched" do
         before {
           mocked_api.should_receive(:get_meeting_info).
-            with(room.meetingid, room.moderator_key).and_return(hash_info2)
+            with(room.meetingid, room.moderator_api_password).and_return(hash_info2)
           room.should_receive(:require_server)
           room.server = mocked_server
 
@@ -382,7 +382,7 @@ describe BigbluebuttonRoom do
 
       context "calls end_meeting" do
         before {
-          mocked_api.should_receive(:end_meeting).with(room.meetingid, room.moderator_key)
+          mocked_api.should_receive(:end_meeting).with(room.meetingid, room.moderator_api_password)
           room.should_receive(:require_server)
           room.server = mocked_server
         }
@@ -404,12 +404,12 @@ describe BigbluebuttonRoom do
     end
 
     describe "#send_create" do
-      let(:attendee_key) { Forgery(:basic).password }
-      let(:moderator_key) { Forgery(:basic).password }
+      let(:attendee_api_password) { Forgery(:basic).password }
+      let(:moderator_api_password) { Forgery(:basic).password }
       let(:hash_create) {
         {
           :returncode => "SUCCESS", :meetingID => "test_id",
-          :attendeeKEY => attendee_key, :moderatorKEY => moderator_key,
+          :attendeePW => attendee_api_password, :moderatorPW => moderator_api_password,
           :hasBeenForciblyEnded => "false", :messageKey => {}, :message => {}
         }
       }
@@ -418,6 +418,8 @@ describe BigbluebuttonRoom do
         FactoryGirl.create(:bigbluebutton_room_metadata, :owner => room)
         FactoryGirl.create(:bigbluebutton_room_metadata, :owner => room)
         mocked_api.stub(:"request_headers=")
+        room.stub(:internal_moderator_password).and_return(moderator_api_password)
+        room.stub(:internal_attendee_password).and_return(attendee_api_password)
       }
 
       it { should respond_to(:send_create) }
@@ -449,11 +451,12 @@ describe BigbluebuttonRoom do
               .with(room.name, room.meetingid, get_create_params(room))
               .and_return(hash_create)
             room.stub(:select_server).and_return(mocked_server)
+            
             room.server = mocked_server
             room.send_create
           end
-          it { room.attendee_key.should be(attendee_key) }
-          it { room.moderator_key.should be(moderator_key) }
+          it { room.attendee_api_password.should be(attendee_api_password) }
+          it { room.moderator_api_password.should be(moderator_api_password) }
           it { room.changed?.should be_falsey }
         end
 
@@ -467,8 +470,8 @@ describe BigbluebuttonRoom do
             new_room.server = mocked_server
             new_room.send_create
           end
-          it { new_room.attendee_key.should be(attendee_key) }
-          it { new_room.moderator_key.should be(moderator_key) }
+          it { new_room.attendee_api_password.should be(attendee_api_password) }
+          it { new_room.moderator_api_password.should be(moderator_api_password) }
           it("and do not save the record") { new_room.new_record?.should be_truthy }
         end
 
@@ -482,8 +485,8 @@ describe BigbluebuttonRoom do
             room.server = mocked_server
             room.send_create(user)
           end
-          it { room.attendee_key.should be(attendee_key) }
-          it { room.moderator_key.should be(moderator_key) }
+          it { room.attendee_api_password.should be(attendee_api_password) }
+          it { room.moderator_api_password.should be(moderator_api_password) }
           it { room.changed?.should be_falsey }
         end
 
@@ -498,8 +501,8 @@ describe BigbluebuttonRoom do
             room.server = mocked_server
             room.send_create(user, user_opts)
           end
-          it { room.attendee_key.should be(attendee_key) }
-          it { room.moderator_key.should be(moderator_key) }
+          it { room.attendee_api_password.should be(attendee_api_password) }
+          it { room.moderator_api_password.should be(moderator_api_password) }
           it { room.changed?.should be_falsey }
         end
       end
@@ -583,7 +586,7 @@ describe BigbluebuttonRoom do
         before {
           room.should_receive(:require_server)
           mocked_api.should_receive(:join_meeting_url)
-            .with(room.meetingid, username, room.moderator_key, join_options)
+            .with(room.meetingid, username, room.moderator_api_password, join_options)
             .and_return(expected)
           room.server = mocked_server
         }
@@ -596,7 +599,7 @@ describe BigbluebuttonRoom do
         before {
           room.should_receive(:require_server)
           mocked_api.should_receive(:join_meeting_url)
-            .with(room.meetingid, username, room.attendee_key, join_options)
+            .with(room.meetingid, username, room.attendee_api_password, join_options)
             .and_return(expected)
           room.server = mocked_server
         }
@@ -1004,15 +1007,15 @@ end
 
 def get_create_params(room, user=nil)
   params = {
-    :moderatorKEY => room.moderator_key,
-    :attendeeKEY => room.attendee_key,
+    :recorded => room.record_meeting,
+    :duration => room.duration,
+    :moderatorPW => room.moderator_api_password,
+    :attendeePW => room.attendee_api_password,
     :welcome  => room.welcome_msg,
     :dialNumber => room.dial_number,
     :logoutURL => room.logout_url,
     :maxParticipants => room.max_participants,
     :voiceBridge => room.voice_bridge,
-    :recorded => room.record_meeting,
-    :duration => room.duration
   }
   room.metadata.each { |meta| params["meta_#{meta.name}"] = meta.content }
   unless user.nil?

@@ -28,6 +28,8 @@ class CreateBigbluebuttonRails < ActiveRecord::Migration
       t.string :param
       t.boolean :record_meeting, :default => false
       t.integer :duration, :default => 0
+      t.string :attendee_api_password
+      t.string :moderator_api_password
       t.timestamps
     end
     add_index :bigbluebutton_rooms, :server_id

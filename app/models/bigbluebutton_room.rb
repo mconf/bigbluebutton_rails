@@ -107,7 +107,7 @@ class BigbluebuttonRoom < ActiveRecord::Base
   def fetch_meeting_info
     require_server
 
-    response = self.server.api.get_meeting_info(self.meetingid, self.moderator_key)
+    response = self.server.api.get_meeting_info(self.meetingid, self.moderator_api_password)
 
     @participant_count = response[:participantCount]
     @moderator_count = response[:moderatorCount]
@@ -141,7 +141,7 @@ class BigbluebuttonRoom < ActiveRecord::Base
   # Triggers API call: <tt>end</tt>.
   def send_end
     require_server
-    response = self.server.api.end_meeting(self.meetingid, self.moderator_key)
+    response = self.server.api.end_meeting(self.meetingid, self.moderator_api_password)
 
     # enqueue an update in the meetings for later on
     Resque.enqueue(::BigbluebuttonMeetingUpdater, self.id, 15.seconds)
@@ -159,21 +159,23 @@ class BigbluebuttonRoom < ActiveRecord::Base
   # will be created. If a server is selected, the model is saved.
   #
   # With the response, updates the following attributes:
-  # * <tt>attendee_key</tt>
-  # * <tt>moderator_key</tt>
+  # * <tt>attendee_api_password</tt>
+  # * <tt>moderator_api_password</tt>
   #
   # Triggers API call: <tt>create</tt>.
   def send_create(user=nil, user_opts={})
     # updates the server whenever a meeting will be created and guarantees it has a meetingid
     self.server = select_server
     self.meetingid = unique_meetingid() if self.meetingid.nil?
+    self.moderator_api_password = internal_moderator_password if self.moderator_api_password.nil?
+    self.attendee_api_password = internal_attendee_password if self.attendee_api_password.nil?
     self.save unless self.new_record?
     require_server
 
     response = internal_create_meeting(user, user_opts)
     unless response.nil?
-      self.attendee_key = response[:attendeeKEY]
-      self.moderator_key = response[:moderatorKEY]
+      self.attendee_api_password = response[:attendeePW]
+      self.moderator_api_password = response[:moderatorPW]
       self.save unless self.new_record?
     end
 
@@ -192,9 +194,9 @@ class BigbluebuttonRoom < ActiveRecord::Base
 
     case role
     when :moderator
-      r = self.server.api.join_meeting_url(self.meetingid, username, self.moderator_key, options)
+      r = self.server.api.join_meeting_url(self.meetingid, username, self.moderator_api_password, options)
     when :attendee
-      r = self.server.api.join_meeting_url(self.meetingid, username, self.attendee_key, options)
+      r = self.server.api.join_meeting_url(self.meetingid, username, self.attendee_api_password, options)
     else
       r = self.server.api.join_meeting_url(self.meetingid, username, key, options)
     end
@@ -278,6 +280,14 @@ class BigbluebuttonRoom < ActiveRecord::Base
     # Has to be globally unique in case more that one bigbluebutton_rails application is using
     # the same web conference server.
     "#{SecureRandom.uuid}-#{Time.now.to_i}"
+  end
+
+  def internal_moderator_password
+    SecureRandom.uuid
+  end
+
+  def internal_attendee_password
+    SecureRandom.uuid
   end
 
   # Returns the current meeting running on this room, if any.
@@ -423,8 +433,8 @@ class BigbluebuttonRoom < ActiveRecord::Base
     opts = {
       :recorded => self.record_meeting,
       :duration => self.duration,
-      :moderatorKEY => self.moderator_key,
-      :attendeeKEY => self.attendee_key,
+      :moderatorPW => self.moderator_api_password,
+      :attendeePW => self.attendee_api_password,
       :welcome => self.welcome_msg.blank? ? default_welcome_message : self.welcome_msg,
       :dialNumber => self.dial_number,
       :logoutURL => self.full_logout_url || self.logout_url,

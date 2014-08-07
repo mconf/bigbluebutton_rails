@@ -11,6 +11,8 @@ describe BigbluebuttonRoom do
     it { should have_db_column(:name).of_type(:string) }
     it { should have_db_column(:attendee_key).of_type(:string) }
     it { should have_db_column(:moderator_key).of_type(:string) }
+    it { should have_db_column(:attendee_api_password).of_type(:string) }
+    it { should have_db_column(:moderator_api_password).of_type(:string) }
     it { should have_db_column(:welcome_msg).of_type(:string) }
     it { should have_db_column(:dial_number).of_type(:string) }
     it { should have_db_column(:logout_url).of_type(:string) }
