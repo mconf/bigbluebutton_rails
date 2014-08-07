@@ -167,8 +167,8 @@ class BigbluebuttonRoom < ActiveRecord::Base
     # updates the server whenever a meeting will be created and guarantees it has a meetingid
     self.server = select_server
     self.meetingid = unique_meetingid() if self.meetingid.nil?
-    self.moderator_api_password = internal_moderator_password if self.moderator_api_password.nil?
-    self.attendee_api_password = internal_attendee_password if self.attendee_api_password.nil?
+    self.moderator_api_password = internal_moderator_password
+    self.attendee_api_password = internal_attendee_password
     self.save unless self.new_record?
     require_server
 

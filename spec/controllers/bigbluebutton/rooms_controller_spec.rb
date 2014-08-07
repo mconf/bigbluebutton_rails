@@ -105,8 +105,6 @@ describe Bigbluebutton::RoomsController do
       it { should set_the_flash.to(I18n.t('bigbluebutton_rails.rooms.notice.create.success')) }
       it {
         saved = BigbluebuttonRoom.last
-        puts "==========room attributes #{new_room.attributes.inspect}"
-        puts "==========saved attributes #{saved.attributes.inspect}"
         saved.should have_same_attributes_as(new_room)
       }
     end
