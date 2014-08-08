@@ -423,8 +423,10 @@ describe BigbluebuttonRoom do
         room.update_attributes(:welcome_msg => "Anything")
         FactoryGirl.create(:bigbluebutton_room_metadata, :owner => room)
         FactoryGirl.create(:bigbluebutton_room_metadata, :owner => room)
-        room.stub(:internal_moderator_password).and_return(moderator_api_password)
-        room.stub(:internal_attendee_password).and_return(attendee_api_password)
+        room.stub(:internal_password) do
+          room.moderator_api_password = moderator_api_password
+          room.attendee_api_password = attendee_api_password
+        end
         mocked_api.stub(:"request_headers=")
       }
 
@@ -472,8 +474,10 @@ describe BigbluebuttonRoom do
             params  = get_create_params(new_room)
             params[:attendeePW] = attendee_api_password
             params[:moderatorPW] = moderator_api_password
-            new_room.stub(:internal_moderator_password).and_return(moderator_api_password)
-            new_room.stub(:internal_attendee_password).and_return(attendee_api_password)
+            new_room.stub(:internal_password) do
+              new_room.moderator_api_password = moderator_api_password
+              new_room.attendee_api_password = attendee_api_password
+            end
             mocked_api.should_receive(:create_meeting)
               .with(new_room.name, new_room.meetingid, params)
               .and_return(hash_create)
@@ -540,22 +544,23 @@ describe BigbluebuttonRoom do
       end
 
       context "always generate new passwords" do
-        let(:moderator_password) { Forgery(:basic).password }
-        let(:attendee_password) { Forgery(:basic).password }
-        let(:new_room) { FactoryGirl.create(:bigbluebutton_room, :moderator_api_password => moderator_password, :attendee_api_password => attendee_password) }
         before do
-          params  = get_create_params(new_room)
+          @old_moderator_password = room.moderator_api_password
+          @old_attendee_password = room.attendee_api_password
+
+          params  = get_create_params(room)
           params[:attendeePW] = anything
           params[:moderatorPW] = anything
           mocked_api.should_receive(:create_meeting)
-            .with(new_room.name, new_room.meetingid, params)
+            .with(room.name, room.meetingid, params)
             .and_return(hash_create)
-          new_room.stub(:select_server).and_return(mocked_server)
-          new_room.server = mocked_server
-          new_room.send_create
+
+          room.stub(:select_server).and_return(mocked_server)
+          room.server = mocked_server
+          room.send_create
         end
-        it { new_room.moderator_api_password.should_not be(moderator_password) }
-        it { new_room.attendee_api_password.should_not be(attendee_password)}
+        it { room.moderator_api_password.should_not be(@old_moderator_password) }
+        it { room.attendee_api_password.should_not be(@old_attendee_password) }
       end
 
       context "uses #full_logout_url when set" do

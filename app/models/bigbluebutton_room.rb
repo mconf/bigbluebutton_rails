@@ -167,8 +167,7 @@ class BigbluebuttonRoom < ActiveRecord::Base
     # updates the server whenever a meeting will be created and guarantees it has a meetingid
     self.server = select_server
     self.meetingid = unique_meetingid() if self.meetingid.nil?
-    self.moderator_api_password = internal_moderator_password
-    self.attendee_api_password = internal_attendee_password
+    internal_password()
     self.save unless self.new_record?
     require_server
 
@@ -280,14 +279,6 @@ class BigbluebuttonRoom < ActiveRecord::Base
     # Has to be globally unique in case more that one bigbluebutton_rails application is using
     # the same web conference server.
     "#{SecureRandom.uuid}-#{Time.now.to_i}"
-  end
-
-  def internal_moderator_password
-    SecureRandom.uuid
-  end
-
-  def internal_attendee_password
-    SecureRandom.uuid
   end
 
   # Returns the current meeting running on this room, if any.
@@ -492,6 +483,13 @@ class BigbluebuttonRoom < ActiveRecord::Base
     self.metadata.inject({}) { |result, meta|
       result["meta_#{meta.name}"] = meta.content; result
     }
+  end
+
+  private
+
+  def internal_password
+    self.moderator_api_password = SecureRandom.uuid
+    self.attendee_api_password = SecureRandom.uuid
   end
 
 end
