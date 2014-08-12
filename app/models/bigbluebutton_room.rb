@@ -24,7 +24,7 @@ class BigbluebuttonRoom < ActiveRecord::Base
   delegate :default_layout, :default_layout=, :to => :room_options
   delegate :presenter_share_only, :presenter_share_only=, :to => :room_options
   delegate :auto_start_video, :auto_start_video=, :to => :room_options
-  delegate :auto_start_audio, :auto_start_audio=, :to => :room_options 
+  delegate :auto_start_audio, :auto_start_audio=, :to => :room_options
   delegate :get_available_layouts, :to => :room_options
 
   accepts_nested_attributes_for :metadata,
@@ -211,10 +211,10 @@ class BigbluebuttonRoom < ActiveRecord::Base
   # params:: Hash with a key :key
   def user_role(params)
     role = nil
-    if params && params.has_key?(:key)
-      if self.moderator_key == params[:key]
+    if params && params.has_key?(:password)
+      if self.moderator_key == params[:password]
         role = :moderator
-      elsif self.attendee_key == params[:key]
+      elsif self.attendee_key == params[:password]
         role = :attendee
       end
     end
@@ -355,7 +355,6 @@ class BigbluebuttonRoom < ActiveRecord::Base
       # returns true if something was changed
       config_xml = self.room_options.set_on_config_xml(config_xml)
       if config_xml
-
         # get the new token for the room, and return it
         self.server.api.set_config_xml(self.meetingid, config_xml)
       else
