@@ -487,8 +487,8 @@ class BigbluebuttonRoom < ActiveRecord::Base
   private
 
   def internal_password
-    self.moderator_api_password = SecureRandom.uuid
-    self.attendee_api_password = SecureRandom.uuid
+    self.moderator_api_password = SecureRandom.uuid if self.moderator_api_password.nil?
+    self.attendee_api_password = SecureRandom.uuid if self.attendee_api_password.nil?
   end
 
 end
