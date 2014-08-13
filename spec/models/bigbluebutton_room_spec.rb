@@ -404,12 +404,14 @@ describe BigbluebuttonRoom do
     end
 
     describe "#send_create" do
+      let(:time) { Time.now }
       let(:attendee_password) { Forgery(:basic).password }
       let(:moderator_password) { Forgery(:basic).password }
       let(:hash_create) {
         {
           :returncode => "SUCCESS", :meetingID => "test_id",
           :attendeePW => attendee_password, :moderatorPW => moderator_password,
+          :createTime => time,
           :hasBeenForciblyEnded => "false", :messageKey => {}, :message => {}
         }
       }
@@ -439,6 +441,20 @@ describe BigbluebuttonRoom do
           before { room.welcome_msg = "" }
           it { room.send_create }
         end
+      end
+
+      context "set room create_time attribute" do
+        before do
+          mocked_api.should_receive(:create_meeting)
+            .with(room.name, room.meetingid, get_create_params(room))
+            .and_return(hash_create)
+          room.stub(:select_server).and_return(mocked_server)
+          room.server = mocked_server
+          room.send_create
+        end
+
+        it { expect(room.create_time).to eq(time) }
+
       end
 
       context "sends create_meeting" do

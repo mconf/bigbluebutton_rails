@@ -778,12 +778,14 @@ describe Bigbluebutton::RoomsController do
   describe "#join_internal" do
     let(:user) { FactoryGirl.build(:user) }
     let(:http_referer) { bigbluebutton_room_path(room) }
+    let(:time) { DateTime.now }
     before {
       request.env["HTTP_REFERER"] = http_referer
       controller.stub(:bigbluebutton_user).and_return(user)
       controller.stub(:bigbluebutton_role).and_return(:attendee)
       BigbluebuttonRoom.stub(:find_by_param).and_return(room)
       controller.send(:find_room)
+      room.stub(:create_time).and_return(time)
     }
 
     context "when the user has permission to create the meeting" do
@@ -796,11 +798,11 @@ describe Bigbluebutton::RoomsController do
         room.should_receive(:create_meeting)
           .with(user, controller.request, { custom: true })
         room.should_receive(:fetch_new_token).and_return(nil)
-        room.should_receive(:join_url).and_return("http://test.com/join/url")
+        room.should_receive(:join_url).and_return("http://test.com/join/url/createTime=#{time}")
       }
       before(:each) { get :join, :id => room.to_param }
       it { should respond_with(:redirect) }
-      it { should redirect_to("http://test.com/join/url") }
+      it { should redirect_to("http://test.com/join/url/createTime=#{time}") }
     end
 
     context "when the user doesn't have permission to create the meeting" do
@@ -856,17 +858,19 @@ describe Bigbluebutton::RoomsController do
           room.should_receive(:fetch_new_token).and_return('fake-token')
           room.should_receive(:join_url)
             .with(user.name, :attendee, nil, hash_including(:configToken  => 'fake-token'))
-            .and_return("http://test.com/join/url")
+            .and_return("http://test.com/join/url/")
         }
         it("uses the token") { get :join, :id => room.to_param }
       end
 
       context "if the token is nil" do
+        let(:time) { Time.now }
         before(:each) {
+          room.stub(:create_time).and_return(time)
           room.should_receive(:fetch_new_token).and_return(nil)
           room.should_receive(:join_url)
-            .with(user.name, :attendee, nil, {})
-            .and_return("http://test.com/join/url")
+            .with(user.name, :attendee, nil, {:createTime => room.create_time})
+            .and_return("http://test.com/join/url/")
         }
         it("does not use the token") { get :join, :id => room.to_param }
       end
