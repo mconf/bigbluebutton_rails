@@ -855,7 +855,7 @@ describe Bigbluebutton::RoomsController do
         before(:each) {
           room.should_receive(:fetch_new_token).and_return('fake-token')
           room.should_receive(:join_url)
-            .with(user.name, :attendee, nil, hash_including(:configToken  => 'fake-token'))
+            .with(user.name, :attendee, nil, {:configToken  => 'fake-token', :userID => user.id})
             .and_return("http://test.com/join/url")
         }
         it("uses the token") { get :join, :id => room.to_param }
@@ -865,7 +865,7 @@ describe Bigbluebutton::RoomsController do
         before(:each) {
           room.should_receive(:fetch_new_token).and_return(nil)
           room.should_receive(:join_url)
-            .with(user.name, :attendee, nil, {})
+            .with(user.name, :attendee, nil, {:userID => user.id})
             .and_return("http://test.com/join/url")
         }
         it("does not use the token") { get :join, :id => room.to_param }
