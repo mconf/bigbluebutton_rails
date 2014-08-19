@@ -1011,7 +1011,7 @@ def get_create_params(room, user=nil)
     :logoutURL => room.logout_url,
     :maxParticipants => room.max_participants,
     :voiceBridge => room.voice_bridge,
-    :recorded => room.record_meeting,
+    :record => room.record_meeting,
     :duration => room.duration
   }
   room.metadata.each { |meta| params["meta_#{meta.name}"] = meta.content }

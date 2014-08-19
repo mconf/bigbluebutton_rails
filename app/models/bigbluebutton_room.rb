@@ -24,7 +24,7 @@ class BigbluebuttonRoom < ActiveRecord::Base
   delegate :default_layout, :default_layout=, :to => :room_options
   delegate :presenter_share_only, :presenter_share_only=, :to => :room_options
   delegate :auto_start_video, :auto_start_video=, :to => :room_options
-  delegate :auto_start_audio, :auto_start_audio=, :to => :room_options 
+  delegate :auto_start_audio, :auto_start_audio=, :to => :room_options
   delegate :get_available_layouts, :to => :room_options
 
   accepts_nested_attributes_for :metadata,
@@ -421,7 +421,7 @@ class BigbluebuttonRoom < ActiveRecord::Base
 
   def internal_create_meeting(user=nil, user_opts={})
     opts = {
-      :recorded => self.record_meeting,
+      :record => self.record_meeting,
       :duration => self.duration,
       :moderatorPW => self.moderator_password,
       :attendeePW => self.attendee_password,
