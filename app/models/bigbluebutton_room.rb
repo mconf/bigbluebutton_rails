@@ -33,7 +33,7 @@ class BigbluebuttonRoom < ActiveRecord::Base
 
   validates :meetingid, :presence => true, :uniqueness => true,
     :length => { :minimum => 1, :maximum => 100 }
-  validates :name, :presence => true, :uniqueness => true,
+  validates :name, :presence => true,
     :length => { :minimum => 1, :maximum => 150 }
   validates :welcome_msg, :length => { :maximum => 250 }
   validates :private, :inclusion => { :in => [true, false] }
