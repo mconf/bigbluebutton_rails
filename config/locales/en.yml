@@ -22,7 +22,7 @@ en:
         server_id: "Server ID"
         start_time: "Start Time"
       bigbluebutton_room:
-        attendee_password: "Attendee Password"
+        attendee_key: "Attendee Key"
         dial_number: "Dial Number"
         duration: Duration
         external: "Externally Created"
@@ -30,7 +30,7 @@ en:
         max_participants: "Maximum Number of Participants"
         meetingid: "Meeting ID"
         metadata: Metadata
-        moderator_password: "Moderator Password"
+        moderator_key: "Moderator Key"
         name: Name
         param: "String ID"
         private: Private

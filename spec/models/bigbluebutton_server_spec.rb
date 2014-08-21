@@ -163,11 +163,11 @@ describe BigbluebuttonServer do
       @api_mock.should_receive(:get_meetings).and_return(hash)
       server.fetch_meetings
 
-      # the passwords are updated during fetch_meetings
-      room1.moderator_password = "mp"
-      room1.attendee_password = "ap"
-      room2.moderator_password = "pass"
-      room2.attendee_password = "pass"
+      # the keys are updated during fetch_meetings
+      room1.moderator_api_password = "mp"
+      room1.attendee_api_password = "ap"
+      room2.moderator_api_password = "pass"
+      room2.attendee_api_password = "pass"
     }
 
     it { server.meetings.count.should be(3) }
@@ -176,8 +176,8 @@ describe BigbluebuttonServer do
     it { server.meetings[2].meetingid.should == "im not in the db" }
     it { server.meetings[2].name.should == "im not in the db" }
     it { server.meetings[2].server.should == server }
-    it { server.meetings[2].attendee_password.should == "pass" }
-    it { server.meetings[2].moderator_password.should == "pass" }
+    it { server.meetings[2].attendee_api_password.should == "pass" }
+    it { server.meetings[2].moderator_api_password.should == "pass" }
     it { server.meetings[2].running.should == true }
     it { server.meetings[2].new_record?.should be_truthy }
     it { server.meetings[2].external.should be_truthy }

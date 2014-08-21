@@ -16,16 +16,16 @@ When /^he should( not)? join the conference room$/i do |negate|
   end
 end
 
-When /^enters his name and the (.+) password$/i do |role|
+When /^enters his name and the (.+) key$/i do |role|
   name = @user.nil? ? "Anonymous" : @user.name
-  password = role.downcase.to_sym == :moderator ? @room.moderator_password : @room.attendee_password
+  key = role.downcase.to_sym == :moderator ? @room.moderator_key : @room.attendee_key
   fill_in("user[name]", :with => name)
-  fill_in("user[password]", :with => password)
+  fill_in("user[key]", :with => key)
 end
 
-When /^enters only the (.+) password$/ do |role|
-  password = role.downcase.to_sym == :moderator ? @room.moderator_password : @room.attendee_password
-  fill_in("user[password]", :with => password)
+When /^enters only the (.+) key$/ do |role|
+  key = role.downcase.to_sym == :moderator ? @room.moderator_key : @room.attendee_key
+  fill_in("user[key]", :with => key)
   fill_in("user[name]", :with => "")
 end
 
@@ -34,12 +34,12 @@ When /^enters only the user name$/ do
   fill_in("user[name]", :with => name)
 end
 
-When /^the read-only password field was pre-filled with the moderator password$/ do
-  has_element("input", { :name => 'user[password]', :type => 'password', :value => @room.moderator_password, :readonly => 'readonly' })
+When /^the read-only key field was pre-filled with the moderator key$/ do
+  has_element("input", { :name => 'user[key]', :type => 'password', :value => @room.moderator_key, :readonly => 'readonly' })
 end
 
-When /^the password field was not pre-filled$/i do
-  has_element("input", { :name => 'user[password]', :type => 'password', :value => '' })
+When /^the key field was not pre-filled$/i do
+  has_element("input", { :name => 'user[key]', :type => 'password', :value => '' })
 end
 
 When /^the read-only name field was pre-filled with "(.+)"$/ do |name|

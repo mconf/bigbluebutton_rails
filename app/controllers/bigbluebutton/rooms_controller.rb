@@ -250,8 +250,8 @@ class Bigbluebutton::RoomsController < ApplicationController
       @user_id = bigbluebutton_user.id
     end
 
-    # the role: nil means access denied, :password means check the room
-    # password, otherwise just use it
+    # the role: nil means access denied, :key means check the room
+    # key, otherwise just use it
     @user_role = bigbluebutton_role(@room)
     if @user_role.nil?
       raise BigbluebuttonRails::RoomAccessDenied.new
@@ -366,7 +366,7 @@ class Bigbluebutton::RoomsController < ApplicationController
   end
 
   def room_allowed_params
-    [ :name, :server_id, :meetingid, :attendee_password, :moderator_password, :welcome_msg,
+    [ :name, :server_id, :meetingid, :attendee_key, :moderator_key, :welcome_msg,
       :private, :logout_url, :dial_number, :voice_bridge, :max_participants, :owner_id,
       :owner_type, :external, :param, :record_meeting, :duration, :default_layout, :presenter_share_only,
       :auto_start_video, :auto_start_audio, :metadata_attributes => [ :id, :name, :content, :_destroy, :owner_id ] ]
