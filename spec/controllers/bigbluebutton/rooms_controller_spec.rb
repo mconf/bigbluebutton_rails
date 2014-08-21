@@ -8,6 +8,7 @@ describe Bigbluebutton::RoomsController do
   render_views
   let(:server) { FactoryGirl.create(:bigbluebutton_server) }
   let(:room) { FactoryGirl.create(:bigbluebutton_room, :server => server) }
+  let(:params_to_ignore) { ['moderator_api_password', 'attendee_api_password'] }
 
   describe "#index" do
     before { 3.times { FactoryGirl.create(:bigbluebutton_room) } }
@@ -105,7 +106,7 @@ describe Bigbluebutton::RoomsController do
       it { should set_the_flash.to(I18n.t('bigbluebutton_rails.rooms.notice.create.success')) }
       it {
         saved = BigbluebuttonRoom.last
-        saved.should have_same_attributes_as(new_room, ['moderator_api_password', 'attendee_api_password'])
+        saved.should have_same_attributes_as(new_room, params_to_ignore)
       }
     end
 
@@ -151,7 +152,7 @@ describe Bigbluebutton::RoomsController do
       it {
         saved = BigbluebuttonRoom.last
         new_room.meetingid = new_room.name
-        saved.should have_same_attributes_as(new_room, ['moderator_api_password', 'attendee_api_password'])
+        saved.should have_same_attributes_as(new_room, params_to_ignore)
       }
     end
 
@@ -206,7 +207,7 @@ describe Bigbluebutton::RoomsController do
       }
       it {
         saved = BigbluebuttonRoom.find(@room)
-        saved.should have_same_attributes_as(new_room, ['moderator_api_password', 'attendee_api_password'])
+        saved.should have_same_attributes_as(new_room, params_to_ignore)
       }
       it { should set_the_flash.to(I18n.t('bigbluebutton_rails.rooms.notice.update.success')) }
     end
@@ -286,8 +287,7 @@ describe Bigbluebutton::RoomsController do
           delete :destroy, :id => room.to_param
         }.to change{ BigbluebuttonRoom.count }.by(-1)
       }
-      it {
-        should respond_with(:redirect) }
+      it { should respond_with(:redirect) }
       it { should redirect_to bigbluebutton_rooms_url }
     end
 

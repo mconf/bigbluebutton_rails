@@ -255,7 +255,7 @@ class Bigbluebutton::RoomsController < ApplicationController
     @user_role = bigbluebutton_role(@room)
     if @user_role.nil?
       raise BigbluebuttonRails::RoomAccessDenied.new
-    elsif @user_role == :password
+    elsif @user_role == :key
       @user_role = @room.user_role(params[:user])
     end
 

@@ -166,8 +166,9 @@ class BigbluebuttonRoom < ActiveRecord::Base
   def send_create(user=nil, user_opts={})
     # updates the server whenever a meeting will be created and guarantees it has a meetingid
     self.server = select_server
-    self.meetingid = unique_meetingid() if self.meetingid.nil?
-    internal_password()
+    self.meetingid = unique_meetingid() if self.meetingid.blank?
+    self.moderator_api_password = internal_password() if self.moderator_api_password.blank?
+    self.attendee_api_password = internal_password() if self.attendee_api_password.blank?
     self.save unless self.new_record?
     require_server
 
@@ -211,10 +212,10 @@ class BigbluebuttonRoom < ActiveRecord::Base
   # params:: Hash with a key :key
   def user_role(params)
     role = nil
-    if params && params.has_key?(:password)
-      if self.moderator_key == params[:password]
+    if params && params.has_key?(:key)
+      if self.moderator_key == params[:key]
         role = :moderator
-      elsif self.attendee_key == params[:password]
+      elsif self.attendee_key == params[:key]
         role = :attendee
       end
     end
@@ -487,8 +488,7 @@ class BigbluebuttonRoom < ActiveRecord::Base
   private
 
   def internal_password
-    self.moderator_api_password = SecureRandom.uuid if self.moderator_api_password.nil?
-    self.attendee_api_password = SecureRandom.uuid if self.attendee_api_password.nil?
+    SecureRandom.uuid
   end
 
 end
