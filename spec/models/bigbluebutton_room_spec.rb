@@ -59,9 +59,9 @@ describe BigbluebuttonRoom do
   it { should allow_value(0).for(:duration) }
   it { should allow_value(1).for(:duration) }
 
-  it { should ensure_length_of(:attendee_password).is_at_most(16) }
+  it { should ensure_length_of(:attendee_key).is_at_most(16) }
 
-  it { should ensure_length_of(:moderator_password).is_at_most(16) }
+  it { should ensure_length_of(:moderator_key).is_at_most(16) }
 
   it { should ensure_length_of(:welcome_msg).is_at_most(250) }
 
@@ -86,13 +86,13 @@ describe BigbluebuttonRoom do
   it { should respond_to(:is_running?) }
 
   describe "#user_role" do
-    let(:room) { FactoryGirl.build(:bigbluebutton_room, :moderator_password => "mod", :attendee_password => "att") }
+    let(:room) { FactoryGirl.build(:bigbluebutton_room, :moderator_key => "mod", :attendee_key => "att") }
     it { should respond_to(:user_role) }
-    it { room.user_role({ :password => room.moderator_password }).should == :moderator }
-    it { room.user_role({ :password => room.attendee_password }).should == :attendee }
-    it { room.user_role({ :password => "wrong" }).should == nil }
-    it { room.user_role({ :password => nil }).should == nil }
-    it { room.user_role({ :not_password => "any" }).should == nil }
+    it { room.user_role({ :key => room.moderator_key }).should == :moderator }
+    it { room.user_role({ :key => room.attendee_key }).should == :attendee }
+    it { room.user_role({ :key => "wrong" }).should == nil }
+    it { room.user_role({ :key => nil }).should == nil }
+    it { room.user_role({ :not_key => "any" }).should == nil }
     it { room.user_role({ }).should == nil }
     it { room.user_role(nil).should == nil }
   end
@@ -239,18 +239,18 @@ describe BigbluebuttonRoom do
   end
 
   context "when room set to private" do
-    context "sets passwords that are not yet defined" do
-      let(:room) { FactoryGirl.create(:bigbluebutton_room, :private => false, :moderator_password => nil, :attendee_password => nil) }
+    context "sets keys that are not yet defined" do
+      let(:room) { FactoryGirl.create(:bigbluebutton_room, :private => false, :moderator_key => nil, :attendee_key => nil) }
       before(:each) { room.update_attributes(:private => true) }
-      it { room.moderator_password.should_not be_nil }
-      it { room.attendee_password.should_not be_nil }
+      it { room.moderator_key.should_not be_nil }
+      it { room.attendee_key.should_not be_nil }
     end
 
-    context "only sets the passwords if the room was public before" do
-      let(:room) { FactoryGirl.create(:bigbluebutton_room, :private => true, :moderator_password => "123", :attendee_password => "321") }
+    context "only sets the keys if the room was public before" do
+      let(:room) { FactoryGirl.create(:bigbluebutton_room, :private => true, :moderator_key => "123", :attendee_key => "321") }
       before(:each) { room.update_attributes(:private => true) }
-      it { room.moderator_password.should == "123" }
-      it { room.attendee_password.should == "321" }
+      it { room.moderator_key.should == "123" }
+      it { room.attendee_key.should == "321" }
     end
   end
 
@@ -325,7 +325,7 @@ describe BigbluebuttonRoom do
       context "fetches meeting info when the meeting is not running" do
         before {
           mocked_api.should_receive(:get_meeting_info).
-            with(room.meetingid, room.moderator_password).and_return(hash_info)
+            with(room.meetingid, room.moderator_api_password).and_return(hash_info)
           room.should_receive(:require_server)
           room.server = mocked_server
         }
@@ -342,7 +342,7 @@ describe BigbluebuttonRoom do
       context "fetches meeting info when the meeting is running" do
         before {
           mocked_api.should_receive(:get_meeting_info).
-            with(room.meetingid, room.moderator_password).and_return(hash_info2)
+            with(room.meetingid, room.moderator_api_password).and_return(hash_info2)
           room.should_receive(:require_server)
           room.server = mocked_server
         }
@@ -365,7 +365,7 @@ describe BigbluebuttonRoom do
       context "calls #update_current_meeting after the information is fetched" do
         before {
           mocked_api.should_receive(:get_meeting_info).
-            with(room.meetingid, room.moderator_password).and_return(hash_info2)
+            with(room.meetingid, room.moderator_api_password).and_return(hash_info2)
           room.should_receive(:require_server)
           room.server = mocked_server
 
@@ -381,7 +381,7 @@ describe BigbluebuttonRoom do
 
       context "calls end_meeting" do
         before {
-          mocked_api.should_receive(:end_meeting).with(room.meetingid, room.moderator_password)
+          mocked_api.should_receive(:end_meeting).with(room.meetingid, room.moderator_api_password)
           room.should_receive(:require_server)
           room.server = mocked_server
         }
@@ -403,15 +403,16 @@ describe BigbluebuttonRoom do
     end
 
     describe "#send_create" do
-      let(:attendee_password) { Forgery(:basic).password }
-      let(:moderator_password) { Forgery(:basic).password }
+      let(:new_moderator_api_password) { Forgery(:basic).password }
+      let(:new_attendee_api_password) { Forgery(:basic).password }
       let(:hash_create) {
         {
           :returncode => "SUCCESS", :meetingID => "test_id",
-          :attendeePW => attendee_password, :moderatorPW => moderator_password,
+          :attendeePW => new_attendee_api_password, :moderatorPW => new_moderator_api_password,
           :hasBeenForciblyEnded => "false", :messageKey => {}, :message => {}
         }
       }
+      let(:expected_params) { get_create_params(room) }
       before {
         room.update_attributes(:welcome_msg => "Anything")
         FactoryGirl.create(:bigbluebutton_room_metadata, :owner => room)
@@ -445,44 +446,47 @@ describe BigbluebuttonRoom do
         context "for a stored room" do
           before do
             mocked_api.should_receive(:create_meeting)
-              .with(room.name, room.meetingid, get_create_params(room))
+              .with(room.name, room.meetingid, expected_params)
               .and_return(hash_create)
             room.stub(:select_server).and_return(mocked_server)
+
             room.server = mocked_server
             room.send_create
           end
-          it { room.attendee_password.should be(attendee_password) }
-          it { room.moderator_password.should be(moderator_password) }
+          it { room.attendee_api_password.should be(new_attendee_api_password) }
+          it { room.moderator_api_password.should be(new_moderator_api_password) }
           it { room.changed?.should be_falsey }
         end
 
         context "for a new record" do
           let(:new_room) { FactoryGirl.build(:bigbluebutton_room) }
           before do
+            params  = get_create_params(new_room)
             mocked_api.should_receive(:create_meeting)
-              .with(new_room.name, new_room.meetingid, get_create_params(new_room))
+              .with(new_room.name, new_room.meetingid, params)
               .and_return(hash_create)
             new_room.stub(:select_server).and_return(mocked_server)
             new_room.server = mocked_server
             new_room.send_create
           end
-          it { new_room.attendee_password.should be(attendee_password) }
-          it { new_room.moderator_password.should be(moderator_password) }
+          it { new_room.attendee_api_password.should be(new_attendee_api_password) }
+          it { new_room.moderator_api_password.should be(new_moderator_api_password) }
           it("and do not save the record") { new_room.new_record?.should be_truthy }
         end
 
         context "passing the user" do
           let(:user) { FactoryGirl.build(:user) }
           before do
+            params = get_create_params(room, user)
             mocked_api.should_receive(:create_meeting)
-              .with(room.name, room.meetingid, get_create_params(room, user))
+              .with(room.name, room.meetingid, params)
               .and_return(hash_create)
             room.stub(:select_server).and_return(mocked_server)
             room.server = mocked_server
             room.send_create(user)
           end
-          it { room.attendee_password.should be(attendee_password) }
-          it { room.moderator_password.should be(moderator_password) }
+          it { room.attendee_api_password.should be(new_attendee_api_password) }
+          it { room.moderator_api_password.should be(new_moderator_api_password) }
           it { room.changed?.should be_falsey }
         end
 
@@ -490,30 +494,97 @@ describe BigbluebuttonRoom do
           let(:user) { FactoryGirl.build(:user) }
           let(:user_opts) { { :record_meeting => false, :other => true } }
           before do
+            params = get_create_params(room, user).merge(user_opts)
             mocked_api.should_receive(:create_meeting)
-              .with(room.name, room.meetingid, get_create_params(room, user).merge(user_opts))
+              .with(room.name, room.meetingid, params)
               .and_return(hash_create)
             room.stub(:select_server).and_return(mocked_server)
             room.server = mocked_server
             room.send_create(user, user_opts)
           end
-          it { room.attendee_password.should be(attendee_password) }
-          it { room.moderator_password.should be(moderator_password) }
+          it { room.attendee_api_password.should be(new_attendee_api_password) }
+          it { room.moderator_api_password.should be(new_moderator_api_password) }
           it { room.changed?.should be_falsey }
         end
       end
 
-      context "generates a meetingid if nil" do
+      context "generating a meeting id" do
         let(:new_id) { "new id" }
-        before {
-          room.meetingid = nil
+
+        ['', nil].each do |value|
+          it "generates a new one if it's empty or nil" do
+            room.meetingid = value
+            room.stub(:select_server).and_return(mocked_server)
+            room.server = mocked_server
+            room.should_receive(:unique_meetingid).and_return(new_id)
+            mocked_api.should_receive(:create_meeting)
+              .with(room.name, new_id, anything)
+            room.send_create
+          end
+        end
+
+        it "doesn't generate a new meetingid if already set" do
+          old_id = "old id"
+          room.meetingid = old_id
           room.stub(:select_server).and_return(mocked_server)
           room.server = mocked_server
-        }
-        it "before calling create" do
-          room.should_receive(:unique_meetingid).and_return(new_id)
+          room.should_not_receive(:unique_meetingid)
           mocked_api.should_receive(:create_meeting)
-            .with(room.name, new_id, get_create_params(room))
+            .with(room.name, old_id, anything)
+          room.send_create
+        end
+      end
+
+      context "generating a moderator password" do
+        let(:new_pass) { "new pass" }
+
+        ['', nil].each do |value|
+          it "generates a new one if it's empty or nil" do
+            room.moderator_api_password = value
+            room.stub(:select_server).and_return(mocked_server)
+            room.server = mocked_server
+            room.should_receive(:internal_password).and_return(new_pass)
+            mocked_api.should_receive(:create_meeting)
+              .with(room.name, anything, hash_including(moderatorPW: new_pass))
+            room.send_create
+          end
+        end
+
+        it "doesn't generate a new moderator password if already set" do
+          old_pass = "old pass"
+          room.moderator_api_password = old_pass
+          room.stub(:select_server).and_return(mocked_server)
+          room.server = mocked_server
+          room.should_not_receive(:internal_password)
+          mocked_api.should_receive(:create_meeting)
+            .with(room.name, anything, hash_including(moderatorPW: old_pass))
+          room.send_create
+        end
+      end
+
+      context "generating a attendee password" do
+        let(:new_pass) { "new pass" }
+
+        ['', nil].each do |value|
+          it "generates a new one if it's empty or nil" do
+            room.attendee_api_password = value
+            room.stub(:select_server).and_return(mocked_server)
+            room.server = mocked_server
+            room.should_receive(:internal_password).and_return(new_pass)
+            mocked_api.should_receive(:create_meeting)
+              .with(room.name, anything, hash_including(attendeePW: new_pass))
+            room.send_create
+          end
+        end
+
+        it "doesn't generate a new attendee password if already set" do
+          old_pass = "old pass"
+          room.attendee_api_password = old_pass
+          room.stub(:select_server).and_return(mocked_server)
+          room.server = mocked_server
+          room.should_not_receive(:internal_password)
+          mocked_api.should_receive(:create_meeting)
+            .with(room.name, anything, hash_including(attendeePW: old_pass))
           room.send_create
         end
       end
@@ -582,7 +653,7 @@ describe BigbluebuttonRoom do
         before {
           room.should_receive(:require_server)
           mocked_api.should_receive(:join_meeting_url)
-            .with(room.meetingid, username, room.moderator_password, join_options)
+            .with(room.meetingid, username, room.moderator_api_password, join_options)
             .and_return(expected)
           room.server = mocked_server
         }
@@ -595,7 +666,7 @@ describe BigbluebuttonRoom do
         before {
           room.should_receive(:require_server)
           mocked_api.should_receive(:join_meeting_url)
-            .with(room.meetingid, username, room.attendee_password, join_options)
+            .with(room.meetingid, username, room.attendee_api_password, join_options)
             .and_return(expected)
           room.server = mocked_server
         }
@@ -681,17 +752,17 @@ describe BigbluebuttonRoom do
 
   end
 
-  context "validates passwords" do
+  context "validates keys" do
     context "for private rooms" do
       let(:room) { FactoryGirl.create(:bigbluebutton_room, :private => true) }
-      it { room.should_not allow_value('').for(:moderator_password) }
-      it { room.should_not allow_value('').for(:attendee_password) }
+      it { room.should_not allow_value('').for(:moderator_key) }
+      it { room.should_not allow_value('').for(:attendee_key) }
     end
 
     context "for public rooms" do
       let(:room) { FactoryGirl.create(:bigbluebutton_room, :private => false) }
-      it { room.should allow_value('').for(:moderator_password) }
-      it { room.should allow_value('').for(:attendee_password) }
+      it { room.should allow_value('').for(:moderator_key) }
+      it { room.should allow_value('').for(:attendee_key) }
     end
   end
 
@@ -1003,15 +1074,15 @@ end
 
 def get_create_params(room, user=nil)
   params = {
-    :moderatorPW => room.moderator_password,
-    :attendeePW => room.attendee_password,
+    :record => room.record_meeting,
+    :duration => room.duration,
+    :moderatorPW => room.moderator_api_password,
+    :attendeePW => room.attendee_api_password,
     :welcome  => room.welcome_msg,
     :dialNumber => room.dial_number,
     :logoutURL => room.logout_url,
     :maxParticipants => room.max_participants,
     :voiceBridge => room.voice_bridge,
-    :record => room.record_meeting,
-    :duration => room.duration
   }
   room.metadata.each { |meta| params["meta_#{meta.name}"] = meta.content }
   unless user.nil?

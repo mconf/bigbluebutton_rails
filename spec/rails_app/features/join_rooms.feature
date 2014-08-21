@@ -5,7 +5,7 @@ Feature: Join webconference rooms
   # These scenarios are based in the permission defined in the default
   # bigbluebutton_role method:
   # if room.private or bigbluebutton_user.nil?
-  #   :password # ask for a password
+  #   :key # ask for a key
   # else
   #   :moderator
   # end
@@ -21,7 +21,7 @@ Feature: Join webconference rooms
     When the user goes to the join room page
     Then he should join the conference room
 
-  Scenario: Joining a private room requires a password
+  Scenario: Joining a private room requires a key
     Given a user named "test user"
       And a real server
       And a private room in this server
@@ -35,7 +35,7 @@ Feature: Join webconference rooms
       And a real server
       And a private room in this server
     When the user goes to the join room page
-      And enters his name and the moderator password
+      And enters his name and the moderator key
       And clicks in the button "Submit"
     Then he should join the conference room
 
@@ -44,7 +44,7 @@ Feature: Join webconference rooms
       And a real server
       And a private room in this server
     When the user goes to the join room page
-      And enters his name and the attendee password
+      And enters his name and the attendee key
       And clicks in the button "Submit"
     Then he should NOT join the conference room
       And should see an error message with the message "The meeting is not running"
@@ -56,7 +56,7 @@ Feature: Join webconference rooms
       And a private room in this server
       And a meeting is running in this room
     When the user goes to the join room page
-      And enters his name and the attendee password
+      And enters his name and the attendee key
       And clicks in the button "Submit"
     Then he should join the conference room
 
@@ -65,12 +65,12 @@ Feature: Join webconference rooms
       And a real server
       And a private room in this server
     When the user goes to the join room page
-      And enters only the moderator password
+      And enters only the moderator key
       And clicks in the button "Submit"
     Then he should NOT join the conference room
       And should see an error message with the message "Authentication failure"
 
-  Scenario: Joining a private room without entering a password (wrong password)
+  Scenario: Joining a private room without entering a key (wrong key)
     Given an anonymous user
       And a real server
       And a private room in this server
@@ -102,7 +102,7 @@ Feature: Join webconference rooms
 
   # Test the invite view with a user logged
 
-  Scenario: The invite page is pre-filled with the user name and moderator password
+  Scenario: The invite page is pre-filled with the user name and moderator key
     Given a user named "test user"
       And a real server
       # Public room = user is a moderator
@@ -110,16 +110,16 @@ Feature: Join webconference rooms
     When the user goes to the invite room page (no view check)
     Then he should be at the invite room URL
       And the read-only name field was pre-filled with "test user"
-      And the read-only password field was pre-filled with the moderator password
+      And the read-only key field was pre-filled with the moderator key
 
   Scenario: The invite page is pre-filled with the user name only
     Given a user named "test user"
       And a real server
-      # Private room = ask for a password
+      # Private room = ask for a key
       And a private room in this server
     When the user goes to the invite room page (no view check)
     Then the read-only name field was pre-filled with "test user"
-      And the password field was NOT pre-filled
+      And the key field was NOT pre-filled
 
   # Test the invite view without a user logged
 
@@ -129,7 +129,7 @@ Feature: Join webconference rooms
       And a public room in this server
     When the user goes to the invite room page
     Then the name field was NOT pre-filled
-      And the password field was NOT pre-filled
+      And the key field was NOT pre-filled
 
   # Test if the user can actually join the conference
 
@@ -148,7 +148,7 @@ Feature: Join webconference rooms
       And a real server
       And a public room in this server
     When the user goes to the invite room page
-      And enters his name and the moderator password
+      And enters his name and the moderator key
       And clicks in the button "Submit"
     Then he should join the conference room
 
@@ -167,7 +167,7 @@ Feature: Join webconference rooms
       And a real server
       And a public room in this server
     When the user goes to the invite room with mobile page
-      And enters his name and the moderator password
+      And enters his name and the moderator key
       And clicks in the button to join the conference from a mobile device
     Then he should be redirected to the conference using the "bigbluebutton://" protocol
 

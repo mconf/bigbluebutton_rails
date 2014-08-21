@@ -29,12 +29,12 @@ module BigbluebuttonRails
         # Returns the role that the current user has in the room 'room'. Return values:
         #   :moderator      # the user has attendee permissions
         #   :attendee       # the user has moderator permissions
-        #   :password       # the user must enter a password that will define his role
+        #   :key            # the user must enter a key that will define his role
         #   nil             # no role at all (the room is blocked to this user)
         #
         # Returning :moderator or :attendee means that the current user has access
         # to the room and has moderator or attendee privileges, respectively.
-        # Returning :password indicates that the user must enter a password to define
+        # Returning :key indicates that the user must enter a key to define
         # his role in the room.
         # At last, returning nil means that the user cannot access access this room
         # at all. BigbluebuttonRails::RoomController will thrown an exception of the
@@ -51,7 +51,7 @@ module BigbluebuttonRails
         # You may want to redefine this method in your application to define
         # real roles to the users. By default, if the room is not private and the user
         # is logged, he will have moderator permissions. Otherwise, he must enter
-        # a password. Redefine it in your ApplicationController to make it available
+        # a key. Redefine it in your ApplicationController to make it available
         # to all controllers. For example:
         #
         #   def bigbluebutton_role(@room)
@@ -63,7 +63,7 @@ module BigbluebuttonRails
         #     # only friends are allowed to enter
         #     elsif @room.owner.friends.include? bigbluebutton_user
         #       if @room.private
-        #         :password # with password if the room is private
+        #         :key # with key if the room is private
         #       else
         #         :attendee
         #       end
@@ -77,7 +77,7 @@ module BigbluebuttonRails
         #
         def bigbluebutton_role(room)
           if room.private or bigbluebutton_user.nil?
-            :password # ask for a password
+            :key # ask for a key
           else
             :moderator
           end

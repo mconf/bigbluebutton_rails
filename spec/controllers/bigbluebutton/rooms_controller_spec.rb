@@ -8,6 +8,7 @@ describe Bigbluebutton::RoomsController do
   render_views
   let(:server) { FactoryGirl.create(:bigbluebutton_server) }
   let(:room) { FactoryGirl.create(:bigbluebutton_room, :server => server) }
+  let(:params_to_ignore) { ['moderator_api_password', 'attendee_api_password'] }
 
   describe "#index" do
     before { 3.times { FactoryGirl.create(:bigbluebutton_room) } }
@@ -105,7 +106,7 @@ describe Bigbluebutton::RoomsController do
       it { should set_the_flash.to(I18n.t('bigbluebutton_rails.rooms.notice.create.success')) }
       it {
         saved = BigbluebuttonRoom.last
-        saved.should have_same_attributes_as(new_room)
+        saved.should have_same_attributes_as(new_room, params_to_ignore)
       }
     end
 
@@ -151,7 +152,7 @@ describe Bigbluebutton::RoomsController do
       it {
         saved = BigbluebuttonRoom.last
         new_room.meetingid = new_room.name
-        saved.should have_same_attributes_as(new_room)
+        saved.should have_same_attributes_as(new_room, params_to_ignore)
       }
     end
 
@@ -159,7 +160,7 @@ describe Bigbluebutton::RoomsController do
       let(:attrs) { FactoryGirl.attributes_for(:bigbluebutton_room) }
       let(:params) { { :bigbluebutton_room => attrs } }
       let(:allowed_params) {
-        [ :name, :server_id, :meetingid, :attendee_password, :moderator_password, :welcome_msg,
+        [ :name, :server_id, :meetingid, :attendee_key, :moderator_key, :welcome_msg,
           :private, :logout_url, :dial_number, :voice_bridge, :max_participants, :owner_id,
           :owner_type, :external, :param, :record_meeting, :duration, :default_layout, :presenter_share_only,
           :auto_start_video, :auto_start_audio, :metadata_attributes => [ :id, :name, :content, :_destroy, :owner_id ] ]
@@ -206,7 +207,7 @@ describe Bigbluebutton::RoomsController do
       }
       it {
         saved = BigbluebuttonRoom.find(@room)
-        saved.should have_same_attributes_as(new_room)
+        saved.should have_same_attributes_as(new_room, params_to_ignore)
       }
       it { should set_the_flash.to(I18n.t('bigbluebutton_rails.rooms.notice.update.success')) }
     end
@@ -243,7 +244,7 @@ describe Bigbluebutton::RoomsController do
       let(:attrs) { FactoryGirl.attributes_for(:bigbluebutton_room) }
       let(:params) { { :bigbluebutton_room => attrs } }
       let(:allowed_params) {
-        [ :name, :server_id, :meetingid, :attendee_password, :moderator_password, :welcome_msg,
+        [ :name, :server_id, :meetingid, :attendee_key, :moderator_key, :welcome_msg,
           :private, :logout_url, :dial_number, :voice_bridge, :max_participants, :owner_id,
           :owner_type, :external, :param, :record_meeting, :duration, :default_layout, :presenter_share_only,
           :auto_start_video, :auto_start_audio, :metadata_attributes => [ :id, :name, :content, :_destroy, :owner_id ] ]
@@ -281,7 +282,7 @@ describe Bigbluebutton::RoomsController do
 
     context "on success" do
       before(:each) {
-        mocked_api.should_receive(:end_meeting).with(room.meetingid, room.moderator_password)
+        mocked_api.should_receive(:end_meeting).with(room.meetingid, room.moderator_api_password)
         expect {
           delete :destroy, :id => room.to_param
         }.to change{ BigbluebuttonRoom.count }.by(-1)
@@ -368,7 +369,7 @@ describe Bigbluebutton::RoomsController do
       context "via #{method}" do
 
         context "before filter #join_check_room" do
-          let(:user_hash) { { :name => "Elftor", :password => room.attendee_password } }
+          let(:user_hash) { { :name => "Elftor", :key => room.attendee_key } }
           let(:meetingid) { "my-meeting-id" }
 
           context "if params[:id]" do
@@ -397,7 +398,7 @@ describe Bigbluebutton::RoomsController do
         context "before filter #join_user_params" do
 
           context "block access if bigbluebutton_role returns nil" do
-            let(:hash) { { :name => "Elftor", :password => room.attendee_password } }
+            let(:hash) { { :name => "Elftor", :key => room.attendee_key } }
             before { controller.stub(:bigbluebutton_role) { nil } }
             it {
               lambda {
@@ -407,24 +408,24 @@ describe Bigbluebutton::RoomsController do
           end
 
           it "if there's a user logged, should use his name" do
-            controller.stub(:bigbluebutton_role) { :password }
-            hash = { :name => "Elftor", :password => room.attendee_password }
+            controller.stub(:bigbluebutton_role) { :key }
+            hash = { :name => "Elftor", :key => room.attendee_key }
             controller.stub(:bigbluebutton_user).and_return(user)
             mocked_api.should_receive(:is_meeting_running?).at_least(:once).and_return(true)
             mocked_api.should_receive(:join_meeting_url)
-              .with(room.meetingid, user.name, room.attendee_password, anything) # here's the validation
+              .with(room.meetingid, user.name, room.attendee_api_password, anything) # here's the validation
               .and_return("http://test.com/attendee/join")
             send(method, :join, :id => room.to_param, :user => hash)
           end
 
-          context "uses bigbluebutton_role when the return is not :password" do
-            let(:hash) { { :name => "Elftor", :password => nil } }
+          context "uses bigbluebutton_role when the return is not :key" do
+            let(:hash) { { :name => "Elftor", :key => nil } }
             before {
               controller.stub(:bigbluebutton_user).and_return(nil)
               controller.stub(:bigbluebutton_role) { :attendee }
               mocked_api.should_receive(:is_meeting_running?).at_least(:once).and_return(true)
               mocked_api.should_receive(:join_meeting_url)
-                .with(anything, anything, room.attendee_password, anything)
+                .with(anything, anything, room.attendee_api_password, anything)
                 .and_return("http://test.com/attendee/join")
             }
             before(:each) { send(method, :join, :id => room.to_param, :user => hash) }
@@ -438,12 +439,12 @@ describe Bigbluebutton::RoomsController do
           context "validates user input and shows error" do
             before {
               controller.stub(:bigbluebutton_user).and_return(nil)
-              controller.should_receive(:bigbluebutton_role).once { :password }
+              controller.should_receive(:bigbluebutton_role).once { :key }
             }
             before(:each) { send(method, :join, :id => room.to_param, :user => user_hash) }
 
             context "when name is not set" do
-              let(:user_hash) { { :password => room.moderator_password } }
+              let(:user_hash) { { :key => room.moderator_key } }
               it { should respond_with(:redirect) }
               it { should redirect_to(http_referer) }
               it { should assign_to(:room).with(room) }
@@ -454,7 +455,7 @@ describe Bigbluebutton::RoomsController do
             end
 
             context "when name is set but empty" do
-              let(:user_hash) { { :password => room.moderator_password, :name => "" } }
+              let(:user_hash) { { :key => room.moderator_key, :name => "" } }
               it { should respond_with(:redirect) }
               it { should redirect_to(http_referer) }
               it { should assign_to(:room).with(room) }
@@ -464,8 +465,8 @@ describe Bigbluebutton::RoomsController do
               it { should set_the_flash.to(I18n.t('bigbluebutton_rails.rooms.errors.join.failure')) }
             end
 
-            context "when the password is wrong" do
-              let(:user_hash) { { :name => "Elftor", :password => nil } }
+            context "when the key is wrong" do
+              let(:user_hash) { { :name => "Elftor", :key => nil } }
               it { should respond_with(:redirect) }
               it { should redirect_to(http_referer) }
               it { should assign_to(:user_role).with(nil) }
@@ -479,7 +480,7 @@ describe Bigbluebutton::RoomsController do
         end
 
         context "before filter #join_check_can_create" do
-          let(:user_hash) { { :password => room.moderator_password, :name => "Elftor" } }
+          let(:user_hash) { { :key => room.moderator_key, :name => "Elftor" } }
           before {
             controller.stub(:bigbluebutton_user).and_return(nil)
             controller.should_receive(:bigbluebutton_role).once { :moderator }
@@ -593,7 +594,7 @@ describe Bigbluebutton::RoomsController do
     context "room is running" do
       before {
         mocked_api.should_receive(:is_meeting_running?).and_return(true)
-        mocked_api.should_receive(:end_meeting).with(room.meetingid, room.moderator_password)
+        mocked_api.should_receive(:end_meeting).with(room.meetingid, room.moderator_api_password)
       }
       before(:each) { get :end, :id => room.to_param }
       it { should respond_with(:redirect) }
@@ -606,7 +607,7 @@ describe Bigbluebutton::RoomsController do
     context "with :redir_url" do
       before {
         mocked_api.should_receive(:is_meeting_running?).and_return(true)
-        mocked_api.should_receive(:end_meeting).with(room.meetingid, room.moderator_password)
+        mocked_api.should_receive(:end_meeting).with(room.meetingid, room.moderator_api_password)
       }
       before(:each) { get :end, :id => room.to_param, :redir_url => '/any' }
       it { should respond_with(:redirect) }
@@ -648,13 +649,13 @@ describe Bigbluebutton::RoomsController do
     end
 
     context "when the user's role" do
-      context "should be defined with a password" do
-        before { controller.stub(:bigbluebutton_role) { :password } }
+      context "should be defined with a key" do
+        before { controller.stub(:bigbluebutton_role) { :key } }
         before(:each) { get :invite, :id => room.to_param }
         it { should respond_with(:success) }
         it { should render_template(:invite) }
         it { should assign_to(:room).with(room) }
-        it { should assign_to(:user_role).with(:password) }
+        it { should assign_to(:user_role).with(:key) }
       end
 
       context "is undefined, the access should be blocked" do
