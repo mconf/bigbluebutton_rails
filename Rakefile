@@ -7,7 +7,7 @@ require 'cucumber'
 require 'cucumber/rake/task'
 
 desc 'Default: run specs and features.'
-task :default => [:spec, :cucumber]
+task :default => [:spec]
 
 RSpec::Core::RakeTask.new(:spec)
 
