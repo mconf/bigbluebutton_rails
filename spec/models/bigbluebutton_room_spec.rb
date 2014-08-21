@@ -675,16 +675,44 @@ describe BigbluebuttonRoom do
       end
 
       context "without a role" do
-        let(:expected) { 'expected-url' }
-        before {
-          room.should_receive(:require_server)
-          mocked_api.should_receive(:join_meeting_url)
-            .with(room.meetingid, username, 'pass', join_options)
-            .and_return(expected)
-          room.server = mocked_server
-        }
-        subject { room.join_url(username, nil, 'pass', join_options) }
-        it("returns the correct url") { subject.should eq(expected) }
+        context "passing the moderator key" do
+          let(:expected) { 'expected-url' }
+          before {
+            room.should_receive(:require_server)
+            mocked_api.should_receive(:join_meeting_url)
+              .with(room.meetingid, username, room.moderator_api_password, join_options)
+              .and_return(expected)
+            room.server = mocked_server
+          }
+          subject { room.join_url(username, nil, room.moderator_key, join_options) }
+          it("returns the correct url") { subject.should eq(expected) }
+        end
+
+        context "passing the attendee key" do
+          let(:expected) { 'expected-url' }
+          before {
+            room.should_receive(:require_server)
+            mocked_api.should_receive(:join_meeting_url)
+              .with(room.meetingid, username, room.attendee_api_password, join_options)
+              .and_return(expected)
+            room.server = mocked_server
+          }
+          subject { room.join_url(username, nil, room.attendee_key, join_options) }
+          it("returns the correct url") { subject.should eq(expected) }
+        end
+
+        context "passing an unmatching key" do
+          let(:expected) { 'expected-url' }
+          before {
+            room.should_receive(:require_server)
+            mocked_api.should_receive(:join_meeting_url)
+              .with(room.meetingid, username, nil, join_options)
+              .and_return(expected)
+            room.server = mocked_server
+          }
+          subject { room.join_url(username, nil, "wrong key", join_options) }
+          it("returns the correct url") { subject.should eq(expected) }
+        end
       end
 
       context "strips the url before returning it" do

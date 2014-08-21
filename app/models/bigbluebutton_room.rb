@@ -198,7 +198,7 @@ class BigbluebuttonRoom < ActiveRecord::Base
     when :attendee
       r = self.server.api.join_meeting_url(self.meetingid, username, self.attendee_api_password, options)
     else
-      r = self.server.api.join_meeting_url(self.meetingid, username, key, options)
+      r = self.server.api.join_meeting_url(self.meetingid, username, map_key_to_internal_password(key), options)
     end
 
     r.strip! unless r.nil?
@@ -489,6 +489,16 @@ class BigbluebuttonRoom < ActiveRecord::Base
 
   def internal_password
     SecureRandom.uuid
+  end
+
+  def map_key_to_internal_password(key)
+    if key == self.attendee_key
+      self.attendee_api_password
+    elsif key == self.moderator_key
+      self.moderator_api_password
+    else
+      nil
+    end
   end
 
 end
