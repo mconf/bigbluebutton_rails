@@ -778,14 +778,12 @@ describe Bigbluebutton::RoomsController do
   describe "#join_internal" do
     let(:user) { FactoryGirl.build(:user) }
     let(:http_referer) { bigbluebutton_room_path(room) }
-    let(:time) { DateTime.now }
     before {
       request.env["HTTP_REFERER"] = http_referer
       controller.stub(:bigbluebutton_user).and_return(user)
       controller.stub(:bigbluebutton_role).and_return(:attendee)
       BigbluebuttonRoom.stub(:find_by_param).and_return(room)
       controller.send(:find_room)
-      room.stub(:create_time).and_return(time)
     }
 
     context "when the user has permission to create the meeting" do
@@ -798,11 +796,11 @@ describe Bigbluebutton::RoomsController do
         room.should_receive(:create_meeting)
           .with(user, controller.request, { custom: true })
         room.should_receive(:fetch_new_token).and_return(nil)
-        room.should_receive(:join_url).and_return("http://test.com/join/url/createTime=#{time}")
+        room.should_receive(:join_url).and_return("http://test.com/join/url/")
       }
       before(:each) { get :join, :id => room.to_param }
       it { should respond_with(:redirect) }
-      it { should redirect_to("http://test.com/join/url/createTime=#{time}") }
+      it { should redirect_to("http://test.com/join/url/") }
     end
 
     context "when the user doesn't have permission to create the meeting" do
@@ -864,15 +862,41 @@ describe Bigbluebutton::RoomsController do
       end
 
       context "if the token is nil" do
-        let(:time) { Time.now }
         before(:each) {
-          room.stub(:create_time).and_return(time)
           room.should_receive(:fetch_new_token).and_return(nil)
           room.should_receive(:join_url)
-            .with(user.name, :attendee, nil, {:createTime => room.create_time})
+            .with(user.name, :attendee, nil, hash_not_including(:configToken))
             .and_return("http://test.com/join/url/")
         }
         it("does not use the token") { get :join, :id => room.to_param }
+      end
+    end
+
+    context ("pass createTime parameter to join_url") do
+      let(:time) { DateTime.now }
+      before {
+        room.should_receive(:fetch_is_running?).at_least(:once).and_return(true)
+        room.should_not_receive(:create_meeting)
+      }
+
+      context "if the createTime is not blank" do
+        before(:each) {
+          room.stub(:create_time).and_return(time)
+          room.should_receive(:fetch_new_token).and_return(anything)
+          room.should_receive(:join_url)
+            .with(user.name, :attendee, nil, hash_including(:createTime => time))
+        }
+        it ("uses the createTime") { get :join, :id => room.to_param }
+      end
+
+      context "if the createTime is blank" do
+        before(:each) {
+          room.stub(:create_time).and_return("")
+          room.should_receive(:fetch_new_token).and_return(anything)
+          room.should_receive(:join_url)
+            .with(user.name, :attendee, nil, hash_not_including(:createTime))
+        }
+        it ("does not use the createTime") { get :join, :id => room.to_param }
       end
     end
 
