@@ -176,6 +176,7 @@ class BigbluebuttonRoom < ActiveRecord::Base
     unless response.nil?
       self.attendee_api_password = response[:attendeePW]
       self.moderator_api_password = response[:moderatorPW]
+      self.create_time = response[:createTime]
       self.save unless self.new_record?
     end
 
@@ -356,6 +357,7 @@ class BigbluebuttonRoom < ActiveRecord::Base
       # returns true if something was changed
       config_xml = self.room_options.set_on_config_xml(config_xml)
       if config_xml
+
         # get the new token for the room, and return it
         self.server.api.set_config_xml(self.meetingid, config_xml)
       else
