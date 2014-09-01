@@ -403,7 +403,7 @@ describe BigbluebuttonRoom do
     end
 
     describe "#send_create" do
-      let(:time) { Time.now }
+      let(:time) { 1409531761442 }
       let(:new_moderator_api_password) { Forgery(:basic).password }
       let(:new_attendee_api_password) { Forgery(:basic).password }
       let(:hash_create) {
@@ -443,7 +443,7 @@ describe BigbluebuttonRoom do
         end
       end
 
-      context "set room create_time attribute" do
+      context "sets the room's create_time" do
         before do
           mocked_api.should_receive(:create_meeting)
             .with(room.name, room.meetingid, get_create_params(room))
@@ -454,7 +454,6 @@ describe BigbluebuttonRoom do
         end
 
         it { expect(room.create_time).to eq(time) }
-
       end
 
       context "sends create_meeting" do

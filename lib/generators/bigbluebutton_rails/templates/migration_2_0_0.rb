@@ -7,7 +7,7 @@ class BigbluebuttonRailsTo200 < ActiveRecord::Migration
     rename_column :bigbluebutton_rooms, :moderator_password, :moderator_key
     add_column :bigbluebutton_rooms, :moderator_api_password, :string
     add_column :bigbluebutton_rooms, :attendee_api_password, :string
-    add_column :bigbluebutton_rooms, :create_time, :string
+    add_column :bigbluebutton_rooms, :create_time, :decimal, precision: 14, scale: 0
   end
 
   def self.down

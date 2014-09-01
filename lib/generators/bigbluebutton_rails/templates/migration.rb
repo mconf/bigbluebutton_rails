@@ -30,7 +30,7 @@ class CreateBigbluebuttonRails < ActiveRecord::Migration
       t.integer :duration, :default => 0
       t.string :attendee_api_password
       t.string :moderator_api_password
-      t.string :create_time
+      t.decimal :create_time, precision: 14, scale: 0
       t.timestamps
     end
     add_index :bigbluebutton_rooms, :server_id
