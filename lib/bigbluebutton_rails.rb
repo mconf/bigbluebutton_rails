@@ -3,6 +3,8 @@ require 'rails'
 require 'classes/bigbluebutton_attendee'
 
 module BigbluebuttonRails
+  require 'browser'
+  require 'resque'
   require 'bigbluebutton_rails/rails'
   require 'bigbluebutton_rails/utils'
   require 'bigbluebutton_rails/controller_methods'

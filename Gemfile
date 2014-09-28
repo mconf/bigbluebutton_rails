@@ -2,11 +2,9 @@ source "http://rubygems.org"
 
 gemspec
 
-gem "resque"
-gem "browser"
 gem 'mysql2'
 gem "jquery-rails"
-gem "whenever"
+# gem "whenever"
 gem "forgery"
 
 group :development do
