@@ -5,10 +5,12 @@ require 'classes/bigbluebutton_attendee'
 module BigbluebuttonRails
   require 'browser'
   require 'resque'
+  require 'resque-scheduler'
   require 'bigbluebutton_rails/rails'
   require 'bigbluebutton_rails/utils'
   require 'bigbluebutton_rails/controller_methods'
   require 'bigbluebutton_rails/internal_controller_methods'
+  require 'bigbluebutton_rails/background_tasks'
   require 'bigbluebutton_rails/rails/routes'
   require 'bigbluebutton_rails/exceptions'
 

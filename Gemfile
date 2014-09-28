@@ -4,7 +4,6 @@ gemspec
 
 gem 'mysql2'
 gem "jquery-rails"
-# gem "whenever"
 gem "forgery"
 
 group :development do

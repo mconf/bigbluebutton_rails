@@ -26,14 +26,6 @@ module BigbluebuttonRails
         end
       end
 
-      def create_schedule
-        unless options.migration_only?
-          create_file 'config/schedule.rb'
-          content = File.read(File.expand_path("../../../../config/schedule.rb", __FILE__))
-          append_file 'config/schedule.rb', "\n#{content}" unless behavior == :revoke
-        end
-      end
-
       protected
 
       def migration_path

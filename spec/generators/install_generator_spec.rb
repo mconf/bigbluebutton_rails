@@ -18,14 +18,12 @@ describe BigbluebuttonRails::Generators::InstallGenerator do
     it "all files are properly created" do
       assert_migration "db/migrate/create_bigbluebutton_rails.rb"
       assert_file "config/locales/bigbluebutton_rails.en.yml"
-      assert_file "config/schedule.rb"
     end
 
     it "all files are properly destroyed" do
       run_generator %w(), :behavior => :revoke
       assert_no_migration "db/migrate/create_bigbluebutton_rails.rb"
       assert_no_file "config/locales/bigbluebutton_rails.en.yml"
-      assert_no_file "config/schedule.rb"
     end
   end
 
@@ -38,20 +36,6 @@ describe BigbluebuttonRails::Generators::InstallGenerator do
     it "only the migration is created" do
       assert_migration "db/migrate/create_bigbluebutton_rails.rb"
       assert_no_file "config/locales/bigbluebutton_rails.en.yml"
-      assert_no_file "config/schedule.rb"
-    end
-  end
-
-  context "config/schedule.rb" do
-    before(:all) do
-      prepare_destination
-      run_generator
-    end
-
-    it "has the correct content" do
-      assert_file "config/schedule.rb"
-      content = File_.read(File_.expand_path("../../../config/schedule.rb", __FILE__))
-      File_.read("config/schedule.rb").should match(content)
     end
   end
 

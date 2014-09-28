@@ -19,5 +19,6 @@ Gem::Specification.new do |s|
   s.add_dependency("rails", ">= 4.0.0")
   s.add_dependency("bigbluebutton-api-ruby", "~> 1.3.0")
   s.add_dependency("resque", "~> 1.25.1")
+  s.add_dependency("resque-scheduler", "~> 3.0")
   s.add_dependency("browser", "~> 0.5.0")
 end
