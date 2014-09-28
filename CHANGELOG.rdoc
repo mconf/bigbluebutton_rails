@@ -1,4 +1,4 @@
-== 1.4.0 (in development)
+== 1.4.0
 
 To learn how to migrate to 1.4.0 see: https://github.com/mconf/bigbluebutton_rails/wiki/Migrate-to-1.4.0
 
