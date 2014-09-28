@@ -15,7 +15,7 @@ To learn how to migrate to 2.0.0 see: https://github.com/mconf/bigbluebutton_rai
 * Join calls now use the parameter <tt>createTime</tt>. See https://code.google.com/p/bigbluebutton/wiki/API#join
 * Add translation to pt-br.
 
-== 1.4.0 (in development)
+== 1.4.0
 
 To learn how to migrate to 1.4.0 see: https://github.com/mconf/bigbluebutton_rails/wiki/Migrate-to-1.4.0
 
