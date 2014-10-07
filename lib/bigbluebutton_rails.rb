@@ -19,7 +19,8 @@ module BigbluebuttonRails
   @@controllers = {
     :servers => 'bigbluebutton/servers',
     :rooms => 'bigbluebutton/rooms',
-    :recordings => 'bigbluebutton/recordings'
+    :recordings => 'bigbluebutton/recordings',
+    :playback_types => 'bigbluebutton/playback_types'
   }
 
   # Default scope for routes
@@ -77,7 +78,7 @@ module BigbluebuttonRails
 
   def self.set_controllers(options)
     unless options.nil?
-      @@controllers.merge!(options).slice!(:servers, :rooms, :recordings)
+      @@controllers.merge!(options).slice!(:servers, :rooms, :recordings, :playback_types)
     end
   end
 

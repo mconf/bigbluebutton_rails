@@ -1,0 +1,22 @@
+<h1>Listing Playback Types:</h1>
+
+<div id="bbbrails_servers_links">
+  <%= link_to('View server list', bigbluebutton_servers_path) %><br/>
+  <%= link_to('View room list', bigbluebutton_rooms_path) %><br/>
+  <%= link_to('View recording list', bigbluebutton_recordings_path) %>
+</div>
+
+<ul id="bbbrails_list">
+  <% @playback_types.each do |playback_type| %>
+    <li>
+      <div><label><%= BigbluebuttonPlaybackType.human_attribute_name(:id) %></label> <%= playback_type.id %></div>
+      <div><label><%= BigbluebuttonPlaybackType.human_attribute_name(:identifier) %></label> <%= playback_type.identifier %></div>
+      <div><label><%= BigbluebuttonPlaybackType.human_attribute_name(:i18n_key) %></label> <%= playback_type.i18n_key %></div>
+      <div><label><%= BigbluebuttonPlaybackType.human_attribute_name(:visible) %></label> <%= playback_type.visible %></div>
+      <div><label>Access</label>
+        <%= link_to 'Show', playback_type %> |
+        <%= link_to 'Edit', edit_bigbluebutton_playback_type_path(playback_type) %>
+      </div>
+    </li>
+  <% end %>
+</ul>

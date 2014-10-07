@@ -1,6 +1,7 @@
 <div id="bbbrails_recordings_links">
   <%= link_to('View server list', bigbluebutton_servers_path) %><br/>
-  <%= link_to('View room list', bigbluebutton_rooms_path) %>
+  <%= link_to('View room list', bigbluebutton_rooms_path) %><br/>
+  <%= link_to('View playback types list', bigbluebutton_playback_types_path) %>
 </div>
 
 <ul id="bbbrails_list">
@@ -49,7 +50,9 @@
       <div class="field"><label>Play</label>
         <%= link_to "default", play_bigbluebutton_recording_path(recording) %>
         <% recording.playback_formats.each do |format| %>
-          <%= link_to format.format_type, play_bigbluebutton_recording_path(recording, :type => format.format_type) %>
+          <% if format.visible %>
+            <%= link_to t(format.i18n_key), play_bigbluebutton_recording_path(recording, :type => format.playback_type.identifier) %>
+          <% end %>
         <% end %>
       </div>
     </li>

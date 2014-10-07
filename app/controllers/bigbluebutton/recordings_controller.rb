@@ -70,7 +70,7 @@ class Bigbluebutton::RecordingsController < ApplicationController
 
   def play
     if params[:type]
-      playback = @recording.playback_formats.where(:format_type => params[:type]).first
+      playback = @recording.playback_formats.where(:playback_type_id => BigbluebuttonPlaybackType.find_by_identifier(params[:type])).first
     else
       playback = @recording.playback_formats.first
     end

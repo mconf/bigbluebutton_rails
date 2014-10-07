@@ -1,12 +1,12 @@
 require 'spec_helper'
 
-describe BigbluebuttonPlaybackFormat do
+describe BigbluebuttonPlaybackType do
 
   # to ensure that the migration is correct
   context "db" do
-    it { should have_db_column(:recording_id).of_type(:integer) }
-    it { should have_db_column(:url).of_type(:string) }
-    it { should have_db_column(:length).of_type(:integer) }
+    it { should have_db_column(:identifier).of_type(:string) }
+    it { should have_db_column(:i18n_key).of_type(:string) }
+    it { should have_db_column(:visible).of_type(:boolean) }
     it { should have_db_column(:created_at).of_type(:datetime) }
     it { should have_db_column(:updated_at).of_type(:datetime) }
   end

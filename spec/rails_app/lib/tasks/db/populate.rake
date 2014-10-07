@@ -12,6 +12,16 @@ namespace :db do
     BigbluebuttonMetadata.destroy_all
     BigbluebuttonPlaybackFormat.destroy_all
 
+    3.times do |pbt|
+      params = {
+        :identifier => "presentation-#{pbt}",
+        :i18n_key => "bigbluebutton_rails.playback_types.presentation-#{pbt}",
+        :visible => true
+      }
+      puts "- Creating playback type #{params[:identifier]}"
+      BigbluebuttonPlaybackType.create!(params)
+    end
+
     # Servers
     2.times do |n1|
       params = {
@@ -102,15 +112,18 @@ namespace :db do
           end
 
           # Recording playback formats
+          playback_types = [1,2,3]
           2.times do |n_format|
             params = {
-              :format_type => "#{Forgery(:name).first_name.downcase}-#{n_format}",
               :url => "http://" + Forgery(:internet).domain_name + "/playback",
               :length => Forgery(:basic).number
             }
             puts "      - Creating playback format #{params[:format_type]}"
             format = BigbluebuttonPlaybackFormat.create(params)
             format.recording = recording
+            id = playback_types[rand(playback_types.length)]
+            playback_types.delete(id)
+            format.playback_type = BigbluebuttonPlaybackType.find(id)
             format.save!
           end
 

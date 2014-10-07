@@ -184,9 +184,27 @@ class BigbluebuttonRecording < ActiveRecord::Base
     # for formats that are not in the db yet
     formats_copy.each do |format|
       unless format[:type].blank?
-        attrs = { :recording_id => recording.id, :format_type => format[:type],
-          :url => format[:url], :length => format[:length].to_i }
+        playback_type = BigbluebuttonPlaybackType.find_by_identifier(format[:type])
+        unless  playback_type
+          attrs = { :identifier => format[:type], :i18n_key => "bigbluebutton_rails.playback_formats.#{format[:type]}" }
+          BigbluebuttonPlaybackType.create!(attrs)
+          playback_type = BigbluebuttonPlaybackType.last
+        end
+
+        attrs = { :recording_id => recording.id, :url => format[:url], 
+          :length => format[:length].to_i, :playback_type_id => playback_type.id }
         BigbluebuttonPlaybackFormat.create!(attrs)
+      end
+    end
+
+    sync_playback_types
+  end
+
+  # Remove the unused playback types from the list.
+  def self.sync_playback_types
+    BigbluebuttonPlaybackType.all.each do |format_db|
+      unless BigbluebuttonPlaybackFormat.find_by_playback_type_id(format_db.id)
+        format_db.destroy
       end
     end
   end
