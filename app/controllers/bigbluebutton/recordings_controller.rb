@@ -7,7 +7,8 @@ class Bigbluebutton::RecordingsController < ApplicationController
   before_filter :check_for_server, :only => [:publish, :unpublish]
 
   def index
-    respond_with(@recordings = BigbluebuttonRecording.all)
+    @recordings ||= BigbluebuttonRecording.all
+    respond_with(@recordings)
   end
 
   def show
@@ -97,7 +98,7 @@ class Bigbluebutton::RecordingsController < ApplicationController
   protected
 
   def find_recording
-    @recording = BigbluebuttonRecording.find_by_recordid(params[:id])
+    @recording ||= BigbluebuttonRecording.find_by_recordid(params[:id])
   end
 
   def check_for_server

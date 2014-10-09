@@ -6,7 +6,8 @@ class Bigbluebutton::ServersController < ApplicationController
   before_filter :find_server, :except => [:index, :new, :create]
 
   def index
-    respond_with(@servers = BigbluebuttonServer.all)
+    @servers ||= BigbluebuttonServer.all
+    respond_with(@servers)
   end
 
   def show
@@ -14,7 +15,8 @@ class Bigbluebutton::ServersController < ApplicationController
   end
 
   def new
-    respond_with(@server = BigbluebuttonServer.new)
+    @server ||= BigbluebuttonServer.new
+    respond_with(@server)
   end
 
   def edit
@@ -58,7 +60,7 @@ class Bigbluebutton::ServersController < ApplicationController
   end
 
   def create
-    @server = BigbluebuttonServer.new(server_params)
+    @server ||= BigbluebuttonServer.new(server_params)
 
     respond_with @server do |format|
       if @server.save
@@ -100,11 +102,13 @@ class Bigbluebutton::ServersController < ApplicationController
   end
 
   def recordings
-    respond_with(@recordings = @server.recordings)
+    @recordings ||= @server.recordings
+    respond_with(@recordings)
   end
 
   def rooms
-    respond_with(@rooms = @server.rooms)
+    @rooms ||= @server.rooms
+    respond_with(@rooms)
   end
 
   def publish_recordings
@@ -156,7 +160,7 @@ class Bigbluebutton::ServersController < ApplicationController
   protected
 
   def find_server
-    @server = BigbluebuttonServer.find_by_param(params[:id])
+    @server ||= BigbluebuttonServer.find_by_param(params[:id])
   end
 
   def publish_unpublish(ids, publish)

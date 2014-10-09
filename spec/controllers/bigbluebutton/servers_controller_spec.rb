@@ -2,21 +2,42 @@ require 'spec_helper'
 
 describe Bigbluebutton::ServersController do
   render_views
-  let(:server) { FactoryGirl.create(:bigbluebutton_server) }
+  let!(:server) { FactoryGirl.create(:bigbluebutton_server) }
 
   describe "#index" do
-    before { 3.times { FactoryGirl.create(:bigbluebutton_server) } }
-    before(:each) { get :index }
-    it { should respond_with(:success) }
-    it { should assign_to(:servers).with(BigbluebuttonServer.all) }
-    it { should render_template(:index) }
+    context "basic" do
+      before { 3.times { FactoryGirl.create(:bigbluebutton_server) } }
+      before(:each) { get :index }
+      it { should respond_with(:success) }
+      it { should assign_to(:servers).with(BigbluebuttonServer.all) }
+      it { should render_template(:index) }
+    end
+
+    context "doesn't override @servers" do
+      let!(:my_servers) { [ FactoryGirl.create(:bigbluebutton_server), FactoryGirl.create(:bigbluebutton_server) ] }
+      before {
+        3.times { FactoryGirl.create(:bigbluebutton_server) }
+        controller.instance_variable_set(:@servers, my_servers)
+      }
+      before(:each) { get :index }
+      it { should assign_to(:servers).with(my_servers) }
+    end
   end
 
   describe "#show" do
-    before(:each) { get :show, :id => server.to_param }
-    it { should respond_with(:success) }
-    it { should assign_to(:server).with(server) }
-    it { should render_template(:show) }
+    context "basic" do
+      before(:each) { get :show, :id => server.to_param }
+      it { should respond_with(:success) }
+      it { should assign_to(:server).with(server) }
+      it { should render_template(:show) }
+    end
+
+    context "doesn't override @server" do
+      let!(:other_server) { FactoryGirl.create(:bigbluebutton_server) }
+      before { controller.instance_variable_set(:@server, other_server) }
+      before(:each) { get :show, :id => server.to_param }
+      it { should assign_to(:server).with(other_server) }
+    end
   end
 
   describe "#new" do
@@ -27,10 +48,19 @@ describe Bigbluebutton::ServersController do
   end
 
   describe "#edit" do
-    before(:each) { get :edit, :id => server.to_param }
-    it { should respond_with(:success) }
-    it { should assign_to(:server).with(server) }
-    it { should render_template(:edit) }
+    context "basic" do
+      before(:each) { get :edit, :id => server.to_param }
+      it { should respond_with(:success) }
+      it { should assign_to(:server).with(server) }
+      it { should render_template(:edit) }
+    end
+
+    context "doesn't override @server" do
+      let!(:other_server) { FactoryGirl.create(:bigbluebutton_server) }
+      before { controller.instance_variable_set(:@server, other_server) }
+      before(:each) { get :edit, :id => server.to_param }
+      it { should assign_to(:server).with(other_server) }
+    end
   end
 
   describe "#create" do
@@ -102,6 +132,12 @@ describe Bigbluebutton::ServersController do
       end
     end
 
+    context "doesn't override @server" do
+      let!(:other_server) { FactoryGirl.create(:bigbluebutton_server) }
+      before { controller.instance_variable_set(:@server, other_server) }
+      before(:each) { post :create, :bigbluebutton_server => FactoryGirl.attributes_for(:bigbluebutton_server) }
+      it { should assign_to(:server).with(other_server) }
+    end
   end
 
   describe "#update" do
@@ -182,14 +218,19 @@ describe Bigbluebutton::ServersController do
       end
     end
 
+    context "doesn't override @server" do
+      let!(:other_server) { FactoryGirl.create(:bigbluebutton_server) }
+      before { controller.instance_variable_set(:@server, other_server) }
+      before(:each) { put :update, :id => @server.to_param, :bigbluebutton_server => new_server.attributes }
+      it { should assign_to(:server).with(other_server) }
+    end
   end
 
   describe "#destroy" do
     context "on success" do
     before(:each) {
-      @server = server
       expect {
-        delete :destroy, :id => @server.to_param
+        delete :destroy, :id => server.to_param
       }.to change{ BigbluebuttonServer.count }.by(-1)
     }
     it {
@@ -201,12 +242,18 @@ describe Bigbluebutton::ServersController do
     context "with :redir_url" do
       context "on success" do
         before(:each) {
-          @server = server
-          delete :destroy, :id => @server.to_param, :redir_url => '/any'
+          delete :destroy, :id => server.to_param, :redir_url => '/any'
         }
         it { should respond_with(:redirect) }
         it { should redirect_to "/any" }
       end
+    end
+
+    context "doesn't override @server" do
+      let!(:other_server) { FactoryGirl.create(:bigbluebutton_server) }
+      before { controller.instance_variable_set(:@server, other_server) }
+      before(:each) { delete :destroy, :id => server.to_param }
+      it { should assign_to(:server).with(other_server) }
     end
   end
 
@@ -246,7 +293,6 @@ describe Bigbluebutton::ServersController do
           it { should render_template('bigbluebutton/servers/_activity_list') }
         end
       end
-
     end
 
     context "exception handling" do
@@ -270,18 +316,49 @@ describe Bigbluebutton::ServersController do
       end
     end
 
+    context "doesn't override @server" do
+      let!(:other_server) { FactoryGirl.create(:bigbluebutton_server) }
+      before {
+        controller.instance_variable_set(:@server, other_server)
+        other_server.stub(:fetch_meetings)
+      }
+      before(:each) { get :activity, :id => server.to_param }
+      it { should assign_to(:server).with(other_server) }
+    end
   end # #activity
 
   describe "#rooms" do
-    before do
-      @room1 = FactoryGirl.create(:bigbluebutton_room, :server => server)
-      @room2 = FactoryGirl.create(:bigbluebutton_room, :server => server)
-      FactoryGirl.create(:bigbluebutton_room)
+    context "basic" do
+      before do
+        @room1 = FactoryGirl.create(:bigbluebutton_room, :server => server)
+        @room2 = FactoryGirl.create(:bigbluebutton_room, :server => server)
+        FactoryGirl.create(:bigbluebutton_room)
+      end
+      before(:each) { get :rooms, :id => server.to_param }
+      it { should respond_with(:success) }
+      it { should render_template(:rooms) }
+      it { should assign_to(:rooms).with([@room1, @room2]) }
     end
-    before(:each) { get :rooms, :id => server.to_param }
-    it { should respond_with(:success) }
-    it { should render_template(:rooms) }
-    it { should assign_to(:rooms).with([@room1, @room2]) }
+
+    context "doesn't override @server" do
+      let!(:other_server) { FactoryGirl.create(:bigbluebutton_server) }
+      before { controller.instance_variable_set(:@server, other_server) }
+      before(:each) { get :rooms, :id => server.to_param }
+      it { should assign_to(:server).with(other_server) }
+    end
+
+    context "doesn't override @rooms" do
+      let!(:my_rooms) {
+        [ FactoryGirl.create(:bigbluebutton_room, server: server),
+          FactoryGirl.create(:bigbluebutton_room, server: server) ]
+      }
+      before {
+        3.times { FactoryGirl.create(:bigbluebutton_room, server: server) }
+        controller.instance_variable_set(:@rooms, my_rooms)
+      }
+      before(:each) { get :rooms, :id => server.to_param }
+      it { should assign_to(:rooms).with(my_rooms) }
+    end
   end
 
   describe "#publish_recordings" do
@@ -333,6 +410,15 @@ describe Bigbluebutton::ServersController do
       end
     end
 
+    context "doesn't override @server" do
+      let!(:other_server) { FactoryGirl.create(:bigbluebutton_server) }
+      before {
+        controller.instance_variable_set(:@server, other_server)
+        other_server.stub(:send_publish_recordings)
+      }
+      before(:each) { post :publish_recordings, :id => server.to_param, :recordings => recording_ids }
+      it { should assign_to(:server).with(other_server) }
+    end
   end
 
   describe "#unpublish_recordings" do
@@ -383,6 +469,15 @@ describe Bigbluebutton::ServersController do
       end
     end
 
+    context "doesn't override @server" do
+      let!(:other_server) { FactoryGirl.create(:bigbluebutton_server) }
+      before {
+        controller.instance_variable_set(:@server, other_server)
+        other_server.stub(:send_publish_recordings)
+      }
+      before(:each) { post :unpublish_recordings, :id => server.to_param, :recordings => recording_ids }
+      it { should assign_to(:server).with(other_server) }
+    end
   end
 
   describe "#fetch_recordings" do
@@ -430,22 +525,54 @@ describe Bigbluebutton::ServersController do
         post :fetch_recordings, :id => server.to_param, :meta_first => "first-value", :meta_second => "second-value"
       }
     end
+
+    context "doesn't override @server" do
+      let!(:other_server) { FactoryGirl.create(:bigbluebutton_server) }
+      before {
+        controller.instance_variable_set(:@server, other_server)
+        other_server.stub(:fetch_recordings)
+      }
+      before(:each) { post :fetch_recordings, :id => server.to_param }
+      it { should assign_to(:server).with(other_server) }
+    end
   end
 
   describe "#recordings" do
-    before do
-      @recording1 = FactoryGirl.create(:bigbluebutton_recording, :server => server)
-      @recording2 = FactoryGirl.create(:bigbluebutton_recording, :server => server)
-      FactoryGirl.create(:bigbluebutton_recording)
+    context "basic" do
+      before do
+        @recording1 = FactoryGirl.create(:bigbluebutton_recording, :server => server)
+        @recording2 = FactoryGirl.create(:bigbluebutton_recording, :server => server)
+        FactoryGirl.create(:bigbluebutton_recording)
 
-      # one that belongs to another server but to a room that's in the target server
-      room = FactoryGirl.create(:bigbluebutton_room, :server => server)
-      FactoryGirl.create(:bigbluebutton_recording, :room => room)
+        # one that belongs to another server but to a room that's in the target server
+        room = FactoryGirl.create(:bigbluebutton_room, :server => server)
+        FactoryGirl.create(:bigbluebutton_recording, :room => room)
+      end
+      before(:each) { get :recordings, :id => server.to_param }
+      it { should respond_with(:success) }
+      it { should render_template(:recordings) }
+      it { should assign_to(:recordings).with([@recording1, @recording2]) }
     end
-    before(:each) { get :recordings, :id => server.to_param }
-    it { should respond_with(:success) }
-    it { should render_template(:recordings) }
-    it { should assign_to(:recordings).with([@recording1, @recording2]) }
+
+    context "doesn't override @server" do
+      let!(:other_server) { FactoryGirl.create(:bigbluebutton_server) }
+      before { controller.instance_variable_set(:@server, other_server) }
+      before(:each) { get :recordings, :id => server.to_param }
+      it { should assign_to(:server).with(other_server) }
+    end
+
+    context "doesn't override @recordings" do
+      let!(:my_recordings) {
+        [ FactoryGirl.create(:bigbluebutton_recording, server: server),
+          FactoryGirl.create(:bigbluebutton_recording, server: server) ]
+      }
+      before {
+        3.times { FactoryGirl.create(:bigbluebutton_recording, server: server) }
+        controller.instance_variable_set(:@recordings, my_recordings)
+      }
+      before(:each) { get :recordings, :id => server.to_param }
+      it { should assign_to(:recordings).with(my_recordings) }
+    end
   end
 
 end

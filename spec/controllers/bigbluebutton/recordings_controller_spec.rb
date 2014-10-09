@@ -5,25 +5,55 @@ describe Bigbluebutton::RecordingsController do
   let(:recording) { FactoryGirl.create(:bigbluebutton_recording) }
 
   describe "#index" do
-    before { 3.times { FactoryGirl.create(:bigbluebutton_recording) } }
-    before(:each) { get :index }
-    it { should respond_with(:success) }
-    it { should assign_to(:recordings).with(BigbluebuttonRecording.all) }
-    it { should render_template(:index) }
+    context "basic" do
+      before { 3.times { FactoryGirl.create(:bigbluebutton_recording) } }
+      before(:each) { get :index }
+      it { should respond_with(:success) }
+      it { should assign_to(:recordings).with(BigbluebuttonRecording.all) }
+      it { should render_template(:index) }
+    end
+
+    context "doesn't override @recordings" do
+      let!(:my_recordings) { [ FactoryGirl.create(:bigbluebutton_recording), FactoryGirl.create(:bigbluebutton_recording) ] }
+      before {
+        3.times { FactoryGirl.create(:bigbluebutton_recording) }
+        controller.instance_variable_set(:@recordings, my_recordings)
+      }
+      before(:each) { get :index }
+      it { should assign_to(:recordings).with(my_recordings) }
+    end
   end
 
   describe "#show" do
-    before(:each) { get :show, :id => recording.to_param }
-    it { should respond_with(:success) }
-    it { should assign_to(:recording).with(recording) }
-    it { should render_template(:show) }
+    context "basic" do
+      before(:each) { get :show, :id => recording.to_param }
+      it { should respond_with(:success) }
+      it { should assign_to(:recording).with(recording) }
+      it { should render_template(:show) }
+    end
+
+    context "doesn't override @recording" do
+      let!(:other_recording) { FactoryGirl.create(:bigbluebutton_recording) }
+      before { controller.instance_variable_set(:@recording, other_recording) }
+      before(:each) { get :show, :id => recording.to_param }
+      it { should assign_to(:recording).with(other_recording) }
+    end
   end
 
   describe "#edit" do
-    before(:each) { get :edit, :id => recording.to_param }
-    it { should respond_with(:success) }
-    it { should assign_to(:recording).with(recording) }
-    it { should render_template(:edit) }
+    context "basic" do
+      before(:each) { get :edit, :id => recording.to_param }
+      it { should respond_with(:success) }
+      it { should assign_to(:recording).with(recording) }
+      it { should render_template(:edit) }
+    end
+
+    context "doesn't override @recording" do
+      let!(:other_recording) { FactoryGirl.create(:bigbluebutton_recording) }
+      before { controller.instance_variable_set(:@recording, other_recording) }
+      before(:each) { get :edit, :id => recording.to_param }
+      it { should assign_to(:recording).with(other_recording) }
+    end
   end
 
   describe "#update" do
@@ -105,6 +135,12 @@ describe Bigbluebutton::RecordingsController do
       end
     end
 
+    context "doesn't override @recording" do
+      let!(:other_recording) { FactoryGirl.create(:bigbluebutton_recording) }
+      before { controller.instance_variable_set(:@recording, other_recording) }
+      before(:each) { put :update, :id => @recording.to_param, :bigbluebutton_recording => new_recording.attributes }
+      it { should assign_to(:recording).with(other_recording) }
+    end
   end
 
   describe "#destroy" do
@@ -172,6 +208,16 @@ describe Bigbluebutton::RecordingsController do
       it { should redirect_to bigbluebutton_recordings_url }
       it { should set_the_flash.to(I18n.t('bigbluebutton_rails.recordings.notice.destroy.success')) }
     end
+
+    context "doesn't override @recording" do
+      let!(:other_recording) { FactoryGirl.create(:bigbluebutton_recording) }
+      before {
+        controller.instance_variable_set(:@recording, other_recording)
+        other_recording.server.stub(:send_delete_recordings)
+      }
+      before(:each) { delete :destroy, :id => recording.to_param }
+      it { should assign_to(:recording).with(other_recording) }
+    end
   end
 
   describe "#play" do
@@ -209,6 +255,13 @@ describe Bigbluebutton::RecordingsController do
       end
     end
 
+    context "doesn't override @recording" do
+      let!(:other_recording) { FactoryGirl.create(:bigbluebutton_recording) }
+      let(:format) { FactoryGirl.create(:bigbluebutton_playback_format, :recording => recording) }
+      before { controller.instance_variable_set(:@recording, other_recording) }
+      before(:each) { get :play, :id => recording.to_param, :type => format.format_type }
+      it { should assign_to(:recording).with(other_recording) }
+    end
   end
 
   # these actions are essentially the same
@@ -269,7 +322,16 @@ describe Bigbluebutton::RecordingsController do
         end
       end
 
+      context "doesn't override @recording" do
+        let!(:other_recording) { FactoryGirl.create(:bigbluebutton_recording) }
+        before {
+          controller.instance_variable_set(:@recording, other_recording)
+          other_recording.server.stub(:send_publish_recordings)
+        }
+        before(:each) { post action, :id => recording.to_param }
+        it { should assign_to(:recording).with(other_recording) }
+      end
+
     end
   end
-
 end
