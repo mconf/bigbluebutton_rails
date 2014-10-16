@@ -11,32 +11,71 @@ describe Bigbluebutton::RoomsController do
   let(:params_to_ignore) { ['moderator_api_password', 'attendee_api_password'] }
 
   describe "#index" do
-    before { 3.times { FactoryGirl.create(:bigbluebutton_room) } }
-    before(:each) { get :index }
-    it { should respond_with(:success) }
-    it { should assign_to(:rooms).with(BigbluebuttonRoom.all) }
-    it { should render_template(:index) }
+    context "basic" do
+      before { 3.times { FactoryGirl.create(:bigbluebutton_room) } }
+      before(:each) { get :index }
+      it { should respond_with(:success) }
+      it { should assign_to(:rooms).with(BigbluebuttonRoom.all) }
+      it { should render_template(:index) }
+    end
+
+    context "doesn't override @rooms" do
+      let!(:my_rooms) { [ FactoryGirl.create(:bigbluebutton_room), FactoryGirl.create(:bigbluebutton_room) ] }
+      before {
+        3.times { FactoryGirl.create(:bigbluebutton_room) }
+        controller.instance_variable_set(:@rooms, my_rooms)
+      }
+      before(:each) { get :index }
+      it { should assign_to(:rooms).with(my_rooms) }
+    end
   end
 
   describe "#show" do
-    before(:each) { get :show, :id => room.to_param }
-    it { should respond_with(:success) }
-    it { should assign_to(:room).with(room) }
-    it { should render_template(:show) }
+    context "basic" do
+      before(:each) { get :show, :id => room.to_param }
+      it { should respond_with(:success) }
+      it { should assign_to(:room).with(room) }
+      it { should render_template(:show) }
+    end
+
+    context "doesn't override @room" do
+      let!(:other_room) { FactoryGirl.create(:bigbluebutton_room) }
+      before { controller.instance_variable_set(:@room, other_room) }
+      before(:each) { get :show, :id => room.to_param }
+      it { should assign_to(:room).with(other_room) }
+    end
   end
 
   describe "#new" do
-    before(:each) { get :new }
-    it { should respond_with(:success) }
-    it { should assign_to(:room).with_kind_of(BigbluebuttonRoom) }
-    it { should render_template(:new) }
+    context "basic" do
+      before(:each) { get :new }
+      it { should respond_with(:success) }
+      it { should assign_to(:room).with_kind_of(BigbluebuttonRoom) }
+      it { should render_template(:new) }
+    end
+
+    context "doesn't override @room" do
+      let!(:other_room) { FactoryGirl.create(:bigbluebutton_room) }
+      before { controller.instance_variable_set(:@room, other_room) }
+      before(:each) { get :new }
+      it { should assign_to(:room).with(other_room) }
+    end
   end
 
   describe "#edit" do
-    before(:each) { get :edit, :id => room.to_param }
-    it { should respond_with(:success) }
-    it { should assign_to(:room).with(room) }
-    it { should render_template(:edit) }
+    context "basic" do
+      before(:each) { get :edit, :id => room.to_param }
+      it { should respond_with(:success) }
+      it { should assign_to(:room).with(room) }
+      it { should render_template(:edit) }
+    end
+
+    context "doesn't override @room" do
+      let!(:other_room) { FactoryGirl.create(:bigbluebutton_room) }
+      before { controller.instance_variable_set(:@room, other_room) }
+      before(:each) { get :edit, :id => room.to_param }
+      it { should assign_to(:room).with(other_room) }
+    end
   end
 
   describe "#join_mobile" do
@@ -87,6 +126,13 @@ describe Bigbluebutton::RoomsController do
       it("assigns join_mobile") { should assign_to(:join_mobile).with("http://test.com/join/url?auto_join=1") }
       it("assigns join_desktop") { should assign_to(:join_desktop).with("http://test.com/join/url?desktop=1") }
       it { should render_template(:join_mobile) }
+    end
+
+    context "doesn't override @room" do
+      let!(:other_room) { FactoryGirl.create(:bigbluebutton_room) }
+      before { controller.instance_variable_set(:@room, other_room) }
+      before(:each) { get :join_mobile, :id => room.to_param }
+      it { should assign_to(:room).with(other_room) }
     end
   end
 
@@ -188,6 +234,13 @@ describe Bigbluebutton::RoomsController do
         should render_template(:new)
       }
     end
+
+    context "doesn't override @room" do
+      let!(:other_room) { FactoryGirl.create(:bigbluebutton_room) }
+      before { controller.instance_variable_set(:@room, other_room) }
+      before(:each) { post :create, :bigbluebutton_room => new_room.attributes }
+      it { should assign_to(:room).with(other_room) }
+    end
   end
 
   describe "#update" do
@@ -270,19 +323,25 @@ describe Bigbluebutton::RoomsController do
         should redirect_to(bigbluebutton_room_path(@room))
       }
     end
+
+    context "doesn't override @room" do
+      let!(:other_room) { FactoryGirl.create(:bigbluebutton_room) }
+      before { controller.instance_variable_set(:@room, other_room) }
+      before(:each) { put :update, :id => @room.to_param, :bigbluebutton_room => new_room.attributes }
+      it { should assign_to(:room).with(other_room) }
+    end
   end
 
   describe "#destroy" do
-    before {
-      controller.should_receive(:set_request_headers)
-      mock_server_and_api
-      # to make sure it calls end_meeting if the meeting is running
-      mocked_api.should_receive(:is_meeting_running?).and_return(true)
-    }
-
     context "on success" do
-      before(:each) {
+      before {
+        controller.should_receive(:set_request_headers)
+        mock_server_and_api
+        # to make sure it calls end_meeting if the meeting is running
+        mocked_api.should_receive(:is_meeting_running?).and_return(true)
         mocked_api.should_receive(:end_meeting).with(room.meetingid, room.moderator_api_password)
+      }
+      before(:each) {
         expect {
           delete :destroy, :id => room.to_param
         }.to change{ BigbluebuttonRoom.count }.by(-1)
@@ -295,6 +354,10 @@ describe Bigbluebutton::RoomsController do
       let(:bbb_error_msg) { SecureRandom.hex(250) }
       let(:bbb_error) { BigBlueButton::BigBlueButtonException.new(bbb_error_msg) }
       before {
+        controller.should_receive(:set_request_headers)
+        mock_server_and_api
+        # to make sure it calls end_meeting if the meeting is running
+        mocked_api.should_receive(:is_meeting_running?).and_return(true)
         mocked_api.should_receive(:end_meeting) { raise bbb_error }
       }
       before(:each) {
@@ -311,9 +374,15 @@ describe Bigbluebutton::RoomsController do
     end
 
     context "with :redir_url" do
+      before {
+        controller.should_receive(:set_request_headers)
+        mock_server_and_api
+        # to make sure it calls end_meeting if the meeting is running
+        mocked_api.should_receive(:is_meeting_running?).and_return(true)
+        mocked_api.should_receive(:end_meeting)
+      }
       before(:each) {
         expect {
-          mocked_api.should_receive(:end_meeting)
           delete :destroy, :id => room.to_param, :redir_url => "/any"
         }.to change{ BigbluebuttonRoom.count }.by(-1)
       }
@@ -321,6 +390,12 @@ describe Bigbluebutton::RoomsController do
       it { should redirect_to "/any" }
     end
 
+    context "doesn't override @room" do
+      let!(:other_room) { FactoryGirl.create(:bigbluebutton_room) }
+      before { controller.instance_variable_set(:@room, other_room) }
+      before(:each) { delete :destroy, :id => room.to_param }
+      it { should assign_to(:room).with(other_room) }
+    end
   end
 
   describe "#running" do
@@ -353,8 +428,22 @@ describe Bigbluebutton::RoomsController do
       it { should respond_with(:success) }
       it { should set_the_flash.to(bbb_error_msg[0..200]) }
     end
-  end
 
+    context "doesn't override @room" do
+      let!(:other_room) { FactoryGirl.create(:bigbluebutton_room) }
+      before {
+        controller.stub(:running)
+        controller.instance_variable_set(:@room, other_room)
+      }
+      before(:each) {
+        begin
+          get :running, :id => room.to_param
+        rescue ActionView::MissingTemplate
+        end
+        }
+      it { should assign_to(:room).with(other_room) }
+    end
+  end
 
   describe "#join" do
     let(:user) { FactoryGirl.build(:user) }
@@ -392,6 +481,18 @@ describe Bigbluebutton::RoomsController do
             it { should respond_with(:redirect) }
             it { should redirect_to(http_referer) }
             it { should set_the_flash.to(message) }
+          end
+
+          context "doesn't override @room" do
+            let!(:other_room) { FactoryGirl.create(:bigbluebutton_room) }
+            before {
+              controller.instance_variable_set(:@room, other_room)
+              other_room.stub(:fetch_is_running?).and_return(true)
+            }
+            before(:each) {
+              send(method, :join, :id => room.to_param, :user => user_hash)
+            }
+            it { should assign_to(:room).with(other_room) }
           end
         end
 
@@ -632,6 +733,16 @@ describe Bigbluebutton::RoomsController do
       it { should respond_with(:redirect) }
       it { should set_the_flash.to(bbb_error_msg[0..200]) }
     end
+
+    context "doesn't override @room" do
+      let!(:other_room) { FactoryGirl.create(:bigbluebutton_room) }
+      before {
+        controller.instance_variable_set(:@room, other_room)
+        other_room.stub(:fetch_is_running?).and_return(true)
+      }
+      before(:each) { get :end, :id => room.to_param }
+      it { should assign_to(:room).with(other_room) }
+    end
   end
 
   describe "#invite" do
@@ -667,12 +778,18 @@ describe Bigbluebutton::RoomsController do
         }
       end
     end
+
+    context "doesn't override @room" do
+      let!(:other_room) { FactoryGirl.create(:bigbluebutton_room) }
+      before { controller.instance_variable_set(:@room, other_room) }
+      before(:each) { get :invite, :id => room.to_param }
+      it { should assign_to(:room).with(other_room) }
+    end
   end
 
   describe "#fetch_recordings" do
     # setup basic server and API mocks
     before do
-      #controller.should_receive(:set_request_headers)
       mock_server_and_api
     end
     let(:filter) {
@@ -730,6 +847,15 @@ describe Bigbluebutton::RoomsController do
       end
     end
 
+    context "doesn't override @room" do
+      let!(:other_room) { FactoryGirl.create(:bigbluebutton_room) }
+      before {
+        controller.instance_variable_set(:@room, other_room)
+        other_room.server = nil
+      }
+      before(:each) { post :fetch_recordings, :id => room.to_param }
+      it { should assign_to(:room).with(other_room) }
+    end
   end
 
   describe "#recordings" do
@@ -771,6 +897,26 @@ describe Bigbluebutton::RoomsController do
         get :running, :id => room.to_param
         room.request_headers.should == headers
       }
+    end
+
+    context "doesn't override @room" do
+      let!(:other_room) { FactoryGirl.create(:bigbluebutton_room) }
+      before { controller.instance_variable_set(:@room, other_room) }
+      before(:each) { get :recordings, :id => room.to_param }
+      it { should assign_to(:room).with(other_room) }
+    end
+
+    context "doesn't override @recordings" do
+      let!(:my_recordings) {
+        [ FactoryGirl.create(:bigbluebutton_recording, room: room),
+          FactoryGirl.create(:bigbluebutton_recording, room: room) ]
+      }
+      before {
+        3.times { FactoryGirl.create(:bigbluebutton_recording, room: room) }
+        controller.instance_variable_set(:@recordings, my_recordings)
+      }
+      before(:each) { get :recordings, :id => room.to_param }
+      it { should assign_to(:recordings).with(my_recordings) }
     end
   end
 

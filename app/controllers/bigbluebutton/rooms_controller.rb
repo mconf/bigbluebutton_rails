@@ -18,7 +18,8 @@ class Bigbluebutton::RoomsController < ApplicationController
   respond_to :json, :only => [:running, :show, :new, :index, :create, :update]
 
   def index
-    respond_with(@rooms = BigbluebuttonRoom.all)
+    @rooms ||= BigbluebuttonRoom.all
+    respond_with(@rooms)
   end
 
   def show
@@ -26,7 +27,8 @@ class Bigbluebutton::RoomsController < ApplicationController
   end
 
   def new
-    respond_with(@room = BigbluebuttonRoom.new)
+    @room ||= BigbluebuttonRoom.new
+    respond_with(@room)
   end
 
   def edit
@@ -34,7 +36,7 @@ class Bigbluebutton::RoomsController < ApplicationController
   end
 
   def create
-    @room = BigbluebuttonRoom.new(room_params)
+    @room ||= BigbluebuttonRoom.new(room_params)
 
     if params[:bigbluebutton_room] and
         (not params[:bigbluebutton_room].has_key?(:meetingid) or
@@ -214,13 +216,14 @@ class Bigbluebutton::RoomsController < ApplicationController
   end
 
   def recordings
-    respond_with(@recordings = @room.recordings)
+    @recordings ||= @room.recordings
+    respond_with(@recordings)
   end
 
   protected
 
   def find_room
-    @room = BigbluebuttonRoom.find_by_param(params[:id])
+    @room ||= BigbluebuttonRoom.find_by_param(params[:id])
   end
 
   def set_request_headers
@@ -230,7 +233,7 @@ class Bigbluebutton::RoomsController < ApplicationController
   end
 
   def join_check_room
-    @room = BigbluebuttonRoom.find_by_param(params[:id]) unless params[:id].blank?
+    @room ||= BigbluebuttonRoom.find_by_param(params[:id]) unless params[:id].blank?
     if @room.nil?
       message = t('bigbluebutton_rails.rooms.errors.join.wrong_params')
       redirect_to :back, :notice => message

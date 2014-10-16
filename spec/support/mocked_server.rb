@@ -1,3 +1,5 @@
+require "bigbluebutton_api"
+
 def mock_server_and_api
   # standard server mocks
   @api_mock = double(BigBlueButton::BigBlueButtonApi)
