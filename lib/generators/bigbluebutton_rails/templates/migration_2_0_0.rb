@@ -9,7 +9,7 @@ class BigbluebuttonRailsTo200 < ActiveRecord::Migration
     end
 
     rename_column :bigbluebutton_rooms, :record, :record_meeting
-    rename_column :bigbluebutton_recordings, :record, :recorded
+    rename_column :bigbluebutton_meetings, :record, :recorded
     rename_column :bigbluebutton_rooms, :attendee_password, :attendee_key
     rename_column :bigbluebutton_rooms, :moderator_password, :moderator_key
     add_column :bigbluebutton_rooms, :moderator_api_password, :string
@@ -22,7 +22,7 @@ class BigbluebuttonRailsTo200 < ActiveRecord::Migration
   def self.down
     drop_table :bigbluebutton_playback_types
     rename_column :bigbluebutton_rooms, :record_meeting, :record
-    rename_column :bigbluebutton_recordings, :recorded, :record
+    rename_column :bigbluebutton_meetings, :recorded, :record
     rename_column :bigbluebutton_rooms, :attendee_key, :attendee_password
     rename_column :bigbluebutton_rooms, :moderator_key, :moderator_password
     remove_column :bigbluebutton_rooms, :moderator_api_password
