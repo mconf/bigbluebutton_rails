@@ -140,8 +140,8 @@ module ActionDispatch::Routing
     end
 
     def add_routes_for_playback_types #:nodoc:
-      resources :playback_types, :controller => BigbluebuttonRails.controllers[:playback_types]
+      resources :playback_types, :only => [:update],
+                                 :controller => BigbluebuttonRails.controllers[:playback_types]
     end
-
   end
 end

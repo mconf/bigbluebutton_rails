@@ -2,31 +2,19 @@ class Bigbluebutton::PlaybackTypesController < ApplicationController
   include BigbluebuttonRails::InternalControllerMethods
 
   respond_to :html
-  respond_to :json, :only => [:index, :show, :update]
-  before_filter :find_playback_type, :except => [:index]
-
-  def index
-    respond_with(@playback_types = BigbluebuttonPlaybackType.all)
-  end
-
-  def show
-    respond_with(@playback_type)
-  end
-
-  def edit
-    respond_with(@playback_type)
-  end
+  respond_to :json
+  before_filter :find_playback_type
 
   def update
     respond_with @playback_type do |format|
       if @playback_type.update_attributes(playback_type_params)
         format.html {
           message = t('bigbluebutton_rails.playback_types.notice.update.success')
-          redirect_to_using_params @playback_type, :notice => message
+          redirect_to_using_params request.referer, :notice => message
         }
         format.json { render :json => true, :status => :ok }
       else
-        format.html { redirect_to_params_or_render :edit }
+        format.html { redirect_to_params request.referer, :error => @playback_type.errors.full_messages }
         format.json { render :json => @playback_type.errors.full_messages, :status => :unprocessable_entity }
       end
     end

@@ -1,0 +1,31 @@
+<h1>Listing Playback Types:</h1>
+
+<div id="bbbrails_servers_links">
+  <%= link_to('View server list', bigbluebutton_servers_path) %><br/>
+  <%= link_to('View room list', bigbluebutton_rooms_path) %><br/>
+  <%= link_to('View recording list', bigbluebutton_recordings_path) %>
+</div>
+
+</br></br>
+The list of playback types will be automatically filled with the playback types available in your web conference server.
+You can use this views to make them visible or invisible, a feature useful to dynamically hide playback types you don't
+want the users to have access in your application.
+</br></br>
+
+<ul id="bbbrails_list">
+  <% @playback_types.each do |playback_type| %>
+    <li>
+      <%= form_for(playback_type) do |f| %>
+        <div><label><%= BigbluebuttonPlaybackType.human_attribute_name(:id) %></label> <%= playback_type.id %></div>
+        <div><label><%= BigbluebuttonPlaybackType.human_attribute_name(:identifier) %></label> <%= playback_type.identifier %></div>
+        <div><label><%= BigbluebuttonPlaybackType.human_attribute_name(:i18n_key) %></label> <%= playback_type.i18n_key %></div>
+        <div><label><%= BigbluebuttonPlaybackType.human_attribute_name(:visible) %></label>
+          <%= f.check_box :visible %>
+        </div>
+        <div><label>Access</label>
+          <%= f.submit %>
+        </div>
+      <% end %>
+    </li>
+  <% end %>
+</ul>
