@@ -2,7 +2,7 @@ require 'spec_helper'
 
 describe Bigbluebutton::RecordingsController do
   render_views
-  let(:recording) { FactoryGirl.create(:bigbluebutton_recording) }
+  let!(:recording) { FactoryGirl.create(:bigbluebutton_recording) }
 
   describe "#index" do
     context "basic" do
@@ -57,22 +57,21 @@ describe Bigbluebutton::RecordingsController do
   end
 
   describe "#update" do
-    let(:new_recording) { FactoryGirl.build(:bigbluebutton_recording) }
-    before { @recording = recording } # need this to trigger let(:recording) and actually create the object
+    let!(:new_recording) { FactoryGirl.build(:bigbluebutton_recording) }
 
     context "on success" do
       before(:each) {
         expect {
-          put :update, :id => @recording.to_param, :bigbluebutton_recording => new_recording.attributes
+          put :update, :id => recording.to_param, :bigbluebutton_recording => new_recording.attributes
         }.not_to change{ BigbluebuttonRecording.count }
       }
       it { should respond_with(:redirect) }
       it {
-        saved = BigbluebuttonRecording.find(@recording)
+        saved = BigbluebuttonRecording.find(recording)
         should redirect_to(bigbluebutton_recording_path(saved))
       }
       it {
-        saved = BigbluebuttonRecording.find(@recording)
+        saved = BigbluebuttonRecording.find(recording)
         saved.should have_same_attributes_as(new_recording, ['room_id', 'server_id', 'meeting_id'])
       }
       it { should set_the_flash.to(I18n.t('bigbluebutton_rails.recordings.notice.update.success')) }
@@ -80,12 +79,12 @@ describe Bigbluebutton::RecordingsController do
 
     context "on failure" do
       before(:each) {
-        BigbluebuttonRecording.should_receive(:find_by_recordid).and_return(@recording)
-        @recording.should_receive(:update_attributes).and_return(false)
-        put :update, :id => @recording.to_param, :bigbluebutton_recording => new_recording.attributes
+        BigbluebuttonRecording.should_receive(:find_by_recordid).and_return(recording)
+        recording.should_receive(:update_attributes).and_return(false)
+        put :update, :id => recording.to_param, :bigbluebutton_recording => new_recording.attributes
       }
       it { should render_template(:edit) }
-      it { should assign_to(:recording).with(@recording) }
+      it { should assign_to(:recording).with(recording) }
     end
 
     describe "params handling" do
@@ -97,12 +96,12 @@ describe Bigbluebutton::RecordingsController do
       it {
         # we just check that the rails method 'permit' is being called on the hash with the
         # correct parameters
-        BigbluebuttonRecording.stub(:find_by_recordid).and_return(@recording)
-        @recording.stub(:update_attributes).and_return(true)
+        BigbluebuttonRecording.stub(:find_by_recordid).and_return(recording)
+        recording.stub(:update_attributes).and_return(true)
         attrs.stub(:permit).and_return(attrs)
         controller.stub(:params).and_return(params)
 
-        put :update, :id => @recording.to_param, :bigbluebutton_recording => attrs
+        put :update, :id => recording.to_param, :bigbluebutton_recording => attrs
         attrs.should have_received(:permit).with(*allowed_params)
       }
     end
@@ -110,15 +109,15 @@ describe Bigbluebutton::RecordingsController do
     # to make sure it doesn't break if the hash informed doesn't have the key :bigbluebutton_recording
     describe "if parameters are not informed" do
       it {
-        put :update, :id => @recording.to_param
-        should redirect_to(bigbluebutton_recording_path(@recording))
+        put :update, :id => recording.to_param
+        should redirect_to(bigbluebutton_recording_path(recording))
       }
     end
 
     context "with :redir_url" do
       context "on success" do
         before(:each) {
-          put :update, :id => @recording.to_param, :bigbluebutton_recording => new_recording.attributes, :redir_url => '/any'
+          put :update, :id => recording.to_param, :bigbluebutton_recording => new_recording.attributes, :redir_url => '/any'
         }
         it { should respond_with(:redirect) }
         it { should redirect_to "/any" }
@@ -126,9 +125,9 @@ describe Bigbluebutton::RecordingsController do
 
       context "on failure" do
         before(:each) {
-          BigbluebuttonRecording.should_receive(:find_by_recordid).and_return(@recording)
-          @recording.should_receive(:update_attributes).and_return(false)
-          put :update, :id => @recording.to_param, :bigbluebutton_recording => new_recording.attributes, :redir_url => '/any'
+          BigbluebuttonRecording.should_receive(:find_by_recordid).and_return(recording)
+          recording.should_receive(:update_attributes).and_return(false)
+          put :update, :id => recording.to_param, :bigbluebutton_recording => new_recording.attributes, :redir_url => '/any'
         }
         it { should respond_with(:redirect) }
         it { should redirect_to "/any" }
@@ -138,7 +137,7 @@ describe Bigbluebutton::RecordingsController do
     context "doesn't override @recording" do
       let!(:other_recording) { FactoryGirl.create(:bigbluebutton_recording) }
       before { controller.instance_variable_set(:@recording, other_recording) }
-      before(:each) { put :update, :id => @recording.to_param, :bigbluebutton_recording => new_recording.attributes }
+      before(:each) { put :update, :id => recording.to_param, :bigbluebutton_recording => new_recording.attributes }
       it { should assign_to(:recording).with(other_recording) }
     end
   end

@@ -14,7 +14,10 @@ class Bigbluebutton::PlaybackTypesController < ApplicationController
         }
         format.json { render :json => true, :status => :ok }
       else
-        format.html { redirect_to_params request.referer, :error => @playback_type.errors.full_messages }
+        format.html {
+          flash[:error] = @playback_type.errors.full_messages.join(", ")
+          redirect_to_using_params request.referer
+        }
         format.json { render :json => @playback_type.errors.full_messages, :status => :unprocessable_entity }
       end
     end
