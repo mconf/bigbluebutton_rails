@@ -18,7 +18,6 @@ want the users to have access in your application.
       <%= form_for(playback_type) do |f| %>
         <div><label><%= BigbluebuttonPlaybackType.human_attribute_name(:id) %></label> <%= playback_type.id %></div>
         <div><label><%= BigbluebuttonPlaybackType.human_attribute_name(:identifier) %></label> <%= playback_type.identifier %></div>
-        <div><label><%= BigbluebuttonPlaybackType.human_attribute_name(:i18n_key) %></label> <%= playback_type.i18n_key %></div>
         <div><label><%= BigbluebuttonPlaybackType.human_attribute_name(:visible) %></label>
           <%= f.check_box :visible %>
         </div>

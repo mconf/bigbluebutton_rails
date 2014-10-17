@@ -16,7 +16,6 @@ namespace :db do
     3.times do |i|
       params = {
         :identifier => ids[i],
-        :i18n_key => "bigbluebutton_rails.playback_types.#{ids[i]}",
         :visible => Forgery(:basic).boolean
       }
       puts "- Creating playback type #{params[:identifier]}"

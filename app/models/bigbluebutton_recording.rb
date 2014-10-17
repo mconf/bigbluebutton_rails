@@ -185,14 +185,13 @@ class BigbluebuttonRecording < ActiveRecord::Base
     formats_copy.each do |format|
       unless format[:type].blank?
         playback_type = BigbluebuttonPlaybackType.find_by_identifier(format[:type])
-        unless  playback_type
-          attrs = { :identifier => format[:type], :i18n_key => "bigbluebutton_rails.playback_formats.#{format[:type]}" }
-          BigbluebuttonPlaybackType.create!(attrs)
-          playback_type = BigbluebuttonPlaybackType.last
+        if playback_type.nil?
+          attrs = { :identifier => format[:type] }
+          playback_type = BigbluebuttonPlaybackType.create!(attrs)
         end
 
-        attrs = { :recording_id => recording.id, :url => format[:url], 
-          :length => format[:length].to_i, :playback_type_id => playback_type.id }
+        attrs = { :recording_id => recording.id, :url => format[:url],
+                  :length => format[:length].to_i, :playback_type_id => playback_type.id }
         BigbluebuttonPlaybackFormat.create!(attrs)
       end
     end

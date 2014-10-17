@@ -50,7 +50,7 @@
         <%= link_to "default", play_bigbluebutton_recording_path(recording) %>
         |
         <% recording.playback_formats.each do |format| %>
-          <%= link_to t(format.i18n_key), play_bigbluebutton_recording_path(recording, :type => format.playback_type.identifier) %>
+          <%= link_to format.name, play_bigbluebutton_recording_path(recording, :type => format.playback_type.identifier) %>
           <%= "(visible: #{format.visible})" %>
           |
         <% end %>

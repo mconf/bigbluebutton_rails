@@ -402,7 +402,7 @@ describe BigbluebuttonRecording do
         [ { :type => "any1", :url => "url1", :length => 1 },
           { :type => "any2", :url => "url2", :length => 2 } ]
       }
-      let(:playback_type) { 
+      let(:playback_type) {
         FactoryGirl.create(:bigbluebutton_playback_type, :identifier => "any1")
       }
       before {
@@ -428,8 +428,8 @@ describe BigbluebuttonRecording do
         { :type => "any1", :url => "url1", :length => 1 }
       }
 
-      context "and the playback type already on database" do
-        let(:playback_type) { 
+      context "and the playback type is already on the database" do
+        let(:playback_type) {
           FactoryGirl.create(:bigbluebutton_playback_type, :identifier => "any1")
         }
         before {
@@ -448,7 +448,7 @@ describe BigbluebuttonRecording do
         it { BigbluebuttonPlaybackFormat.where(:recording_id => recording.id, :playback_type_id => playback_type.id).first.length.should == 1 }
       end
 
-      context "and no playback types on database" do
+      context "and the playback types is not on the database" do
         before {
           # one playback format to be updated
           FactoryGirl.create(:bigbluebutton_playback_format, :recording => recording)
@@ -499,7 +499,7 @@ describe BigbluebuttonRecording do
         FactoryGirl.create(:bigbluebutton_playback_format,
                            :recording => recording, :playback_type => playback_type)
 
-        FactoryGirl.create(:bigbluebutton_playback_format, 
+        FactoryGirl.create(:bigbluebutton_playback_format,
                            :recording => recording, :playback_type => other_playback_type)
 
         BigbluebuttonRecording.send(:sync_playback_types)
