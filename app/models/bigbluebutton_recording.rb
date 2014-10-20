@@ -181,14 +181,28 @@ class BigbluebuttonRecording < ActiveRecord::Base
       end
     end
 
-    # for formats that are not in the db yet
+    # create the formats that are not in the db yet
     formats_copy.each do |format|
       unless format[:type].blank?
-        attrs = { :recording_id => recording.id, :format_type => format[:type],
-          :url => format[:url], :length => format[:length].to_i }
+        playback_type = BigbluebuttonPlaybackType.find_by_identifier(format[:type])
+        if playback_type.nil?
+          attrs = { :identifier => format[:type] }
+          playback_type = BigbluebuttonPlaybackType.create!(attrs)
+        end
+
+        attrs = { :recording_id => recording.id, :url => format[:url],
+                  :length => format[:length].to_i, :playback_type_id => playback_type.id }
         BigbluebuttonPlaybackFormat.create!(attrs)
       end
     end
+
+    cleanup_playback_types
+  end
+
+  # Remove the unused playback types from the list.
+  def self.cleanup_playback_types
+    ids = BigbluebuttonPlaybackFormat.uniq.pluck(:playback_type_id)
+    BigbluebuttonPlaybackType.destroy_all(['id NOT IN (?)', ids])
   end
 
   # Finds the BigbluebuttonMeeting that generated this recording. The meeting is searched using

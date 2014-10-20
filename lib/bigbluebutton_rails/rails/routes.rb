@@ -43,7 +43,8 @@ module ActionDispatch::Routing
     #   bigbluebutton_routes :default,
     #                        :controllers => { :servers => "custom_servers",
     #                                          :rooms => "custom_rooms",
-    #                                          :recordings => "custom_recordings" }
+    #                                          :recordings => "custom_recordings",
+    #                                          :playback_types => "custom_playback_types }
     #
     # ==== Room matchers
     #
@@ -84,13 +85,14 @@ module ActionDispatch::Routing
       options = params.extract_options!
       options_scope = options.has_key?(:scope) ? options[:scope] : BigbluebuttonRails.routing_scope
       options_as = options.has_key?(:as) ? options[:as] : options_scope
-      options_only = options.has_key?(:only) ? options[:only] : ["servers", "rooms", "recordings"]
+      options_only = options.has_key?(:only) ? options[:only] : ["servers", "rooms", "recordings", "playback_types"]
       BigbluebuttonRails.set_controllers(options[:controllers])
 
       scope options_scope, :as => options_as do
         add_routes_for_servers if options_only.include?("servers")
         add_routes_for_rooms if options_only.include?("rooms")
         add_routes_for_recordings if options_only.include?("recordings")
+        add_routes_for_playback_types if options_only.include?("playback_types")
       end
     end
 
@@ -137,5 +139,9 @@ module ActionDispatch::Routing
       end
     end
 
+    def add_routes_for_playback_types #:nodoc:
+      resources :playback_types, :only => [:update],
+                                 :controller => BigbluebuttonRails.controllers[:playback_types]
+    end
   end
 end

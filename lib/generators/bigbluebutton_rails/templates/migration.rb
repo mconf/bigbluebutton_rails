@@ -74,9 +74,15 @@ class CreateBigbluebuttonRails < ActiveRecord::Migration
 
     create_table :bigbluebutton_playback_formats do |t|
       t.integer :recording_id
-      t.string :format_type
+      t.integer :playback_type_id
       t.string :url
       t.integer :length
+      t.timestamps
+    end
+
+    create_table :bigbluebutton_playback_types do |t|
+      t.string :identifier
+      t.boolean :visible, :default => false
       t.timestamps
     end
 
@@ -98,6 +104,7 @@ class CreateBigbluebuttonRails < ActiveRecord::Migration
   def self.down
     drop_table :bigbluebutton_meetings
     drop_table :bigbluebutton_playback_formats
+    drop_table :bigbluebutton_playback_types
     drop_table :bigbluebutton_metadata
     drop_table :bigbluebutton_recordings
     drop_table :bigbluebutton_rooms
