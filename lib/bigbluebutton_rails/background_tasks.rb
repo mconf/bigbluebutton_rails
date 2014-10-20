@@ -6,7 +6,7 @@ module BigbluebuttonRails
     def self.finish_meetings
       BigbluebuttonMeeting.where(running: true).find_each do |meeting|
         Rails.logger.info "BackgroundTasks: Checking if the meeting has ended: #{meeting.inspect}"
-        unless meeting.room.fetch_is_running?
+        if meeting.room and !meeting.room.fetch_is_running?
           Rails.logger.info "BackgroundTasks: Setting meeting as ended: #{meeting.inspect}"
           meeting.update_attributes(running: false)
         end
