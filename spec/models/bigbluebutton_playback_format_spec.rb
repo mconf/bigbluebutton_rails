@@ -26,4 +26,13 @@ describe BigbluebuttonPlaybackFormat do
     target.playback_type.identifier = "anything"
     target.format_type.should eql("anything")
   }
+
+  describe "#length_in_secs" do
+    it { FactoryGirl.create(:bigbluebutton_playback_format, length: nil).length_in_secs.should eql(0) }
+    it { FactoryGirl.create(:bigbluebutton_playback_format, length: "").length_in_secs.should eql(0) }
+    it { FactoryGirl.create(:bigbluebutton_playback_format, length: -1).length_in_secs.should eql(0) }
+    it { FactoryGirl.create(:bigbluebutton_playback_format, length: 0).length_in_secs.should eql(0) }
+    it { FactoryGirl.create(:bigbluebutton_playback_format, length: 5).length_in_secs.should eql(300) }
+    it { FactoryGirl.create(:bigbluebutton_playback_format, length: 99).length_in_secs.should eql(5940) }
+  end
 end
