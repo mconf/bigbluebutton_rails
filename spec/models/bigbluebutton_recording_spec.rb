@@ -397,6 +397,51 @@ describe BigbluebuttonRecording do
   describe ".sync_playback_formats" do
     let(:recording) { FactoryGirl.create(:bigbluebutton_recording) }
 
+    context "with a single format" do
+      let(:data) {
+        { :type => "any1", :url => "url1", :length => 1 }
+      }
+
+      context "and it's not in the database yet" do
+        before {
+          BigbluebuttonRecording.send(:sync_playback_formats, recording, data)
+        }
+        it { BigbluebuttonPlaybackFormat.count.should == 1 }
+        it { BigbluebuttonPlaybackFormat.where(:recording_id => recording.id).count.should == 1 }
+        it { BigbluebuttonPlaybackFormat.where(:recording_id => recording.id).last.url.should == "url1" }
+        it { BigbluebuttonPlaybackFormat.where(:recording_id => recording.id).last.length.should == 1 }
+      end
+
+      context "and it's already in the database" do
+        before {
+          # one playback format to be updated
+          playback_type = FactoryGirl.create(:bigbluebutton_playback_type, :identifier => "any1")
+          FactoryGirl.create(:bigbluebutton_playback_format,
+                             :recording => recording, :playback_type => playback_type)
+
+          BigbluebuttonRecording.send(:sync_playback_formats, recording, data)
+        }
+        it { BigbluebuttonPlaybackFormat.count.should == 1 }
+        it { BigbluebuttonPlaybackFormat.where(:recording_id => recording.id).count.should == 1 }
+        it { BigbluebuttonPlaybackFormat.where(:recording_id => recording.id).last.url.should == "url1" }
+        it { BigbluebuttonPlaybackFormat.where(:recording_id => recording.id).last.length.should == 1 }
+      end
+
+      context "and there are unused formats in the database" do
+        before {
+          # formats to be deleted
+          FactoryGirl.create(:bigbluebutton_playback_format, :recording => recording)
+          FactoryGirl.create(:bigbluebutton_playback_format, :recording => recording)
+
+          BigbluebuttonRecording.send(:sync_playback_formats, recording, data)
+        }
+        it { BigbluebuttonPlaybackFormat.count.should == 1 }
+        it { BigbluebuttonPlaybackFormat.where(:recording_id => recording.id).count.should == 1 }
+        it { BigbluebuttonPlaybackFormat.where(:recording_id => recording.id).last.url.should == "url1" }
+        it { BigbluebuttonPlaybackFormat.where(:recording_id => recording.id).last.length.should == 1 }
+      end
+    end
+
     context "with several formats" do
       let(:data) {
         [ { :type => "any1", :url => "url1", :length => 1 },
@@ -423,48 +468,6 @@ describe BigbluebuttonRecording do
       it { BigbluebuttonPlaybackFormat.where(:recording_id => recording.id, :playback_type_id => BigbluebuttonPlaybackType.last.id).first.length.should == 2 }
     end
 
-    context "with a single format" do
-      let(:data) {
-        { :type => "any1", :url => "url1", :length => 1 }
-      }
-
-      context "and the playback type is already on the database" do
-        let(:playback_type) {
-          FactoryGirl.create(:bigbluebutton_playback_type, :identifier => "any1")
-        }
-        before {
-          # one playback format to be updated
-          FactoryGirl.create(:bigbluebutton_playback_format,
-                             :recording => recording, :playback_type => playback_type)
-          # one to be deleted
-          FactoryGirl.create(:bigbluebutton_playback_format, :recording => recording)
-
-          BigbluebuttonRecording.send(:sync_playback_formats, recording, data)
-        }
-        it { BigbluebuttonPlaybackType.count.should == 1 }
-        it { BigbluebuttonPlaybackFormat.count.should == 1 }
-        it { BigbluebuttonPlaybackFormat.where(:recording_id => recording.id).count.should == 1 }
-        it { BigbluebuttonPlaybackFormat.where(:recording_id => recording.id, :playback_type_id => playback_type.id).first.url.should == "url1" }
-        it { BigbluebuttonPlaybackFormat.where(:recording_id => recording.id, :playback_type_id => playback_type.id).first.length.should == 1 }
-      end
-
-      context "and the playback types is not on the database" do
-        before {
-          # one playback format to be updated
-          FactoryGirl.create(:bigbluebutton_playback_format, :recording => recording)
-          # one to be deleted
-          FactoryGirl.create(:bigbluebutton_playback_format, :recording => recording)
-
-          BigbluebuttonRecording.send(:sync_playback_formats, recording, data)
-        }
-        it { BigbluebuttonPlaybackType.count.should == 1 }
-        it { BigbluebuttonPlaybackFormat.count.should == 1 }
-        it { BigbluebuttonPlaybackFormat.where(:recording_id => recording.id).count.should == 1 }
-        it { BigbluebuttonPlaybackFormat.where(:recording_id => recording.id, :playback_type_id => BigbluebuttonPlaybackType.last.id).first.url.should == "url1" }
-        it { BigbluebuttonPlaybackFormat.where(:recording_id => recording.id, :playback_type_id => BigbluebuttonPlaybackType.last.id).first.length.should == 1 }
-      end
-    end
-
     context "ignores formats with blank type" do
       let(:data) {
         { :url => "url1", :length => 1 }
@@ -481,51 +484,72 @@ describe BigbluebuttonRecording do
       it { BigbluebuttonPlaybackFormat.where(:recording_id => recording.id, :playback_type_id => BigbluebuttonPlaybackType.last.id).first.length.should == 1 }
     end
 
+    context "manages the playback types" do
+      let(:data) {
+        { :type => "any1", :url => "url1", :length => 1 }
+      }
+
+      context "when the playback type is already on the database" do
+        let!(:playback_type) {
+          FactoryGirl.create(:bigbluebutton_playback_type, :identifier => "any1")
+        }
+        before {
+          BigbluebuttonRecording.send(:sync_playback_formats, recording, data)
+        }
+        it { BigbluebuttonPlaybackType.count.should == 1 }
+        it { BigbluebuttonPlaybackType.last.should ==  playback_type }
+      end
+
+      context "when the playback type is not on the database" do
+        before {
+          BigbluebuttonRecording.send(:sync_playback_formats, recording, data)
+        }
+        it { BigbluebuttonPlaybackType.count.should == 1 }
+        it { BigbluebuttonPlaybackType.last.identifier.should == "any1" }
+        it { BigbluebuttonPlaybackType.last.playback_formats.should include(BigbluebuttonPlaybackFormat.last) }
+      end
+
+      context "when there are unused playback types on the database" do
+        before {
+          FactoryGirl.create(:bigbluebutton_playback_type, :identifier => "any2")
+          FactoryGirl.create(:bigbluebutton_playback_type, :identifier => "any3")
+          BigbluebuttonRecording.send(:sync_playback_formats, recording, data)
+        }
+        it { BigbluebuttonPlaybackType.count.should == 1 }
+        it { BigbluebuttonPlaybackType.last.identifier.should == "any1" }
+      end
+    end
   end
 
-  describe ".sync_playback_types" do
+  describe ".cleanup_playback_types" do
     let(:recording) { FactoryGirl.create(:bigbluebutton_recording) }
 
-    context "with all types used" do
-      let(:playback_type) {
-        FactoryGirl.create(:bigbluebutton_playback_type)
-      }
-      let(:other_playback_type) {
-        FactoryGirl.create(:bigbluebutton_playback_type)
-      }
-
+    context "when all playback types are in use" do
       before {
-        # one playback format to be updated
-        FactoryGirl.create(:bigbluebutton_playback_format,
-                           :recording => recording, :playback_type => playback_type)
+        @kept1 = FactoryGirl.create(:bigbluebutton_playback_format, :recording => recording).playback_type
+        @kept2 = FactoryGirl.create(:bigbluebutton_playback_format, :recording => recording).playback_type
 
-        FactoryGirl.create(:bigbluebutton_playback_format,
-                           :recording => recording, :playback_type => other_playback_type)
-
-        BigbluebuttonRecording.send(:sync_playback_types)
+        BigbluebuttonRecording.send(:cleanup_playback_types)
       }
-
       it { BigbluebuttonPlaybackType.count.should == 2 }
+      it { BigbluebuttonPlaybackType.all.should include(@kept1) }
+      it { BigbluebuttonPlaybackType.all.should include(@kept2) }
     end
 
-    context "with only one type used" do
-      let(:playback_type) {
-        FactoryGirl.create(:bigbluebutton_playback_type)
-      }
-
+    context "when there are unused playback types" do
       before {
-        FactoryGirl.create(:bigbluebutton_playback_type)
+        @removed1 = FactoryGirl.create(:bigbluebutton_playback_type)
+        @removed2 = FactoryGirl.create(:bigbluebutton_playback_type)
+        @kept1 = FactoryGirl.create(:bigbluebutton_playback_format, :recording => recording).playback_type
 
-        # one playback format to be updated
-        FactoryGirl.create(:bigbluebutton_playback_format,
-                           :recording => recording, :playback_type => playback_type)
-
-        BigbluebuttonRecording.send(:sync_playback_types)
+        BigbluebuttonRecording.send(:cleanup_playback_types)
       }
 
       it { BigbluebuttonPlaybackType.count.should == 1 }
+      it { BigbluebuttonPlaybackType.all.should include(@kept1) }
+      it { BigbluebuttonPlaybackType.all.should_not include(@removed1) }
+      it { BigbluebuttonPlaybackType.all.should_not include(@removed2) }
     end
-
   end
 
   describe ".find_matching_meeting" do
