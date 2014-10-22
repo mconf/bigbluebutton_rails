@@ -41,6 +41,24 @@ describe BigbluebuttonRecording do
     }
   end
 
+  describe "#default_playback_format" do
+    let!(:recording) { FactoryGirl.create(:bigbluebutton_recording) }
+    let!(:type_default) { FactoryGirl.create(:bigbluebutton_playback_type, default: true) }
+    let!(:type_other) { FactoryGirl.create(:bigbluebutton_playback_type, default: false) }
+    let!(:format1) { FactoryGirl.create(:bigbluebutton_playback_format, recording: recording, playback_type: type_other) }
+    let!(:format2) { FactoryGirl.create(:bigbluebutton_playback_format, recording: recording, playback_type: type_default) }
+    let!(:format3) { FactoryGirl.create(:bigbluebutton_playback_format, recording: recording, playback_type: type_other) }
+
+    context "in a normal situation" do
+      it { recording.default_playback_format.should eql(format2) }
+    end
+
+    context "when there's more than one format of the default type" do
+      let!(:format4) { FactoryGirl.create(:bigbluebutton_playback_format, recording: recording, playback_type: type_default) }
+      it { recording.default_playback_format.should eql(format2) }
+    end
+  end
+
   describe ".sync" do
     let(:data) {
       [

@@ -73,7 +73,7 @@ class Bigbluebutton::RecordingsController < ApplicationController
     if params[:type]
       playback = @recording.playback_formats.where(:playback_type_id => BigbluebuttonPlaybackType.find_by_identifier(params[:type])).first
     else
-      playback = @recording.playback_formats.first
+      playback = @recording.default_playback_format || @recording.playback_formats.first
     end
     respond_with do |format|
       format.html {

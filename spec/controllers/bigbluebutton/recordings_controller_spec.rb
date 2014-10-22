@@ -233,9 +233,20 @@ describe Bigbluebutton::RecordingsController do
       end
 
       context "when params[:type] is not specified plays the first format" do
-        before(:each) { get :play, :id => recording.to_param }
-        it { should respond_with(:redirect) }
-        it { should redirect_to @format1.url }
+        context "plays the default format" do
+          before {
+            @format2.playback_type.update_attributes(default: true)
+          }
+          before(:each) { get :play, :id => recording.to_param }
+          it { should respond_with(:redirect) }
+          it { should redirect_to @format2.url }
+        end
+
+        context "plays the first format if there's no default" do
+          before(:each) { get :play, :id => recording.to_param }
+          it { should respond_with(:redirect) }
+          it { should redirect_to @format1.url }
+        end
       end
     end
 

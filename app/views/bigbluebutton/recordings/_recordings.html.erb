@@ -49,9 +49,12 @@
       <div class="field"><label>Play</label>
         <%= link_to "default", play_bigbluebutton_recording_path(recording) %>
         |
-        <% recording.playback_formats.each do |format| %>
+        <% recording.playback_formats.ordered.each do |format| %>
           <%= link_to format.name, play_bigbluebutton_recording_path(recording, :type => format.playback_type.identifier) %>
           <%= "(visible: #{format.visible})" %>
+          <% if format.default? %>
+            <%= "(duration: #{format.length} mins)" %>
+          <% end %>
           |
         <% end %>
       </div>

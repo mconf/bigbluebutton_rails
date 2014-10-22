@@ -21,6 +21,9 @@ want the users to have access in your application.
         <div><label><%= BigbluebuttonPlaybackType.human_attribute_name(:visible) %></label>
           <%= f.check_box :visible %>
         </div>
+        <div><label><%= BigbluebuttonPlaybackType.human_attribute_name(:default) %></label>
+          <%= f.check_box :default %>
+        </div>
         <div><label>Access</label>
           <%= f.submit %>
         </div>

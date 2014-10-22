@@ -27,6 +27,11 @@ class BigbluebuttonRecording < ActiveRecord::Base
     self.recordid
   end
 
+  def default_playback_format
+    playback_formats.joins(:playback_type)
+      .where("bigbluebutton_playback_types.default = ?", true).first
+  end
+
   # Syncs the recordings in the db with the array of recordings in 'recordings',
   # as received from BigBlueButtonApi#get_recordings.
   # Will add new recordings that are not in the db yet and update the ones that

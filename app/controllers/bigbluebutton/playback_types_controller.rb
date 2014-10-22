@@ -38,7 +38,7 @@ class Bigbluebutton::PlaybackTypesController < ApplicationController
   end
 
   def playback_type_allowed_params
-    [ :visible ]
+    [ :visible, :default ]
   end
 
 end

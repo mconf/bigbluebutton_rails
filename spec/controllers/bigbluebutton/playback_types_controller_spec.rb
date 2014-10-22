@@ -45,7 +45,7 @@ describe Bigbluebutton::PlaybackTypesController do
       let(:attrs) { FactoryGirl.attributes_for(:bigbluebutton_playback_type) }
       let(:params) { { :bigbluebutton_playback_type => attrs } }
       let(:allowed_params) {
-        [ :visible ]
+        [ :visible, :default ]
       }
       it {
         # we just check that the rails method 'permit' is being called on the hash with the
