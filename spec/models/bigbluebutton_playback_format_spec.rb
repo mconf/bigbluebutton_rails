@@ -17,6 +17,7 @@ describe BigbluebuttonPlaybackFormat do
 
   it { should delegate_method(:name).to(:playback_type) }
   it { should delegate_method(:visible).to(:playback_type) }
+  it { should delegate_method(:visible?).to(:playback_type) }
   it { should delegate_method(:identifier).to(:playback_type) }
   it { should delegate_method(:default).to(:playback_type) }
   it { should delegate_method(:default?).to(:playback_type) }
@@ -24,8 +25,9 @@ describe BigbluebuttonPlaybackFormat do
   context "allows nil for delegates to playback_type" do
     let(:target) { FactoryGirl.create(:bigbluebutton_playback_format, playback_type: nil) }
     it { target.name.should be_nil }
-    it { target.visible.should be_nil }
     it { target.identifier.should be_nil }
+    it { target.visible.should be_nil }
+    it { target.visible?.should be_nil }
     it { target.default.should be_nil }
     it { target.default?.should be_nil }
     it { target.format_type.should be_nil }
