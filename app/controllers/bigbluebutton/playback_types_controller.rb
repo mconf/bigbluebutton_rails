@@ -3,7 +3,7 @@ class Bigbluebutton::PlaybackTypesController < ApplicationController
 
   respond_to :html
   respond_to :json
-  before_filter :find_playback_type
+  before_filter :find_playback_type, only: [:update]
 
   def update
     respond_with @playback_type do |format|
@@ -26,7 +26,7 @@ class Bigbluebutton::PlaybackTypesController < ApplicationController
   protected
 
   def find_playback_type
-    @playback_type = BigbluebuttonPlaybackType.find(params[:id])
+    @playback_type ||= BigbluebuttonPlaybackType.find(params[:id])
   end
 
   def playback_type_params

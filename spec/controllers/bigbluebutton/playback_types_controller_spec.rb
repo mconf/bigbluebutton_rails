@@ -4,7 +4,6 @@ describe Bigbluebutton::PlaybackTypesController do
   render_views
   let!(:playback_type) { FactoryGirl.create(:bigbluebutton_playback_type) }
 
-
   describe "#update" do
     let!(:new_playback_type) { FactoryGirl.build(:bigbluebutton_playback_type, visible: !playback_type.visible) }
     let(:referer) { "/back" }
@@ -60,5 +59,18 @@ describe Bigbluebutton::PlaybackTypesController do
       }
     end
 
+    context "doesn't override @playback_type" do
+      let!(:other_playback_type) { FactoryGirl.create(:bigbluebutton_playback_type) }
+      let(:format) { FactoryGirl.create(:bigbluebutton_playback_format, :playback_type => playback_type) }
+      before { controller.instance_variable_set(:@playback_type, other_playback_type) }
+      before(:each) {
+        put :update, :id => playback_type.to_param, :bigbluebutton_playback_type => new_playback_type.attributes
+      }
+      it { should assign_to(:playback_type).with(other_playback_type) }
+    end
   end
+
+  # important because it might break custom actions on controllers that inherit from this
+  skip "doesn't call #find_playback_type for custom actions"
+
 end
