@@ -12,14 +12,22 @@ describe BigbluebuttonPlaybackFormat do
   it { should belong_to(:playback_type) }
 
   it { should validate_presence_of(:recording_id) }
-  it { should validate_presence_of(:playback_type_id) }
 
+  it { should_not validate_presence_of(:playback_type_id) }
   it { should_not validate_presence_of(:url) }
   it { should_not validate_presence_of(:length) }
 
   it { should delegate_method(:name).to(:playback_type) }
   it { should delegate_method(:visible).to(:playback_type) }
   it { should delegate_method(:identifier).to(:playback_type) }
+
+  context "allows nil for delegates to playback_type" do
+    let(:target) { FactoryGirl.create(:bigbluebutton_playback_format, playback_type: nil) }
+    it { target.name.should be_nil }
+    it { target.visible.should be_nil }
+    it { target.identifier.should be_nil }
+    it { target.format_type.should be_nil }
+  end
 
   it("alias :format_type to :identifier") {
     target = FactoryGirl.create(:bigbluebutton_playback_format)

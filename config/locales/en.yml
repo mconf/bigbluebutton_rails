@@ -64,6 +64,7 @@ en:
         update:
           success: "The playback type was successfully updated."
       presentation: "Play"
+      presentation_export: "Download HTML"
       presentation_video: "Download"
     recordings:
       default:

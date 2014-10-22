@@ -12,7 +12,7 @@ describe BigbluebuttonPlaybackType do
 
   it { should_not validate_presence_of(:visible) }
 
-  it { should have_many(:playback_formats).dependent(:destroy) }
+  it { should have_many(:playback_formats).dependent(:nullify) }
 
   describe "#name" do
     let(:subject) { FactoryGirl.create(:bigbluebutton_playback_type) }
@@ -24,7 +24,7 @@ describe BigbluebuttonPlaybackType do
 
     it {
       subject.identifier = "any_other"
-      subject.name.should eql(I18n.t("bigbluebutton_rails.playback_types.any_other"))
+      subject.name.should eql("Any Other")
     }
   end
 end

@@ -63,7 +63,8 @@ pt-br:
       notice:
         update:
           success: "Formato de reprodução atualizado com sucesso."
-      presentation: "Play"
+      presentation: "Reproduzir"
+      presentation_export: "Download HTML"
       presentation_video: "Download"
     recordings:
       default:
