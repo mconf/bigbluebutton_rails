@@ -1045,6 +1045,16 @@ describe Bigbluebutton::RoomsController do
         }
         it ("does not use the createTime") { get :join, :id => room.to_param }
       end
+
+      context "if the createTime is nil" do
+        before(:each) {
+          room.stub(:create_time).and_return(nil)
+          room.should_receive(:fetch_new_token).and_return(anything)
+          room.should_receive(:join_url)
+            .with(user.name, :attendee, nil, hash_not_including(:createTime))
+        }
+        it ("does not use the createTime") { get :join, :id => room.to_param }
+      end
     end
 
     context "pass userID to join url" do
@@ -1052,6 +1062,16 @@ describe Bigbluebutton::RoomsController do
         room.should_receive(:fetch_is_running?).at_least(:once).and_return(true)
         room.should_not_receive(:create_meeting)
       }
+
+      context "userID is nil" do
+        before(:each) {
+          user.id = nil
+          room.should_receive(:fetch_new_token).and_return(anything)
+          room.should_receive(:join_url)
+            .with(user.name, :attendee, nil, hash_not_including(:userID))
+        }
+        it("does not use the userID") { get :join, :id => room.to_param }
+      end
 
       context "userID is blank" do
         before(:each) {
