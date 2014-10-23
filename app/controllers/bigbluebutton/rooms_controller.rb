@@ -334,8 +334,9 @@ class Bigbluebutton::RoomsController < ApplicationController
       token = @room.fetch_new_token
       options = if token.nil? then {} else { :configToken => token } end
 
-      # set the create time, if it exists
+      # set the create time and the user id, if they exist
       options.merge!({ createTime: @room.create_time }) unless @room.create_time.blank?
+      options.merge!({ userID: id }) unless id.blank?
 
       # room created and running, try to join it
       url = @room.join_url(username, role, nil, options)
