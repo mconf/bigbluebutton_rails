@@ -329,9 +329,9 @@ class BigbluebuttonRoom < ActiveRecord::Base
 
   # Sets all meetings related to this room as not running
   def finish_meetings
-    BigbluebuttonMeeting.where(:running => true)
-      .find_by_room_id(room_id)
-      .update_attributes(:running => false)
+    BigbluebuttonMeeting.where(running: true)
+      .where(room_id: self.id)
+      .update_all(running: false)
   end
 
   # Gets a 'configToken' to use when joining the room.

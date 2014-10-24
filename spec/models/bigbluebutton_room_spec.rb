@@ -1081,7 +1081,27 @@ describe BigbluebuttonRoom do
   end
 
   describe "#finish_meetings" do
-    it "finishes all meetings related to this room that are still running"
+    let!(:room) { FactoryGirl.create(:bigbluebutton_room) }
+
+    context "finishes all meetings related to this room that are still running" do
+      let!(:meeting1) { FactoryGirl.create(:bigbluebutton_meeting, room: room, running: true) }
+      let!(:meeting2) { FactoryGirl.create(:bigbluebutton_meeting, room: room, running: true) }
+      before(:each) { room.finish_meetings }
+      it { meeting1.reload.running.should be(false) }
+      it { meeting2.reload.running.should be(false) }
+    end
+
+    context "works if the room has no meetings" do
+      it { room.finish_meetings }
+    end
+
+    context "works if the room has no meetings running" do
+      let!(:meeting1) { FactoryGirl.create(:bigbluebutton_meeting, room: room, running: false) }
+      let!(:meeting2) { FactoryGirl.create(:bigbluebutton_meeting, room: room, running: false) }
+      it { room.finish_meetings }
+      it { meeting1.reload.running.should be(false) }
+      it { meeting2.reload.running.should be(false) }
+    end
   end
 
   describe "#internal_create_meeting" do
