@@ -23,7 +23,6 @@ class BigbluebuttonRoom < ActiveRecord::Base
     :length => { :minimum => 1, :maximum => 150 }
   validates :welcome_msg, :length => { :maximum => 250 }
   validates :private, :inclusion => { :in => [true, false] }
-  validates :voice_bridge, :presence => true, :uniqueness => true
   validates :record, :inclusion => { :in => [true, false] }
 
   validates :duration,
@@ -147,6 +146,7 @@ class BigbluebuttonRoom < ActiveRecord::Base
     unless response.nil?
       self.attendee_password = response[:attendeePW]
       self.moderator_password = response[:moderatorPW]
+      self.voice_bridge = response[:voiceBridge] if response.has_key?(:voiceBridge)
       self.save unless self.new_record?
     end
 
@@ -275,7 +275,6 @@ class BigbluebuttonRoom < ActiveRecord::Base
 
   def init
     self[:meetingid] ||= unique_meetingid
-    self[:voice_bridge] ||= random_voice_bridge
 
     @request_headers = {}
 
@@ -289,16 +288,6 @@ class BigbluebuttonRoom < ActiveRecord::Base
     @attendees = []
   end
 
-  def random_voice_bridge
-    value = (70000 + SecureRandom.random_number(9999)).to_s
-    count = 1
-    while not BigbluebuttonRoom.find_by_voice_bridge(value).nil? and count < 10
-      count += 1
-      value = (70000 + SecureRandom.random_number(9999)).to_s
-    end
-    value
-  end
-
   def do_create_meeting(username=nil, userid=nil)
     opts = {
       :record => self.record,
@@ -308,9 +297,14 @@ class BigbluebuttonRoom < ActiveRecord::Base
       :welcome => self.welcome_msg.blank? ? default_welcome_message : self.welcome_msg,
       :dialNumber => self.dial_number,
       :logoutURL => self.full_logout_url || self.logout_url,
-      :maxParticipants => self.max_participants,
-      :voiceBridge => self.voice_bridge
+      :maxParticipants => self.max_participants
     }.merge(self.get_metadata_for_create)
+
+    # Set the voice bridge only if the gem is configured to do so and the voice bridge
+    # is not blank.
+    if BigbluebuttonRails.use_local_voice_bridges && !self.voice_bridge.blank?
+      opts.merge!({ :voiceBridge => self.voice_bridge })
+    end
 
     # Add information about the user that is creating the meeting (if any)
     opts.merge!({ "meta_#{BigbluebuttonRails.metadata_user_id}" => userid }) unless userid.nil?

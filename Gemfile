@@ -25,6 +25,7 @@ group :test do
   gem "capybara-mechanize" # for remote requests
   gem "launchy"
   gem "capybara-webkit" # best option found for js
+  gem "therubyracer"
 end
 
 # Gems used by the test application

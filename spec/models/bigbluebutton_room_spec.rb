@@ -23,9 +23,6 @@ describe BigbluebuttonRoom do
   it { should validate_uniqueness_of(:meetingid) }
   it { should ensure_length_of(:meetingid).is_at_least(1).is_at_most(100) }
 
-  it { should validate_presence_of(:voice_bridge) }
-  it { should validate_uniqueness_of(:voice_bridge) }
-
   it { should validate_presence_of(:name) }
   it { should validate_uniqueness_of(:name) }
   it { should ensure_length_of(:name).is_at_least(1).is_at_most(150) }
@@ -145,24 +142,6 @@ describe BigbluebuttonRoom do
         b = BigbluebuttonRoom.new(:meetingid => "user defined")
         b.meetingid.should == "user defined"
       }
-    end
-
-    context "voice_bridge" do
-      it {
-        b = BigbluebuttonRoom.new(:voice_bridge => "user defined")
-        b.voice_bridge.should == "user defined"
-      }
-      context "with a random value" do
-        it { room.voice_bridge.should_not be_nil }
-        it { room.voice_bridge.should =~ /7[0-9]{4}/ }
-        it "tries to randomize 10 times if voice_bridge already exists" do
-          room = FactoryGirl.create(:bigbluebutton_room, :voice_bridge => "70000")
-          BigbluebuttonRoom.stub!(:find_by_voice_bridge).and_return(room)
-          SecureRandom.should_receive(:random_number).exactly(10).and_return(0000)
-          room2 = BigbluebuttonRoom.new # triggers the random_number calls
-          room2.voice_bridge.should == "70000"
-        end
-      end
     end
   end
 
@@ -334,11 +313,13 @@ describe BigbluebuttonRoom do
     describe "#send_create" do
       let(:attendee_password) { Forgery(:basic).password }
       let(:moderator_password) { Forgery(:basic).password }
+      let(:voice_bridge) { SecureRandom.random_number(99999) }
       let(:hash_create) {
         {
           :returncode => "SUCCESS", :meetingID => "test_id",
           :attendeePW => attendee_password, :moderatorPW => moderator_password,
-          :hasBeenForciblyEnded => "false", :messageKey => {}, :message => {}
+          :voiceBridge => voice_bridge, :hasBeenForciblyEnded => "false",
+          :messageKey => {}, :message => {}
         }
       }
       before {
@@ -383,6 +364,7 @@ describe BigbluebuttonRoom do
           end
           it { room.attendee_password.should be(attendee_password) }
           it { room.moderator_password.should be(moderator_password) }
+          it { room.voice_bridge.should be(voice_bridge) }
           it { room.changed?.should be_false }
         end
 
@@ -398,6 +380,7 @@ describe BigbluebuttonRoom do
           end
           it { new_room.attendee_password.should be(attendee_password) }
           it { new_room.moderator_password.should be(moderator_password) }
+          it { new_room.voice_bridge.should be(voice_bridge) }
           it("and do not save the record") { new_room.new_record?.should be_true }
         end
 
@@ -414,6 +397,62 @@ describe BigbluebuttonRoom do
           it { room.attendee_password.should be(attendee_password) }
           it { room.moderator_password.should be(moderator_password) }
           it { room.changed?.should be_false }
+        end
+
+        context "when the call to create doesn't return a voice bridge" do
+          before do
+            hash_create.delete(:voiceBridge)
+            mocked_api.should_receive(:create_meeting)
+              .with(room.name, room.meetingid, get_create_params(room))
+              .and_return(hash_create)
+            room.stub(:select_server).and_return(mocked_server)
+            room.server = mocked_server
+            room.send_create
+          end
+          it { room.voice_bridge.should be_nil }
+          it { room.changed?.should be_false }
+        end
+
+        context "when it's set to use local voice bridges" do
+          before {
+            @use_local_voice_bridges = BigbluebuttonRails.use_local_voice_bridges
+            BigbluebuttonRails.use_local_voice_bridges = true
+          }
+          after {
+            BigbluebuttonRails.use_local_voice_bridges = @use_local_voice_bridges
+          }
+
+          context "sets the voice bridge in the params if there's a voice bridge" do
+            let(:voice_bridge) { SecureRandom.random_number(99999) }
+            before do
+              room.update_attributes(:voice_bridge => voice_bridge)
+              create_params = get_create_params(room)
+              create_params.merge!({ :voiceBridge => voice_bridge })
+
+              mocked_api.should_receive(:create_meeting)
+                .with(room.name, room.meetingid, create_params)
+                .and_return(hash_create)
+              room.stub(:select_server).and_return(mocked_server)
+              room.server = mocked_server
+              room.send_create
+            end
+            it { room.changed?.should be_false }
+          end
+
+          context "doesn't set the voice bridge if it's blank" do
+            let(:voice_bridge) { SecureRandom.random_number(99999) }
+            before do
+              room.update_attributes(:voice_bridge => "")
+
+              mocked_api.should_receive(:create_meeting)
+                .with(room.name, room.meetingid, get_create_params(room))
+                .and_return(hash_create)
+              room.stub(:select_server).and_return(mocked_server)
+              room.server = mocked_server
+              room.send_create
+            end
+            it { room.changed?.should be_false }
+          end
         end
       end
 
@@ -674,7 +713,7 @@ def get_create_params(room, username=nil, userid=nil)
     :dialNumber => room.dial_number,
     :logoutURL => room.logout_url,
     :maxParticipants => room.max_participants,
-    :voiceBridge => room.voice_bridge,
+    #:voiceBridge => room.voice_bridge,
     :record => room.record,
     :duration => room.duration
   }
