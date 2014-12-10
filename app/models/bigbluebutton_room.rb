@@ -37,7 +37,6 @@ class BigbluebuttonRoom < ActiveRecord::Base
     :length => { :minimum => 1, :maximum => 150 }
   validates :welcome_msg, :length => { :maximum => 250 }
   validates :private, :inclusion => { :in => [true, false] }
-  validates :voice_bridge, :presence => true, :uniqueness => true
   validates :record_meeting, :inclusion => { :in => [true, false] }
 
   validates :duration,
@@ -177,6 +176,7 @@ class BigbluebuttonRoom < ActiveRecord::Base
       self.attendee_api_password = response[:attendeePW]
       self.moderator_api_password = response[:moderatorPW]
       self.create_time = response[:createTime]
+      self.voice_bridge = response[:voiceBridge] if response.has_key?(:voiceBridge)
       self.save unless self.new_record?
     end
 
@@ -398,7 +398,6 @@ class BigbluebuttonRoom < ActiveRecord::Base
 
   def init
     self[:meetingid] ||= unique_meetingid
-    self[:voice_bridge] ||= random_voice_bridge
 
     @request_headers = {}
 
@@ -412,16 +411,6 @@ class BigbluebuttonRoom < ActiveRecord::Base
     @attendees = []
   end
 
-  def random_voice_bridge
-    value = (70000 + SecureRandom.random_number(9999)).to_s
-    count = 1
-    while not BigbluebuttonRoom.find_by_voice_bridge(value).nil? and count < 10
-      count += 1
-      value = (70000 + SecureRandom.random_number(9999)).to_s
-    end
-    value
-  end
-
   def internal_create_meeting(user=nil, user_opts={})
     opts = {
       :record => self.record_meeting,
@@ -431,9 +420,14 @@ class BigbluebuttonRoom < ActiveRecord::Base
       :welcome => self.welcome_msg.blank? ? default_welcome_message : self.welcome_msg,
       :dialNumber => self.dial_number,
       :logoutURL => self.full_logout_url || self.logout_url,
-      :maxParticipants => self.max_participants,
-      :voiceBridge => self.voice_bridge
+      :maxParticipants => self.max_participants
     }.merge(user_opts)
+
+    # Set the voice bridge only if the gem is configured to do so and the voice bridge
+    # is not blank.
+    if BigbluebuttonRails.use_local_voice_bridges && !self.voice_bridge.blank?
+      opts.merge!({ :voiceBridge => self.voice_bridge })
+    end
 
     opts.merge!(self.get_metadata_for_create)
 
@@ -458,8 +452,7 @@ class BigbluebuttonRoom < ActiveRecord::Base
   # there's no message set in this room.
   # Can be used to easily set a default message format for all rooms.
   def default_welcome_message
-    I18n.t('bigbluebutton_rails.rooms.default_welcome_msg',
-           :name => self.name, :voice_number => self.voice_bridge)
+    I18n.t('bigbluebutton_rails.rooms.default_welcome_msg')
   end
 
   # if :param wasn't set, sets it as :name downcase and parameterized

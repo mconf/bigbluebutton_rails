@@ -17,6 +17,7 @@ class BigbluebuttonRailsTo200 < ActiveRecord::Migration
     add_column :bigbluebutton_rooms, :create_time, :decimal, precision: 14, scale: 0
     remove_column :bigbluebutton_playback_formats, :format_type
     add_column :bigbluebutton_playback_formats, :playback_type_id, :integer
+    remove_index :bigbluebutton_rooms, :voice_bridge
   end
 
   def self.down
@@ -30,5 +31,6 @@ class BigbluebuttonRailsTo200 < ActiveRecord::Migration
     remove_column :bigbluebutton_rooms, :create_time
     add_column :bigbluebutton_playback_formats, :format_type, :string
     remove_column :bigbluebutton_playback_formats, :playback_type_id
+    add_index :bigbluebutton_rooms, :voice_bridge, :unique => true
   end
 end
