@@ -168,16 +168,16 @@ class BigbluebuttonRecording < ActiveRecord::Base
     formats_copy = formats.clone
 
     # make it an array if it's a hash with a single format
-    formats_copy = [ formats_copy ] if formats_copy.is_a?(Hash)
+    formats_copy = [formats_copy] if formats_copy.is_a?(Hash)
 
-    BigbluebuttonPlaybackFormat.where(:recording_id => recording.id).each do |format_db|
-      format = formats_copy.select{ |d|
-        !d[:type].blank? and d[:type] == format_db.format_type
-      }.first
+    BigbluebuttonPlaybackFormat.where(recording_id: recording.id).each do |format_db|
+      format = formats_copy.select do |d|
+        !d[:type].blank? && d[:type] == format_db.format_type
+      end.first
 
       # the format exists in the hash, update it in the db
       if format
-        format_db.update_attributes({ :url => format[:url], :length => format[:length] })
+        format_db.update_attributes({ url: format[:url], length: format[:length] })
         formats_copy.delete(format)
 
       # the format is not in the hash, remove from the db
@@ -191,12 +191,12 @@ class BigbluebuttonRecording < ActiveRecord::Base
       unless format[:type].blank?
         playback_type = BigbluebuttonPlaybackType.find_by_identifier(format[:type])
         if playback_type.nil?
-          attrs = { :identifier => format[:type] }
+          attrs = { identifier: format[:type], visible: true }
           playback_type = BigbluebuttonPlaybackType.create!(attrs)
         end
 
-        attrs = { :recording_id => recording.id, :url => format[:url],
-                  :length => format[:length].to_i, :playback_type_id => playback_type.id }
+        attrs = { recording_id: recording.id, url: format[:url],
+                  length: format[:length].to_i, playback_type_id: playback_type.id }
         BigbluebuttonPlaybackFormat.create!(attrs)
       end
     end
