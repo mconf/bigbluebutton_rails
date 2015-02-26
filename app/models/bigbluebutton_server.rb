@@ -13,6 +13,11 @@ class BigbluebuttonServer < ActiveRecord::Base
            :foreign_key => 'server_id',
            :dependent => :nullify
 
+  has_one :config,
+          class_name: 'BigbluebuttonServerConfig',
+          foreign_key: 'server_id',
+          dependent: :destroy
+
   validates :name,
             :presence => true,
             :uniqueness => true,
@@ -129,6 +134,15 @@ class BigbluebuttonServer < ActiveRecord::Base
 
   def to_param
     self.param
+  end
+
+  def get_config
+    self.config = BigbluebuttonServerConfig.create(server: self) if self.config.nil?
+    self.config
+  end
+
+  def update_config(config_xml)
+    self.get_config.update_config(config_xml)
   end
 
   protected

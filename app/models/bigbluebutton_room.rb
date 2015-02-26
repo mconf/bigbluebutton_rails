@@ -25,7 +25,6 @@ class BigbluebuttonRoom < ActiveRecord::Base
   delegate :presenter_share_only, :presenter_share_only=, :to => :room_options
   delegate :auto_start_video, :auto_start_video=, :to => :room_options
   delegate :auto_start_audio, :auto_start_audio=, :to => :room_options
-  delegate :get_available_layouts, :to => :room_options
 
   accepts_nested_attributes_for :metadata,
     :allow_destroy => true,
@@ -360,12 +359,17 @@ class BigbluebuttonRoom < ActiveRecord::Base
 
         # get the new token for the room, and return it
         self.server.api.set_config_xml(self.meetingid, config_xml)
+        self.server.update_config(config_xml)
       else
         nil
       end
     else
       nil
     end
+  end
+
+  def get_available_layouts
+    self.server.get_config.get_available_layouts
   end
 
   protected

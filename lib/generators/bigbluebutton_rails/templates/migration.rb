@@ -99,6 +99,12 @@ class CreateBigbluebuttonRails < ActiveRecord::Migration
       t.timestamps
     end
     add_index :bigbluebutton_meetings, [:meetingid, :start_time], :unique => true
+
+    create_table :bigbluebutton_server_configs do |t|
+      t.integer :server_id
+      t.text :available_layouts
+      t.timestamps
+    end
   end
 
   def self.down
@@ -110,6 +116,7 @@ class CreateBigbluebuttonRails < ActiveRecord::Migration
     drop_table :bigbluebutton_rooms
     drop_table :bigbluebutton_rooms_options
     drop_table :bigbluebutton_servers
+    drop_table :bigbluebutton_server_configs
   end
 
 end
