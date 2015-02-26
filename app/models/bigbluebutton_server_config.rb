@@ -1,6 +1,8 @@
 require 'bigbluebutton_api'
 
 class BigbluebuttonServerConfig < ActiveRecord::Base
+  include ActiveModel::ForbiddenAttributesProtection
+
   belongs_to :server, class_name: 'BigbluebuttonServer'
   validates :server_id, presence: true
 
