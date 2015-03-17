@@ -141,12 +141,15 @@ class BigbluebuttonServer < ActiveRecord::Base
   end
 
   def get_config
-    self.config = BigbluebuttonServerConfig.create(server: self) if self.config.nil?
-    self.config
+    self.config ||= BigbluebuttonServerConfig.create(server: self)
   end
 
   def update_config(config_xml=nil)
-    self.get_config.update_config(config_xml)
+    begin
+      self.get_config.update_config(config_xml)
+    rescue BigBlueButton::BigBlueButtonException
+      Rails.logger.warn "Could not fetch server #{self.id} info. URL probably incorrect"
+    end
   end
 
   protected

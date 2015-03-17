@@ -6,18 +6,14 @@ class BigbluebuttonServerConfig < ActiveRecord::Base
   belongs_to :server, class_name: 'BigbluebuttonServer'
   validates :server_id, presence: true
 
+  serialize :available_layouts, Array
+
   def get_available_layouts
     if self.available_layouts.blank?
-      # Locally we store it as a comma-separated string.
       layouts = self.server.api.get_available_layouts
-      self.update_attributes(available_layouts: layouts.join(',')) unless layouts.nil?
+      self.update_attributes(available_layouts: layouts) unless layouts.nil?
     end
-    # We return it as an array.
-    unless self.available_layouts.blank?
-      self.available_layouts.split(',')
-    else
-      nil
-    end
+    self.available_layouts
   end
 
   # This is called when the config.xml is requested to update the info that is
@@ -28,6 +24,6 @@ class BigbluebuttonServerConfig < ActiveRecord::Base
     # if config_xml is nil, fetch it.
     config_xml = self.server.api.get_default_config_xml if config_xml.nil?
     layouts = self.server.api.get_available_layouts(config_xml)
-    self.update_attributes(available_layouts: layouts.join(',')) unless layouts.nil?
+    self.update_attributes(available_layouts: layouts) unless layouts.nil?
   end
 end
