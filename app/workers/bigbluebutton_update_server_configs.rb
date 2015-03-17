@@ -5,7 +5,7 @@ class BigbluebuttonUpdateServerConfigs
 
   def self.perform
     BigbluebuttonServer.all.each do |server|
-      server.config.update_config
+      server.update_config
     end
   end
 end

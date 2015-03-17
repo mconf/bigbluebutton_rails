@@ -51,6 +51,10 @@ class BigbluebuttonServer < ActiveRecord::Base
   after_initialize :init
   before_validation :set_param
 
+  after_create :update_config
+
+  after_update :check_for_config_update
+
   # Returns the API object (<tt>BigBlueButton::BigBlueButtonAPI</tt> defined in
   # <tt>bigbluebutton-api-ruby</tt>) associated with this server.
   def api
@@ -141,7 +145,7 @@ class BigbluebuttonServer < ActiveRecord::Base
     self.config
   end
 
-  def update_config(config_xml)
+  def update_config(config_xml=nil)
     self.get_config.update_config(config_xml)
   end
 
@@ -156,6 +160,12 @@ class BigbluebuttonServer < ActiveRecord::Base
   def set_param
     if self.param.blank?
       self.param = self.name.parameterize.downcase unless self.name.nil?
+    end
+  end
+
+  def check_for_config_update
+    if self.changes.include?(:url)
+      self.update_config
     end
   end
 
