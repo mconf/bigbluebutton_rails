@@ -10,6 +10,8 @@ describe BigbluebuttonServer do
 
   it { should have_many(:recordings).dependent(:nullify) }
 
+  it { should have_one(:config).dependent(:destroy) }
+
   it { should validate_presence_of(:name) }
   it { should validate_presence_of(:url) }
   it { should validate_presence_of(:salt) }
@@ -265,6 +267,51 @@ describe BigbluebuttonServer do
         BigbluebuttonRecording.should_not_receive(:sync)
       end
       it { server.fetch_recordings }
+    end
+  end
+
+  describe "#get_config" do
+    let!(:server) { FactoryGirl.create(:bigbluebutton_server) }
+    before {
+      # Since the config is already created in the after_create hook, this should
+      # not create another one.
+      expect { server.get_config }.to_not change { BigbluebuttonServerConfig.count }
+    }
+    it { server.config.should_not be_nil }
+  end
+
+  describe "#update_config" do
+    let(:server) { FactoryGirl.create(:bigbluebutton_server) }
+    let(:api) { server.api }
+    let(:layouts) { ["layout1", "layout2"] }
+    let(:new_layouts) { ["layout3", "layout4"] }
+    before {
+      api.should_receive(:get_default_config_xml).and_return("<config></config>")
+      api.should_receive(:get_available_layouts).and_return(layouts)
+      server.update_config
+    }
+    it { server.get_config.get_available_layouts.should eql layouts }
+
+    context "when there are new configs in the server" do
+      context "the available layouts have changed" do
+        before {
+          api.should_receive(:get_available_layouts).and_return(new_layouts)
+          server.update_config
+        }
+
+        it { server.get_config.get_available_layouts.should eql new_layouts }
+      end
+    end
+
+    context "when some configs are missing" do
+      context "available layouts missing" do
+        before {
+          api.should_receive(:get_available_layouts).and_return(nil)
+          server.update_config
+        }
+
+        it { server.get_config.get_available_layouts.should eql layouts }
+      end
     end
   end
 
