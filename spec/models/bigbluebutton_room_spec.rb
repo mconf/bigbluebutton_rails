@@ -33,8 +33,6 @@ describe BigbluebuttonRoom do
   it { should delegate(:auto_start_audio).to(:room_options) }
   it { should delegate(:"auto_start_audio=").to(:room_options) }
 
-  it { should delegate(:get_available_layouts).to(:room_options) }
-
   it { should validate_presence_of(:meetingid) }
   it { should validate_uniqueness_of(:meetingid) }
   it { should ensure_length_of(:meetingid).is_at_least(1).is_at_most(100) }
@@ -808,6 +806,10 @@ describe BigbluebuttonRoom do
             mocked_api.should_receive(:set_config_xml)
               .with(room.meetingid, 'fake-config-xml')
               .and_return('fake-token')
+            # get_available_layouts will be called because the Server has no
+            # configs stored locally. In the future every method that is needed
+            # in order to update the configs will be called here.
+            mocked_api.should_receive(:get_available_layouts)
           }
           it("returns the token generated") { room.fetch_new_token.should eql('fake-token') }
         end

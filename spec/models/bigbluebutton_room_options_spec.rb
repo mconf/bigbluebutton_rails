@@ -15,13 +15,6 @@ describe BigbluebuttonRoomOptions do
       .room.should be_a_kind_of(BigbluebuttonRoom) }
   it { should validate_presence_of(:room_id) }
 
-  describe "#get_available_layouts" do
-    it "returns the layouts available" do
-      expected = ["Default", "Video Chat", "Meeting", "Webinar", "Lecture assistant", "Lecture"]
-      room_options.get_available_layouts.should eql(expected)
-    end
-  end
-
   describe "#set_on_config_xml" do
     let(:config_xml) { '<config></config>' }
 

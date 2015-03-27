@@ -13,6 +13,11 @@ class BigbluebuttonServer < ActiveRecord::Base
            :foreign_key => 'server_id',
            :dependent => :nullify
 
+  has_one :config,
+          class_name: 'BigbluebuttonServerConfig',
+          foreign_key: 'server_id',
+          dependent: :destroy
+
   validates :name,
             :presence => true,
             :uniqueness => true,
@@ -45,6 +50,10 @@ class BigbluebuttonServer < ActiveRecord::Base
 
   after_initialize :init
   before_validation :set_param
+
+  after_create :update_config
+
+  after_update :check_for_config_update
 
   # Returns the API object (<tt>BigBlueButton::BigBlueButtonAPI</tt> defined in
   # <tt>bigbluebutton-api-ruby</tt>) associated with this server.
@@ -131,6 +140,18 @@ class BigbluebuttonServer < ActiveRecord::Base
     self.param
   end
 
+  def get_config
+    self.config ||= BigbluebuttonServerConfig.create(server: self)
+  end
+
+  def update_config(config_xml=nil)
+    begin
+      self.get_config.update_config(config_xml)
+    rescue BigBlueButton::BigBlueButtonException
+      Rails.logger.warn "Could not fetch server #{self.id} info. URL probably incorrect"
+    end
+  end
+
   protected
 
   def init
@@ -142,6 +163,12 @@ class BigbluebuttonServer < ActiveRecord::Base
   def set_param
     if self.param.blank?
       self.param = self.name.parameterize.downcase unless self.name.nil?
+    end
+  end
+
+  def check_for_config_update
+    if self.changes.include?(:url)
+      self.update_config
     end
   end
 

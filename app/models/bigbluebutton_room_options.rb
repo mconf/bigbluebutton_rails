@@ -6,10 +6,6 @@ class BigbluebuttonRoomOptions < ActiveRecord::Base
   belongs_to :room, :class_name => 'BigbluebuttonRoom'
   validates :room_id, :presence => true
 
-  def get_available_layouts
-    ["Default", "Video Chat", "Meeting", "Webinar", "Lecture assistant", "Lecture"]
-  end
-
   # Sets the attributes from the model into the config.xml passed in the arguments.
   # If anything was modified in the XML, returns the new XML generated as string.
   # Otherwise returns false.
