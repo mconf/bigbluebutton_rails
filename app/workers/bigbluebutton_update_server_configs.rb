@@ -4,7 +4,9 @@ class BigbluebuttonUpdateServerConfigs
   @queue = :bigbluebutton_rails
 
   def self.perform
-    BigbluebuttonServer.all.each do |server|
+    Rails.logger.info "BigbluebuttonUpdateServerConfigs worker running"
+    BigbluebuttonServer.find_each do |server|
+      Rails.logger.info "BigbluebuttonUpdateServerConfigs updating configs for #{server.inspect}"
       server.update_config
     end
   end
