@@ -11,6 +11,8 @@ describe BigbluebuttonServer do
   it { should have_many(:recordings).dependent(:nullify) }
 
   it { should have_one(:config).dependent(:destroy) }
+  it { should delegate(:update_config).to(:config) }
+  it { should delegate(:available_layouts).to(:config) }
 
   it { should validate_presence_of(:name) }
   it { should validate_presence_of(:url) }
@@ -270,47 +272,63 @@ describe BigbluebuttonServer do
     end
   end
 
-  describe "#get_config" do
-    let!(:server) { FactoryGirl.create(:bigbluebutton_server) }
-    before {
-      # Since the config is already created in the after_create hook, this should
-      # not create another one.
-      expect { server.get_config }.to_not change { BigbluebuttonServerConfig.count }
-    }
-    it { server.config.should_not be_nil }
-  end
-
-  describe "#update_config" do
-    let(:server) { FactoryGirl.create(:bigbluebutton_server) }
-    let(:api) { server.api }
-    let(:layouts) { ["layout1", "layout2"] }
-    let(:new_layouts) { ["layout3", "layout4"] }
-    before {
-      api.should_receive(:get_default_config_xml).and_return("<config></config>")
-      api.should_receive(:get_available_layouts).and_return(layouts)
-      server.update_config
-    }
-    it { server.get_config.get_available_layouts.should eql layouts }
-
-    context "when there are new configs in the server" do
-      context "the available layouts have changed" do
-        before {
-          api.should_receive(:get_available_layouts).and_return(new_layouts)
-          server.update_config
-        }
-
-        it { server.get_config.get_available_layouts.should eql new_layouts }
-      end
+  describe "#config" do
+    it "is created when the server is created" do
+      server = FactoryGirl.create(:bigbluebutton_server)
+      server.config.should_not be_nil
+      server.config.should be_an_instance_of(BigbluebuttonServerConfig)
+      server.config.server.should eql(server)
     end
 
-    context "when some configs are missing" do
-      context "available layouts missing" do
-        before {
-          api.should_receive(:get_available_layouts).and_return(nil)
-          server.update_config
-        }
+    context "if it was not created, is built when accessed" do
+      before(:each) {
+        @server = FactoryGirl.create(:bigbluebutton_server)
+        @server.config.destroy
+        @server.reload
+        @server.config # access it so the new obj is created
+      }
+      it { @server.config.should_not be_nil }
+      it("is not promptly saved") {
+        @server.config.new_record?.should be(true)
+      }
+      it("is saved when the server is saved") {
+        @server.save!
+        @server.reload
+        @server.config.new_record?.should be(false)
+      }
+    end
+  end
 
-        it { server.get_config.get_available_layouts.should eql layouts }
+  describe "triggers #update_config" do
+
+    context "on after create" do
+      it {
+        BigbluebuttonServerConfig.any_instance.should_receive(:update_config).once
+        FactoryGirl.create(:bigbluebutton_server)
+      }
+    end
+
+    context "on after save" do
+      let(:server) { FactoryGirl.create(:bigbluebutton_server, version: "0.7") }
+
+      context "if #url changed" do
+        before { server.should_receive(:update_config).once }
+        it { server.update_attributes(url: server.url + "-2") }
+      end
+
+      context "if #salt changed" do
+        before { server.should_receive(:update_config).once }
+        it { server.update_attributes(salt: server.salt + "-2") }
+      end
+
+      context "if #version changed" do
+        before { server.should_receive(:update_config).once }
+        it { server.update_attributes(version: "0.8") }
+      end
+
+      context "not if any other attribute changed" do
+        before { server.should_not_receive(:update_config) }
+        it { server.update_attributes(name: server.name + "-2") }
       end
     end
   end

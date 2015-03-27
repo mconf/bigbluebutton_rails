@@ -11,6 +11,8 @@ describe BigbluebuttonRoom do
   it { should belong_to(:server) }
   it { should_not validate_presence_of(:server_id) }
 
+  it { should delegate(:available_layouts).to(:server) }
+
   it { should belong_to(:owner) }
   it { should_not validate_presence_of(:owner_id) }
   it { should_not validate_presence_of(:owner_type) }
@@ -168,7 +170,7 @@ describe BigbluebuttonRoom do
       }
       it { @room.room_options.should_not be_nil }
       it("is not promptly saved") {
-        @room.room_options.new_record?.should be_truthy
+        @room.room_options.new_record?.should be(true)
       }
       it("is saved when the room is saved") {
         @room.save!
@@ -806,10 +808,7 @@ describe BigbluebuttonRoom do
             mocked_api.should_receive(:set_config_xml)
               .with(room.meetingid, 'fake-config-xml')
               .and_return('fake-token')
-            # get_available_layouts will be called because the Server has no
-            # configs stored locally. In the future every method that is needed
-            # in order to update the configs will be called here.
-            mocked_api.should_receive(:get_available_layouts)
+            mocked_server.should_receive(:update_config).with('fake-config-xml')
           }
           it("returns the token generated") { room.fetch_new_token.should eql('fake-token') }
         end

@@ -1,8 +1,10 @@
 class BigbluebuttonRoom < ActiveRecord::Base
   include ActiveModel::ForbiddenAttributesProtection
 
-  belongs_to :server, :class_name => 'BigbluebuttonServer'
-  belongs_to :owner, :polymorphic => true
+  belongs_to :owner, polymorphic: true
+
+  belongs_to :server, class_name: 'BigbluebuttonServer'
+  delegate :available_layouts, to: :server
 
   has_many :recordings,
            :class_name => 'BigbluebuttonRecording',
@@ -365,10 +367,6 @@ class BigbluebuttonRoom < ActiveRecord::Base
     else
       nil
     end
-  end
-
-  def get_available_layouts
-    self.server.get_config.get_available_layouts
   end
 
   protected
