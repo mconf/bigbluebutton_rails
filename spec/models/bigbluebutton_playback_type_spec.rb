@@ -59,4 +59,18 @@ describe BigbluebuttonPlaybackType do
       subject.name.should eql("Any Other")
     }
   end
+
+  describe "#description" do
+    let(:subject) { FactoryGirl.create(:bigbluebutton_playback_type) }
+
+    it {
+      subject.identifier = "presentation"
+      subject.description.should eql(I18n.t("bigbluebutton_rails.playback_types.presentation.tip"))
+    }
+
+    it {
+      subject.identifier = "any_other"
+      subject.description.should eql("Any Other")
+    }
+  end
 end

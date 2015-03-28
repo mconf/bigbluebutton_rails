@@ -50,7 +50,7 @@
         <%= link_to "default", play_bigbluebutton_recording_path(recording) %>
         |
         <% recording.playback_formats.ordered.each do |format| %>
-          <%= link_to format.name, play_bigbluebutton_recording_path(recording, :type => format.playback_type.identifier) %>
+          <%= link_to format.name, play_bigbluebutton_recording_path(recording, :type => format.playback_type.identifier), :title => format.description %>
           <%= "(visible: #{format.visible})" %>
           <% if format.default? %>
             <%= "(duration: #{format.length} mins)" %>

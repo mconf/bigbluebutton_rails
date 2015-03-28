@@ -4,7 +4,7 @@ class BigbluebuttonPlaybackFormat < ActiveRecord::Base
   belongs_to :recording, :class_name => 'BigbluebuttonRecording'
   belongs_to :playback_type, :class_name => 'BigbluebuttonPlaybackType'
 
-  delegate :name, :identifier, :visible, :visible?, :default, :default?,
+  delegate :name, :identifier, :visible, :visible?, :default, :default?, :description,
     to: :playback_type, allow_nil: true
   alias_attribute :format_type, :identifier
 
