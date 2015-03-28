@@ -19,6 +19,6 @@ class BigbluebuttonPlaybackType < ActiveRecord::Base
 
   def name
     default = self.identifier.gsub("_", " ").titleize
-    I18n.t("bigbluebutton_rails.playback_types.#{self.identifier}", default: default)
+    I18n.t("bigbluebutton_rails.playback_types.#{self.identifier}.name", default: default)
   end
 end

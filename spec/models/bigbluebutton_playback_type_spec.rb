@@ -51,7 +51,7 @@ describe BigbluebuttonPlaybackType do
 
     it {
       subject.identifier = "presentation"
-      subject.name.should eql(I18n.t("bigbluebutton_rails.playback_types.presentation"))
+      subject.name.should eql(I18n.t("bigbluebutton_rails.playback_types.presentation.name"))
     }
 
     it {
