@@ -5,6 +5,7 @@ class Bigbluebutton::RecordingsController < ApplicationController
   respond_to :json, :only => [:index, :show, :update, :destroy, :publish, :unpublish]
   before_filter :find_recording, :except => [:index]
   before_filter :check_for_server, :only => [:publish, :unpublish]
+  before_filter :find_playback, :only => [:play]
 
   def index
     @recordings ||= BigbluebuttonRecording.all
@@ -70,15 +71,10 @@ class Bigbluebutton::RecordingsController < ApplicationController
   end
 
   def play
-    if params[:type]
-      playback = @recording.playback_formats.where(:playback_type_id => BigbluebuttonPlaybackType.find_by_identifier(params[:type])).first
-    else
-      playback = @recording.default_playback_format || @recording.playback_formats.first
-    end
     respond_with do |format|
       format.html {
-        if playback
-          redirect_to playback.url
+        if @playback
+          redirect_to @playback.url
         else
           flash[:error] = t('bigbluebutton_rails.recordings.errors.play.no_format')
           redirect_to_using_params bigbluebutton_recording_url(@recording)
@@ -153,6 +149,16 @@ class Bigbluebutton::RecordingsController < ApplicationController
 
   def recording_allowed_params
     [ :recordid, :meetingid, :name, :published, :start_time, :end_time, :available, :description ]
+  end
+
+  protected
+
+  def find_playback
+    if params[:type]
+      @playback = @recording.playback_formats.where(:playback_type_id => BigbluebuttonPlaybackType.find_by_identifier(params[:type])).first
+    else
+      @playback = @recording.default_playback_format || @recording.playback_formats.first
+    end
   end
 
 end
