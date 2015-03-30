@@ -609,9 +609,8 @@ describe Bigbluebutton::RoomsController do
           context "in a mobile device with no flags set" do
             before {
               controller.stub(:bigbluebutton_role) { :moderator }
-              browser = double()
-              browser.should_receive(:mobile?).and_return(true)
-              controller.stub(:browser).and_return(browser)
+              controller.stub(:browser).and_return('my-browser')
+              BigbluebuttonRails.should_receive(:use_mobile_client?).with('my-browser').and_return(true)
             }
 
             context "with no parameters in the url" do
@@ -638,11 +637,8 @@ describe Bigbluebutton::RoomsController do
             before {
               controller.stub(:bigbluebutton_user) { user }
               controller.stub(:bigbluebutton_role) { :moderator }
-
-              # make sure it's in a mobile device
-              browser = double()
-              browser.should_receive(:mobile?).and_return(true)
-              controller.stub(:browser).and_return(browser)
+              controller.stub(:browser).and_return('my-browser')
+              BigbluebuttonRails.should_receive(:use_mobile_client?).with('my-browser').and_return(true)
 
               # here's the real verification
               controller.should_receive(:join_internal).with(user.name, :moderator, user.id)
@@ -654,11 +650,8 @@ describe Bigbluebutton::RoomsController do
             before {
               controller.stub(:bigbluebutton_user) { user }
               controller.stub(:bigbluebutton_role) { :moderator }
-
-              # make sure it's in a mobile device
-              browser = double()
-              browser.should_receive(:mobile?).and_return(true)
-              controller.stub(:browser).and_return(browser)
+              controller.stub(:browser).and_return('my-browser')
+              BigbluebuttonRails.should_receive(:use_mobile_client?).with('my-browser').and_return(true)
 
               # here's the real verification
               controller.should_receive(:join_internal).with(user.name, :moderator, user.id)
@@ -1113,9 +1106,7 @@ describe Bigbluebutton::RoomsController do
         room.should_receive(:fetch_is_running?).at_least(:once).and_return(true)
         room.should_not_receive(:create_meeting)
         room.should_receive(:fetch_new_token).and_return(nil)
-        browser = double()
-        browser.should_receive(:mobile?).twice.and_return(true)
-        controller.stub(:browser).and_return(browser)
+        BigbluebuttonRails.stub(:use_mobile_client?).and_return(true)
       }
 
       context "and the url uses 'http'" do

@@ -271,37 +271,34 @@ class Bigbluebutton::RoomsController < ApplicationController
   # Aborts and redirects to an error if the user can't create a meeting in
   # the room and it needs to be created.
   def join_check_can_create
-    begin
-      unless @room.fetch_is_running?
-        unless bigbluebutton_can_create?(@room, @user_role)
-          flash[:error] = t('bigbluebutton_rails.rooms.errors.join.cannot_create')
-          redirect_to_on_join_error
-        end
+    unless @room.fetch_is_running?
+      unless bigbluebutton_can_create?(@room, @user_role)
+        flash[:error] = t('bigbluebutton_rails.rooms.errors.join.cannot_create')
+        redirect_to_on_join_error
       end
-    rescue BigBlueButton::BigBlueButtonException => e
-      flash[:error] = e.to_s[0..200]
-      redirect_to_on_join_error
     end
+  rescue BigBlueButton::BigBlueButtonException => e
+    flash[:error] = e.to_s[0..200]
+    redirect_to_on_join_error
   end
 
   # If the user called the join from a mobile device, he will be redirected to
   # an intermediary page with information about the mobile client. A few flags set
   # in the params can override this behavior and skip this intermediary page.
   def join_check_redirect_to_mobile
-    if browser.mobile? &&
-        !BigbluebuttonRails::value_to_boolean(params[:auto_join]) &&
-        !BigbluebuttonRails::value_to_boolean(params[:desktop])
+    return if !BigbluebuttonRails.use_mobile_client?(browser) ||
+              BigbluebuttonRails.value_to_boolean(params[:auto_join]) ||
+              BigbluebuttonRails.value_to_boolean(params[:desktop])
 
-      # since we're redirecting to an intermediary page, we set in the params the params
-      # we received, including the referer, so we can go back to the previous page if needed
-      filtered_params = select_params_for_join_mobile(params.clone)
-      begin
-        filtered_params[:redir_url] = Addressable::URI.parse(request.env["HTTP_REFERER"]).path
-      rescue
-      end
-
-      redirect_to join_mobile_bigbluebutton_room_path(@room, filtered_params)
+    # since we're redirecting to an intermediary page, we set in the params the params
+    # we received, including the referer, so we can go back to the previous page if needed
+    filtered_params = select_params_for_join_mobile(params.clone)
+    begin
+      filtered_params[:redir_url] = Addressable::URI.parse(request.env["HTTP_REFERER"]).path
+    rescue
     end
+
+    redirect_to join_mobile_bigbluebutton_room_path(@room, filtered_params)
   end
 
   # Selects the params from `params` that should be passed in a redirect to `join_mobile` and
@@ -343,7 +340,8 @@ class Bigbluebutton::RoomsController < ApplicationController
       unless url.nil?
 
         # change the protocol to join with a mobile device
-        if browser.mobile? && !BigbluebuttonRails::value_to_boolean(params[:desktop])
+        if BigbluebuttonRails.use_mobile_client?(browser) &&
+           !BigbluebuttonRails.value_to_boolean(params[:desktop])
           url.gsub!(/^[^:]*:\/\//i, "bigbluebutton://")
         end
 
