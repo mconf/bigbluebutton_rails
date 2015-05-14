@@ -383,7 +383,7 @@ class BigbluebuttonRoom < ActiveRecord::Base
   # anything else.
   def require_server
     if self.server.nil?
-      msg = I18n.t('bigbluebutton_rails.rooms.errors.server.not_set')
+      msg = I18n.t('bigbluebutton_rails.rooms.errors.server.nil')
       raise BigbluebuttonRails::ServerRequired.new(msg)
     end
   end
@@ -394,7 +394,8 @@ class BigbluebuttonRoom < ActiveRecord::Base
   def select_server
     BigbluebuttonServer.
       select("bigbluebutton_servers.*, count(bigbluebutton_rooms.id) as room_count").
-      joins(:rooms).group(:server_id).order("room_count ASC").first
+      joins("LEFT JOIN bigbluebutton_rooms ON bigbluebutton_servers.id = bigbluebutton_rooms.server_id").
+      group(:server_id).order("room_count ASC").first
   end
 
   def init
