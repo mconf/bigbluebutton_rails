@@ -61,14 +61,14 @@ class BigbluebuttonRecording < ActiveRecord::Base
     # set as unavailable the recordings that are not in 'recordings'
     recordIDs = recordings.map{ |rec| rec[:recordID] }
     if recordIDs.length <= 0 # empty response
-      BigbluebuttonRecording
-        .where(:available => true)
-        .update_all(:available => false)
+      BigbluebuttonRecording.
+        where(available: true, server: server).
+        update_all(available: false)
     else
-      BigbluebuttonRecording
-        .where(:available => true)
-        .where("recordid NOT IN (?)", recordIDs)
-        .update_all(:available => false)
+      BigbluebuttonRecording.
+        where(available: true, server: server).
+        where.not(recordid: recordIDs).
+        update_all(available: false)
     end
   end
 

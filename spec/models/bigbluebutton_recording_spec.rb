@@ -166,15 +166,15 @@ describe BigbluebuttonRecording do
     context "sets recording that are not in the parameters as unavailable" do
       before {
         # pre-existing recordings that should be marked as unavailable
-        @r1 = FactoryGirl.create(:bigbluebutton_recording, :available => true)
+        @r1 = FactoryGirl.create(:bigbluebutton_recording, :available => true, :server => new_server)
         @r2 = FactoryGirl.create(:bigbluebutton_recording, :available => true)
         BigbluebuttonRecording.sync(new_server, data)
         @r1.reload
         @r2.reload
       }
       it { BigbluebuttonRecording.count.should == 3 }
-      it { @r1.available.should == false }
-      it { @r2.available.should == false }
+      it ("if it's from the server being synced") { @r1.available.should == false }
+      it ("otherwise, keep it untouched") { @r2.available.should == true }
     end
 
     context "works for multiple recordings" do
