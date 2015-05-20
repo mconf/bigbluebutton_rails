@@ -56,6 +56,12 @@ module BigbluebuttonRails
       @@metadata_user_id,
       @@metadata_user_name ]
 
+  # Name of the metadata parameter that will contain the room's invitation
+  # URL, in case `invitation_url_method` is implemented by the application.
+  # Has to be a symbol!
+  mattr_accessor :metadata_invitation_url
+  @@metadata_invitation_url = :'invitation-url'
+
   # Name of the attribute of a user that defines his name/username.
   # Has to be a symbol!
   mattr_accessor :user_attr_name
@@ -65,6 +71,12 @@ module BigbluebuttonRails
   # Has to be a symbol!
   mattr_accessor :user_attr_id
   @@user_attr_id = :'id'
+
+  # Name of the method that returns the invitation URL of a room.
+  # Must be implemented by the application, there's no default implemented in this gem.
+  # Has to be a symbol!
+  mattr_accessor :invitation_url_method
+  @@invitation_url_method = :'invitation_url'
 
   # Whether or not the gem should pass the voice bridges set in the rooms when making
   # API calls. By default it is false, meaning that the voice bridge will never be

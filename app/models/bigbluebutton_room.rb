@@ -440,6 +440,12 @@ class BigbluebuttonRoom < ActiveRecord::Base
       opts.merge!({ "meta_#{BigbluebuttonRails.metadata_user_name}" => username })
     end
 
+    # Add the invitation URL, if any
+    invitation_url = self.try(BigbluebuttonRails.invitation_url_method)
+    unless invitation_url.nil?
+      opts.merge!({ "meta_#{BigbluebuttonRails.metadata_invitation_url}" => invitation_url })
+    end
+
     self.server.api.request_headers = @request_headers # we need the client's IP
     response = self.server.api.create_meeting(self.name, self.meetingid, opts)
 
