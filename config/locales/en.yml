@@ -61,6 +61,15 @@ en:
       bigbluebutton_room: "Web Conference Room"
       bigbluebutton_server: "Web Conference Server"
       bigbluebutton_server_config: "Web Conference Server Configurations"
+  bbb:
+    layout:
+      name:
+        defaultlayout: "Default Layout"
+        videochat: "Video Chat"
+        webcamsfocus: "Meeting"
+        presentfocus: "Webinar"
+        lectureassistant: "Lecture assistant"
+        lecture: "Lecture"
   bigbluebutton_rails:
     bigbluebutton: BigBlueButton
     metadata:
