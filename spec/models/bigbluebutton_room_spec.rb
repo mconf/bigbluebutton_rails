@@ -1153,6 +1153,61 @@ describe BigbluebuttonRoom do
     it "calls api.create_meeting"
     it "accepts additional user options to override the options in the database"
 
+    context "adds the invitation URL, if any" do
+      before { mock_server_and_api }
+      let(:room) { FactoryGirl.create(:bigbluebutton_room) }
+
+      before {
+        mocked_api.stub(:"request_headers=")
+        room.server = mocked_server
+      }
+
+      it { room.should_not respond_to(:invitation_url) }
+
+      context "doesn't add the invitation URL by default" do
+        before {
+          mocked_api.should_receive(:create_meeting)  do |name, meetingid, opts|
+            opts.should_not have_key('meta_invitation-url')
+            opts.should_not have_key(:'meta_invitation-url')
+          end
+        }
+        it { room.send(:internal_create_meeting) }
+      end
+
+      context "doesn't add the invitation URL if BigbluebuttonRoom#invitation_url returns nil" do
+        before {
+          BigbluebuttonRoom.class_eval do
+            def invitation_url
+              nil
+            end
+          end
+
+          room.should respond_to(:invitation_url)
+          mocked_api.should_receive(:create_meeting)  do |name, meetingid, opts|
+            opts.should_not have_key('meta_invitation-url')
+            opts.should_not have_key(:'meta_invitation-url')
+          end
+        }
+        it { room.send(:internal_create_meeting) }
+      end
+
+      context "adds the value returned by BigbluebuttonRoom#invitation_url" do
+        before {
+          BigbluebuttonRoom.class_eval do
+            def invitation_url
+              'http://my-invitation.url'
+            end
+          end
+
+          room.should respond_to(:invitation_url)
+          mocked_api.should_receive(:create_meeting)  do |name, meetingid, opts|
+            opts.should include('meta_invitation-url' => 'http://my-invitation.url')
+          end
+        }
+        it { room.send(:internal_create_meeting) }
+      end
+    end
+
     context "schedules a BigbluebuttonMeetingUpdater" do
       before { mock_server_and_api }
       let(:room) { FactoryGirl.create(:bigbluebutton_room) }
