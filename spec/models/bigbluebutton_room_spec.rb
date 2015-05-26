@@ -901,6 +901,7 @@ describe BigbluebuttonRoom do
       before {
         room.should_receive(:is_running?).and_return(false)
         room.should_receive(:send_create).with(user, {})
+        room.should_receive(:send_end)
       }
       subject { room.create_meeting(user) }
       it { should be_truthy }
@@ -914,6 +915,7 @@ describe BigbluebuttonRoom do
         room.should_receive(:add_domain_to_logout_url).with("HTTP://", "test.com:80")
         room.should_receive(:is_running?).and_return(false)
         room.should_receive(:send_create)
+        room.should_receive(:send_end)
       }
       subject { room.create_meeting(user, request) }
       it { should be_truthy }

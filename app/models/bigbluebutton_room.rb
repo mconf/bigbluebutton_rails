@@ -254,6 +254,7 @@ class BigbluebuttonRoom < ActiveRecord::Base
   def create_meeting(user=nil, request=nil, user_opts={})
     fetch_is_running?
     unless is_running?
+      send_end
       add_domain_to_logout_url(request.protocol, request.host_with_port) unless request.nil?
       send_create(user, user_opts)
       true
