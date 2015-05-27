@@ -460,9 +460,9 @@ class BigbluebuttonRoom < ActiveRecord::Base
   # Can be used to easily set a default message format for all rooms.
   def default_welcome_message
     if self.dial_number.present?
-      I18n.t('bigbluebutton_rails.rooms.default_welcome_msg')
-    else
       I18n.t('bigbluebutton_rails.rooms.default_welcome_msg_dial_number')
+    else
+      I18n.t('bigbluebutton_rails.rooms.default_welcome_msg')
     end
   end
 
