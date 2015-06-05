@@ -1,0 +1,5 @@
+test:
+  adapter: mysql2
+  database: bigbluebutton_rails_test
+  username: travis
+  encoding: utf8
