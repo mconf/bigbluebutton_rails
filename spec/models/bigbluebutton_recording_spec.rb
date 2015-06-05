@@ -324,7 +324,7 @@ describe BigbluebuttonRecording do
       }
     }
 
-    it "succeds" do
+    it "succeeds" do
       BigbluebuttonRecording.should_receive(:sync_metadata)
         .with(recording, data[:metadata])
       BigbluebuttonRecording.should_receive(:sync_playback_formats)

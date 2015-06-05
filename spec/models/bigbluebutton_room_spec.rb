@@ -904,7 +904,7 @@ describe BigbluebuttonRoom do
         room.should_receive(:send_end)
       }
       subject { room.create_meeting(user) }
-      it { should be_truthy }
+      it { should be(true) }
     end
 
     context "when the parameter 'request' is informed" do
@@ -918,21 +918,21 @@ describe BigbluebuttonRoom do
         room.should_receive(:send_end)
       }
       subject { room.create_meeting(user, request) }
-      it { should be_truthy }
+      it { should be(true) }
     end
 
-    # context "when the parameter 'request' is informed" do
-    #   let(:request) { double(ActionDispatch::Request) }
-    #   before {
-    #     request.stub(:protocol).and_return("HTTP://")
-    #     request.stub(:host_with_port).and_return("test.com:80")
-    #     room.should_receive(:add_domain_to_logout_url).with("HTTP://", "test.com:80")
-    #     room.should_receive(:is_running?).and_return(false)
-    #     room.should_receive(:send_create)
-    #   }
-    #   subject { room.create_meeting(user.name, user.id, request) }
-    #   it { should be_truthy }
-    # end
+    context "ignores exceptions raised by send_end (for when there's no meeting created)" do
+      before {
+        room.should_receive(:is_running?).and_return(false)
+        room.should_receive(:send_create).with(user, {})
+        room.should_receive(:send_end) { raise BigBlueButton::BigBlueButtonException.new('test') }
+      }
+      it {
+        expect {
+          room.create_meeting(user)
+        }.not_to raise_error
+      }
+    end
   end
 
   describe "#full_logout_url" do
