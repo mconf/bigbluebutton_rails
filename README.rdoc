@@ -36,7 +36,8 @@ Tested in rubies:
 
 Requires ruby >= 1.9.3.
 
-* ruby-2.1.2 *recommended*
+* ruby-2.2.0 *recommended*
+* ruby-2.1.2
 * ruby-1.9.3 (p484)
 
 Use these versions to be sure it will work. Other patches of these versions should work as well.
