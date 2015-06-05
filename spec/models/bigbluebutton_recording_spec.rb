@@ -164,18 +164,46 @@ describe BigbluebuttonRecording do
     end
 
     context "sets recording that are not in the parameters as unavailable" do
-      let(:other_server) { FactoryGirl.create(:bigbluebutton_server) }
-      before {
-        # pre-existing recordings that should be marked as unavailable
-        @r1 = FactoryGirl.create(:bigbluebutton_recording, :available => true, :server => new_server)
-        @r2 = FactoryGirl.create(:bigbluebutton_recording, :available => true, :server => other_server)
-        BigbluebuttonRecording.sync(new_server, data)
-        @r1.reload
-        @r2.reload
-      }
-      it { BigbluebuttonRecording.count.should == 3 }
-      it ("if it's from the server being synced") { @r1.available.should == false }
-      it ("otherwise, keep it untouched") { @r2.available.should == true }
+
+      context "for recordings in multiple servers" do
+        before {
+          BigbluebuttonRecording.delete_all
+          @r1 = FactoryGirl.create(:bigbluebutton_recording, :available => true, :server => new_server)
+          @r2 = FactoryGirl.create(:bigbluebutton_recording, :available => true, :server => new_server)
+          @r3 = FactoryGirl.create(:bigbluebutton_recording, :available => true, :server => FactoryGirl.create(:bigbluebutton_server))
+          @r4 = FactoryGirl.create(:bigbluebutton_recording, :available => true, :server => FactoryGirl.create(:bigbluebutton_server))
+          BigbluebuttonRecording.sync(new_server, data)
+        }
+        it { BigbluebuttonRecording.count.should == 5 }
+        it ("recording from the target server") { @r1.reload.available.should == false }
+        it ("recording from the target server") { @r2.reload.available.should == false }
+        it ("recording from another server") { @r3.reload.available.should == true }
+        it ("recording from another server") { @r4.reload.available.should == true }
+      end
+
+      context "when there are no recordings in the target server" do
+        before {
+          new_server.recordings.delete_all
+          @r1 = FactoryGirl.create(:bigbluebutton_recording, :available => true, :server => FactoryGirl.create(:bigbluebutton_server))
+          @r2 = FactoryGirl.create(:bigbluebutton_recording, :available => true, :server => FactoryGirl.create(:bigbluebutton_server))
+          BigbluebuttonRecording.sync(new_server, data)
+        }
+        it { new_server.recordings.should be_empty }
+        it ("recording from another server") { @r1.reload.available.should == true }
+        it ("recording from another server") { @r2.reload.available.should == true }
+      end
+
+      context "when there are no recordings in other servers" do
+        before {
+          BigbluebuttonRecording.delete_all
+          @r1 = FactoryGirl.create(:bigbluebutton_recording, :available => true, :server => new_server)
+          @r2 = FactoryGirl.create(:bigbluebutton_recording, :available => true, :server => new_server)
+          BigbluebuttonRecording.sync(new_server, data)
+        }
+        it { BigbluebuttonRecording.count.should == 3 }
+        it ("recording from another server") { @r1.reload.available.should == false }
+        it ("recording from another server") { @r2.reload.available.should == false }
+      end
     end
 
     context "works for multiple recordings" do
