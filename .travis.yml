@@ -1,3 +1,8 @@
+language: ruby
+bundler_args: "--without production development"
+before_script:
+  - "cp spec/rails_app/config/database.yml.travis spec/rails_app/config/database.yml"
+  - "mysql -e 'create database bigbluebutton_rails_test;'"
 script: "bundle exec rake rails_app:install rails_app:db spec"
 rvm:
   - 2.1.2
