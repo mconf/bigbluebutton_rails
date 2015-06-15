@@ -165,7 +165,7 @@ There are some basic assumptions made by BigbluebuttonRails:
 If you don't, you can change this behaviour easily, keep reading.
 
 BigbluebuttonRails uses the methods <tt>bigbluebutton_user</tt> and <tt>bigbluebutton_role(room)</tt> to get the current user and to get the permission that the current
-user has in the <tt>room</tt>, respectively. These methods are defined in {lib/bigbluebutton_rails/controller_methods.rb}[https://github.com/mconf/bigbluebutton_rails/blob/master/lib/bigbluebutton_rails/controller_methods.rb]
+user has in the <tt>room</tt>, respectively. These methods are defined in <tt>{lib/bigbluebutton_rails/controller_methods.rb}[https://github.com/mconf/bigbluebutton_rails/blob/master/lib/bigbluebutton_rails/controller_methods.rb]</tt>
 and you can reimplement them in your application controller to change their behaviour as shown below.
 
   class ApplicationController < ActionController::Base
@@ -214,6 +214,18 @@ To keep track of meetings, you have to run the resque workers (this is needed bo
   rake resque:work QUEUE='bigbluebutton_rails'
 
 The list of meetings is also periodically synchronized using Resque-scheduler (see the sections above).
+
+=== Associating rooms and servers
+
+Rooms must be associated with a server to function. When a meeting is created, it is created in the server that's associated with the room. The association is done using the `server_id` attribute in `BigbluebuttonRoom`. So applications that use this gem can manage all the associations by simply setting this attribute.
+
+By default, this gem automatically selects a server **if one is needed and the room has no server yet**. If a room already has a server, the gem never change it.
+
+To change this behavior, applications can override the method <tt>{BigbluebuttonRoom#select_server}[https://github.com/mconf/bigbluebutton_rails/blob/5decf3fa7767002303cf8bda524dcbeca0a9146c/app/models/bigbluebutton_room.rb#L413]</tt>. This method is called by all methods that trigger API calls and therefore need a server to be set in the room. It receives a parameter that indicates which API call will be sent to the server.
+
+If the method returns a server, the server will be associated with the room. If the method returns `nil`, the room will maintain the server it had previously, if any.
+
+One common use would be to override this method to always select a new server when a meeting is created (when the argument received is `:create`). This would allow the implementation of a simple load balancing mechanism.
 
 
 === Example application
