@@ -944,19 +944,21 @@ describe BigbluebuttonRoom do
     it { room.respond_to?(:require_server, true).should be(true) }
 
     context "if the room has no server associated" do
+      let(:server) { FactoryGirl.create(:bigbluebutton_server) }
+      before {
+        room.server = nil
+      }
 
       context "assigns server to room if there is one" do
         before {
-          room.server = nil
           room.send(:require_server)
         }
-        it { room.server.should_not be_nil }
+        it { room.reload.server.should_not be_nil }
       end
 
       context "raises exception if there are no servers to assign" do
         before {
           room.should_receive(:select_server).and_return(nil)
-          room.server = nil
         }
         it {
           expect {
@@ -964,15 +966,46 @@ describe BigbluebuttonRoom do
           }.to raise_error(BigbluebuttonRails::ServerRequired)
         }
       end
+
+      context "doesn't save the room if no server is selected" do
+        before {
+          @updated_at = room.updated_at
+          room.should_receive(:select_server).and_return(nil)
+          expect {
+            room.send(:require_server)
+          }.to raise_error(BigbluebuttonRails::ServerRequired)
+        }
+        it { room.updated_at.should eql(@updated_at) }
+      end
+
+      context "doesn't save the room if it's a new record" do
+        let(:room) { FactoryGirl.build(:bigbluebutton_room) }
+        before {
+          room.should_receive(:select_server).and_return(server)
+          room.send(:require_server)
+        }
+        it { room.new_record?.should be(true) }
+        it { room.server.should eql(server) }
+      end
+
+      context "passes the api_method parameter to #select_server" do
+        let(:method) { :my_api_method }
+        before {
+          room.should_receive(:select_server).with(method).and_return(server)
+        }
+        it { room.send(:require_server, method) }
+      end
     end
 
     context "does nothing if the room has a server associated" do
-      before { room.server = FactoryGirl.create(:bigbluebutton_server) }
-      it {
+      let(:server) { FactoryGirl.create(:bigbluebutton_server) }
+      before {
+        room.server = server
         expect {
           room.send(:require_server)
-        }.not_to raise_error()
+        }.not_to raise_error
       }
+      it { room.server.should eql(server) }
     end
   end
 
@@ -992,7 +1025,15 @@ describe BigbluebuttonRoom do
     end
 
     context "returns nil of there are no servers" do
-      before(:each) { BigbluebuttonServer.destroy_all }
+      before { BigbluebuttonServer.destroy_all }
+      it { room.send(:select_server).should == nil }
+    end
+
+    context "returns nil if the room already has a server" do
+      before {
+        2.times{ FactoryGirl.create(:bigbluebutton_server) }
+        room.update_attributes(server: FactoryGirl.create(:bigbluebutton_server))
+      }
       it { room.send(:select_server).should == nil }
     end
   end

@@ -385,11 +385,13 @@ class BigbluebuttonRoom < ActiveRecord::Base
   # but not yet ended.
   # Any action that requires a server should call 'require_server' before
   # anything else.
+  # This method will automatically select a server if the room has no server
+  # set on it yet.
   def require_server(api_method=nil)
-    serv = select_server(api_method)
-    unless serv.nil? then
-      self.server = serv
-      self.save unless self.new_record?
+    selected_server = select_server(api_method)
+    unless selected_server.nil?
+      self.server = selected_server
+      self.save if selected_server && !self.new_record?
     end
     if self.server.nil?
       msg = I18n.t('bigbluebutton_rails.rooms.errors.server.nil')
@@ -397,9 +399,17 @@ class BigbluebuttonRoom < ActiveRecord::Base
     end
   end
 
+  # Selects the server with less rooms in it in case this room has no server
+  # set to it yet. Returns nil if there are no servers to select or if the
+  # room already has a server associated to it.
+  #
   # This method can be overridden to change the way the server is selected
-  # before a room is created
-  # This one selects the server with less rooms in it
+  # before a room is used. `api_method` contains the API method that is being
+  # called. Any server returned here will be used. If no server is returned, the
+  # room will continue with its current server (if any).
+  # One good example is to always select a new server when a meeting is being
+  # created (in case `api_method` is `:create`), making this a simple load
+  # balancing tool that can work well in simple cases.
   def select_server(api_method=nil)
     if self.server.nil?
       BigbluebuttonServer.
