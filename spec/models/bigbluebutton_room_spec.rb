@@ -658,22 +658,20 @@ describe BigbluebuttonRoom do
 
       context "selects and requires a server" do
         let(:another_server) { FactoryGirl.create(:bigbluebutton_server) }
-
+        let(:room2) { FactoryGirl.create(:bigbluebutton_room, :server => nil) }
         context "and saves the result" do
           before do
-            room.should_receive(:select_server).and_return(another_server)
-            room.should_receive(:require_server)
-            room.should_receive(:internal_create_meeting)
-            room.server = mocked_server
-            room.send_create
+            room2.should_receive(:internal_create_meeting)
+            room2.send_create
           end
-          it { BigbluebuttonRoom.find(room.id).server_id.should == another_server.id }
+          # send_create will call require_server, so a server will be assigned
+          # to this room
+          it { BigbluebuttonRoom.find(room2.id).server_id.should_not be_nil }
         end
 
         context "and does not save when is a new record" do
           let(:new_room) { FactoryGirl.build(:bigbluebutton_room) }
           before do
-            new_room.should_receive(:select_server).and_return(another_server)
             new_room.should_receive(:require_server)
             new_room.should_receive(:internal_create_meeting).and_return(nil)
             new_room.should_not_receive(:save)
@@ -945,13 +943,27 @@ describe BigbluebuttonRoom do
     let(:room) { FactoryGirl.create(:bigbluebutton_room) }
     it { room.respond_to?(:require_server, true).should be(true) }
 
-    context "throws exception when the room has no server associated" do
-      before { room.server = nil }
-      it {
-        expect {
+    context "if the room has no server associated" do
+
+      context "assigns server to room if there is one" do
+        before {
+          room.server = nil
           room.send(:require_server)
-        }.to raise_error(BigbluebuttonRails::ServerRequired)
-      }
+        }
+        it { room.server.should_not be_nil }
+      end
+
+      context "raises exception if there are no servers to assign" do
+        before {
+          room.should_receive(:select_server).and_return(nil)
+          room.server = nil
+        }
+        it {
+          expect {
+            room.send(:require_server)
+          }.to raise_error(BigbluebuttonRails::ServerRequired)
+        }
+      end
     end
 
     context "does nothing if the room has a server associated" do

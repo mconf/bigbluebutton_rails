@@ -105,7 +105,7 @@ class BigbluebuttonRoom < ActiveRecord::Base
   #
   # Triggers API call: <tt>getMeetingInfo</tt>.
   def fetch_meeting_info
-    require_server
+    require_server :get_meeting_info
 
     response = self.server.api.get_meeting_info(self.meetingid, self.moderator_api_password)
 
@@ -132,7 +132,7 @@ class BigbluebuttonRoom < ActiveRecord::Base
   #
   # Triggers API call: <tt>isMeetingRunning</tt>.
   def fetch_is_running?
-    require_server
+    require_server :is_meeting_running
     @running = self.server.api.is_meeting_running?(self.meetingid)
   end
 
@@ -140,7 +140,7 @@ class BigbluebuttonRoom < ActiveRecord::Base
   #
   # Triggers API call: <tt>end</tt>.
   def send_end
-    require_server
+    require_server :end
     response = self.server.api.end_meeting(self.meetingid, self.moderator_api_password)
 
     # enqueue an update in the meetings for later on
@@ -165,12 +165,12 @@ class BigbluebuttonRoom < ActiveRecord::Base
   # Triggers API call: <tt>create</tt>.
   def send_create(user=nil, user_opts={})
     # updates the server whenever a meeting will be created and guarantees it has a meetingid
-    self.server = select_server
+    require_server :create
+
     self.meetingid = unique_meetingid() if self.meetingid.blank?
     self.moderator_api_password = internal_password() if self.moderator_api_password.blank?
     self.attendee_api_password = internal_password() if self.attendee_api_password.blank?
     self.save unless self.new_record?
-    require_server
 
     response = internal_create_meeting(user, user_opts)
     unless response.nil?
@@ -192,7 +192,7 @@ class BigbluebuttonRoom < ActiveRecord::Base
   #
   # Uses the API but does not require a request to the server.
   def join_url(username, role, key=nil, options={})
-    require_server
+    require_server :join_meeting_url
 
     case role
     when :moderator
@@ -385,9 +385,14 @@ class BigbluebuttonRoom < ActiveRecord::Base
   # but not yet ended.
   # Any action that requires a server should call 'require_server' before
   # anything else.
-  def require_server
+  def require_server(api_method=nil)
+    serv = select_server(api_method)
+    unless serv.nil? then
+      self.server = serv
+      self.save unless self.new_record?
+    end
     if self.server.nil?
-      msg = I18n.t('bigbluebutton_rails.rooms.errors.server.not_set')
+      msg = I18n.t('bigbluebutton_rails.rooms.errors.server.nil')
       raise BigbluebuttonRails::ServerRequired.new(msg)
     end
   end
@@ -395,10 +400,15 @@ class BigbluebuttonRoom < ActiveRecord::Base
   # This method can be overridden to change the way the server is selected
   # before a room is created
   # This one selects the server with less rooms in it
-  def select_server
-    BigbluebuttonServer.
-      select("bigbluebutton_servers.*, count(bigbluebutton_rooms.id) as room_count").
-      joins(:rooms).group(:server_id).order("room_count ASC").first
+  def select_server(api_method=nil)
+    if self.server.nil?
+      BigbluebuttonServer.
+        select("bigbluebutton_servers.*, count(bigbluebutton_rooms.id) as room_count").
+        joins("LEFT JOIN bigbluebutton_rooms ON bigbluebutton_servers.id = bigbluebutton_rooms.server_id").
+        group(:server_id).order("room_count ASC").first
+    else
+      nil
+    end
   end
 
   def init
