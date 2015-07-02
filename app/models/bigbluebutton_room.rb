@@ -26,6 +26,9 @@ class BigbluebuttonRoom < ActiveRecord::Base
   delegate :presenter_share_only, :presenter_share_only=, :to => :room_options
   delegate :auto_start_video, :auto_start_video=, :to => :room_options
   delegate :auto_start_audio, :auto_start_audio=, :to => :room_options
+  delegate :available_layouts, to: :server
+  delegate :available_layouts_names, to: :server
+  delegate :available_layouts_with_names, to: :server
 
   accepts_nested_attributes_for :metadata,
     :allow_destroy => true,
@@ -368,12 +371,8 @@ class BigbluebuttonRoom < ActiveRecord::Base
     end
   end
 
-  def available_layouts
-    # Translate the keys that come from server.available_layouts.
-    # If it's not a valid key (e.g. it's already a name) keep it as it is.
-    server.available_layouts.map { |layout|
-      I18n.t(layout, default: layout)
-    }
+  def available_layouts_for_select
+    available_layouts_with_names
   end
 
   protected

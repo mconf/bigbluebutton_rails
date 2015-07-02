@@ -20,7 +20,8 @@ class BigbluebuttonServer < ActiveRecord::Base
 
   delegate :update_config, to: :config
   delegate :available_layouts, to: :config
-
+  delegate :available_layouts_names, to: :config
+  delegate :available_layouts_with_names, to: :config
   validates :name,
             :presence => true,
             :uniqueness => true,
