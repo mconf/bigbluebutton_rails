@@ -11,8 +11,6 @@ describe BigbluebuttonRoom do
   it { should belong_to(:server) }
   it { should_not validate_presence_of(:server_id) }
 
-  it { should delegate(:available_layouts).to(:server) }
-
   it { should belong_to(:owner) }
   it { should_not validate_presence_of(:owner_id) }
   it { should_not validate_presence_of(:owner_type) }
@@ -1282,6 +1280,21 @@ describe BigbluebuttonRoom do
       it("the job should be the right one") { subject['class'].should eq('BigbluebuttonMeetingUpdater') }
       it("the job should have the correct parameters") { subject['args'].should eq([room.id]) }
     end
+  end
+
+  describe "#available_layouts" do
+    let(:room) { FactoryGirl.create(:bigbluebutton_room) }
+    let(:layout1) { "bbb.layout.name.defaultlayout" }
+    let(:layout2) { "LayoutWithoutTranslation" }
+    before {
+      mock_server_and_api
+      room.server = mocked_server
+    }
+    before {
+      BigbluebuttonServerConfig.any_instance.should_receive(:available_layouts).
+        and_return([layout1, layout2])
+    }
+    it { room.available_layouts.should == [I18n.t(layout1), layout2] }
   end
 
 end

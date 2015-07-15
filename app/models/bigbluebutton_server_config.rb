@@ -21,4 +21,16 @@ class BigbluebuttonServerConfig < ActiveRecord::Base
       Rails.logger.error "Could not fetch configurations for the server #{self.server.id}. The URL probably incorrect."
     end
   end
+
+  def available_layouts_names
+    # Translate the keys that come from server.available_layouts.
+    # If it's not a valid key (e.g. it's already a name) keep it as it is.
+    available_layouts.map { |layout|
+      I18n.t(layout, default: layout)
+    }
+  end
+
+  def available_layouts_with_names
+    available_layouts_names.zip(available_layouts)
+  end
 end

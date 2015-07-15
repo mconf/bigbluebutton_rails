@@ -61,6 +61,15 @@ pt-br:
       bigbluebutton_room: "Sala de Webconferência"
       bigbluebutton_server: "Servidor de Webconferência"
       bigbluebutton_server_config: "Configurações do Servidor de Webconferência"
+  bbb:
+    layout:
+      name:
+        defaultlayout: "Layout Padrão"
+        videochat: "Videoconferência"
+        webcamsfocus: "Reunião"
+        presentfocus: "Webinar"
+        lectureassistant: "Assistente de aula" # ?
+        lecture: "Aula"
   bigbluebutton_rails:
     bigbluebutton: BigBlueButton
     metadata:
