@@ -1,3 +1,4 @@
+# -*- coding: utf-8 -*-
 require 'bigbluebutton_api'
 
 class BigbluebuttonServerConfig < ActiveRecord::Base
@@ -26,10 +27,22 @@ class BigbluebuttonServerConfig < ActiveRecord::Base
     # Translate the keys that come from server.available_layouts.
     # If it's not a valid key (e.g. it's already a name) keep it as it is.
     available_layouts.map { |layout|
-      I18n.t(layout, default: layout)
+      # Ignores everything up to the last point
+      # e.g. from 'bbb.layout.name.defaultlayout' to 'defaultlayout'
+      # e.g. from 'defaultlayout' to 'defaultlayout'
+      basename = layout.gsub(/(.*[.])?/, '')
+
+      # We parameterize the id since the value can be anything, possibly an invalid
+      # key for yml (e.g. "Reunião").
+      key = "bigbluebutton_rails.server_configs.layouts.#{basename.parameterize('_')}"
+
+      I18n.t(key, default: basename)
     }
   end
 
+  # Returns an array of arrays for showing layouts in a select.
+  # The first member of the internal array is the layout's name, the second is the
+  # layout's ID (the raw value used to set the layout in the webconf server).
   def available_layouts_with_names
     available_layouts_names.zip(available_layouts)
   end

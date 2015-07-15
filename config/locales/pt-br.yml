@@ -61,15 +61,6 @@ pt-br:
       bigbluebutton_room: "Sala de Webconferência"
       bigbluebutton_server: "Servidor de Webconferência"
       bigbluebutton_server_config: "Configurações do Servidor de Webconferência"
-  bbb:
-    layout:
-      name:
-        defaultlayout: "Layout Padrão"
-        videochat: "Videoconferência"
-        webcamsfocus: "Reunião"
-        presentfocus: "Webinar"
-        lectureassistant: "Assistente de aula" # ?
-        lecture: "Aula"
   bigbluebutton_rails:
     bigbluebutton: BigBlueButton
     metadata:
@@ -150,3 +141,11 @@ pt-br:
           success: "Suas gravações foram ocultadas com sucesso."
         update:
           success: "Seu servidor foi atualizado."
+    server_configs:
+      layouts:
+        defaultlayout: "Layout Padrão"
+        lecture: "Aula"
+        lectureassistant: "Assistente de aula"
+        presentfocus: "Webinar"
+        videochat: "Vídeo Chat"
+        webcamsfocus: "Reunião"

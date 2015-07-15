@@ -62,14 +62,6 @@ en:
       bigbluebutton_server: "Web Conference Server"
       bigbluebutton_server_config: "Web Conference Server Configurations"
   bbb:
-    layout:
-      name:
-        defaultlayout: "Default Layout"
-        videochat: "Video Chat"
-        webcamsfocus: "Meeting"
-        presentfocus: "Webinar"
-        lectureassistant: "Lecture assistant"
-        lecture: "Lecture"
   bigbluebutton_rails:
     bigbluebutton: BigBlueButton
     metadata:
@@ -150,3 +142,11 @@ en:
           success: "Your recordings were successfully unpublished."
         update:
           success: "Your server was successfully updated."
+    server_configs:
+      layouts:
+        defaultlayout: "Default Layout"
+        lecture: "Lecture"
+        lectureassistant: "Lecture Assistant"
+        presentfocus: "Webinar"
+        videochat: "Video Chat"
+        webcamsfocus: "Meeting"
