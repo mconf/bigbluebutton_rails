@@ -28,7 +28,7 @@ class BigbluebuttonRoom < ActiveRecord::Base
   delegate :auto_start_audio, :auto_start_audio=, :to => :room_options
   delegate :available_layouts, to: :server
   delegate :available_layouts_names, to: :server
-  delegate :available_layouts_with_names, to: :server
+  delegate :available_layouts_for_select, to: :server
 
   accepts_nested_attributes_for :metadata,
     :allow_destroy => true,
@@ -373,10 +373,6 @@ class BigbluebuttonRoom < ActiveRecord::Base
     else
       nil
     end
-  end
-
-  def available_layouts_for_select
-    available_layouts_with_names
   end
 
   protected

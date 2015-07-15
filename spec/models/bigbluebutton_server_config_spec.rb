@@ -56,4 +56,60 @@ describe BigbluebuttonServerConfig do
       }
     end
   end
+
+  describe "#available_layouts_names" do
+    let(:layouts) { ["layout1", "bbb.test.layout2", "Wëird Chárs"] }
+    let(:expected) { ["layout1", "layout2", "Wëird Chárs"] }
+    let(:config) { FactoryGirl.create(:bigbluebutton_server_config, available_layouts: layouts) }
+
+    before {
+      I18n.stub(:t) { |value|
+        case value
+        when "bigbluebutton_rails.server_configs.layouts.layout1"
+          "Layout1 Localized"
+        when "bigbluebutton_rails.server_configs.layouts.layout2"
+          "Layout2 Localized"
+        when "bigbluebutton_rails.server_configs.layouts.weird_chars"
+          "Weird Localized"
+        else
+          nil
+        end
+      }
+    }
+
+    it {
+      config.available_layouts_names.should eql(['Layout1 Localized', 'Layout2 Localized', 'Weird Localized'])
+    }
+  end
+
+  describe "#available_layouts_for_select" do
+    let(:layouts) { ["layout1", "bbb.test.layout2", "Wëird Chárs"] }
+    let(:expected) { ["layout1", "layout2", "Wëird Chárs"] }
+    let(:config) { FactoryGirl.create(:bigbluebutton_server_config, available_layouts: layouts) }
+
+    before {
+      I18n.stub(:t) { |value|
+        case value
+        when "bigbluebutton_rails.server_configs.layouts.layout1"
+          "Layout1 Localized"
+        when "bigbluebutton_rails.server_configs.layouts.layout2"
+          "Layout2 Localized"
+        when "bigbluebutton_rails.server_configs.layouts.weird_chars"
+          "Weird Localized"
+        else
+          nil
+        end
+      }
+    }
+
+    it {
+      config.available_layouts_for_select.should eql(
+        [
+          ['Layout1 Localized', 'layout1'],
+          ['Layout2 Localized', 'bbb.test.layout2'],
+          ['Weird Localized', 'Wëird Chárs']
+        ]
+      )
+    }
+  end
 end

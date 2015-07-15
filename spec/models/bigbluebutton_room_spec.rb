@@ -33,6 +33,10 @@ describe BigbluebuttonRoom do
   it { should delegate(:auto_start_audio).to(:room_options) }
   it { should delegate(:"auto_start_audio=").to(:room_options) }
 
+  it { should delegate(:available_layouts).to(:server) }
+  it { should delegate(:available_layouts_names).to(:server) }
+  it { should delegate(:available_layouts_for_select).to(:server) }
+
   it { should validate_presence_of(:meetingid) }
   it { should validate_uniqueness_of(:meetingid) }
   it { should ensure_length_of(:meetingid).is_at_least(1).is_at_most(100) }
@@ -1281,22 +1285,6 @@ describe BigbluebuttonRoom do
       it("the job should have the correct parameters") { subject['args'].should eq([room.id]) }
     end
   end
-
-  describe "#available_layouts" do
-    let(:room) { FactoryGirl.create(:bigbluebutton_room) }
-    let(:layout1) { "bbb.layout.name.defaultlayout" }
-    let(:layout2) { "LayoutWithoutTranslation" }
-    before {
-      mock_server_and_api
-      room.server = mocked_server
-    }
-    before {
-      BigbluebuttonServerConfig.any_instance.should_receive(:available_layouts).
-        and_return([layout1, layout2])
-    }
-    it { room.available_layouts.should == [I18n.t(layout1), layout2] }
-  end
-
 end
 
 def get_create_params(room, user=nil)

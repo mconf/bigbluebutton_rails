@@ -12,7 +12,10 @@ describe BigbluebuttonServer do
 
   it { should have_one(:config).dependent(:destroy) }
   it { should delegate(:update_config).to(:config) }
+
   it { should delegate(:available_layouts).to(:config) }
+  it { should delegate(:available_layouts_names).to(:config) }
+  it { should delegate(:available_layouts_for_select).to(:config) }
 
   it { should validate_presence_of(:name) }
   it { should validate_presence_of(:url) }

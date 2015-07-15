@@ -43,7 +43,7 @@ class BigbluebuttonServerConfig < ActiveRecord::Base
   # Returns an array of arrays for showing layouts in a select.
   # The first member of the internal array is the layout's name, the second is the
   # layout's ID (the raw value used to set the layout in the webconf server).
-  def available_layouts_with_names
+  def available_layouts_for_select
     available_layouts_names.zip(available_layouts)
   end
 end
