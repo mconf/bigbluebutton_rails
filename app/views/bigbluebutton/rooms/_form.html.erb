@@ -81,6 +81,18 @@
     <%= f.text_field :duration %>
   </div>
   <div class="field">
+    <%= f.label :moderator_only_message %><br />
+    <%= f.text_field :moderator_only_message %><br />
+  </div>
+  <div class="field">
+    <%= f.label :auto_start_recording %><br />
+    <%= f.check_box :auto_start_recording %><br />
+  </div>
+  <div class="field">
+    <%= f.label :allow_start_stop_recording %><br />
+    <%= f.check_box :allow_start_stop_recording %><br />
+  </div>
+  <div class="field">
     <b>Metadata</b> (by default we have 10 metadata in this view, but it's not limited to it)<br />
     <%= f.fields_for :metadata do |metadata_form| %>
       <%= metadata_form.label :name %>

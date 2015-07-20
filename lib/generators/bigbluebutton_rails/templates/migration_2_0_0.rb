@@ -24,6 +24,10 @@ class BigbluebuttonRailsTo200 < ActiveRecord::Migration
       t.text :available_layouts
       t.timestamps
     end
+
+    add_column :bigbluebutton_rooms, :moderator_only_message, :string
+    add_column :bigbluebutton_rooms, :auto_start_recording, :boolean
+    add_column :bigbluebutton_rooms, :allow_start_stop_recording, :boolean
   end
 
   def self.down
@@ -39,5 +43,8 @@ class BigbluebuttonRailsTo200 < ActiveRecord::Migration
     remove_column :bigbluebutton_playback_formats, :playback_type_id
     add_index :bigbluebutton_rooms, :voice_bridge, :unique => true
     drop_table :bigbluebutton_server_configs
+    remove_column :bigbluebutton_rooms, :moderator_only_message
+    remove_column :bigbluebutton_rooms, :auto_start_recording
+    remove_column :bigbluebutton_rooms, :allow_start_stop_recording
   end
 end

@@ -48,7 +48,7 @@ class BigbluebuttonServer < ActiveRecord::Base
 
   validates :version,
             :presence => true,
-            :inclusion => { :in => ['0.7', '0.8'] }
+            :inclusion => { :in => ['0.7', '0.8', '0.9'] }
 
   # Array of <tt>BigbluebuttonMeeting</tt>
   attr_reader :meetings

@@ -447,7 +447,10 @@ class BigbluebuttonRoom < ActiveRecord::Base
       :welcome => self.welcome_msg.blank? ? default_welcome_message : self.welcome_msg,
       :dialNumber => self.dial_number,
       :logoutURL => self.full_logout_url || self.logout_url,
-      :maxParticipants => self.max_participants
+      :maxParticipants => self.max_participants,
+      :moderatorOnlyMessage => self.moderator_only_message,
+      :autoStartRecording => self.auto_start_recording,
+      :allowStartStopRecording => self.allow_start_stop_recording
     }.merge(user_opts)
 
     # Set the voice bridge only if the gem is configured to do so and the voice bridge
