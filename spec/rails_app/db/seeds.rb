@@ -13,7 +13,7 @@ if File.exists?(file)
   else
     server = config['servers'][config['servers'].keys.first]
   end
-  server['version'] = '0.7' unless server.has_key?('version')
+  server['version'] = '0.9' unless server.has_key?('version')
   server['name'] = URI.parse(server['url']).host
   server.delete('mobile_salt') if server.has_key?('mobile_salt')
 

@@ -69,12 +69,12 @@ describe BigbluebuttonServer do
   end
 
   context "supported versions" do
-    it { should allow_value('0.7').for(:version) }
     it { should allow_value('0.8').for(:version) }
     it { should allow_value('0.9').for(:version) }
     it { should_not allow_value('').for(:version) }
     it { should_not allow_value('0.64').for(:version) }
     it { should_not allow_value('0.6').for(:version) }
+    it { should_not allow_value('0.7').for(:version) }
   end
 
   context "param format" do
