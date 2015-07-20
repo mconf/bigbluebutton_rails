@@ -3,8 +3,8 @@ class BigbluebuttonRailsTo200 < ActiveRecord::Migration
   def self.up
     create_table :bigbluebutton_playback_types do |t|
       t.string :identifier
-      t.boolean :visible, :default => false
-      t.boolean :default, :default => false
+      t.boolean :visible, default: false
+      t.boolean :default, default: false
       t.timestamps
     end
 
@@ -26,8 +26,8 @@ class BigbluebuttonRailsTo200 < ActiveRecord::Migration
     end
 
     add_column :bigbluebutton_rooms, :moderator_only_message, :string
-    add_column :bigbluebutton_rooms, :auto_start_recording, :boolean
-    add_column :bigbluebutton_rooms, :allow_start_stop_recording, :boolean
+    add_column :bigbluebutton_rooms, :auto_start_recording, :boolean, default: false
+    add_column :bigbluebutton_rooms, :allow_start_stop_recording, :boolean, default: true
   end
 
   def self.down
