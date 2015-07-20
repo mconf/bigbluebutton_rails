@@ -8,9 +8,10 @@ Gem::Specification.new do |s|
   s.summary     = "BigBlueButton integration for Ruby on Rails"
   s.email       = "mconf-dev@googlegroups.com"
   s.homepage    = "http://github.com/mconf/bigbluebutton_rails"
-  s.description = "It allows you to interact with BigBlueButton from your Ruby on Rails application"
-  s.authors     = ['Mconf', 'Leonardo Crauss Daronco']
-  s.license     = 'MIT'
+  s.description = "Allows access and use of BigBlueButton from a Ruby on Rails application"
+  s.authors     = ["Mconf", "Leonardo Crauss Daronco"]
+  s.email       = ["contact@mconf.org", "leonardodaronco@gmail.com"]
+  s.license     = "MIT"
 
   s.files         = `git ls-files`.split("\n")
   s.test_files    = `git ls-files -- {test,spec,features}/*`.split("\n")
