@@ -71,6 +71,7 @@ describe BigbluebuttonServer do
   context "supported versions" do
     it { should allow_value('0.7').for(:version) }
     it { should allow_value('0.8').for(:version) }
+    it { should allow_value('0.9').for(:version) }
     it { should_not allow_value('').for(:version) }
     it { should_not allow_value('0.64').for(:version) }
     it { should_not allow_value('0.6').for(:version) }
@@ -125,7 +126,7 @@ describe BigbluebuttonServer do
 
       # updating any of these attributes should update the api
       { :url => 'http://anotherurl.com/bigbluebutton/api',
-        :salt => '12345-abcde-67890-fghijk', :version => '0.8' }.each do |k,v|
+        :salt => '12345-abcde-67890-fghijk', :version => '0.9' }.each do |k,v|
         it {
           server.send("#{k}=", v)
           server.api.send(k).should == v
@@ -312,7 +313,7 @@ describe BigbluebuttonServer do
     end
 
     context "on after save" do
-      let(:server) { FactoryGirl.create(:bigbluebutton_server, version: "0.7") }
+      let(:server) { FactoryGirl.create(:bigbluebutton_server, version: "0.8") }
 
       context "if #url changed" do
         before { server.should_receive(:update_config).once }
@@ -326,7 +327,7 @@ describe BigbluebuttonServer do
 
       context "if #version changed" do
         before { server.should_receive(:update_config).once }
-        it { server.update_attributes(version: "0.8") }
+        it { server.update_attributes(version: "0.9") }
       end
 
       context "not if any other attribute changed" do

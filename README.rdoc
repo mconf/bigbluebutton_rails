@@ -27,7 +27,8 @@ Possible future features:
 
 The current version of this gem supports <tt>all</tt> the following versions of BigBlueButton:
 
-* 0.81: Altough not all features are supported yet. (See {TODO.rdoc}[https://github.com/mconf/bigbluebutton_rails/blob/master/TODO.rdoc].)
+* 0.9
+* 0.81
 * 0.8
 
 === Ruby

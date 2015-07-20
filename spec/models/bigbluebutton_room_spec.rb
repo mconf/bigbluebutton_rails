@@ -785,8 +785,8 @@ describe BigbluebuttonRoom do
     describe "#fetch_new_token" do
       let(:config_xml) {
         '<config>
-           <localeversion suppressWarning="false">0.8</localeversion>
-           <version>0.8</version>
+           <localeversion suppressWarning="false">0.9.0</localeversion>
+           <version>264</version>
            <layout showLogButton="false" showVideoLayout="false" showResetLayout="false" defaultLayout="Webinar" showToolbar="true" showFooter="true" showMeetingName="true" showHelpButton="true" showLogoutWindow="true" showLayoutTools="true" showNetworkMonitor="true" confirmLogout="true"/>
            <modules>
              <module name="LayoutModule" url="http://server.test/client/LayoutModule.swf?v=15" uri="rtmp://server.test/bigbluebutton" layoutConfig="http://server.test/client/conf/layout.xml" enableEdit="true"/>

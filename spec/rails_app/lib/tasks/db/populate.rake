@@ -28,7 +28,7 @@ namespace :db do
         :name => "Server #{n1}",
         :url => "http://bigbluebutton#{n1}.test.com/bigbluebutton/api",
         :salt => Forgery(:basic).password(:at_least => 30, :at_most => 40),
-        :version => '0.8',
+        :version => '0.9',
         :param => "server-#{n1}"
       }
       puts "- Creating server #{params[:name]}"
