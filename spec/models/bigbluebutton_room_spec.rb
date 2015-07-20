@@ -1296,7 +1296,10 @@ def get_create_params(room, user=nil)
     :welcome  => room.welcome_msg,
     :dialNumber => room.dial_number,
     :logoutURL => room.logout_url,
-    :maxParticipants => room.max_participants
+    :maxParticipants => room.max_participants,
+    :moderatorOnlyMessage => room.moderator_only_message,
+    :autoStartRecording => room.auto_start_recording,
+    :allowStartStopRecording => room.allow_start_stop_recording
   }
   room.metadata.each { |meta| params["meta_#{meta.name}"] = meta.content }
   unless user.nil?
