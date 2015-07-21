@@ -20,7 +20,6 @@ describe BigbluebuttonServer do
   it { should validate_presence_of(:name) }
   it { should validate_presence_of(:url) }
   it { should validate_presence_of(:salt) }
-  it { should validate_presence_of(:version) }
   it { should validate_presence_of(:param) }
 
   context "uniqueness of" do
@@ -71,7 +70,8 @@ describe BigbluebuttonServer do
   context "supported versions" do
     it { should allow_value('0.8').for(:version) }
     it { should allow_value('0.9').for(:version) }
-    it { should_not allow_value('').for(:version) }
+    # Empty value means we will fetch it from the server later.
+    it { should allow_value('').for(:version) }
     it { should_not allow_value('0.64').for(:version) }
     it { should_not allow_value('0.6').for(:version) }
     it { should_not allow_value('0.7').for(:version) }
@@ -317,11 +317,13 @@ describe BigbluebuttonServer do
 
       context "if #url changed" do
         before { server.should_receive(:update_config).once }
+        before { server.should_receive(:force_version_update).once }
         it { server.update_attributes(url: server.url + "-2") }
       end
 
       context "if #salt changed" do
         before { server.should_receive(:update_config).once }
+        before { server.should_receive(:force_version_update).once }
         it { server.update_attributes(salt: server.salt + "-2") }
       end
 
