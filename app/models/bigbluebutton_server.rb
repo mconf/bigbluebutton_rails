@@ -47,8 +47,8 @@ class BigbluebuttonServer < ActiveRecord::Base
             :length => { :minimum => 1, :maximum => 500 }
 
   validates :version,
-            :presence => true,
-            :inclusion => { :in => ['0.8', '0.9'] }
+            :inclusion => { :in => ['0.8', '0.9'] },
+            :allow_blank => true
 
   # Array of <tt>BigbluebuttonMeeting</tt>
   attr_reader :meetings
@@ -59,6 +59,7 @@ class BigbluebuttonServer < ActiveRecord::Base
   after_create :create_config
   after_create :update_config
 
+  after_update :check_for_version_update
   after_update :check_for_config_update
 
   # In case there's no config created yet, build one.
@@ -71,8 +72,12 @@ class BigbluebuttonServer < ActiveRecord::Base
   # <tt>bigbluebutton-api-ruby</tt>) associated with this server.
   def api
     if @api.nil?
-      @api = BigBlueButton::BigBlueButtonApi.new(self.url, self.salt,
-                                                 self.version.to_s, false)
+      if self.version.blank?
+        force_version_update
+      else
+        @api = BigBlueButton::BigBlueButtonApi.new(self.url, self.salt,
+                                                   self.version.to_s, false)
+      end
     end
     @api
   end
@@ -168,6 +173,24 @@ class BigbluebuttonServer < ActiveRecord::Base
 
   def create_config
     BigbluebuttonServerConfig.create(server: self)
+  end
+
+  def force_version_update
+    @api = BigBlueButton::BigBlueButtonApi.new(self.url, self.salt,
+                                               nil, false)
+    unless self.update_attributes(version: @api.version)
+      raise BigBlueButton::BigBlueButtonException.new("BigBlueButton error: Invalid API version #{version}")
+    end
+  end
+
+  def check_for_version_update
+    # If the user only changes the version, the if fails and we assume he's trying
+    # to force an API version.
+    # If the user changes url/salt AND the version, we also assume that he wants
+    # to force the API version, except when the version field is left empty.
+    if [:url, :salt].any? { |k| self.changes.key?(k) }
+      force_version_update unless self.changes.key?(:version) and self.version.present?
+    end
   end
 
   def check_for_config_update
