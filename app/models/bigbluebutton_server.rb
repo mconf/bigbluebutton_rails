@@ -179,7 +179,7 @@ class BigbluebuttonServer < ActiveRecord::Base
     @api = BigBlueButton::BigBlueButtonApi.new(self.url, self.salt,
                                                nil, false)
     unless self.update_attributes(version: @api.version)
-      raise BigBlueButton::BigBlueButtonException.new("BigBlueButton error: Invalid API version #{version}")
+      raise BigBlueButton::BigBlueButtonException.new("BigBlueButton error: Invalid API version #{@api.version}")
     end
   end
 
