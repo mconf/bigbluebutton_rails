@@ -218,15 +218,25 @@ The list of meetings is also periodically synchronized using Resque-scheduler (s
 
 === Associating rooms and servers
 
-Rooms must be associated with a server to function. When a meeting is created, it is created in the server that's associated with the room. The association is done using the `server_id` attribute in `BigbluebuttonRoom`. So applications that use this gem can manage all the associations by simply setting this attribute.
+Rooms must be associated with a server to function. When a meeting is created, it is created in the
+server that's associated with the room. The association is done using the <tt>server_id</tt>
+attribute in <tt>BigbluebuttonRoom</tt>. So applications that use this gem can manage all the
+associations by simply setting this attribute.
 
-By default, this gem automatically selects a server **if one is needed and the room has no server yet**. If a room already has a server, the gem never change it.
+By default, this gem automatically selects a server <b>if one is needed and the room has no server
+yet</b>. If a room already has a server, the gem will never change it.
 
-To change this behavior, applications can override the method <tt>{BigbluebuttonRoom#select_server}[https://github.com/mconf/bigbluebutton_rails/blob/5decf3fa7767002303cf8bda524dcbeca0a9146c/app/models/bigbluebutton_room.rb#L413]</tt>. This method is called by all methods that trigger API calls and therefore need a server to be set in the room. It receives a parameter that indicates which API call will be sent to the server.
+To change this behavior, applications can override the method
+<tt>{BigbluebuttonRoom#select_server}[https://github.com/mconf/bigbluebutton_rails/blob/5decf3fa7767002303cf8bda524dcbeca0a9146c/app/models/bigbluebutton_room.rb#L413]</tt>.
+This method is called by all methods that trigger API calls, methods that need a server to work
+properly. It receives a parameter that indicates which API call will be sent to the server.
 
-If the method returns a server, the server will be associated with the room. If the method returns `nil`, the room will maintain the server it had previously, if any.
+If the method returns a server, the server will be associated with the room. If the method
+returns <tt>nil</tt>, the room will maintain the server it had previously (if any).
 
-One common use would be to override this method to always select a new server when a meeting is created (when the argument received is `:create`). This would allow the implementation of a simple load balancing mechanism.
+One common use would be to override this method to always select a new server when a meeting is
+created (when the argument received is <tt>:create</tt>). This would allow the implementation
+of a simple load balancing mechanism.
 
 
 === Example application
