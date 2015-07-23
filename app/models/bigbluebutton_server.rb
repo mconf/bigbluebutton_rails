@@ -178,6 +178,7 @@ class BigbluebuttonServer < ActiveRecord::Base
   def force_version_update
     @api = BigBlueButton::BigBlueButtonApi.new(self.url, self.salt,
                                                nil, false)
+
     unless self.update_attributes(version: @api.version)
       raise BigBlueButton::BigBlueButtonException.new("BigBlueButton error: Invalid API version #{@api.version}")
     end
@@ -189,7 +190,7 @@ class BigbluebuttonServer < ActiveRecord::Base
     # If the user changes url/salt AND the version, we also assume that he wants
     # to force the API version, except when the version field is left empty.
     if [:url, :salt].any? { |k| self.changes.key?(k) }
-      force_version_update unless self.changes.key?(:version) and self.version.present?
+      force_version_update unless self.changes.key?(:version) and self.changes[:version].present?
     end
   end
 
