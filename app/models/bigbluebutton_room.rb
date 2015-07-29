@@ -27,9 +27,6 @@ class BigbluebuttonRoom < ActiveRecord::Base
   delegate :auto_start_video, :auto_start_video=, :to => :room_options
   delegate :auto_start_audio, :auto_start_audio=, :to => :room_options
   delegate :background, :background=, :to => :room_options
-  delegate :available_layouts, to: :server
-  delegate :available_layouts_names, to: :server
-  delegate :available_layouts_for_select, to: :server
 
   accepts_nested_attributes_for :metadata,
     :allow_destroy => true,
@@ -374,6 +371,18 @@ class BigbluebuttonRoom < ActiveRecord::Base
     else
       nil
     end
+  end
+
+  def available_layouts
+    server.present? ? server.available_layouts : []
+  end
+
+  def available_layouts_names
+    server.present? ? server.available_layouts_names : []
+  end
+
+  def available_layouts_for_select
+    server.present? ? server.available_layouts_for_select : []
   end
 
   protected

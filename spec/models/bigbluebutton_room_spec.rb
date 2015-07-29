@@ -36,10 +36,6 @@ describe BigbluebuttonRoom do
   it { should delegate(:background).to(:room_options) }
   it { should delegate(:"background=").to(:room_options) }
 
-  it { should delegate(:available_layouts).to(:server) }
-  it { should delegate(:available_layouts_names).to(:server) }
-  it { should delegate(:available_layouts_for_select).to(:server) }
-
   it { should validate_presence_of(:meetingid) }
   it { should validate_uniqueness_of(:meetingid) }
   it { should ensure_length_of(:meetingid).is_at_least(1).is_at_most(100) }
@@ -837,6 +833,57 @@ describe BigbluebuttonRoom do
       end
     end
 
+  end
+
+  context "#available_layouts" do
+    context "delegates to server" do
+      let(:room) { FactoryGirl.build(:bigbluebutton_room) }
+      let(:layouts) { [ 'layout-1', 'another layout' ] }
+      before {
+        room.server.should_receive(:available_layouts)
+          .and_return(layouts)
+      }
+      it { room.available_layouts.should eql(layouts) }
+    end
+
+    context "returns and empty array if the server is nil" do
+      let(:room) { FactoryGirl.build(:bigbluebutton_room, server: nil) }
+      it { room.available_layouts.should eql([]) }
+    end
+  end
+
+  context "#available_layouts_names" do
+    context "delegates to server" do
+      let(:room) { FactoryGirl.build(:bigbluebutton_room) }
+      let(:layouts) { [ 'layout-1', 'another layout' ] }
+      before {
+        room.server.should_receive(:available_layouts_names)
+          .and_return(layouts)
+      }
+      it { room.available_layouts_names.should eql(layouts) }
+    end
+
+    context "returns and empty array if the server is nil" do
+      let(:room) { FactoryGirl.build(:bigbluebutton_room, server: nil) }
+      it { room.available_layouts_names.should eql([]) }
+    end
+  end
+
+  context "#available_layouts_for_select" do
+    context "delegates to server" do
+      let(:room) { FactoryGirl.build(:bigbluebutton_room) }
+      let(:layouts) { [ 'layout-1', 'another layout' ] }
+      before {
+        room.server.should_receive(:available_layouts_for_select)
+          .and_return(layouts)
+      }
+      it { room.available_layouts_for_select.should eql(layouts) }
+    end
+
+    context "returns and empty array if the server is nil" do
+      let(:room) { FactoryGirl.build(:bigbluebutton_room, server: nil) }
+      it { room.available_layouts_for_select.should eql([]) }
+    end
   end
 
   context "validates keys" do
