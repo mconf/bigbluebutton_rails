@@ -13,17 +13,17 @@ class BigbluebuttonRoomOptions < ActiveRecord::Base
   # xml (string):: The config.xml in which the attributes will be set
   def set_on_config_xml(xml)
     config_xml = BigBlueButton::BigBlueButtonConfigXml.new(xml)
-    unless self.default_layout.blank?
+    if self.default_layout.present?
       config_xml.set_attribute("layout", "defaultLayout", self.default_layout, false)
     end
-    if self.presenter_share_only.present?
+    unless self.presenter_share_only.nil?
       config_xml.set_attribute("VideoconfModule", "presenterShareOnly", self.presenter_share_only, true)
       config_xml.set_attribute("PhoneModule", "presenterShareOnly", self.presenter_share_only, true)
     end
-    if self.auto_start_video.present?
+    unless self.auto_start_video.nil?
       config_xml.set_attribute("VideoconfModule", "autoStart", self.auto_start_video, true)
     end
-    if self.auto_start_audio.present?
+    unless self.auto_start_audio.nil?
       config_xml.set_attribute("PhoneModule", "autoJoin", self.auto_start_audio, true)
     end
     if self.background.present?
@@ -38,9 +38,12 @@ class BigbluebuttonRoomOptions < ActiveRecord::Base
 
   # Returns true if any of the attributes was set. Is used to check whether the options
   # have to be sent to the server (setConfigXML) or not.
+  # Note: have to use ".nil?" for booleans, otherwise setting it to 'false' would be
+  # taken as not setting it.
   def is_modified?
-    methods = [ :default_layout, :presenter_share_only, :auto_start_audio,
-                :auto_start_video, :background ]
-    methods.any? { |method| self.send(method).present? }
+    booleans = [ :presenter_share_only, :auto_start_audio, :auto_start_video ]
+    others = [ :default_layout, :background ]
+    booleans.any? { |method| !self.send(method).nil? } ||
+      others.any? { |method| self.send(method).present? }
   end
 end

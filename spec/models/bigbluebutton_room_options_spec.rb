@@ -55,38 +55,26 @@ describe BigbluebuttonRoomOptions do
 
     context "if the xml did not change" do
       before {
-        room_options.update_attributes(:default_layout => "AnyLayout",
-                                       :presenter_share_only => false,
-                                       :auto_start_video => false,
-                                       :auto_start_audio => false,
-                                       :background => "http://mconf.org/anything")
-        BigBlueButton::BigBlueButtonConfigXml.any_instance
-          .should_receive(:set_attribute)
-          .with('layout', 'defaultLayout', "AnyLayout", false)
-        BigBlueButton::BigBlueButtonConfigXml.any_instance
-          .should_receive(:set_attribute)
-          .with('VideoconfModule', 'presenterShareOnly', false, true)
-        BigBlueButton::BigBlueButtonConfigXml.any_instance
-          .should_receive(:set_attribute)
-          .with('PhoneModule', 'presenterShareOnly', false, true)
-        BigBlueButton::BigBlueButtonConfigXml.any_instance
-          .should_receive(:set_attribute)
-          .with('VideoconfModule', 'autoStart', false, true)
-        BigBlueButton::BigBlueButtonConfigXml.any_instance
-          .should_receive(:set_attribute)
-          .with('PhoneModule', 'autoJoin', false, true)
-        BigBlueButton::BigBlueButtonConfigXml.any_instance
-          .should_receive(:set_attribute)
-          .with('branding', 'background', "http://mconf.org/anything", false)
+        BigBlueButton::BigBlueButtonConfigXml.stub(:set_attribute)
 
        BigBlueButton::BigBlueButtonConfigXml.any_instance
           .should_receive(:is_modified?).and_return(false)
       }
       subject { room_options.set_on_config_xml(config_xml) }
-      it("returns false") { should be_falsey }
+      it("returns false") { should be(false) }
     end
 
     context "if #default_layout is" do
+      context "a valid string" do
+        before {
+          room_options.update_attributes(:default_layout => "my layout")
+          BigBlueButton::BigBlueButtonConfigXml.any_instance
+            .should_receive(:set_attribute)
+            .with('layout', 'defaultLayout', "my layout", anything)
+        }
+        it("sets the property in the xml") { room_options.set_on_config_xml(config_xml) }
+      end
+
       context "nil" do
         before {
           room_options.update_attributes(:default_layout => nil)
@@ -121,6 +109,32 @@ describe BigbluebuttonRoomOptions do
         }
         it("doesn't set the property in the xml") { room_options.set_on_config_xml(config_xml) }
       end
+
+      context "true" do
+        before {
+          room_options.update_attributes(:presenter_share_only => true)
+          BigBlueButton::BigBlueButtonConfigXml.any_instance
+            .should_receive(:set_attribute)
+            .with('VideoconfModule', 'presenterShareOnly', true, anything)
+          BigBlueButton::BigBlueButtonConfigXml.any_instance
+            .should_receive(:set_attribute)
+            .with('PhoneModule', 'presenterShareOnly', true, anything)
+        }
+        it("sets the property in the xml") { room_options.set_on_config_xml(config_xml) }
+      end
+
+      context "false" do
+        before {
+          room_options.update_attributes(:presenter_share_only => false)
+          BigBlueButton::BigBlueButtonConfigXml.any_instance
+            .should_receive(:set_attribute)
+            .with('VideoconfModule', 'presenterShareOnly', false, anything)
+          BigBlueButton::BigBlueButtonConfigXml.any_instance
+            .should_receive(:set_attribute)
+            .with('PhoneModule', 'presenterShareOnly', false, anything)
+        }
+        it("sets the property in the xml") { room_options.set_on_config_xml(config_xml) }
+      end
     end
 
     context "if #auto_start_video is" do
@@ -132,6 +146,26 @@ describe BigbluebuttonRoomOptions do
             .with('VideoconfModule', 'autoStart', anything, anything)
         }
         it("doesn't set the property in the xml") { room_options.set_on_config_xml(config_xml) }
+      end
+
+      context "true" do
+        before {
+          room_options.update_attributes(:auto_start_video => true)
+          BigBlueButton::BigBlueButtonConfigXml.any_instance
+            .should_receive(:set_attribute)
+            .with('VideoconfModule', 'autoStart', true, anything)
+        }
+        it("sets the property in the xml") { room_options.set_on_config_xml(config_xml) }
+      end
+
+      context "false" do
+        before {
+          room_options.update_attributes(:auto_start_video => false)
+          BigBlueButton::BigBlueButtonConfigXml.any_instance
+            .should_receive(:set_attribute)
+            .with('VideoconfModule', 'autoStart', false, anything)
+        }
+        it("sets the property in the xml") { room_options.set_on_config_xml(config_xml) }
       end
     end
 
@@ -145,9 +179,39 @@ describe BigbluebuttonRoomOptions do
         }
         it("doesn't set the property in the xml") {room_options.set_on_config_xml(config_xml) }
       end
+
+      context "true" do
+        before {
+          room_options.update_attributes(:auto_start_audio => true)
+          BigBlueButton::BigBlueButtonConfigXml.any_instance
+            .should_receive(:set_attribute)
+            .with('PhoneModule', 'autoJoin', true, anything)
+        }
+        it("sets the property in the xml") {room_options.set_on_config_xml(config_xml) }
+      end
+
+      context "false" do
+        before {
+          room_options.update_attributes(:auto_start_audio => false)
+          BigBlueButton::BigBlueButtonConfigXml.any_instance
+            .should_receive(:set_attribute)
+            .with('PhoneModule', 'autoJoin', false, anything)
+        }
+        it("sets the property in the xml") {room_options.set_on_config_xml(config_xml) }
+      end
     end
 
     context "if #background is" do
+      context "a valid string" do
+        before {
+          room_options.update_attributes(:background => "my background")
+          BigBlueButton::BigBlueButtonConfigXml.any_instance
+            .should_receive(:set_attribute)
+            .with('branding', 'background', 'my background', anything)
+        }
+        it("sets the property in the xml") { room_options.set_on_config_xml(config_xml) }
+      end
+
       context "nil" do
         before {
           room_options.update_attributes(:background => nil)
@@ -168,7 +232,6 @@ describe BigbluebuttonRoomOptions do
         it("doesn't set the property in the xml") { room_options.set_on_config_xml(config_xml) }
       end
     end
-
   end
 
   describe "#is_modified?" do
