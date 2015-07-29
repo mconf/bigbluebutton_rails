@@ -24,7 +24,8 @@ describe BigbluebuttonRoomOptions do
         room_options.update_attributes(:default_layout => "AnyLayout",
                                        :presenter_share_only => true,
                                        :auto_start_video => false,
-                                       :auto_start_audio => false)
+                                       :auto_start_audio => false,
+                                       :background => "http://mconf.org/anything")
         BigBlueButton::BigBlueButtonConfigXml.any_instance
           .should_receive(:set_attribute)
           .with('layout', 'defaultLayout', "AnyLayout", false)
@@ -41,6 +42,9 @@ describe BigbluebuttonRoomOptions do
           .should_receive(:set_attribute)
           .with('PhoneModule', 'autoJoin', false, true)
         BigBlueButton::BigBlueButtonConfigXml.any_instance
+          .should_receive(:set_attribute)
+          .with('branding', 'background', "http://mconf.org/anything", false)
+        BigBlueButton::BigBlueButtonConfigXml.any_instance
           .should_receive(:is_modified?).and_return(true)
         BigBlueButton::BigBlueButtonConfigXml.any_instance
           .should_receive(:as_string).and_return('new xml as string')
@@ -54,7 +58,8 @@ describe BigbluebuttonRoomOptions do
         room_options.update_attributes(:default_layout => "AnyLayout",
                                        :presenter_share_only => false,
                                        :auto_start_video => false,
-                                       :auto_start_audio => false)
+                                       :auto_start_audio => false,
+                                       :background => "http://mconf.org/anything")
         BigBlueButton::BigBlueButtonConfigXml.any_instance
           .should_receive(:set_attribute)
           .with('layout', 'defaultLayout', "AnyLayout", false)
@@ -71,6 +76,10 @@ describe BigbluebuttonRoomOptions do
           .should_receive(:set_attribute)
           .with('PhoneModule', 'autoJoin', false, true)
         BigBlueButton::BigBlueButtonConfigXml.any_instance
+          .should_receive(:set_attribute)
+          .with('branding', 'background', "http://mconf.org/anything", false)
+
+       BigBlueButton::BigBlueButtonConfigXml.any_instance
           .should_receive(:is_modified?).and_return(false)
       }
       subject { room_options.set_on_config_xml(config_xml) }
@@ -138,61 +147,95 @@ describe BigbluebuttonRoomOptions do
       end
     end
 
+    context "if #background is" do
+      context "nil" do
+        before {
+          room_options.update_attributes(:background => nil)
+          BigBlueButton::BigBlueButtonConfigXml.any_instance
+            .should_not_receive(:set_attribute)
+            .with('branding', 'background', anything, anything)
+        }
+        it("doesn't set the property in the xml") {room_options.set_on_config_xml(config_xml) }
+      end
+
+      context "empty string" do
+        before {
+          room_options.update_attributes(:background => "")
+          BigBlueButton::BigBlueButtonConfigXml.any_instance
+            .should_not_receive(:set_attribute)
+            .with('branding', 'background', anything, anything)
+        }
+        it("doesn't set the property in the xml") { room_options.set_on_config_xml(config_xml) }
+      end
+    end
+
   end
 
   describe "#is_modified?" do
     context "if default_layout is set" do
       before { room_options.update_attributes(:default_layout => 'Any') }
       subject { room_options.is_modified? }
-      it("returns true") { should be_truthy }
+      it { should be(true) }
     end
 
     context "if default_layout is not set" do
       before { room_options.update_attributes(:default_layout => nil) }
       subject { room_options.is_modified? }
-      it("returns false") { should be_falsey }
+      it { should be(false) }
     end
 
     context "if default_layout is empty" do
       before { room_options.update_attributes(:default_layout => "") }
       subject { room_options.is_modified? }
-      it("returns true") { should be_truthy }
+      it { should be(false) }
     end
 
     context "if presenter_share_only is set" do
       before { room_options.update_attributes(:presenter_share_only => true) }
       subject { room_options.is_modified? }
-      it("returns true") { should be_truthy}
+      it { should be(true) }
     end
 
     context "if presenter_share_only is not set" do
       before { room_options.update_attributes(:presenter_share_only => nil) }
       subject { room_options.is_modified? }
-      it("returns false") { should be_falsey }
+      it { should be(false) }
     end
 
     context "if auto_start_video is set" do
       before { room_options.update_attributes(:auto_start_video => true) }
       subject { room_options.is_modified? }
-      it("returns true") { should be_truthy}
+      it { should be(true) }
     end
 
     context "if auto_start_video is not set" do
       before { room_options.update_attributes(:auto_start_video => nil) }
       subject { room_options.is_modified? }
-      it("returns false" ) { should be_falsey }
+      it { should be(false) }
     end
 
     context "if auto_start_audio is set" do
       before { room_options.update_attributes(:auto_start_audio => true) }
       subject { room_options.is_modified? }
-      it("returns true") { should be_truthy}
+      it { should be(true) }
     end
 
     context "if auto_start_audio is not set" do
       before { room_options.update_attributes(:auto_start_audio => nil) }
       subject { room_options.is_modified? }
-      it("returns false" ) { should be_falsey }
+      it { should be(false) }
+    end
+
+    context "if background is set" do
+      before { room_options.update_attributes(:background => true) }
+      subject { room_options.is_modified? }
+      it { should be(true) }
+    end
+
+    context "if background is not set" do
+      before { room_options.update_attributes(:background => nil) }
+      subject { room_options.is_modified? }
+      it { should be(false) }
     end
   end
 

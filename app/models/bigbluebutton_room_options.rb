@@ -16,15 +16,18 @@ class BigbluebuttonRoomOptions < ActiveRecord::Base
     unless self.default_layout.blank?
       config_xml.set_attribute("layout", "defaultLayout", self.default_layout, false)
     end
-    unless self.presenter_share_only.nil?
+    if self.presenter_share_only.present?
       config_xml.set_attribute("VideoconfModule", "presenterShareOnly", self.presenter_share_only, true)
       config_xml.set_attribute("PhoneModule", "presenterShareOnly", self.presenter_share_only, true)
     end
-    unless self.auto_start_video.nil?
+    if self.auto_start_video.present?
       config_xml.set_attribute("VideoconfModule", "autoStart", self.auto_start_video, true)
     end
-    unless self.auto_start_audio.nil?
+    if self.auto_start_audio.present?
       config_xml.set_attribute("PhoneModule", "autoJoin", self.auto_start_audio, true)
+    end
+    if self.background.present?
+      config_xml.set_attribute("branding", "background", self.background, false)
     end
     if config_xml.is_modified?
       config_xml.as_string
@@ -36,7 +39,8 @@ class BigbluebuttonRoomOptions < ActiveRecord::Base
   # Returns true if any of the attributes was set. Is used to check whether the options
   # have to be sent to the server (setConfigXML) or not.
   def is_modified?
-    !self.default_layout.nil? || !self.presenter_share_only.nil? || !self.auto_start_audio.nil? ||
-    !self.auto_start_video.nil?
+    methods = [ :default_layout, :presenter_share_only, :auto_start_audio,
+                :auto_start_video, :background ]
+    methods.any? { |method| self.send(method).present? }
   end
 end

@@ -30,6 +30,7 @@ pt-br:
         attendee_key: "Chave para participantes"
         auto_start_video: "Auto iniciar vídeo"
         auto_start_audio: "Auto iniciar áudio"
+        background: "Imagem de fundo"
         auto_start_recording: "Auto iniciar gravação"
         default_layout: "Layout Padrão"
         dial_number: "Número de discagem"

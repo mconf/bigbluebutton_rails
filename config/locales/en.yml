@@ -30,6 +30,7 @@ en:
         attendee_key: "Key for attendees"
         auto_start_video: "Auto start video"
         auto_start_audio: "Auto start audio"
+        background: "Background image"
         auto_start_recording: "Auto start recording"
         default_layout: "Default Layout"
         dial_number: "Dial Number"

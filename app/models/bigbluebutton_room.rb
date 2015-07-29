@@ -26,6 +26,7 @@ class BigbluebuttonRoom < ActiveRecord::Base
   delegate :presenter_share_only, :presenter_share_only=, :to => :room_options
   delegate :auto_start_video, :auto_start_video=, :to => :room_options
   delegate :auto_start_audio, :auto_start_audio=, :to => :room_options
+  delegate :background, :background=, :to => :room_options
   delegate :available_layouts, to: :server
   delegate :available_layouts_names, to: :server
   delegate :available_layouts_for_select, to: :server

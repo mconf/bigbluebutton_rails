@@ -45,6 +45,7 @@ class CreateBigbluebuttonRails < ActiveRecord::Migration
       t.boolean :presenter_share_only
       t.boolean :auto_start_video
       t.boolean :auto_start_audio
+      t.string :background
       t.timestamps
     end
     add_index :bigbluebutton_room_options, :room_id

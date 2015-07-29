@@ -33,6 +33,9 @@ describe BigbluebuttonRoom do
   it { should delegate(:auto_start_audio).to(:room_options) }
   it { should delegate(:"auto_start_audio=").to(:room_options) }
 
+  it { should delegate(:background).to(:room_options) }
+  it { should delegate(:"background=").to(:room_options) }
+
   it { should delegate(:available_layouts).to(:server) }
   it { should delegate(:available_layouts_names).to(:server) }
   it { should delegate(:available_layouts_for_select).to(:server) }
