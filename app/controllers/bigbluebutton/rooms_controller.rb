@@ -319,7 +319,9 @@ class Bigbluebutton::RoomsController < ApplicationController
       unless @room.fetch_is_running?
         if bigbluebutton_can_create?(@room, role)
           user_opts = bigbluebutton_create_options(@room)
-          @room.create_meeting(bigbluebutton_user, request, user_opts)
+          if @room.create_meeting(bigbluebutton_user, request, user_opts)
+            logger.info "Meeting created: id: #{@room.meetingid}, name: #{@room.name}, created_by: #{bigbluebutton_user.username}, time: #{Time.now.iso8601}"
+          end
         else
           flash[:error] = t('bigbluebutton_rails.rooms.errors.join.cannot_create')
           redirect_to_on_join_error
