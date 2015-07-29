@@ -32,7 +32,7 @@ class BigbluebuttonServer < ActiveRecord::Base
             :presence => true,
             :uniqueness => true,
             :length => { :maximum => 500 },
-            :format => { :with => /http:\/\/.*\/bigbluebutton\/api/,
+            :format => { :with => /http[s]?:\/\/.*\/bigbluebutton\/api/,
                          :message => I18n.t('bigbluebutton_rails.servers.errors.url_format') }
 
   validates :param,
