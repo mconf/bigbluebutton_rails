@@ -30,6 +30,8 @@ class BigbluebuttonRailsTo200 < ActiveRecord::Migration
     add_column :bigbluebutton_rooms, :allow_start_stop_recording, :boolean, default: true
 
     add_column :bigbluebutton_room_options, :background, :string
+
+    add_column :bigbluebutton_recordings, :size, :integer, default: 0
   end
 
   def self.down
@@ -49,5 +51,6 @@ class BigbluebuttonRailsTo200 < ActiveRecord::Migration
     remove_column :bigbluebutton_rooms, :auto_start_recording
     remove_column :bigbluebutton_rooms, :allow_start_stop_recording
     remove_column :bigbluebutton_room_options, :background
+    remove_column :bigbluebutton_recordings, :size, :integer
   end
 end
