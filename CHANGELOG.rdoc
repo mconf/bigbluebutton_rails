@@ -15,6 +15,7 @@ To learn how to migrate to 2.0.0 see: https://github.com/mconf/bigbluebutton_rai
 * Join calls now use the parameter <tt>createTime</tt>. See https://code.google.com/p/bigbluebutton/wiki/API#join
 * Add translation to pt-br.
 * Support for BigBlueButton 0.9 (includes all 0.9.x).
+* Add attribute `size` to recordings (currently on Mconf-Live only). Works even if the web conference server doesn't have it.
 
 == 1.4.0
 
