@@ -24,14 +24,15 @@ en:
         recordid: "Record ID"
         room_id: "Room ID"
         server_id: "Server ID"
+        size: "Size"
         start_time: "Start Time"
       bigbluebutton_room:
         allow_start_stop_recording: "Allow users to start/stop recording"
         attendee_key: "Key for attendees"
         auto_start_video: "Auto start video"
         auto_start_audio: "Auto start audio"
-        background: "Background image"
         auto_start_recording: "Auto start recording"
+        background: "Background image"
         default_layout: "Default Layout"
         dial_number: "Dial Number"
         duration: Duration
@@ -65,7 +66,6 @@ en:
       bigbluebutton_room: "Web Conference Room"
       bigbluebutton_server: "Web Conference Server"
       bigbluebutton_server_config: "Web Conference Server Configurations"
-  bbb:
   bigbluebutton_rails:
     bigbluebutton: BigBlueButton
     metadata:

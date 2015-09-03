@@ -23,6 +23,7 @@ pt-br:
         published: Publicada
         recordid: "ID da Gravação"
         room_id: "ID da Sala"
+        size: "Tamanho"
         server_id: "ID do Servidor"
         start_time: "Horário de Início"
       bigbluebutton_room:
@@ -30,8 +31,8 @@ pt-br:
         attendee_key: "Chave para participantes"
         auto_start_video: "Auto iniciar vídeo"
         auto_start_audio: "Auto iniciar áudio"
-        background: "Imagem de fundo"
         auto_start_recording: "Auto iniciar gravação"
+        background: "Imagem de fundo"
         default_layout: "Layout Padrão"
         dial_number: "Número de discagem"
         duration: Duração
