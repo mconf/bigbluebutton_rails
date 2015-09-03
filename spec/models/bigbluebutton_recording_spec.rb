@@ -69,6 +69,7 @@ describe BigbluebuttonRecording do
          :published => true,
          :startTime => DateTime.now,
          :endTime => DateTime.now + 2.hours,
+         :size => 100,
          :metadata => {
            :course => "Fundamentals of JAVA",
            :description => "List of recordings",
@@ -109,6 +110,7 @@ describe BigbluebuttonRecording do
       it { @recording.server.should == new_server }
       it { @recording.room.should == @room }
       it { @recording.available.should == true }
+      it { @recording.size.should == 100 }
       it { @recording.metadata.count.should == 3 }
       3.times do |i|
         it { @recording.metadata[i].name.should == data[0][:metadata].keys[i].to_s }
@@ -140,6 +142,7 @@ describe BigbluebuttonRecording do
       it { @recording.server.should == new_server }
       it { @recording.room.should == @room }
       it { @recording.available.should == true }
+      it { @recording.size.should == 100 }
       it { @recording.metadata.count.should == 3 }
       3.times do |i|
         it { @recording.metadata[i].name.should == data[0][:metadata].keys[i].to_s }
@@ -250,26 +253,39 @@ describe BigbluebuttonRecording do
         :published => !old_attrs[:published],
         :start_time => attrs[:start_time],
         :end_time => attrs[:end_time],
+        :size => attrs[:size],
         :metadata => { :any => "any" },
         :playback => { :format => [ { :type => "any1" }, { :type => "any2" } ] }
       }
     }
     let(:new_server) { FactoryGirl.create(:bigbluebutton_server) }
 
-    before {
-      @room = FactoryGirl.create(:bigbluebutton_room, :meetingid => attrs[:meetingid])
-      BigbluebuttonRecording.should_receive(:sync_additional_data)
-        .with(recording, data)
-      BigbluebuttonRecording.send(:update_recording, new_server, recording, data)
-    }
-    it { recording.recordid.should == old_attrs[:recordid] } # not updated
-    it { recording.meetingid.should == attrs[:meetingid] }
-    it { recording.name.should == attrs[:name] }
-    it { recording.published.should == !old_attrs[:published] }
-    it { recording.end_time.utc.to_i.should == attrs[:end_time].utc.to_i }
-    it { recording.start_time.utc.to_i.should == attrs[:start_time].utc.to_i }
-    it { recording.server.should == new_server }
-    it { recording.room.should == @room }
+    context "default behavior" do
+      before {
+        @room = FactoryGirl.create(:bigbluebutton_room, :meetingid => attrs[:meetingid])
+        BigbluebuttonRecording.should_receive(:sync_additional_data)
+          .with(recording, data)
+        BigbluebuttonRecording.send(:update_recording, new_server, recording, data)
+      }
+      it { recording.recordid.should == old_attrs[:recordid] } # not updated
+      it { recording.meetingid.should == attrs[:meetingid] }
+      it { recording.name.should == attrs[:name] }
+      it { recording.published.should == !old_attrs[:published] }
+      it { recording.end_time.utc.to_i.should == attrs[:end_time].utc.to_i }
+      it { recording.start_time.utc.to_i.should == attrs[:start_time].utc.to_i }
+      it { recording.size.should == attrs[:size] }
+      it { recording.server.should == new_server }
+      it { recording.room.should == @room }
+    end
+
+    context "works if the recording returned has no :size attribute" do
+      before {
+        data.delete(:size)
+        recording.update_attributes(size: 0)
+        BigbluebuttonRecording.send(:update_recording, new_server, recording, data)
+      }
+      it { recording.size.should == 0 }
+    end
   end
 
   describe ".create_recording" do

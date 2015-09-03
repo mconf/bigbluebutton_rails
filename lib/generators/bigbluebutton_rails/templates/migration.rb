@@ -62,6 +62,7 @@ class CreateBigbluebuttonRails < ActiveRecord::Migration
       t.datetime :end_time
       t.boolean :available, :default => true
       t.string :description
+      t.integer :bigbluebutton_recordings, :size, default: 0
       t.timestamps
     end
     add_index :bigbluebutton_recordings, :room_id
