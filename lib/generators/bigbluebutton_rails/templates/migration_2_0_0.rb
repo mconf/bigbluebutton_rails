@@ -31,7 +31,7 @@ class BigbluebuttonRailsTo200 < ActiveRecord::Migration
 
     add_column :bigbluebutton_room_options, :background, :string
 
-    add_column :bigbluebutton_recordings, :size, :integer, default: 0
+    add_column :bigbluebutton_recordings, :size, :integer, limit: 8, default: 0
   end
 
   def self.down

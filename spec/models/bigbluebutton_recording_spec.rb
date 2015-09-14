@@ -20,6 +20,13 @@ describe BigbluebuttonRecording do
 
   it { should have_many(:playback_formats).dependent(:destroy) }
 
+  describe "#size" do
+    # make sure it's a bigint
+    it { should allow_value(-9223372036854775808).for(:size) }
+    it { should allow_value(0).for(:size) }
+    it { should allow_value(9223372036854775807).for(:size) }
+  end
+
   context "scopes" do
 
     describe "#published" do
