@@ -47,7 +47,7 @@ class BigbluebuttonServer < ActiveRecord::Base
             :length => { :minimum => 1, :maximum => 500 }
 
   validates :version,
-            :inclusion => { :in => ['0.8', '0.9'] },
+            :inclusion => { :in => ['0.8', '0.81', '0.9'] },
             :allow_blank => true
 
   # Array of <tt>BigbluebuttonMeeting</tt>
@@ -59,7 +59,7 @@ class BigbluebuttonServer < ActiveRecord::Base
   after_create :create_config
   after_create :update_config
 
-  after_update :check_for_version_update
+  before_update :check_for_version_update
   after_update :check_for_config_update
 
   # In case there's no config created yet, build one.
@@ -71,15 +71,11 @@ class BigbluebuttonServer < ActiveRecord::Base
   # Returns the API object (<tt>BigBlueButton::BigBlueButtonAPI</tt> defined in
   # <tt>bigbluebutton-api-ruby</tt>) associated with this server.
   def api
-    if @api.nil?
-      if self.version.blank?
-        force_version_update
-      else
-        @api = BigBlueButton::BigBlueButtonApi.new(self.url, self.salt,
-                                                   self.version.to_s, false)
-      end
-    end
-    @api
+    return @api if @api.present?
+
+    version = self.version
+    version = force_version_update if version.blank?
+    @api = BigBlueButton::BigBlueButtonApi.new(self.url, self.salt, version.to_s, false)
   end
 
   # Fetches the meetings currently created in the server (running or not).
@@ -176,21 +172,22 @@ class BigbluebuttonServer < ActiveRecord::Base
   end
 
   def force_version_update
-    @api = BigBlueButton::BigBlueButtonApi.new(self.url, self.salt,
-                                               nil, false)
-
-    unless self.update_attributes(version: @api.version)
-      raise BigBlueButton::BigBlueButtonException.new("BigBlueButton error: Invalid API version #{@api.version}")
-    end
+    # creating the object with version=nil makes the gem fetch the version from the server
+    api = BigBlueButton::BigBlueButtonApi.new(self.url, self.salt, nil, false)
+    self.version = api.version
+    self.version
   end
 
+  # Checks if we have to update the server version or not and do it if needed.
+  # If the user only changes the version, we assume he's trying to force an API version.
+  # If the user changes url/salt and the version, we also assume that he wants
+  # to force the API version
   def check_for_version_update
-    # If the user only changes the version, the if fails and we assume he's trying
-    # to force an API version.
-    # If the user changes url/salt AND the version, we also assume that he wants
-    # to force the API version, except when the version field is left empty.
-    if [:url, :salt].any? { |k| self.changes.key?(k) }
-      force_version_update unless self.changes.key?(:version) and self.changes[:version].present?
+    url_salt_changed = [:url, :salt].any? { |k| self.changes.key?(k) }
+    version_changed = self.changes.key?(:version) && self.changes[:version][1] && !self.changes[:version][1].blank?
+    version_empty = self.version.blank?
+    if (url_salt_changed && !version_changed) || version_empty
+      self.force_version_update
     end
   end
 

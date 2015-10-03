@@ -149,7 +149,7 @@ describe Bigbluebutton::ServersController do
         let(:new_server) { FactoryGirl.build(:bigbluebutton_server) }
 
         before :each do
-          BigbluebuttonServer.any_instance.should_receive(:force_version_update).and_return(anything)
+          BigbluebuttonServer.any_instance.stub(:force_version_update)
           expect {
             put :update, id: @server.to_param, bigbluebutton_server: new_server.attributes
           }.not_to change{ BigbluebuttonServer.count }
