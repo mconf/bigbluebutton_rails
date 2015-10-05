@@ -18,9 +18,9 @@ require "generator_spec/test_case"
 require "generators/bigbluebutton_rails/install_generator"
 require "generators/bigbluebutton_rails/views_generator"
 
-# Loading more in this block will cause your tests to run faster. However,
-# if you change any configuration or code from libraries loaded here, you'll
-# need to restart spork for it take effect.
+# Disable all external HTTP requests by default
+require 'webmock/rspec'
+WebMock.disable_net_connect!(allow_localhost: true)
 
 ActionMailer::Base.delivery_method = :test
 ActionMailer::Base.perform_deliveries = true

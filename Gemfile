@@ -25,14 +25,14 @@ group :test do
   gem "rspec-rails", '~> 2.99.0'
   gem 'rspec-activemodel-mocks'
   gem "bbbot-ruby", :git => "git://github.com/mconf/bbbot-ruby.git"
-
-  # to use redis in-memory and clean it in-between tests, used for resque
-  gem "fakeredis", :require => "fakeredis/rspec"
-
   gem "capybara", "~> 2.2.0"
   gem "capybara-mechanize" # for remote requests
   gem "capybara-webkit" # best option found for js
   gem "launchy"
+  gem "webmock"
+
+  # to use redis in-memory and clean it in-between tests, used for resque
+  gem "fakeredis", :require => "fakeredis/rspec"
 end
 
 # Gems used by the test application
