@@ -206,7 +206,7 @@ describe Bigbluebutton::ServersController do
     context "with :redir_url" do
       context "on success" do
         before(:each) {
-          BigbluebuttonServer.any_instance.should_receive(:force_version_update).and_return(anything)
+          BigbluebuttonServer.any_instance.should_receive(:set_api_version_from_server).and_return(anything)
           put :update, :id => @server.to_param, :bigbluebutton_server => new_server.attributes, :redir_url => '/any'
         }
         it { should respond_with(:redirect) }
@@ -227,7 +227,7 @@ describe Bigbluebutton::ServersController do
       let!(:other_server) { FactoryGirl.create(:bigbluebutton_server) }
       before { controller.instance_variable_set(:@server, other_server) }
       before(:each) {
-        BigbluebuttonServer.any_instance.should_receive(:force_version_update).and_return(anything)
+        BigbluebuttonServer.any_instance.should_receive(:set_api_version_from_server).and_return(anything)
         put :update, :id => @server.to_param, :bigbluebutton_server => new_server.attributes
       }
       it { should assign_to(:server).with(other_server) }

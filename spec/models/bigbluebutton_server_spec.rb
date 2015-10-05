@@ -332,7 +332,7 @@ describe BigbluebuttonServer do
 
     context "on after save" do
       let(:server) { FactoryGirl.create(:bigbluebutton_server, version: "0.8") }
-      before { server.stub(:force_version_update) }
+      before { server.stub(:set_api_version_from_server) }
 
       context "if #url changed" do
         before { server.should_receive(:update_config).once }
@@ -356,7 +356,7 @@ describe BigbluebuttonServer do
     end
   end
 
-  describe "triggers #force_version_update" do
+  describe "triggers #set_api_version_from_server" do
 
     context "on after save" do
       let(:server) { FactoryGirl.create(:bigbluebutton_server, version: "0.8") }
@@ -364,28 +364,28 @@ describe BigbluebuttonServer do
       context "when the model is created" do
         it {
           s = FactoryGirl.build(:bigbluebutton_server, version: nil)
-          s.should_receive(:force_version_update).once
+          s.should_receive(:set_api_version_from_server).once
           s.save
         }
       end
 
       context "if #url changed" do
-        before { server.should_receive(:force_version_update).once }
+        before { server.should_receive(:set_api_version_from_server).once }
         it { server.update_attributes(url: server.url + "-2") }
       end
 
       context "if #salt changed" do
-        before { server.should_receive(:force_version_update).once }
+        before { server.should_receive(:set_api_version_from_server).once }
         it { server.update_attributes(salt: server.salt + "-2") }
       end
 
       context "if #version changed" do
-        before { server.should_receive(:force_version_update).once }
+        before { server.should_receive(:set_api_version_from_server).once }
         it { server.update_attributes(version: "0.9") }
       end
 
       context "not if #name changed" do
-        before { server.should_not_receive(:force_version_update) }
+        before { server.should_not_receive(:set_api_version_from_server) }
         it { server.update_attributes(name: server.name + "-2") }
       end
 

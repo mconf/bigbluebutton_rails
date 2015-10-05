@@ -74,7 +74,7 @@ class BigbluebuttonServer < ActiveRecord::Base
     return @api if @api.present?
 
     version = self.version
-    version = force_version_update if version.blank?
+    version = set_api_version_from_server if version.blank?
     @api = BigBlueButton::BigBlueButtonApi.new(self.url, self.salt, version.to_s, false)
   end
 
@@ -153,6 +153,20 @@ class BigbluebuttonServer < ActiveRecord::Base
     self.param
   end
 
+  def set_api_version_from_server
+    begin
+      # creating the object with version=nil makes the gem fetch the version from the server
+      api = BigBlueButton::BigBlueButtonApi.new(self.url, self.salt, nil, false)
+      self.version = api.version
+    rescue BigBlueButton::BigBlueButtonException
+      # we just ignore errors in case the server is not responding
+      # in these cases, the version will be fetched later on
+      Rails.logger.error "Could not fetch the API version from the server #{self.id}. The URL probably incorrect."
+      self.version = nil
+    end
+    self.version
+  end
+
   protected
 
   def init
@@ -171,27 +185,13 @@ class BigbluebuttonServer < ActiveRecord::Base
     BigbluebuttonServerConfig.create(server: self)
   end
 
-  def force_version_update
-    begin
-      # creating the object with version=nil makes the gem fetch the version from the server
-      api = BigBlueButton::BigBlueButtonApi.new(self.url, self.salt, nil, false)
-      self.version = api.version
-    rescue BigBlueButton::BigBlueButtonException
-      # we just ignore errors in case the server is not responding
-      # in these cases, the version will be fetched later on
-      Rails.logger.error "Could not fetch the API version from the server #{self.id}. The URL probably incorrect."
-      self.version = nil
-    end
-    self.version
-  end
-
   # Checks if we have to update the server version or not and do it if needed.
   # If the user only changes the version, we assume he's trying to force an API version.
   # If the user changes url/salt and the version, we also assume that he wants
   # to force the API version
   def check_for_version_update
     if [:url, :salt, :version].any? { |k| self.changes.key?(k) }
-      self.force_version_update
+      self.set_api_version_from_server
     end
   end
 

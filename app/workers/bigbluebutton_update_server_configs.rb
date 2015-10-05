@@ -7,7 +7,12 @@ class BigbluebuttonUpdateServerConfigs
     Rails.logger.info "BigbluebuttonUpdateServerConfigs worker running"
     BigbluebuttonServer.find_each do |server|
       Rails.logger.info "BigbluebuttonUpdateServerConfigs updating configs for #{server.inspect}"
+
+      # update configs
       server.update_config
+
+      # update API version
+      server.update_attributes(version: server.set_api_version_from_server)
     end
   end
 end

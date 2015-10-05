@@ -70,7 +70,7 @@ describe Bigbluebutton::ServersController do
 
       context "on success" do
         before(:each) {
-          BigbluebuttonServer.any_instance.stub(:force_version_update)
+          BigbluebuttonServer.any_instance.stub(:set_api_version_from_server)
           put :update, :id => @server.to_param, :bigbluebutton_server => new_server.attributes, :format => 'json'
         }
         it { should respond_with(:success) }
