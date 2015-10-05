@@ -35,6 +35,13 @@ describe Bigbluebutton::ServersController do
       let(:new_server) { FactoryGirl.build(:bigbluebutton_server) }
 
       context "on success" do
+        before {
+          api_mock = double(BigBlueButton::BigBlueButtonApi)
+          api_mock.stub(:version).and_return("0.9")
+          api_mock.stub(:get_default_config_xml)
+          api_mock.stub(:get_available_layouts)
+          BigBlueButton::BigBlueButtonApi.stub(:new).and_return(api_mock)
+        }
         before(:each) {
           post :create, :bigbluebutton_server => new_server.attributes, :format => 'json'
         }

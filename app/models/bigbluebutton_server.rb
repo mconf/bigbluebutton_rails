@@ -59,7 +59,7 @@ class BigbluebuttonServer < ActiveRecord::Base
   after_create :create_config
   after_create :update_config
 
-  before_update :check_for_version_update
+  before_save :check_for_version_update
   after_update :check_for_config_update
 
   # In case there's no config created yet, build one.
@@ -172,9 +172,16 @@ class BigbluebuttonServer < ActiveRecord::Base
   end
 
   def force_version_update
-    # creating the object with version=nil makes the gem fetch the version from the server
-    api = BigBlueButton::BigBlueButtonApi.new(self.url, self.salt, nil, false)
-    self.version = api.version
+    begin
+      # creating the object with version=nil makes the gem fetch the version from the server
+      api = BigBlueButton::BigBlueButtonApi.new(self.url, self.salt, nil, false)
+      self.version = api.version
+    rescue BigBlueButton::BigBlueButtonException
+      # we just ignore errors in case the server is not responding
+      # in these cases, the version will be fetched later on
+      Rails.logger.error "Could not fetch the API version from the server #{self.id}. The URL probably incorrect."
+      self.version = nil
+    end
     self.version
   end
 
@@ -183,10 +190,7 @@ class BigbluebuttonServer < ActiveRecord::Base
   # If the user changes url/salt and the version, we also assume that he wants
   # to force the API version
   def check_for_version_update
-    url_salt_changed = [:url, :salt].any? { |k| self.changes.key?(k) }
-    version_changed = self.changes.key?(:version) && self.changes[:version][1] && !self.changes[:version][1].blank?
-    version_empty = self.version.blank?
-    if (url_salt_changed && !version_changed) || version_empty
+    if [:url, :salt, :version].any? { |k| self.changes.key?(k) }
       self.force_version_update
     end
   end

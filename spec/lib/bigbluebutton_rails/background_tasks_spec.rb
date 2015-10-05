@@ -9,6 +9,8 @@ describe BigbluebuttonRails::BackgroundTasks do
       let!(:meeting) { FactoryGirl.create(:bigbluebutton_meeting, running: true, room: room) }
       before {
         BigBlueButton::BigBlueButtonApi.any_instance
+          .stub(:get_api_version).and_return("0.9")
+        BigBlueButton::BigBlueButtonApi.any_instance
           .should_receive(:is_meeting_running?).once.with(room.meetingid).and_return(false)
       }
       before(:each) { BigbluebuttonRails::BackgroundTasks.finish_meetings }
@@ -19,6 +21,8 @@ describe BigbluebuttonRails::BackgroundTasks do
       let(:room) { FactoryGirl.create(:bigbluebutton_room) }
       let!(:meeting) { FactoryGirl.create(:bigbluebutton_meeting, running: true, room: room) }
       before {
+        BigBlueButton::BigBlueButtonApi.any_instance
+          .stub(:get_api_version).and_return("0.9")
         BigBlueButton::BigBlueButtonApi.any_instance
           .should_receive(:is_meeting_running?).once.with(room.meetingid).and_return(true)
       }

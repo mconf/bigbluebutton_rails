@@ -197,7 +197,7 @@ class Bigbluebutton::ServersController < ApplicationController
   end
 
   def server_allowed_params
-    [ :name, :url, :version, :salt, :param ]
+    [ :name, :url, :salt, :param ]
   end
 
 end

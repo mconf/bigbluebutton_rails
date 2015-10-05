@@ -116,10 +116,6 @@ describe BigbluebuttonServer do
     let(:server) { FactoryGirl.build(:bigbluebutton_server) }
     it { should respond_to(:api) }
     it { server.api.should_not be_nil }
-    it {
-      server.save
-      server.api.should_not be_nil
-    }
 
     context "with the correct attributes" do
       let(:api) { BigBlueButton::BigBlueButtonApi.new(server.url, server.salt, server.version, false) }
@@ -365,6 +361,14 @@ describe BigbluebuttonServer do
     context "on after save" do
       let(:server) { FactoryGirl.create(:bigbluebutton_server, version: "0.8") }
 
+      context "when the model is created" do
+        it {
+          s = FactoryGirl.build(:bigbluebutton_server, version: nil)
+          s.should_receive(:force_version_update).once
+          s.save
+        }
+      end
+
       context "if #url changed" do
         before { server.should_receive(:force_version_update).once }
         it { server.update_attributes(url: server.url + "-2") }
@@ -375,57 +379,12 @@ describe BigbluebuttonServer do
         it { server.update_attributes(salt: server.salt + "-2") }
       end
 
-      context "if #url and #salt changed" do
+      context "if #version changed" do
         before { server.should_receive(:force_version_update).once }
-        it { server.update_attributes(url: server.url + "-2", salt: server.salt + "-2") }
-      end
-
-      context "if #url changed and #version if empty" do
-        before { server.should_receive(:force_version_update).once }
-        it { server.update_attributes(url: server.url + "-2", version: "") }
-      end
-
-      context "if #url changed and #version is nil" do
-        before { server.should_receive(:force_version_update).once }
-        it { server.update_attributes(url: server.url + "-2", version: nil) }
-      end
-
-      context "if #salt changed and #version if empty" do
-        before { server.should_receive(:force_version_update).once }
-        it { server.update_attributes(salt: server.salt + "-2", version: "") }
-      end
-
-      context "if #salt changed and #version is nil" do
-        before { server.should_receive(:force_version_update).once }
-        it { server.update_attributes(salt: server.salt + "-2", version: nil) }
-      end
-
-      context "if #version only changed to nil" do
-        before { server.should_receive(:force_version_update).once }
-        it { server.update_attributes(version: nil) }
-      end
-
-      context "if #version only changed to empty" do
-        before { server.should_receive(:force_version_update).once }
-        it { server.update_attributes(version: "") }
-      end
-
-      context "not if #version only changed" do
-        before { server.should_not_receive(:force_version_update) }
         it { server.update_attributes(version: "0.9") }
       end
 
-      context "not if #salt changed and #version too" do
-        before { server.should_not_receive(:force_version_update) }
-        it { server.update_attributes(salt: server.salt + "-2", version: "0.9") }
-      end
-
-      context "not if #url changed and #version too" do
-        before { server.should_not_receive(:force_version_update) }
-        it { server.update_attributes(url: server.url + "-2", version: "0.9") }
-      end
-
-      context "not if any other attribute changed" do
+      context "not if #name changed" do
         before { server.should_not_receive(:force_version_update) }
         it { server.update_attributes(name: server.name + "-2") }
       end
@@ -438,20 +397,30 @@ describe BigbluebuttonServer do
         let(:old_version) { "0.9" }
         let(:server) { FactoryGirl.create(:bigbluebutton_server, version: version_from_api) }
 
-        before {
-          api_mock = double(BigBlueButton::BigBlueButtonApi)
-          api_mock.stub(:version).and_return(version_from_api)
-          api_mock.stub(:get_default_config_xml)
-          api_mock.stub(:get_available_layouts)
-          BigBlueButton::BigBlueButtonApi.stub(:new).and_return(api_mock)
-        }
-
         context "if #version was set to empty" do
+          before {
+            api_mock = double(BigBlueButton::BigBlueButtonApi)
+            api_mock.stub(:version).and_return(version_from_api)
+            api_mock.stub(:get_default_config_xml)
+            api_mock.stub(:get_available_layouts)
+            BigBlueButton::BigBlueButtonApi.stub(:new).and_return(api_mock)
+          }
           it {
             server.update_attributes(version: "")
             server.reload.version.should eql(version_from_api)
           }
         end
+
+        context "doesn't raise an exception if the server is offline" do
+          before {
+            BigBlueButton::BigBlueButtonApi.stub(:new) { raise BigBlueButton::BigBlueButtonException.new('test exception') }
+          }
+          it {
+            server.update_attributes(url: "http://insert-any-invalid-url.mconf.org/bigbluebutton/api")
+            server.reload.version.should be_nil
+          }
+        end
+
       end
     end
   end

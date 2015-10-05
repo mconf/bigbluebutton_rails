@@ -88,7 +88,7 @@ describe Bigbluebutton::ServersController do
       let(:attrs) { FactoryGirl.attributes_for(:bigbluebutton_server) }
       let(:params) { { :bigbluebutton_server => attrs } }
       let(:allowed_params) {
-        [ :name, :url, :version, :salt, :param ]
+        [ :name, :url, :salt, :param ]
       }
 
       it {
@@ -145,71 +145,25 @@ describe Bigbluebutton::ServersController do
     before { @server = server } # need this to trigger let(:server) and actually create the object
 
     context "on success" do
-      context "if the user does not force a version to be used" do
-        let(:new_server) { FactoryGirl.build(:bigbluebutton_server) }
+      let(:new_server) { FactoryGirl.build(:bigbluebutton_server, version: "") }
 
-        before :each do
-          BigbluebuttonServer.any_instance.stub(:force_version_update)
-          expect {
-            put :update, id: @server.to_param, bigbluebutton_server: new_server.attributes
-          }.not_to change{ BigbluebuttonServer.count }
-        end
-        it {
-          saved = BigbluebuttonServer.find(@server)
-          should respond_with(:redirect)
-          should redirect_to(bigbluebutton_server_path(saved))
-        }
-        it {
-          saved = BigbluebuttonServer.find(@server)
-          saved.should have_same_attributes_as(new_server)
-        }
-        it { should set_the_flash.to(I18n.t('bigbluebutton_rails.servers.notice.update.success')) }
-      end
-
-      context "if the version field is blank in the update" do
-        let(:new_server) { FactoryGirl.build(:bigbluebutton_server, version: "") }
-
-        before {
-          BigBlueButton::BigBlueButtonApi.any_instance.should_receive(:get_api_version).and_return("0.9")
-          expect {
-            put :update, id: @server.to_param, bigbluebutton_server: new_server.attributes
-          }.not_to change { BigbluebuttonServer.count }
-        }
-        it {
-          saved = BigbluebuttonServer.find(@server)
-          should respond_with(:redirect)
-          should redirect_to(bigbluebutton_server_path(saved))
-        }
-        it {
-          saved = BigbluebuttonServer.find(@server)
-          saved.should_not have_same_attributes_as(new_server)
-          saved.version.should == "0.9"
-        }
-        it { should set_the_flash.to(I18n.t('bigbluebutton_rails.servers.notice.update.success')) }
-      end
-
-      context "if the user forces a new version" do
-        let(:new_server) { FactoryGirl.build(:bigbluebutton_server, version: "0.8") }
-
-        before {
-          # Since a new and different version is informed, we should not query
-          # the api for a version and use the one the user set instead.
-          BigbluebuttonServer.any_instance.should_not_receive(:force_version_update)
-          expect {
-            put :update, id: @server.to_param, bigbluebutton_server: new_server.attributes
-          }.not_to change { BigbluebuttonServer.count }
-        }
-        it {
-          saved = BigbluebuttonServer.find(@server)
-          should respond_with(:redirect)
-          should redirect_to(bigbluebutton_server_path(saved))
-        }
-        it {
-          saved = BigbluebuttonServer.find(@server)
-          saved.should have_same_attributes_as(new_server)
-        }
-        it { should set_the_flash.to(I18n.t('bigbluebutton_rails.servers.notice.update.success')) }
-      end
+      before {
+        BigBlueButton::BigBlueButtonApi.any_instance.should_receive(:get_api_version).and_return("0.9")
+        expect {
+          put :update, id: @server.to_param, bigbluebutton_server: new_server.attributes
+        }.not_to change { BigbluebuttonServer.count }
+      }
+      it {
+        saved = BigbluebuttonServer.find(@server)
+        should respond_with(:redirect)
+        should redirect_to(bigbluebutton_server_path(saved))
+      }
+      it {
+        saved = BigbluebuttonServer.find(@server)
+        saved.should_not have_same_attributes_as(new_server)
+        saved.version.should == "0.9"
+      }
+      it { should set_the_flash.to(I18n.t('bigbluebutton_rails.servers.notice.update.success')) }
     end
 
     context "on failure" do
@@ -225,7 +179,7 @@ describe Bigbluebutton::ServersController do
       let(:attrs) { FactoryGirl.attributes_for(:bigbluebutton_server) }
       let(:params) { { :bigbluebutton_server => attrs } }
       let(:allowed_params) {
-        [ :name, :url, :version, :salt, :param ]
+        [ :name, :url, :salt, :param ]
       }
 
       it {
