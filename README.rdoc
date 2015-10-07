@@ -208,7 +208,7 @@ of what happened in the web conference servers connected to BigbluebuttonRails.
 The creating of these objects is done in background using a gem called {resque}[https://github.com/defunkt/resque].
 Whenever a user clicks in the button to join a meeting, a resque worker is scheduled. This worker
 will wait for a while until the meeting is created and running in the web conference server, and
-will then create the correponding <tt>BigbluebuttonMeeting</tt> object.
+will then create the corresponding <tt>BigbluebuttonMeeting</tt> object.
 
 To keep track of meetings, you have to run the resque workers (this is needed both in development and in production):
 
