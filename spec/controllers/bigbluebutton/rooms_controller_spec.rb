@@ -871,6 +871,51 @@ describe Bigbluebutton::RoomsController do
     it { should assign_to(:recordings).with([@recording1, @recording2]) }
   end
 
+  describe "#generate_dial_number" do
+    let(:http_referer) { bigbluebutton_room_path(room) }
+    before {
+      request.env["HTTP_REFERER"] = http_referer
+    }
+
+    context "on success" do
+      before(:each) {
+        BigbluebuttonRoom.any_instance.stub(:generate_dial_number!).and_return(true)
+        post :generate_dial_number, id: room.to_param
+      }
+      it { should respond_with(:redirect) }
+      it { should redirect_to(http_referer) }
+      it { should set_the_flash.to(I18n.t('bigbluebutton_rails.rooms.notice.generate_dial_number.success')) }
+    end
+
+    context "on error" do
+      before(:each) {
+        BigbluebuttonRoom.any_instance.stub(:generate_dial_number!).and_return(nil)
+        post :generate_dial_number, id: room.to_param
+      }
+      it { should respond_with(:redirect) }
+      it { should redirect_to(http_referer) }
+      it { should set_the_flash.to(I18n.t('bigbluebutton_rails.rooms.errors.generate_dial_number.not_unique')) }
+    end
+
+    context "uses params[:pattern]" do
+      before(:each) {
+        BigbluebuttonRoom.any_instance.stub(:generate_dial_number!).with("xxx-xxx").and_return(true)
+        post :generate_dial_number, id: room.to_param, pattern: "xxx-xxx"
+      }
+      it { should respond_with(:redirect) }
+      it { should redirect_to(http_referer) }
+    end
+
+    context "doesn't use params[:pattern] if it's blank" do
+      before(:each) {
+        BigbluebuttonRoom.any_instance.stub(:generate_dial_number!).with(nil).and_return(true)
+        post :generate_dial_number, id: room.to_param, pattern: ""
+      }
+      it { should respond_with(:redirect) }
+      it { should redirect_to(http_referer) }
+    end
+  end
+
   describe "before filter :set_request_headers" do
     let(:headers) { {"x-forwarded-for" => "0.0.0.0"} }
     let(:make_request) {  }

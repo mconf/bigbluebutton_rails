@@ -13,6 +13,7 @@ module BigbluebuttonRails
   require 'bigbluebutton_rails/background_tasks'
   require 'bigbluebutton_rails/rails/routes'
   require 'bigbluebutton_rails/exceptions'
+  require 'bigbluebutton_rails/dial_number'
 
   # Default controllers to generate the routes
   mattr_accessor :controllers

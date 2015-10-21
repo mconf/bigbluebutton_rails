@@ -220,6 +220,26 @@ class Bigbluebutton::RoomsController < ApplicationController
     respond_with(@recordings)
   end
 
+  def generate_dial_number
+    pattern = params[:pattern].blank? ? nil : params[:pattern]
+    if @room.generate_dial_number!(pattern)
+      message = t('bigbluebutton_rails.rooms.notice.generate_dial_number.success')
+      respond_with do |format|
+        format.html { redirect_to_using_params :back, notice: message }
+        format.json { render json: true, status: :ok }
+      end
+    else
+      message = t('bigbluebutton_rails.rooms.errors.generate_dial_number.not_unique')
+      respond_with do |format|
+        format.html {
+          flash[:error] = message
+          redirect_to_using_params :back
+        }
+        format.json { render json: { message: message }, status: :error }
+      end
+    end
+  end
+
   protected
 
   def find_room

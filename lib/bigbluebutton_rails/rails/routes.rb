@@ -111,6 +111,7 @@ module ActionDispatch::Routing
           post :join
           post :fetch_recordings
           get :recordings
+          post :generate_dial_number
         end
       end
     end

@@ -886,6 +886,56 @@ describe BigbluebuttonRoom do
     end
   end
 
+  context "#generate_dial_number!" do
+    let(:room) { FactoryGirl.create(:bigbluebutton_room) }
+
+    context "generates the dial number and saves in the room" do
+      before {
+        BigbluebuttonRails::DialNumber.stub(:randomize).and_return("(99) 1234-5678")
+      }
+      it { room.generate_dial_number!.should be(true) }
+      it {
+        room.generate_dial_number!
+        room.reload.dial_number.should eql("(99) 1234-5678")
+      }
+    end
+
+    context "uses the pattern informed" do
+      before {
+        BigbluebuttonRails::DialNumber.should_receive(:randomize).with("(99) 12xx-xxxx")
+      }
+      it { room.generate_dial_number!("(99) 12xx-xxxx").should be(true) }
+    end
+
+    # tries several times
+
+    context "tries to generate a unique number multiple times" do
+      let!(:another_room) { FactoryGirl.create(:bigbluebutton_room, dial_number: "(99) 1234-5678") }
+      before {
+        expect(BigbluebuttonRails::DialNumber).to receive(:randomize).exactly(19).times.and_return("(99) 1234-5678")
+        expect(BigbluebuttonRails::DialNumber).to receive(:randomize).and_return("(99) 1234-5679") # unique
+      }
+      it { room.generate_dial_number!.should be(true) }
+      it {
+        room.generate_dial_number!
+        room.reload.dial_number.should eql("(99) 1234-5679")
+      }
+    end
+
+    context "returns nil if can't generate a unique number" do
+      before { @previous_dn = room.dial_number }
+      let!(:another_room) { FactoryGirl.create(:bigbluebutton_room, dial_number: "(99) 1234-5678") }
+      before {
+        expect(BigbluebuttonRails::DialNumber).to receive(:randomize).exactly(20).times.and_return("(99) 1234-5678")
+      }
+      it { room.generate_dial_number!.should be_nil }
+      it {
+        room.generate_dial_number!
+        room.reload.dial_number.should eql(@previous_dn)
+      }
+    end
+  end
+
   context "validates keys" do
     context "for private rooms" do
       let(:room) { FactoryGirl.create(:bigbluebutton_room, :private => true) }

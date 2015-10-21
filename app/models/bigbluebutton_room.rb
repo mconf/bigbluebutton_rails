@@ -385,6 +385,21 @@ class BigbluebuttonRoom < ActiveRecord::Base
     server.present? ? server.available_layouts_for_select : []
   end
 
+  # Generates a new dial number following `pattern` and saves it in the room, returning
+  # the results of `update_attributes`.
+  # Will always generate a unique number. Tries several times if the number already
+  # exists and returns `nil` in case it wasn't possible to generate a unique value.
+  def generate_dial_number!(pattern=nil)
+    pattern ||= 'xxxx-xxxx'
+    20.times do
+      dn = BigbluebuttonRails::DialNumber.randomize(pattern)
+      if BigbluebuttonRoom.where(dial_number: dn).empty?
+        return self.update_attributes(dial_number: dn)
+      end
+    end
+    nil
+  end
+
   protected
 
   def create_room_options

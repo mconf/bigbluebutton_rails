@@ -175,5 +175,29 @@ describe Bigbluebutton::RoomsController do
       it "on error"
     end
 
+    describe "#generate_dial_number" do
+      context "on success" do
+        before(:each) {
+          BigbluebuttonRoom.any_instance.stub(:generate_dial_number!).and_return(true)
+          post :generate_dial_number, id: room.to_param, format: 'json'
+        }
+        it { should respond_with(:success) }
+        it { should respond_with_content_type('application/json') }
+      end
+
+      context "on error" do
+        before(:each) {
+          BigbluebuttonRoom.any_instance.stub(:generate_dial_number!).and_return(nil)
+          post :generate_dial_number, id: room.to_param, format: 'json'
+        }
+        it { should respond_with(:error) }
+        it { should respond_with_content_type('application/json') }
+        it {
+          error_msg = I18n.t('bigbluebutton_rails.rooms.errors.generate_dial_number.not_unique')
+          should respond_with_json({ :message => error_msg }.to_json)
+        }
+      end
+    end
+
   end
 end
