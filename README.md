@@ -77,6 +77,15 @@ Version 1.4.0 was the last one to support Rails 3.2. To use it, use the tag
 We recommend the use of MySQL in your application, since this gem is developed
 and tested using it.
 
+
+## Upgrade
+
+When updating the gem to a newer version, there are usually extra steps you'll have to take in order to have the database migrated, the dependencies updated, and others. These steps are described in [our wiki](https://github.com/mconf/bigbluebutton_rails/wiki). See:
+
+* [Migrate to 1.4.0](https://github.com/mconf/bigbluebutton_rails/wiki/Migrate-to-1.4.0)
+* [Migrate to 1.3.0](https://github.com/mconf/bigbluebutton_rails/wiki/Migrate-to-1.3.0)
+
+
 ## Installation
 
 You can install the latest version of BigbluebuttonRails using RubyGems:
