@@ -1,4 +1,4 @@
-# BigBlueButton on Rails
+# BigBlueButton on Rails [<img src="http://travis-ci.org/mconf/bigbluebutton_rails.png"/>](http://travis-ci.org/mconf/bigbluebutton_rails)
 
 [BigBlueButton](http://bigbluebutton.org) integration for Ruby on Rails 4.
 
