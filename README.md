@@ -1,7 +1,6 @@
 # BigBlueButton on Rails
 
 [BigBlueButton](http://bigbluebutton.org) integration for Ruby on Rails 4.
-(For Rails <= 3.2, see versions <= 1.4.0.)
 
 Features:
 
@@ -41,6 +40,10 @@ Possible future features:
 
 ## Supported versions
 
+This gem is mainly used with [Mconf-Web](https://github.com/mconf/mconf-web).
+You can always use it as a reference for verions of dependencies and examples of how to use the gem.
+
+
 ### BigBlueButton
 
 The current version of this gem supports `all` the following versions of
@@ -57,9 +60,9 @@ Tested in rubies:
 
 Requires ruby >= 1.9.3.
 
-* ruby-2.2.0 **recommended**
-* ruby-2.1.2
-* ruby-1.9.3 (p484)
+* ruby-2.2 **recommended**
+* ruby-2.1
+* ruby-1.9.3 (last tested with p484)
 
 
 Use these versions to be sure it will work. Other patches of these versions
@@ -67,10 +70,10 @@ should work as well.
 
 ### Rails
 
-To be used with **Rails 4** only.
+To be used with **Rails 4** only. Currently tested with Rails 4.1.
 
 Version 1.4.0 was the last one to support Rails 3.2. To use it, use the tag
-`{v1.4.0}[https://github.com/mconf/bigbluebutton_rails/tree/v1.4.0]`.
+[`v1.4.0`](https://github.com/mconf/bigbluebutton_rails/tree/v1.4.0).
 
 ### Database
 
@@ -401,8 +404,12 @@ Distributed under The MIT License (MIT). See
 
 ## Contact
 
-This project is developed as part of Mconf (http://mconf.org). Contact:
+This project is developed as part of Mconf (http://mconf.org).
 
+Mailing list:
+* mconf-dev@googlegroups.com
+
+Contact:
 * Mconf: A scalable opensource multiconference system for web and mobile devices
 * PRAV Labs - UFRGS - Porto Alegre - Brazil
 * http://www.inf.ufrgs.br/prav/gtmconf
