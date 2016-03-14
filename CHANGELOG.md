@@ -1,14 +1,14 @@
-## 2.0.0
+# Change Log
+
+## [Unreleased]
 
 To learn how to migrate to 2.0.0 see:
 https://github.com/mconf/bigbluebutton_rails/wiki/Migrate-to-2.0.0
 
 * New dependencies:
   * resque-scheduler: To schedule background jobs.
-
 * Dependencies removed:
   * whenever
-
 * Updated the default ruby to 2.2.0.
 * Updated to Rails 4, won't work with older versions.
 * Meeting "passwords" are now called "keys" to make it explicit that they
@@ -25,8 +25,7 @@ https://github.com/mconf/bigbluebutton_rails/wiki/Migrate-to-2.0.0
 * Add attribute `size` to recordings (currently on Mconf-Live only). Works
   even if the web conference server doesn't have it.
 
-
-## 1.4.0
+## [1.4.0] - 2014-09-28
 
 To learn how to migrate to 1.4.0 see:
 https://github.com/mconf/bigbluebutton_rails/wiki/Migrate-to-1.4.0
@@ -36,7 +35,6 @@ https://github.com/mconf/bigbluebutton_rails/wiki/Migrate-to-1.4.0
   * strong_parameters: To allow controllers to decide which parameters can
     be modified and which can't. Default in Rails 4, should also be used
     in Rails 3.
-
 * With strong_parameters in all controllers now the application can decide
   which parameters can be accessed and which can't. You can have different
   logics for different types of users.
@@ -60,7 +58,6 @@ https://github.com/mconf/bigbluebutton_rails/wiki/Migrate-to-1.4.0
   * Currently the only parameters that can be customized are: `default
     layout`, `presenter_share_only`, `auto_start_audio`, and
     `auto_start_video`.
-
 * Fixed the mobile urls generated in `join_mobile`.
 * Updated ruby to 1.9.3-p484.
 * New controller method `bigbluebutton_create_options`. Can return a hash of
@@ -81,15 +78,13 @@ https://github.com/mconf/bigbluebutton_rails/wiki/Migrate-to-1.4.0
   installed, for example).
 * Removed the login via QR Code.
 
-
-## 1.3.0
+## [1.3.0] - 2013-07-27
 
 To learn how to migrate to 1.3.0 see:
 https://github.com/mconf/bigbluebutton_rails/wiki/Migrate-to-1.3.0
 
 * New dependency:
   * whenever: To configure cron to trigger resque.
-
 * Support for recordings. Details at
   https://github.com/mconf/bigbluebutton_rails/wiki/How-Recordings-Work.
   #459.
@@ -108,15 +103,13 @@ https://github.com/mconf/bigbluebutton_rails/wiki/Migrate-to-1.3.0
 * Added logic to control who can create meetings (method called
   `bigbluebutton_can_create?`).
 
-
-## 1.2.0
+## [1.2.0] - 2012-05-04
 
 * Updated ruby to 1.9.3-194.
 * Support to BigBlueButton 0.8 rc1.
 * Updated bigbluebutton-api-ruby to 1.1.0.
 
-
-## 1.1.0
+## [1.1.0] - 2012-05-04
 
 * Rooms are now decoupled from servers:
   * A room can exist without a server;
@@ -129,15 +122,12 @@ https://github.com/mconf/bigbluebutton_rails/wiki/Migrate-to-1.3.0
     ('/bigbluebutton/rooms' instead of '/bigbluebutton/server/:id/rooms').
     * Because of this change all path helpers for rooms **must be
       updated!**
-
-
 * rooms/external now receives a parameter "server_id" to indicate the server
   in which the external rooms is running. The views were updated.
 * "bigbluebutton_routes :room_matchers" now generates all routes available
   for rooms, not only a selected set as before.
 
-
-## 1.0.0
+## [1.0.0] - 2012-05-04
 
 * First version with support to BigBlueButton 0.8:
   * The support is still very basic: you can use the gem with BBB 0.8 but
@@ -145,11 +135,9 @@ https://github.com/mconf/bigbluebutton_rails/wiki/Migrate-to-1.3.0
     anything related to recordings.
   * Updated bigbluebutton-api-ruby to 0.1.0 to support BBB 0.8.
   * Added several integration tests.
-
 * Several small bug fixes
 
-
-## 0.0.6
+## [0.0.6] - 2011-09-02
 
 * After fetch_meetings, the rooms that are not found in the DB are **not**
   saved by default anymore.
@@ -164,7 +152,7 @@ https://github.com/mconf/bigbluebutton_rails/wiki/Migrate-to-1.3.0
   the test coverage to 100% for almost all classes.
 
 
-## 0.0.5
+## [0.0.5] - 2011-06-21
 
 * URLs for both servers and rooms are now defined with a string attribute
   (called "param") instead of the model ID.
@@ -182,8 +170,7 @@ https://github.com/mconf/bigbluebutton_rails/wiki/Migrate-to-1.3.0
 * After fetch_meetings all rooms are automatically stored in the DB if they
   are not there yet.
 
-
-## 0.0.4
+## [0.0.4] - 2011-05-16
 
 * A random voice_bridge with 5 digits (recommended) is set when a room is
   created.
@@ -192,8 +179,7 @@ https://github.com/mconf/bigbluebutton_rails/wiki/Migrate-to-1.3.0
   Bigbluebutton::RoomsController.
 * Some bug fixes (including fixes for ruby 1.8).
 
-
-## 0.0.3
+## [0.0.3] - 2011-04-28
 
 * Rooms can be public or private
 * New route RoomsController#invite used to request a password to join a room
@@ -204,8 +190,7 @@ https://github.com/mconf/bigbluebutton_rails/wiki/Migrate-to-1.3.0
 * New attributes for rooms: logout_url, dial_number, voice_bridge and
   max_participant.
 
-
-## 0.0.2
+## [0.0.2] - 2011-04-08
 
 * New "fetch" and "send" methods in BigbluebuttonRooms to fetch info about
   meetings from BBB and store in the model.
@@ -214,10 +199,21 @@ https://github.com/mconf/bigbluebutton_rails/wiki/Migrate-to-1.3.0
 * New class BigbluebuttonMeeting to store meeting information returned by
   BBB in get_meetings.
 
-
 ## 0.0.1
 
 * First version
 * DB models for BigBlueButton servers and rooms
 * Controller to access servers and rooms
 * rooms_controller interacts with a BBB server using bigbluebutton-api-ruby
+
+[Unreleased]: https://github.com/mconf/bigbluebutton_rails/compare/v1.4.0...master
+[1.4.0]: https://github.com/mconf/bigbluebutton_rails/compare/v1.3.0...v1.4.0
+[1.3.0]: https://github.com/mconf/bigbluebutton_rails/compare/v1.2.0...v1.3.0
+[1.2.0]: https://github.com/mconf/bigbluebutton_rails/compare/v1.1.0...v1.2.0
+[1.1.0]: https://github.com/mconf/bigbluebutton_rails/compare/v1.0.0...v1.1.0
+[1.0.0]: https://github.com/mconf/bigbluebutton_rails/compare/v0.0.6...v1.0.0
+[0.0.6]: https://github.com/mconf/bigbluebutton_rails/compare/v0.0.5...v0.0.6
+[0.0.5]: https://github.com/mconf/bigbluebutton_rails/compare/v0.0.4...v0.0.5
+[0.0.4]: https://github.com/mconf/bigbluebutton_rails/compare/v0.0.3...v0.0.4
+[0.0.3]: https://github.com/mconf/bigbluebutton_rails/compare/v0.0.2...v0.0.3
+[0.0.2]: https://github.com/mconf/bigbluebutton_rails/compare/v0.0.1...v0.0.2
