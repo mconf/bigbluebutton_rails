@@ -49,6 +49,7 @@ You can always use it as a reference for verions of dependencies and examples of
 The current version of this gem supports `all` the following versions of
 BigBlueButton:
 
+* 1.0
 * 0.9
 * 0.81
 * 0.8

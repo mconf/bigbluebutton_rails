@@ -47,7 +47,7 @@ class BigbluebuttonServer < ActiveRecord::Base
             :length => { :minimum => 1, :maximum => 500 }
 
   validates :version,
-            :inclusion => { :in => ['0.8', '0.81', '0.9'] },
+            :inclusion => { :in => ['0.8', '0.81', '0.9', '1.0'] },
             :allow_blank => true
 
   # Array of <tt>BigbluebuttonMeeting</tt>
