@@ -1,5 +1,14 @@
 # Change Log
 
+
+------------------------------------
+
+All tickets below use references to IDs in our old issue tracking system.
+To find them, search for their description or ID in the new issue tracker.
+
+------------------------------------
+
+
 ## [2.0.0] - 2016-04-07
 
 To learn how to migrate to 2.0.0 see:
