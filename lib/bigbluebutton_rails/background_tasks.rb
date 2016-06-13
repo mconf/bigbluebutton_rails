@@ -3,12 +3,24 @@ module BigbluebuttonRails
   # Helper methods to execute tasks that run in resque and rake.
   class BackgroundTasks
 
+    # For each meeting that hasn't ended yet, call `getMeetingInfo` and update
+    # the meeting attributes or end it.
     def self.finish_meetings
-      BigbluebuttonMeeting.where(running: true).find_each do |meeting|
+      BigbluebuttonMeeting.where(ended: false).find_each do |meeting|
         Rails.logger.info "BackgroundTasks: Checking if the meeting has ended: #{meeting.inspect}"
-        if meeting.room and !meeting.room.fetch_is_running?
-          Rails.logger.info "BackgroundTasks: Setting meeting as ended: #{meeting.inspect}"
-          meeting.update_attributes(running: false)
+        room = meeting.room
+        if room.present? #and !meeting.room.fetch_is_running?
+          begin
+            # `fetch_meeting_info` will automatically update the meeting by
+            # calling `room.update_current_meeting`
+            room.fetch_meeting_info
+          rescue BigBlueButton::BigBlueButtonException => e
+            # TODO: get only the specific meetingID notFound exception
+
+            Rails.logger.info "BackgroundTasks: Setting meeting as ended: #{meeting.inspect}"
+            room.finish_meetings
+          end
+
         end
       end
     end
