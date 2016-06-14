@@ -12,7 +12,7 @@ module BigbluebuttonRails
         if room.present? #and !meeting.room.fetch_is_running?
           begin
             # `fetch_meeting_info` will automatically update the meeting by
-            # calling `room.update_current_meeting`
+            # calling `room.update_current_meeting_record`
             room.fetch_meeting_info
           rescue BigBlueButton::BigBlueButtonException => e
             # TODO: get only the specific meetingID notFound exception

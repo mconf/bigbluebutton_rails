@@ -342,7 +342,7 @@ describe BigbluebuttonRoom do
         }
       end
 
-      context "calls #update_current_meeting after the information is fetched" do
+      context "calls #update_current_meeting_record after the information is fetched" do
         before {
           mocked_api.should_receive(:get_meeting_info).
             with(room.meetingid, room.moderator_api_password).and_return(hash_info2)
@@ -350,7 +350,7 @@ describe BigbluebuttonRoom do
           room.server = mocked_server
 
           # here's the validation
-          room.should_receive(:update_current_meeting).with(metadata)
+          room.should_receive(:update_current_meeting_record).with(metadata)
         }
         it { room.fetch_meeting_info }
       end
@@ -1217,12 +1217,12 @@ describe BigbluebuttonRoom do
     end
   end
 
-  describe "#update_current_meeting" do
+  describe "#update_current_meeting_record" do
     let(:room) { FactoryGirl.create(:bigbluebutton_room) }
 
     context "if #create_time is not set in the room" do
       before { room.update_attributes(create_time: nil) }
-      subject { room.update_current_meeting }
+      subject { room.update_current_meeting_record }
       it("doesn't do anything") {
         BigbluebuttonMeeting.find_by_room_id(room.id).should be_nil
       }
@@ -1248,7 +1248,7 @@ describe BigbluebuttonRoom do
         }
         before(:each) {
           expect {
-            room.update_current_meeting
+            room.update_current_meeting_record
           }.not_to change{ BigbluebuttonMeeting.count }
         }
         subject { BigbluebuttonMeeting.find_by_room_id(room.id) }
@@ -1264,7 +1264,7 @@ describe BigbluebuttonRoom do
         }
         before(:each) {
           expect {
-            room.update_current_meeting(metadata)
+            room.update_current_meeting_record(metadata)
           }.not_to change{ BigbluebuttonMeeting.count }
         }
         subject { BigbluebuttonMeeting.find_by_room_id(room.id) }
@@ -1276,14 +1276,14 @@ describe BigbluebuttonRoom do
     end
   end
 
-  describe "#create_current_meeting" do
+  describe "#create_meeting_record" do
     let(:room) { FactoryGirl.create(:bigbluebutton_room) }
 
     context "if there is already a current meeting" do
       let!(:meeting) { FactoryGirl.create(:bigbluebutton_meeting, room: room, ended: false, running: true, create_time: room.create_time) }
       subject {
         expect {
-          room.create_current_meeting
+          room.create_meeting_record
         }.not_to change{ BigbluebuttonMeeting.count }
       }
       it { BigbluebuttonMeeting.where(room: room).count.should be(1) }
@@ -1293,7 +1293,7 @@ describe BigbluebuttonRoom do
 
     context "if #create_time is not set in the room" do
       before { room.update_attributes(create_time: nil) }
-      subject { room.create_current_meeting }
+      subject { room.create_meeting_record }
       it("doesn't create a meeting") {
         BigbluebuttonMeeting.find_by(room_id: room.id).should be_nil
       }
@@ -1318,7 +1318,7 @@ describe BigbluebuttonRoom do
         context "and no metadata was passed" do
           before(:each) {
             expect {
-              room.create_current_meeting
+              room.create_meeting_record
             }.to change{ BigbluebuttonMeeting.count }.by(1)
           }
           subject { BigbluebuttonMeeting.last }
@@ -1338,7 +1338,7 @@ describe BigbluebuttonRoom do
         context "and metadata was passed" do
           before(:each) {
             expect {
-              room.create_current_meeting(metadata)
+              room.create_meeting_record(metadata)
             }.to change{ BigbluebuttonMeeting.count }.by(1)
           }
           subject { BigbluebuttonMeeting.last }
@@ -1354,7 +1354,7 @@ describe BigbluebuttonRoom do
         before(:each) {
           BigbluebuttonMeeting.where(room: room, ended: false).count.should be(2)
           expect {
-            room.create_current_meeting(metadata)
+            room.create_meeting_record(metadata)
           }.to change{ BigbluebuttonMeeting.count }.by(1)
         }
         it { BigbluebuttonMeeting.where(room: room).count.should be(3) }

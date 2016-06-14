@@ -125,7 +125,7 @@ class BigbluebuttonRoom < ActiveRecord::Base
     end
 
     # a 'shortcut' to update meetings since we have all information we need
-    update_current_meeting(response[:metadata])
+    update_current_meeting_record(response[:metadata])
 
     response
   end
@@ -185,7 +185,7 @@ class BigbluebuttonRoom < ActiveRecord::Base
         self.save
 
         # creates the meeting object since the create was successful
-        create_current_meeting(response[:metadata])
+        create_meeting_record(response[:metadata])
 
         # enqueue an update in the meeting with a small delay we assume to be
         # enough for the user to fully join the meeting
@@ -310,7 +310,7 @@ class BigbluebuttonRoom < ActiveRecord::Base
   end
 
   # Updates the current meeting associated with this room
-  def update_current_meeting(metadata=nil)
+  def update_current_meeting_record(metadata=nil)
     unless self.create_time.nil?
       attrs = {
         :running => self.running,
@@ -331,7 +331,7 @@ class BigbluebuttonRoom < ActiveRecord::Base
     end
   end
 
-  def create_current_meeting(metadata=nil)
+  def create_meeting_record(metadata=nil)
     unless get_current_meeting.present?
       if self.create_time.present?
 

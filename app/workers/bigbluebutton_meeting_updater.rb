@@ -14,7 +14,7 @@ class BigbluebuttonMeetingUpdater
     else
       begin
         # `fetch_meeting_info` will automatically update the meeting by
-        # calling `room.update_current_meeting`
+        # calling `room.update_current_meeting_record`
         room.fetch_meeting_info
       rescue BigBlueButton::BigBlueButtonException => e
         Rails.logger.info "BigbluebuttonMeetingUpdater worker: getMeetingInfo generated an error (usually means that the meeting doesn't exist): #{e}"
