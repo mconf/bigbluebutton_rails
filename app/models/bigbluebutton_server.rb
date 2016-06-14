@@ -42,7 +42,7 @@ class BigbluebuttonServer < ActiveRecord::Base
             :format => { :with => /\A[a-zA-Z\d_]+[a-zA-Z\d_-]*[a-zA-Z\d_]+\z/,
                          :message => I18n.t('bigbluebutton_rails.servers.errors.param_format') }
 
-  validates :salt,
+  validates :secret,
             :presence => true,
             :length => { :minimum => 1, :maximum => 500 }
 
@@ -75,7 +75,7 @@ class BigbluebuttonServer < ActiveRecord::Base
 
     version = self.version
     version = set_api_version_from_server if version.blank?
-    @api = BigBlueButton::BigBlueButtonApi.new(self.url, self.salt, version.to_s, false)
+    @api = BigBlueButton::BigBlueButtonApi.new(self.url, self.secret, version.to_s, false)
   end
 
   # Fetches the meetings currently created in the server (running or not).
@@ -156,7 +156,7 @@ class BigbluebuttonServer < ActiveRecord::Base
   def set_api_version_from_server
     begin
       # creating the object with version=nil makes the gem fetch the version from the server
-      api = BigBlueButton::BigBlueButtonApi.new(self.url, self.salt, nil, false)
+      api = BigBlueButton::BigBlueButtonApi.new(self.url, self.secret, nil, false)
       self.version = api.version
     rescue BigBlueButton::BigBlueButtonException
       # we just ignore errors in case the server is not responding
@@ -187,16 +187,16 @@ class BigbluebuttonServer < ActiveRecord::Base
 
   # Checks if we have to update the server version or not and do it if needed.
   # If the user only changes the version, we assume he's trying to force an API version.
-  # If the user changes url/salt and the version, we also assume that he wants
+  # If the user changes url/secret and the version, we also assume that he wants
   # to force the API version
   def check_for_version_update
-    if [:url, :salt, :version].any? { |k| self.changes.key?(k) }
+    if [:url, :secret, :version].any? { |k| self.changes.key?(k) }
       self.set_api_version_from_server
     end
   end
 
   def check_for_config_update
-    if [:url, :salt, :version].any?{ |k| self.changes.key?(k) }
+    if [:url, :secret, :version].any?{ |k| self.changes.key?(k) }
       self.update_config
     end
   end

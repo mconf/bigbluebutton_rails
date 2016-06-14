@@ -343,7 +343,7 @@ class BigbluebuttonRoom < ActiveRecord::Base
           :room => self,
           :server => self.server,
           :server_url => self.server.url,
-          :server_shared_secret => self.server.salt,
+          :server_secret => self.server.secret,
           :meetingid => self.meetingid,
           :name => self.name,
           :recorded => self.record_meeting,

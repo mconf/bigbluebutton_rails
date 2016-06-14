@@ -583,7 +583,7 @@ describe BigbluebuttonRoom do
           it { subject.room.should eql(room) }
           it { subject.server_id.should eql(room.server.id) }
           it { subject.server_url.should eql(room.server.url) }
-          it { subject.server_shared_secret.should eql(room.server.salt) }
+          it { subject.server_secret.should eql(room.server.secret) }
           it { subject.meetingid.should eql(room.meetingid) }
           it { subject.name.should eql(room.name) }
           it { subject.recorded.should eql(room.record_meeting) }
@@ -1324,7 +1324,7 @@ describe BigbluebuttonRoom do
           subject { BigbluebuttonMeeting.last }
           it("sets server") { subject.server.should eq(room.server) }
           it("sets server_url") { subject.server_url.should eq(room.server.url) }
-          it("sets server_shared_secret") { subject.server_shared_secret.should eq(room.server.salt) }
+          it("sets server_secret") { subject.server_secret.should eq(room.server.secret) }
           it("sets room") { subject.room.should eq(room) }
           it("sets meetingid") { subject.meetingid.should eq(room.meetingid) }
           it("sets name") { subject.name.should eq(room.name) }

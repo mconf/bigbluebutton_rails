@@ -4,7 +4,7 @@ class CreateBigbluebuttonRails < ActiveRecord::Migration
     create_table :bigbluebutton_servers do |t|
       t.string :name
       t.string :url
-      t.string :salt
+      t.string :secret
       t.string :version
       t.string :param
       t.timestamps
@@ -94,7 +94,7 @@ class CreateBigbluebuttonRails < ActiveRecord::Migration
     create_table :bigbluebutton_meetings do |t|
       t.integer :server_id
       t.string :server_url
-      t.string :server_shared_secret
+      t.string :server_secret
       t.integer :room_id
       t.string :meetingid
       t.string :name
