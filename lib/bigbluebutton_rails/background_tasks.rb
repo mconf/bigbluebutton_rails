@@ -20,7 +20,6 @@ module BigbluebuttonRails
             Rails.logger.info "BackgroundTasks: Setting meeting as ended: #{meeting.inspect}"
             room.finish_meetings
           end
-
         end
       end
     end

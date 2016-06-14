@@ -19,6 +19,7 @@ FactoryGirl.define do
     r.dial_number { SecureRandom.random_number(9999999).to_s }
     r.sequence(:logout_url) { |n| "http://bigbluebutton#{n}.test.com/logout" }
     r.sequence(:max_participants) { |n| n }
+    r.create_time { Time.now.to_i + rand(999999) }
 
     after(:create) do |r|
       r.updated_at = r.updated_at.change(:usec => 0)

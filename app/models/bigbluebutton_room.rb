@@ -116,10 +116,12 @@ class BigbluebuttonRoom < ActiveRecord::Base
     @start_time = response[:startTime]
     @end_time = response[:endTime]
     @attendees = []
-    response[:attendees].each do |att|
-      attendee = BigbluebuttonAttendee.new
-      attendee.from_hash(att)
-      @attendees << attendee
+    if response[:attendees].present?
+      response[:attendees].each do |att|
+        attendee = BigbluebuttonAttendee.new
+        attendee.from_hash(att)
+        @attendees << attendee
+      end
     end
 
     # a 'shortcut' to update meetings since we have all information we need
@@ -178,14 +180,17 @@ class BigbluebuttonRoom < ActiveRecord::Base
       self.moderator_api_password = response[:moderatorPW]
       self.create_time = response[:createTime]
       self.voice_bridge = response[:voiceBridge] if response.has_key?(:voiceBridge)
-      self.save unless self.new_record?
 
-      # creates the meeting object since the create was successful
-      create_current_meeting(response[:metadata])
+      unless self.new_record?
+        self.save
 
-      # enqueue an update in the meeting with a small delay we assume to be
-      # enough for the user to fully join the meeting
-      Resque.enqueue(::BigbluebuttonMeetingUpdater, self.id, 10.seconds)
+        # creates the meeting object since the create was successful
+        create_current_meeting(response[:metadata])
+
+        # enqueue an update in the meeting with a small delay we assume to be
+        # enough for the user to fully join the meeting
+        Resque.enqueue(::BigbluebuttonMeetingUpdater, self.id, 10.seconds)
+      end
     end
 
     response
@@ -309,7 +314,7 @@ class BigbluebuttonRoom < ActiveRecord::Base
     unless self.create_time.nil?
       attrs = {
         :running => self.running,
-        :start_time => self.start_time.utc
+        :start_time => self.start_time.try(:utc)
       }
       unless metadata.nil?
         begin
@@ -371,10 +376,11 @@ class BigbluebuttonRoom < ActiveRecord::Base
       .where(room_id: self.id)
       .update_all(running: false, ended: true)
 
-    # in case there was a current meeting but it was not running (i.e. a meeting
-    # that was created but nobody joined)
-    meeting = self.get_current_meeting
-    meeting.update_attributes(ended: true) if meeting.present?
+    # in case there are inconsistent meetings marked as running
+    # but that already ended
+    BigbluebuttonMeeting.where(running: true, ended: true)
+      .where(room_id: self.id)
+      .update_all(running: false, ended: true)
   end
 
   # Gets a 'configToken' to use when joining the room.

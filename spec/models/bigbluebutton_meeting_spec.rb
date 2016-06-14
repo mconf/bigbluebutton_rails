@@ -19,8 +19,8 @@ describe BigbluebuttonMeeting do
   it { should validate_presence_of(:meetingid) }
   it { should ensure_length_of(:meetingid).is_at_least(1).is_at_most(100) }
 
-  it { should validate_presence_of(:start_time) }
-  it { should validate_uniqueness_of(:start_time).scoped_to(:room_id) }
+  it { should validate_presence_of(:create_time) }
+  it { should validate_uniqueness_of(:create_time).scoped_to(:room_id) }
 
   describe "#created_by?" do
     let(:target) { FactoryGirl.create(:bigbluebutton_meeting) }
