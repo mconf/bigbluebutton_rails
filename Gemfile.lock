@@ -8,7 +8,7 @@ PATH
   remote: .
   specs:
     bigbluebutton_rails (2.0.0)
-      bigbluebutton-api-ruby (~> 1.4)
+      bigbluebutton-api-ruby (~> 1.6)
       browser (~> 0.8.0)
       rails (>= 4.0.0)
       resque (~> 1.25.1)
@@ -46,8 +46,8 @@ GEM
     addressable (2.3.6)
     arel (5.0.1.20140414130214)
     awesome_print (1.2.0)
-    bigbluebutton-api-ruby (1.4.0)
-      xml-simple (>= 1.1.1)
+    bigbluebutton-api-ruby (1.6.0)
+      xml-simple (~> 1.1)
     browser (0.8.0)
     builder (3.2.2)
     capybara (2.2.1)

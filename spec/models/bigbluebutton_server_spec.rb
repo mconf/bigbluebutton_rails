@@ -127,7 +127,7 @@ describe BigbluebuttonServer do
       }
       it {
         server.secret = '12345-abcde-67890-fghijk'
-        server.api.salt.should eql('12345-abcde-67890-fghijk')
+        server.api.secret.should eql('12345-abcde-67890-fghijk')
       }
       it {
         server.version = '0.9'
