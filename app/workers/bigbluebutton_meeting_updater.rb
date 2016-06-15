@@ -17,12 +17,12 @@ class BigbluebuttonMeetingUpdater
         # calling `room.update_current_meeting_record`
         room.fetch_meeting_info
       rescue BigBlueButton::BigBlueButtonException => e
-        Rails.logger.info "BigbluebuttonMeetingUpdater worker: getMeetingInfo generated an error (usually means that the meeting doesn't exist): #{e}"
-
-        # TODO: get only the specific meetingID notFound exception
-
-        # an error usually means that no meeting was found, so it is not running anymore
-        room.finish_meetings
+        if !e.key.blank? && e.key == 'notFound'
+          Rails.logger.info "BigbluebuttonMeetingUpdater worker: detected that a meeting ended in the room: #{room.inspect}"
+          room.finish_meetings
+        else
+          raise e
+        end
       end
     end
     Rails.logger.flush

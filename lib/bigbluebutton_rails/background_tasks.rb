@@ -15,10 +15,12 @@ module BigbluebuttonRails
             # calling `room.update_current_meeting_record`
             room.fetch_meeting_info
           rescue BigBlueButton::BigBlueButtonException => e
-            # TODO: get only the specific meetingID notFound exception
-
-            Rails.logger.info "BackgroundTasks: Setting meeting as ended: #{meeting.inspect}"
-            room.finish_meetings
+            if !e.key.blank? && e.key == 'notFound'
+              Rails.logger.info "BackgroundTasks: detected that a meeting ended: #{meeting.inspect}"
+              room.finish_meetings
+            else
+              raise e
+            end
           end
         end
       end
