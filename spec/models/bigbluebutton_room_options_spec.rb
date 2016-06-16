@@ -47,7 +47,7 @@ describe BigbluebuttonRoomOptions do
         BigBlueButton::BigBlueButtonConfigXml.any_instance
           .should_receive(:is_modified?).and_return(true)
         BigBlueButton::BigBlueButtonConfigXml.any_instance
-          .should_receive(:as_string).and_return('new xml as string')
+          .stub(:as_string).and_return('new xml as string')
       }
       subject { room_options.set_on_config_xml(config_xml) }
       it("returns the new xml") { should eql('new xml as string') }
