@@ -19,7 +19,7 @@ describe BigbluebuttonServer do
 
   it { should validate_presence_of(:name) }
   it { should validate_presence_of(:url) }
-  it { should validate_presence_of(:salt) }
+  it { should validate_presence_of(:secret) }
   it { should validate_presence_of(:param) }
 
   context "uniqueness of" do
@@ -49,7 +49,7 @@ describe BigbluebuttonServer do
 
   it { should ensure_length_of(:name).is_at_least(1).is_at_most(500) }
   it { should ensure_length_of(:url).is_at_most(500) }
-  it { should ensure_length_of(:salt).is_at_least(1).is_at_most(500) }
+  it { should ensure_length_of(:secret).is_at_least(1).is_at_most(500) }
   it { should ensure_length_of(:param).is_at_least(3) }
 
   context ".to_param" do
@@ -118,17 +118,21 @@ describe BigbluebuttonServer do
     it { server.api.should_not be_nil }
 
     context "with the correct attributes" do
-      let(:api) { BigBlueButton::BigBlueButtonApi.new(server.url, server.salt, server.version, false) }
+      let(:api) { BigBlueButton::BigBlueButtonApi.new(server.url, server.secret, server.version, false) }
       it { server.api.should == api }
 
-      # updating any of these attributes should update the api
-      { :url => 'http://anotherurl.com/bigbluebutton/api',
-        :salt => '12345-abcde-67890-fghijk', :version => '0.9' }.each do |k,v|
-        it {
-          server.send("#{k}=", v)
-          server.api.send(k).should == v
-        }
-      end
+      it {
+        server.url = 'http://anotherurl.com/bigbluebutton/api'
+        server.api.url.should eql('http://anotherurl.com/bigbluebutton/api')
+      }
+      it {
+        server.secret = '12345-abcde-67890-fghijk'
+        server.api.secret.should eql('12345-abcde-67890-fghijk')
+      }
+      it {
+        server.version = '0.9'
+        server.api.version.should eql('0.9')
+      }
     end
 
     context "returns the cached API object, if any" do
@@ -339,9 +343,9 @@ describe BigbluebuttonServer do
         it { server.update_attributes(url: server.url + "-2") }
       end
 
-      context "if #salt changed" do
+      context "if #secret changed" do
         before { server.should_receive(:update_config).once }
-        it { server.update_attributes(salt: server.salt + "-2") }
+        it { server.update_attributes(secret: server.secret + "-2") }
       end
 
       context "if #version changed" do
@@ -374,9 +378,9 @@ describe BigbluebuttonServer do
         it { server.update_attributes(url: server.url + "-2") }
       end
 
-      context "if #salt changed" do
+      context "if #secret changed" do
         before { server.should_receive(:set_api_version_from_server).once }
-        it { server.update_attributes(salt: server.salt + "-2") }
+        it { server.update_attributes(secret: server.secret + "-2") }
       end
 
       context "if #version changed" do

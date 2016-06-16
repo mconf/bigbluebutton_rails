@@ -116,14 +116,16 @@ class BigbluebuttonRoom < ActiveRecord::Base
     @start_time = response[:startTime]
     @end_time = response[:endTime]
     @attendees = []
-    response[:attendees].each do |att|
-      attendee = BigbluebuttonAttendee.new
-      attendee.from_hash(att)
-      @attendees << attendee
+    if response[:attendees].present?
+      response[:attendees].each do |att|
+        attendee = BigbluebuttonAttendee.new
+        attendee.from_hash(att)
+        @attendees << attendee
+      end
     end
 
     # a 'shortcut' to update meetings since we have all information we need
-    update_current_meeting(response[:metadata])
+    update_current_meeting_record(response[:metadata])
 
     response
   end
@@ -143,8 +145,8 @@ class BigbluebuttonRoom < ActiveRecord::Base
     require_server :end
     response = self.server.api.end_meeting(self.meetingid, self.moderator_api_password)
 
-    # enqueue an update in the meetings for later on
-    Resque.enqueue(::BigbluebuttonMeetingUpdater, self.id, 15.seconds)
+    # enqueue an update in the meeting to end it faster
+    Resque.enqueue(::BigbluebuttonMeetingUpdater, self.id)
 
     response
   end
@@ -178,7 +180,17 @@ class BigbluebuttonRoom < ActiveRecord::Base
       self.moderator_api_password = response[:moderatorPW]
       self.create_time = response[:createTime]
       self.voice_bridge = response[:voiceBridge] if response.has_key?(:voiceBridge)
-      self.save unless self.new_record?
+
+      unless self.new_record?
+        self.save
+
+        # creates the meeting object since the create was successful
+        create_meeting_record(response[:metadata])
+
+        # enqueue an update in the meeting with a small delay we assume to be
+        # enough for the user to fully join the meeting
+        Resque.enqueue(::BigbluebuttonMeetingUpdater, self.id, 10.seconds)
+      end
     end
 
     response
@@ -290,22 +302,19 @@ class BigbluebuttonRoom < ActiveRecord::Base
 
   # Returns the current meeting running on this room, if any.
   def get_current_meeting
-    unless self.start_time.nil?
-      BigbluebuttonMeeting.find_by_room_id_and_start_time(self.id, self.start_time.utc)
+    unless self.create_time.nil?
+      BigbluebuttonMeeting.find_by(room_id: self.id, create_time: self.create_time, ended: false) # _room_id_and_start_time(self.id, self.start_time.utc)
     else
       nil
     end
   end
 
   # Updates the current meeting associated with this room
-  def update_current_meeting(metadata=nil)
-    unless self.start_time.nil?
+  def update_current_meeting_record(metadata=nil)
+    unless self.create_time.nil?
       attrs = {
-        :server => self.server,
-        :meetingid => self.meetingid,
-        :name => self.name,
-        :recorded => self.record_meeting,
-        :running => self.running
+        :running => self.running,
+        :start_time => self.start_time.try(:utc)
       }
       unless metadata.nil?
         begin
@@ -318,25 +327,60 @@ class BigbluebuttonRoom < ActiveRecord::Base
       end
 
       meeting = self.get_current_meeting
-      if !meeting.nil?
-        meeting.update_attributes(attrs)
+      meeting.update_attributes(attrs) if meeting.present?
+    end
+  end
 
-      # only create a new meeting if it is running
-      elsif self.running
-        attrs.merge!({ :room => self, :start_time => self.start_time.utc })
-        meeting = BigbluebuttonMeeting.create(attrs)
+  def create_meeting_record(metadata=nil)
+    unless get_current_meeting.present?
+      if self.create_time.present?
 
+        # to make sure there's no other meeting related to this room that
+        # has not yet been set as ended
+        self.finish_meetings
+
+        attrs = {
+          :room => self,
+          :server => self.server,
+          :server_url => self.server.url,
+          :server_secret => self.server.secret,
+          :meetingid => self.meetingid,
+          :name => self.name,
+          :recorded => self.record_meeting,
+          :create_time => self.create_time,
+          :running => self.running,
+          :ended => false,
+          :start_time => self.start_time.try(:utc)
+        }
+        unless metadata.nil?
+          begin
+            attrs[:creator_id] = metadata[BigbluebuttonRails.metadata_user_id].to_i
+            attrs[:creator_name] = metadata[BigbluebuttonRails.metadata_user_name]
+          rescue
+            attrs[:creator_id] = nil
+            attrs[:creator_name] = nil
+          end
+        end
+        BigbluebuttonMeeting.create(attrs)
+
+        Rails.logger.error "Did not create a current meeting because there was no create_time on room #{self.meetingid}"
+      else
+        Rails.logger.error "Did not create a current meeting because there was no create_time on room #{self.meetingid}"
       end
-    else
-      # TODO: not enough information to find the meeting, do what?
     end
   end
 
   # Sets all meetings related to this room as not running
   def finish_meetings
-    BigbluebuttonMeeting.where(running: true)
+    BigbluebuttonMeeting.where(ended: false)
       .where(room_id: self.id)
-      .update_all(running: false)
+      .update_all(running: false, ended: true)
+
+    # in case there are inconsistent meetings marked as running
+    # but that already ended
+    BigbluebuttonMeeting.where(running: true, ended: true)
+      .where(room_id: self.id)
+      .update_all(running: false, ended: true)
   end
 
   # Gets a 'configToken' to use when joining the room.
@@ -502,9 +546,6 @@ class BigbluebuttonRoom < ActiveRecord::Base
 
     self.server.api.request_headers = @request_headers # we need the client's IP
     response = self.server.api.create_meeting(self.name, self.meetingid, opts)
-
-    # enqueue an update in the meetings to start now
-    Resque.enqueue(::BigbluebuttonMeetingUpdater, self.id)
 
     response
   end

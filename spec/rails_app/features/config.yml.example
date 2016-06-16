@@ -3,10 +3,8 @@ timeout_bot_start: 60
 
 servers:
   bbb-dev-07:
-    salt: 'your-salt'
+    secret: 'your-secret'
     url: 'http://your-server/bigbluebutton/api'
-    version: '0.9'
   test-install-09:
-    salt: '8cd8ef52e8e101574e400365b55e11a6'
+    secret: '8cd8ef52e8e101574e400365b55e11a6'
     url: 'http://test-install.blindsidenetworks.com/bigbluebutton/api'
-    version: '0.9'

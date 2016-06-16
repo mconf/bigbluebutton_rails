@@ -8,7 +8,7 @@ describe Bigbluebutton::RoomsController do
   render_views
   let(:server) { FactoryGirl.create(:bigbluebutton_server) }
   let(:room) { FactoryGirl.create(:bigbluebutton_room, :server => server) }
-  let(:params_to_ignore) { ['moderator_api_password', 'attendee_api_password'] }
+  let(:params_to_ignore) { ['moderator_api_password', 'attendee_api_password', 'create_time'] }
 
   describe "#index" do
     context "basic" do
@@ -1019,18 +1019,6 @@ describe Bigbluebutton::RoomsController do
         before(:each) { get :join, :id => room.to_param }
         it { should respond_with(:redirect) }
         it { should redirect_to("http://test.com/join/url") }
-      end
-
-      context "schedules a BigbluebuttonMeetingUpdater" do
-        before(:each) {
-          expect {
-            get :join, :id => room.to_param
-          }.to change{ Resque.info[:pending] }.by(1)
-        }
-        subject { Resque.peek(:bigbluebutton_rails) }
-        it("should have a job schedule") { subject.should_not be_nil }
-        it("the job should be the right one") { subject['class'].should eq('BigbluebuttonMeetingUpdater') }
-        it("the job should have the correct parameters") { subject['args'].should eq([room.id, 15]) }
       end
     end
 

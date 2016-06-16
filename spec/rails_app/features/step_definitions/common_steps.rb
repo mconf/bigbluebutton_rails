@@ -102,8 +102,7 @@ When /^a meeting is running in this room$/ do
 end
 
 When /^a meeting is running in this room with (\d+) attendees$/ do |count|
-  msalt = FeaturesConfig.server.has_key?('mobile_salt') ? FeaturesConfig.server['mobile_salt'] : ""
-  BigBlueButtonBot.new(@server.api, @room.meetingid, msalt,
+  BigBlueButtonBot.new(@server.api, @room.meetingid, nil,
                        count.to_i, FeaturesConfig.root['timeout_bot_start'])
 end
 

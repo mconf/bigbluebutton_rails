@@ -1,6 +1,6 @@
 # A resque worker to get information about a meeting with `getMeetingInfo` and update
-# the associated `BigbluebuttonMeeting` object. This should be triggered whenever a,
-# meeting is created, ended, or when a user joins.
+# the associated `BigbluebuttonMeeting` object. This should be called to speed up the
+# update of a meeting object (usually on creates and ends).
 class BigbluebuttonMeetingUpdater
   @queue = :bigbluebutton_rails
 
@@ -13,19 +13,21 @@ class BigbluebuttonMeetingUpdater
       Rails.logger.info "BigbluebuttonMeetingUpdater worker: room #{room_id} not found!"
     else
       begin
+        # `fetch_meeting_info` will automatically update the meeting by
+        # calling `room.update_current_meeting_record`
         room.fetch_meeting_info
       rescue BigBlueButton::BigBlueButtonException => e
-        Rails.logger.info "BigbluebuttonMeetingUpdater worker: getMeetingInfo generated an error (usually means that the meeting doesn't exist): #{e}"
-
-        # an error usually means that no meeting was found, so it is not running anymore
-        room.finish_meetings
-      else
-        Rails.logger.info "BigbluebuttonMeetingUpdater worker: updating the meetings for the room #{room_id}"
-        room.update_current_meeting
+        if !e.key.blank? && e.key == 'notFound'
+          Rails.logger.info "BigbluebuttonMeetingUpdater worker: detected that a meeting ended in the room: #{room.inspect}"
+          room.finish_meetings
+        else
+          raise e
+        end
       end
     end
     Rails.logger.flush
 
-    # TODO: if the meeting is not found (or is not running), try again a few more times?
+    # note: don't need to keep trying because there's a worker that runs periodically
+    # for each meeting that still hasn't ended
   end
 end

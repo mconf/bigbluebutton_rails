@@ -33,15 +33,15 @@ module TemplateHelpers
                 { :name => 'bigbluebutton_server[name]', :type => 'text' })
     has_element("input#bigbluebutton_server_url",
                 { :name => 'bigbluebutton_server[url]', :type => 'text' })
-    has_element("input#bigbluebutton_server_salt",
-                { :name => 'bigbluebutton_server[salt]', :type => 'text' })
+    has_element("input#bigbluebutton_server_secret",
+                { :name => 'bigbluebutton_server[secret]', :type => 'text' })
     has_element("input#bigbluebutton_server_version",
                 { :name => 'bigbluebutton_server[version]', :type => 'text' })
     has_element("input#bigbluebutton_server_param",
                 { :name => 'bigbluebutton_server[param]', :type => 'text' })
     has_element("label", { :for => 'bigbluebutton_server_name' })
     has_element("label", { :for => 'bigbluebutton_server_url' })
-    has_element("label", { :for => 'bigbluebutton_server_salt' })
+    has_element("label", { :for => 'bigbluebutton_server_secret' })
     has_element("label", { :for => 'bigbluebutton_server_version' })
     has_element("label", { :for => 'bigbluebutton_server_param' })
     has_element("input", { :name => 'commit', :type => 'submit' })
@@ -53,7 +53,7 @@ module TemplateHelpers
 
     page_has_content(server.name)
     page_has_content(server.url)
-    page_has_content(server.salt)
+    page_has_content(server.secret)
     page_has_content(server.version)
     page_has_content(server.param)
     has_element("a", { :href => edit_bigbluebutton_server_path(server) }) # edit
@@ -74,7 +74,7 @@ module TemplateHelpers
         # server data
         has_content(server.name)
         has_content(server.url)
-        has_content(server.salt)
+        has_content(server.secret)
         has_content(server.version)
         has_content(server.param)
         has_content(server.url)

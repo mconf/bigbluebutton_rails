@@ -342,7 +342,7 @@ describe BigbluebuttonRoom do
         }
       end
 
-      context "calls #update_current_meeting after the information is fetched" do
+      context "calls #update_current_meeting_record after the information is fetched" do
         before {
           mocked_api.should_receive(:get_meeting_info).
             with(room.meetingid, room.moderator_api_password).and_return(hash_info2)
@@ -350,7 +350,7 @@ describe BigbluebuttonRoom do
           room.server = mocked_server
 
           # here's the validation
-          room.should_receive(:update_current_meeting).with(metadata)
+          room.should_receive(:update_current_meeting_record).with(metadata)
         }
         it { room.fetch_meeting_info }
       end
@@ -378,7 +378,7 @@ describe BigbluebuttonRoom do
         subject { Resque.peek(:bigbluebutton_rails) }
         it("should have a job schedule") { subject.should_not be_nil }
         it("the job should be the right one") { subject['class'].should eq('BigbluebuttonMeetingUpdater') }
-        it("the job should have the correct parameters") { subject['args'].should eq([room.id, 15]) }
+        it("the job should have the correct parameters") { subject['args'].should eq([room.id]) }
       end
     end
 
@@ -469,7 +469,11 @@ describe BigbluebuttonRoom do
           it { new_room.attendee_api_password.should be(new_attendee_api_password) }
           it { new_room.moderator_api_password.should be(new_moderator_api_password) }
           it { new_room.voice_bridge.should be(voice_bridge) }
-          it("and do not save the record") { new_room.new_record?.should be_truthy }
+          it("doesn't save the record") { new_room.new_record?.should be(true) }
+          it("doesn't create a meeting") { BigbluebuttonMeeting.where(room: new_room).should be_empty }
+          it("doesn't schedule a meeting updater") {
+            Resque.peek(:bigbluebutton_rails).should be_nil
+          }
         end
 
         context "passing the user" do
@@ -561,6 +565,50 @@ describe BigbluebuttonRoom do
             end
             it { room.changed?.should be(false) }
           end
+        end
+
+        context "creates a meeting record" do
+          before do
+            mocked_api.should_receive(:create_meeting)
+              .with(room.name, room.meetingid, expected_params)
+              .and_return(hash_create)
+            room.stub(:select_server).and_return(mocked_server)
+
+            room.server = mocked_server
+            expect {
+              room.send_create
+            }.to change{ BigbluebuttonMeeting.count }.by(1)
+          end
+          subject { BigbluebuttonMeeting.last }
+          it { subject.room.should eql(room) }
+          it { subject.server_id.should eql(room.server.id) }
+          it { subject.server_url.should eql(room.server.url) }
+          it { subject.server_secret.should eql(room.server.secret) }
+          it { subject.meetingid.should eql(room.meetingid) }
+          it { subject.name.should eql(room.name) }
+          it { subject.recorded.should eql(room.record_meeting) }
+          it { subject.create_time.should eql(room.create_time) }
+          it { subject.create_time.should eql(room.create_time) }
+          it { subject.start_time.should eql(room.start_time) }
+          it { subject.ended.should eql(false) }
+        end
+
+        context "enqueues a BigbluebuttonMeetingUpdater" do
+          before do
+            mocked_api.should_receive(:create_meeting)
+              .with(room.name, room.meetingid, expected_params)
+              .and_return(hash_create)
+            room.stub(:select_server).and_return(mocked_server)
+
+            room.server = mocked_server
+            expect {
+              room.send_create
+            }.to change{ Resque.info[:pending] }.by(1)
+          end
+          subject { Resque.peek(:bigbluebutton_rails) }
+          it("should have a job schedule") { subject.should_not be_nil }
+          it("the job should be the right one") { subject['class'].should eq('BigbluebuttonMeetingUpdater') }
+          it("the job should have the correct parameters") { subject['args'].should eq([room.id, 10]) }
         end
       end
 
@@ -693,7 +741,6 @@ describe BigbluebuttonRoom do
         end
         it { room.send_create }
       end
-
     end # #send_create
 
     describe "#join_url" do
@@ -1160,28 +1207,28 @@ describe BigbluebuttonRoom do
       it { room.get_current_meeting.should be_nil }
     end
 
-    context "if the room has a start_time set" do
+    context "if the room has a create_time set" do
       before {
-        @m1 = FactoryGirl.create(:bigbluebutton_meeting, :room => room, :start_time => Time.now.utc - 2.minutes)
-        @m2 = FactoryGirl.create(:bigbluebutton_meeting, :room => room, :start_time => Time.now.utc)
-        room.start_time = @m1.start_time
+        @m1 = FactoryGirl.create(:bigbluebutton_meeting, :room => room, :create_time => Time.now.utc - 2.minutes)
+        @m2 = FactoryGirl.create(:bigbluebutton_meeting, :room => room, :create_time => Time.now.utc)
+        room.update_attributes(create_time: @m1.create_time)
       }
       it("returns the correct BigbluebuttonMeeting") { room.get_current_meeting.should eql(@m1) }
     end
   end
 
-  describe "#update_current_meeting" do
+  describe "#update_current_meeting_record" do
     let(:room) { FactoryGirl.create(:bigbluebutton_room) }
 
-    context "if @start_time is not set in the room" do
-      before { room.start_time = nil }
-      subject { room.update_current_meeting }
-      it("doesn't create a meeting") {
+    context "if #create_time is not set in the room" do
+      before { room.update_attributes(create_time: nil) }
+      subject { room.update_current_meeting_record }
+      it("doesn't do anything") {
         BigbluebuttonMeeting.find_by_room_id(room.id).should be_nil
       }
     end
 
-    context "if @start_time is set" do
+    context "if #create_time is set" do
       let(:user) { FactoryGirl.build(:user) }
       let(:metadata) {
         m = {}
@@ -1190,21 +1237,94 @@ describe BigbluebuttonRoom do
         m
       }
       before {
-        room.start_time = Time.now.utc
+        room.create_time = Time.now.utc
         room.running = !room.running # to change its default value
-        room.record_meeting = !room.record_meeting   # to change its default value
+        room.start_time = Time.at(Time.now.to_i - 123)  # to change its default value
+      }
+
+      context "and no metadata was passed" do
+        before {
+          FactoryGirl.create(:bigbluebutton_meeting, :room => room, :create_time => room.create_time)
+        }
+        before(:each) {
+          expect {
+            room.update_current_meeting_record
+          }.not_to change{ BigbluebuttonMeeting.count }
+        }
+        subject { BigbluebuttonMeeting.find_by_room_id(room.id) }
+        it("sets running") { subject.running.should eq(room.running) }
+        it("sets start_time") { subject.start_time.utc.to_i.should eq(room.start_time.utc.to_i) }
+        it("doesn't set creator_id") { subject.creator_id.should be_nil }
+        it("doesn't set creator_name") { subject.creator_name.should be_nil }
+      end
+
+      context "and metadata was passed" do
+        before {
+          FactoryGirl.create(:bigbluebutton_meeting, :room => room, :create_time => room.create_time)
+        }
+        before(:each) {
+          expect {
+            room.update_current_meeting_record(metadata)
+          }.not_to change{ BigbluebuttonMeeting.count }
+        }
+        subject { BigbluebuttonMeeting.find_by_room_id(room.id) }
+        it("sets running") { subject.running.should eq(room.running) }
+        it("sets start_time") { subject.start_time.utc.to_i.should eq(room.start_time.utc.to_i) }
+        it("sets creator_id") { subject.creator_id.should eq(user.id) }
+        it("sets creator_name") { subject.creator_name.should eq(user.name) }
+      end
+    end
+  end
+
+  describe "#create_meeting_record" do
+    let(:room) { FactoryGirl.create(:bigbluebutton_room) }
+
+    context "if there is already a current meeting" do
+      let!(:meeting) { FactoryGirl.create(:bigbluebutton_meeting, room: room, ended: false, running: true, create_time: room.create_time) }
+      subject {
+        expect {
+          room.create_meeting_record
+        }.not_to change{ BigbluebuttonMeeting.count }
+      }
+      it { BigbluebuttonMeeting.where(room: room).count.should be(1) }
+      it { meeting.reload.running.should be(true) }
+      it { meeting.reload.ended.should be(false) }
+    end
+
+    context "if #create_time is not set in the room" do
+      before { room.update_attributes(create_time: nil) }
+      subject { room.create_meeting_record }
+      it("doesn't create a meeting") {
+        BigbluebuttonMeeting.find_by(room_id: room.id).should be_nil
+      }
+    end
+
+    context "if #create_time is set" do
+      let(:user) { FactoryGirl.build(:user) }
+      let(:metadata) {
+        m = {}
+        m[BigbluebuttonRails.metadata_user_id] = user.id
+        m[BigbluebuttonRails.metadata_user_name] = user.name
+        m
+      }
+      before {
+        room.create_time = Time.now.utc
+        room.running = !room.running # to change its default value
+        room.record_meeting = !room.record_meeting # to change its default value
+        room.start_time = Time.at(Time.now.to_i - 123)  # to change its default value
       }
 
       context "if there's no meeting associated yet creates one" do
         context "and no metadata was passed" do
-          before { room.running = true }
           before(:each) {
             expect {
-              room.update_current_meeting
+              room.create_meeting_record
             }.to change{ BigbluebuttonMeeting.count }.by(1)
           }
-          subject { BigbluebuttonMeeting.find_by_room_id(room.id) }
+          subject { BigbluebuttonMeeting.last }
           it("sets server") { subject.server.should eq(room.server) }
+          it("sets server_url") { subject.server_url.should eq(room.server.url) }
+          it("sets server_secret") { subject.server_secret.should eq(room.server.secret) }
           it("sets room") { subject.room.should eq(room) }
           it("sets meetingid") { subject.meetingid.should eq(room.meetingid) }
           it("sets name") { subject.name.should eq(room.name) }
@@ -1216,64 +1336,31 @@ describe BigbluebuttonRoom do
         end
 
         context "and metadata was passed" do
-          before { room.running = true }
           before(:each) {
             expect {
-              room.update_current_meeting(metadata)
+              room.create_meeting_record(metadata)
             }.to change{ BigbluebuttonMeeting.count }.by(1)
           }
-          subject { BigbluebuttonMeeting.find_by_room_id(room.id) }
+          subject { BigbluebuttonMeeting.last }
           it("sets creator_id") { subject.creator_id.should eq(user.id) }
           it("sets creator_name") { subject.creator_name.should eq(user.name) }
         end
       end
 
-      context "if there's no meeting associated yet but the meeting is not running" do
-        before { room.running = false }
+      context "if there were already old meetings associated with the room, finishes them" do
+        let!(:meeting1) { FactoryGirl.create(:bigbluebutton_meeting, room: room, ended: false, running: true) }
+        let!(:meeting2) { FactoryGirl.create(:bigbluebutton_meeting, room: room, ended: false, running: false) }
+
         before(:each) {
+          BigbluebuttonMeeting.where(room: room, ended: false).count.should be(2)
           expect {
-            room.update_current_meeting
-          }.not_to change{ BigbluebuttonMeeting.count }
+            room.create_meeting_record(metadata)
+          }.to change{ BigbluebuttonMeeting.count }.by(1)
         }
-        subject { BigbluebuttonMeeting.find_by_room_id(room.id) }
-        it("shouldn't create a meeting") { subject.should be_nil }
-      end
-
-      context "if there's already a meeting associated updates it" do
-        context "and no metadata was passed" do
-          before {
-            FactoryGirl.create(:bigbluebutton_meeting, :room => room, :start_time => room.start_time)
-          }
-          before(:each) {
-            expect {
-              room.update_current_meeting
-            }.not_to change{ BigbluebuttonMeeting.count }
-          }
-          subject { BigbluebuttonMeeting.find_by_room_id(room.id) }
-          it("sets server") { subject.server.should eq(room.server) }
-          it("sets room") { subject.room.should eq(room) }
-          it("sets meetingid") { subject.meetingid.should eq(room.meetingid) }
-          it("sets name") { subject.name.should eq(room.name) }
-          it("sets recorded") { subject.recorded.should eq(room.record_meeting) }
-          it("sets running") { subject.running.should eq(room.running) }
-          it("sets start_time") { subject.start_time.utc.to_i.should eq(room.start_time.utc.to_i) }
-          it("doesn't set creator_id") { subject.creator_id.should be_nil }
-          it("doesn't set creator_name") { subject.creator_name.should be_nil }
-        end
-
-        context "and metadata was passed" do
-          before {
-            FactoryGirl.create(:bigbluebutton_meeting, :room => room, :start_time => room.start_time)
-          }
-          before(:each) {
-            expect {
-              room.update_current_meeting(metadata)
-            }.not_to change{ BigbluebuttonMeeting.count }
-          }
-          subject { BigbluebuttonMeeting.find_by_room_id(room.id) }
-          it("sets creator_id") { subject.creator_id.should eq(user.id) }
-          it("sets creator_name") { subject.creator_name.should eq(user.name) }
-        end
+        it { BigbluebuttonMeeting.where(room: room).count.should be(3) }
+        it { BigbluebuttonMeeting.where(room: room, ended: false).count.should be(1) }
+        it { BigbluebuttonMeeting.where(room: room, ended: true).count.should be(2) }
+        it { BigbluebuttonMeeting.where(room: room, ended: true, running: false).count.should be(2) }
       end
     end
   end
@@ -1281,24 +1368,35 @@ describe BigbluebuttonRoom do
   describe "#finish_meetings" do
     let!(:room) { FactoryGirl.create(:bigbluebutton_room) }
 
-    context "finishes all meetings related to this room that are still running" do
-      let!(:meeting1) { FactoryGirl.create(:bigbluebutton_meeting, room: room, running: true) }
-      let!(:meeting2) { FactoryGirl.create(:bigbluebutton_meeting, room: room, running: true) }
+    context "finishes all meetings related to this room that are still not ended" do
+      let!(:meeting1) { FactoryGirl.create(:bigbluebutton_meeting, room: room, ended: false, running: true) }
+      let!(:meeting2) { FactoryGirl.create(:bigbluebutton_meeting, room: room, ended: false, running: true) }
+      let!(:meeting3) { FactoryGirl.create(:bigbluebutton_meeting, room: room, ended: false, running: false) }
       before(:each) { room.finish_meetings }
       it { meeting1.reload.running.should be(false) }
+      it { meeting1.reload.ended.should be(true) }
       it { meeting2.reload.running.should be(false) }
+      it { meeting2.reload.ended.should be(true) }
+      it { meeting3.reload.running.should be(false) }
+      it { meeting3.reload.ended.should be(true) }
     end
 
     context "works if the room has no meetings" do
       it { room.finish_meetings }
     end
 
-    context "works if the room has no meetings running" do
-      let!(:meeting1) { FactoryGirl.create(:bigbluebutton_meeting, room: room, running: false) }
-      let!(:meeting2) { FactoryGirl.create(:bigbluebutton_meeting, room: room, running: false) }
-      it { room.finish_meetings }
-      it { meeting1.reload.running.should be(false) }
-      it { meeting2.reload.running.should be(false) }
+    context "if there's a current meeting not running, ends it" do
+      let!(:meeting) { FactoryGirl.create(:bigbluebutton_meeting, room: room, ended: false, running: false, create_time: room.create_time) }
+      before(:each) { room.finish_meetings }
+      it { meeting.reload.running.should be(false) }
+      it { meeting.reload.ended.should be(true) }
+    end
+
+    context "ends meetings are already ended but still set as running" do
+      let!(:meeting) { FactoryGirl.create(:bigbluebutton_meeting, room: room, ended: true, running: true) }
+      before(:each) { room.finish_meetings }
+      it { meeting.reload.running.should be(false) }
+      it { meeting.reload.ended.should be(true) }
     end
   end
 
@@ -1363,26 +1461,6 @@ describe BigbluebuttonRoom do
         }
         it { room.send(:internal_create_meeting) }
       end
-    end
-
-    context "schedules a BigbluebuttonMeetingUpdater" do
-      before { mock_server_and_api }
-      let(:room) { FactoryGirl.create(:bigbluebutton_room) }
-
-      before {
-        mocked_api.stub(:create_meeting)
-        mocked_api.stub(:"request_headers=")
-        room.server = mocked_server
-      }
-      before(:each) {
-        expect {
-          room.send(:internal_create_meeting)
-        }.to change{ Resque.info[:pending] }.by(1)
-      }
-      subject { Resque.peek(:bigbluebutton_rails) }
-      it("should have a job schedule") { subject.should_not be_nil }
-      it("the job should be the right one") { subject['class'].should eq('BigbluebuttonMeetingUpdater') }
-      it("the job should have the correct parameters") { subject['args'].should eq([room.id]) }
     end
   end
 end

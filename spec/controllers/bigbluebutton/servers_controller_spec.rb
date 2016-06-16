@@ -88,7 +88,7 @@ describe Bigbluebutton::ServersController do
       let(:attrs) { FactoryGirl.attributes_for(:bigbluebutton_server) }
       let(:params) { { :bigbluebutton_server => attrs } }
       let(:allowed_params) {
-        [ :name, :url, :salt, :param ]
+        [ :name, :url, :secret, :param ]
       }
 
       it {
@@ -179,7 +179,7 @@ describe Bigbluebutton::ServersController do
       let(:attrs) { FactoryGirl.attributes_for(:bigbluebutton_server) }
       let(:params) { { :bigbluebutton_server => attrs } }
       let(:allowed_params) {
-        [ :name, :url, :salt, :param ]
+        [ :name, :url, :secret, :param ]
       }
 
       it {

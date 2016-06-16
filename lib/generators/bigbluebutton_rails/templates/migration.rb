@@ -4,7 +4,7 @@ class CreateBigbluebuttonRails < ActiveRecord::Migration
     create_table :bigbluebutton_servers do |t|
       t.string :name
       t.string :url
-      t.string :salt
+      t.string :secret
       t.string :version
       t.string :param
       t.timestamps
@@ -93,17 +93,21 @@ class CreateBigbluebuttonRails < ActiveRecord::Migration
 
     create_table :bigbluebutton_meetings do |t|
       t.integer :server_id
+      t.string :server_url
+      t.string :server_secret
       t.integer :room_id
       t.string :meetingid
       t.string :name
       t.datetime :start_time
+      t.decimal :create_time, precision: 14, scale: 0
       t.boolean :running, :default => false
       t.boolean :recorded, :default => false
       t.integer :creator_id
       t.string :creator_name
+      t.boolean :ended, :default => false
       t.timestamps
     end
-    add_index :bigbluebutton_meetings, [:meetingid, :start_time], :unique => true
+    add_index :bigbluebutton_meetings, [:meetingid, :create_time], :unique => true
 
     create_table :bigbluebutton_server_configs do |t|
       t.integer :server_id
