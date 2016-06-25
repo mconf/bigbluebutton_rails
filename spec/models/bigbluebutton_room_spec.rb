@@ -274,7 +274,7 @@ describe BigbluebuttonRoom do
       # these hashes should be exactly as returned by bigbluebutton-api-ruby to be sure we are testing it right
       let(:hash_info) {
         { :returncode=>true, :meetingID=>"test_id", :attendeePW=>"1234", :moderatorPW=>"4321",
-          :running=>false, :hasBeenForciblyEnded=>false, :startTime=>nil, :endTime=>nil,
+          :running=>false, :hasBeenForciblyEnded=>false, :startTime=>nil, :createTime=>nil, :endTime=>nil,
           :participantCount=>0, :moderatorCount=>0, :attendees=>[], :messageKey=>"", :message=>""
         }
       }
@@ -296,7 +296,7 @@ describe BigbluebuttonRoom do
         { :returncode=>true, :meetingID=>"test_id", :attendeePW=>"1234", :moderatorPW=>"4321",
           :running=>true, :hasBeenForciblyEnded=>false, :startTime=>DateTime.parse("Wed Apr 06 17:09:57 UTC 2011"),
           :endTime=>nil, :participantCount=>4, :moderatorCount=>2, :metadata=>metadata,
-          :attendees=>users, :messageKey=>{ }, :message=>{ }
+          :createTime=>1466876909, :attendees=>users, :messageKey=>{ }, :message=>{ }
         }
       }
 
@@ -315,6 +315,7 @@ describe BigbluebuttonRoom do
         it { room.participant_count.should == 0 }
         it { room.moderator_count.should == 0 }
         it { room.start_time.should == nil }
+        it { room.reload.create_time.should == nil }
         it { room.end_time.should == nil }
         it { room.attendees.should == [] }
       end
@@ -332,6 +333,7 @@ describe BigbluebuttonRoom do
         it { room.participant_count.should == 4 }
         it { room.moderator_count.should == 2 }
         it { room.start_time.should == DateTime.parse("Wed Apr 06 17:09:57 UTC 2011") }
+        it { room.reload.create_time.should == 1466876909 }
         it { room.end_time.should == nil }
         it {
           users.each do |att|
@@ -350,9 +352,76 @@ describe BigbluebuttonRoom do
           room.server = mocked_server
 
           # here's the validation
-          room.should_receive(:update_current_meeting_record).with(metadata)
+          room.should_receive(:update_current_meeting_record).with(metadata, true)
         }
         it { room.fetch_meeting_info }
+      end
+
+      context "if an exception 'notFound' is raised" do
+        let!(:exception) {
+          e = BigBlueButton::BigBlueButtonException.new('Test error')
+          e.key = 'notFound'
+          e
+        }
+        before {
+          expect(mocked_api).to receive(:get_meeting_info) { raise exception }
+          expect(room).not_to receive(:update_current_meeting_record)
+          expect(room).to receive(:finish_meetings)
+        }
+        it { expect { room.fetch_meeting_info }.not_to raise_exception }
+        it {
+          room.fetch_meeting_info
+          room.reload.create_time.should be_nil
+        }
+      end
+
+      context "if an exception other than 'notFound' is raised" do
+        let!(:exception) {
+          e = BigBlueButton::BigBlueButtonException.new('Test error')
+          e.key = 'anythingElse'
+          e
+        }
+        before {
+          expect(mocked_api).to receive(:get_meeting_info) { raise exception }
+          expect(room).not_to receive(:update_current_meeting_record)
+          expect(room).to receive(:finish_meetings)
+        }
+        it { expect { room.fetch_meeting_info }.not_to raise_exception }
+        it {
+          room.fetch_meeting_info
+          room.reload.create_time.should be_nil
+        }
+      end
+
+      context "if an exception with a blank key is raised" do
+        let!(:exception) {
+          e = BigBlueButton::BigBlueButtonException.new('Test error')
+          e.key = ''
+          e
+        }
+        before {
+          expect(mocked_api).to receive(:get_meeting_info) { raise exception }
+          expect(room).not_to receive(:update_current_meeting_record)
+          expect(room).to receive(:finish_meetings)
+        }
+        it { expect { room.fetch_meeting_info }.not_to raise_exception }
+        it {
+          room.fetch_meeting_info
+          room.reload.create_time.should be_nil
+        }
+      end
+
+      context "raises any exception other than a BigBlueButtonException" do
+        let!(:exception) { NoMethodError.new('Test error') }
+        before {
+          expect(mocked_api).to receive(:get_meeting_info) { raise exception }
+          expect(room).not_to receive(:update_current_meeting_record)
+          expect(room).not_to receive(:finish_meetings)
+        }
+        it {
+          expect { room.fetch_meeting_info }.to raise_exception
+          room.reload.create_time.should_not be_nil
+        }
       end
     end
 
@@ -1272,6 +1341,21 @@ describe BigbluebuttonRoom do
         it("sets start_time") { subject.start_time.utc.to_i.should eq(room.start_time.utc.to_i) }
         it("sets creator_id") { subject.creator_id.should eq(user.id) }
         it("sets creator_name") { subject.creator_name.should eq(user.name) }
+      end
+
+      context "if force_not_ended is set" do
+        before {
+          FactoryGirl.create(:bigbluebutton_meeting, :room => room, :create_time => room.create_time, :ended => true)
+        }
+        before(:each) {
+          expect {
+            room.update_current_meeting_record(nil, true)
+          }.not_to change{ BigbluebuttonMeeting.count }
+        }
+        subject { BigbluebuttonMeeting.find_by_room_id(room.id) }
+        it("sets running") { subject.running.should eq(room.running) }
+        it("sets start_time") { subject.start_time.utc.to_i.should eq(room.start_time.utc.to_i) }
+        it("sets ended") { subject.ended.should be(false) }
       end
     end
   end

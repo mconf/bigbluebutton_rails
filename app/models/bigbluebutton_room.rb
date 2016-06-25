@@ -107,25 +107,38 @@ class BigbluebuttonRoom < ActiveRecord::Base
   def fetch_meeting_info
     require_server :get_meeting_info
 
-    response = self.server.api.get_meeting_info(self.meetingid, self.moderator_api_password)
+    begin
+      response = self.server.api.get_meeting_info(self.meetingid, self.moderator_api_password)
 
-    @participant_count = response[:participantCount]
-    @moderator_count = response[:moderatorCount]
-    @running = response[:running]
-    @has_been_forcibly_ended = response[:hasBeenForciblyEnded]
-    @start_time = response[:startTime]
-    @end_time = response[:endTime]
-    @attendees = []
-    if response[:attendees].present?
-      response[:attendees].each do |att|
-        attendee = BigbluebuttonAttendee.new
-        attendee.from_hash(att)
-        @attendees << attendee
+      @participant_count = response[:participantCount]
+      @moderator_count = response[:moderatorCount]
+      @running = response[:running]
+      @has_been_forcibly_ended = response[:hasBeenForciblyEnded]
+      @start_time = response[:startTime]
+      @end_time = response[:endTime]
+      @attendees = []
+      if response[:attendees].present?
+        response[:attendees].each do |att|
+          attendee = BigbluebuttonAttendee.new
+          attendee.from_hash(att)
+          @attendees << attendee
+        end
       end
-    end
 
-    # a 'shortcut' to update meetings since we have all information we need
-    update_current_meeting_record(response[:metadata])
+      # a 'shortcut' to update meetings since we have all information we need
+      # if we got here, it means the meeting is still in the server, so it's not ended
+      self.update_attributes(create_time: response[:createTime]) unless self.new_record?
+      self.update_current_meeting_record(response[:metadata], true)
+
+    rescue BigBlueButton::BigBlueButtonException => e
+      # note: we could catch only the 'notFound' error, but there are complications, so
+      # it's better to end the meeting prematurely and open it again if needed than to
+      # not end it at all (e.g. in case the server stops responding)
+      Rails.logger.info "BigbluebuttonRoom: detected that a meeting ended in the room #{self.meetingid} after the error #{e.inspect}"
+
+      self.update_attributes(create_time: nil) unless self.new_record?
+      self.finish_meetings
+    end
 
     response
   end
@@ -303,19 +316,23 @@ class BigbluebuttonRoom < ActiveRecord::Base
   # Returns the current meeting running on this room, if any.
   def get_current_meeting
     unless self.create_time.nil?
-      BigbluebuttonMeeting.find_by(room_id: self.id, create_time: self.create_time, ended: false) # _room_id_and_start_time(self.id, self.start_time.utc)
+      BigbluebuttonMeeting.find_by(room_id: self.id, create_time: self.create_time)
     else
       nil
     end
   end
 
   # Updates the current meeting associated with this room
-  def update_current_meeting_record(metadata=nil)
+  def update_current_meeting_record(metadata=nil, force_not_ended=false)
     unless self.create_time.nil?
       attrs = {
         :running => self.running,
         :start_time => self.start_time.try(:utc)
       }
+      # note: it's important to update the 'ended' attr so the meeting is
+      # reopened in case it was mistakenly considered as ended
+      attrs[:ended] = false if force_not_ended
+
       unless metadata.nil?
         begin
           attrs[:creator_id] = metadata[BigbluebuttonRails.metadata_user_id].to_i
@@ -340,17 +357,17 @@ class BigbluebuttonRoom < ActiveRecord::Base
         self.finish_meetings
 
         attrs = {
-          :room => self,
-          :server => self.server,
-          :server_url => self.server.url,
-          :server_secret => self.server.secret,
-          :meetingid => self.meetingid,
-          :name => self.name,
-          :recorded => self.record_meeting,
-          :create_time => self.create_time,
-          :running => self.running,
-          :ended => false,
-          :start_time => self.start_time.try(:utc)
+          room: self,
+          server: self.server,
+          server_url: self.server.url,
+          server_secret: self.server.secret,
+          meetingid: self.meetingid,
+          name: self.name,
+          recorded: self.record_meeting,
+          create_time: self.create_time,
+          running: self.running,
+          ended: false,
+          start_time: self.start_time.try(:utc)
         }
         unless metadata.nil?
           begin

@@ -12,18 +12,9 @@ class BigbluebuttonMeetingUpdater
     if room.nil?
       Rails.logger.info "BigbluebuttonMeetingUpdater worker: room #{room_id} not found!"
     else
-      begin
-        # `fetch_meeting_info` will automatically update the meeting by
-        # calling `room.update_current_meeting_record`
-        room.fetch_meeting_info
-      rescue BigBlueButton::BigBlueButtonException => e
-        if !e.key.blank? && e.key == 'notFound'
-          Rails.logger.info "BigbluebuttonMeetingUpdater worker: detected that a meeting ended in the room: #{room.inspect}"
-          room.finish_meetings
-        else
-          raise e
-        end
-      end
+      # `fetch_meeting_info` will automatically update the meeting by
+      # calling `room.update_current_meeting_record`
+      room.fetch_meeting_info
     end
     Rails.logger.flush
 

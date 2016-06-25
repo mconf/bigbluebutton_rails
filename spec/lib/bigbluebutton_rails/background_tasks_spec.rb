@@ -3,6 +3,7 @@ require 'spec_helper'
 describe BigbluebuttonRails::BackgroundTasks do
 
   describe ".finish_meetings" do
+    let!(:api) { double(BigBlueButton::BigBlueButtonApi) }
 
     context "set meetings that ended as not running and ended" do
       let(:room) { FactoryGirl.create(:bigbluebutton_room) }
@@ -82,7 +83,7 @@ describe BigbluebuttonRails::BackgroundTasks do
       it { meeting.reload.running.should be(true) }
     end
 
-    context "calls finish_meetings if fetch_meeting_info raises an exception 'notFound'" do
+    context "calls finish_meetings if an exception 'notFound' is raised" do
       let!(:room) { FactoryGirl.create(:bigbluebutton_room) }
       let!(:meeting) { FactoryGirl.create(:bigbluebutton_meeting, ended: false, running: true, room: room) }
       let!(:exception) {
@@ -92,15 +93,14 @@ describe BigbluebuttonRails::BackgroundTasks do
       }
 
       before {
-        BigbluebuttonRoom.any_instance.should_receive(:fetch_meeting_info) {
-          raise exception
-        }
+        BigbluebuttonServer.any_instance.should_receive(:api) { api }
+        expect(api).to receive(:get_meeting_info).once { raise exception }
         BigbluebuttonRoom.any_instance.should_receive(:finish_meetings).once
       }
-      it { BigbluebuttonRails::BackgroundTasks.finish_meetings }
+      it { expect { BigbluebuttonRails::BackgroundTasks.finish_meetings }.not_to raise_exception }
     end
 
-    context "raises any exception raised if the key is not 'notFound'" do
+    context "calls finish_meetings if an exception other than 'notFound' is raised" do
       let!(:room) { FactoryGirl.create(:bigbluebutton_room) }
       let!(:meeting) { FactoryGirl.create(:bigbluebutton_meeting, ended: false, running: true, room: room) }
       let!(:exception) {
@@ -110,17 +110,14 @@ describe BigbluebuttonRails::BackgroundTasks do
       }
 
       before {
-        BigbluebuttonRoom.any_instance.should_receive(:fetch_meeting_info) { raise exception }
-        BigbluebuttonRoom.any_instance.should_not_receive(:finish_meetings)
+        BigbluebuttonServer.any_instance.should_receive(:api) { api }
+        expect(api).to receive(:get_meeting_info).once { raise exception }
+        BigbluebuttonRoom.any_instance.should_receive(:finish_meetings)
       }
-      it {
-        expect {
-          BigbluebuttonRails::BackgroundTasks.finish_meetings
-        }.to raise_error(exception)
-      }
+      it { expect { BigbluebuttonRails::BackgroundTasks.finish_meetings }.not_to raise_exception }
     end
 
-    context "raises any exception raised if the key is blank" do
+    context "calls finish_meetings if an exception with a blank key is raised" do
       let!(:room) { FactoryGirl.create(:bigbluebutton_room) }
       let!(:meeting) { FactoryGirl.create(:bigbluebutton_meeting, ended: false, running: true, room: room) }
       let!(:exception) {
@@ -130,14 +127,11 @@ describe BigbluebuttonRails::BackgroundTasks do
       }
 
       before {
-        BigbluebuttonRoom.any_instance.should_receive(:fetch_meeting_info) { raise exception }
-        BigbluebuttonRoom.any_instance.should_not_receive(:finish_meetings)
+        BigbluebuttonServer.any_instance.should_receive(:api) { api }
+        expect(api).to receive(:get_meeting_info).once { raise exception }
+        BigbluebuttonRoom.any_instance.should_receive(:finish_meetings)
       }
-      it {
-        expect {
-          BigbluebuttonRails::BackgroundTasks.finish_meetings
-        }.to raise_error(exception)
-      }
+      it { expect { BigbluebuttonRails::BackgroundTasks.finish_meetings }.not_to raise_exception }
     end
   end
 

@@ -10,18 +10,9 @@ module BigbluebuttonRails
         Rails.logger.info "BackgroundTasks: Checking if the meeting has ended: #{meeting.inspect}"
         room = meeting.room
         if room.present? #and !meeting.room.fetch_is_running?
-          begin
-            # `fetch_meeting_info` will automatically update the meeting by
-            # calling `room.update_current_meeting_record`
-            room.fetch_meeting_info
-          rescue BigBlueButton::BigBlueButtonException => e
-            if !e.key.blank? && e.key == 'notFound'
-              Rails.logger.info "BackgroundTasks: detected that a meeting ended: #{meeting.inspect}"
-              room.finish_meetings
-            else
-              raise e
-            end
-          end
+          # `fetch_meeting_info` will automatically update the meeting by
+          # calling `room.update_current_meeting_record`
+          room.fetch_meeting_info
         end
       end
     end
