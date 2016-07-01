@@ -136,14 +136,13 @@ describe BigbluebuttonRails::BackgroundTasks do
   end
 
   describe ".update_recordings" do
-
     context "fetches the meetings for all servers" do
       let!(:server1) { FactoryGirl.create(:bigbluebutton_server) }
       let!(:server2) { FactoryGirl.create(:bigbluebutton_server) }
       before {
         BigbluebuttonServer.stub(:find_each).and_yield(server1).and_yield(server2)
-        server1.should_receive(:fetch_recordings).once
-        server2.should_receive(:fetch_recordings).once
+        server1.should_receive(:fetch_recordings).once.with(nil, true)
+        server2.should_receive(:fetch_recordings).once.with(nil, true)
       }
       it { BigbluebuttonRails::BackgroundTasks.update_recordings }
     end

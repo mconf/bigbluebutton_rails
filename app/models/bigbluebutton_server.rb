@@ -141,11 +141,12 @@ class BigbluebuttonServer < ActiveRecord::Base
   #          metadata values.
   #
   # Triggers API call: <tt>getRecordings</tt>.
-  def fetch_recordings(filter={})
+  def fetch_recordings(filter=nil, full_sync=false)
+    filter ||= {}
     logger.info "Fetching recordings for the server #{self.inspect} with filter: #{filter.inspect}"
     recordings = self.api.get_recordings(filter)
     if recordings and recordings[:recordings]
-      BigbluebuttonRecording.sync(self, recordings[:recordings])
+      BigbluebuttonRecording.sync(self, recordings[:recordings], full_sync)
     end
   end
 

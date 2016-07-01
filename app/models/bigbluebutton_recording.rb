@@ -41,7 +41,7 @@ class BigbluebuttonRecording < ActiveRecord::Base
   # were fetched.
   #
   # TODO: catch exceptions on creating/updating recordings
-  def self.sync(server, recordings)
+  def self.sync(server, recordings, full_sync=false)
     recordings.each do |rec|
       rec_obj = BigbluebuttonRecording.find_by_recordid(rec[:recordID])
       rec_data = adapt_recording_hash(rec)
@@ -58,17 +58,21 @@ class BigbluebuttonRecording < ActiveRecord::Base
       end
     end
 
-    # set as unavailable the recordings that are not in 'recordings'
-    recordIDs = recordings.map{ |rec| rec[:recordID] }
-    if recordIDs.length <= 0 # empty response
-      BigbluebuttonRecording.
-        where(available: true, server: server).
-        update_all(available: false)
-    else
-      BigbluebuttonRecording.
-        where(available: true, server: server).
-        where.not(recordid: recordIDs).
-        update_all(available: false)
+    # set as unavailable the recordings that are not in 'recordings', but
+    # only in a full synchronization process, which means that the recordings
+    # in `recordings` are *all* available in `server`, not a subset.
+    if full_sync
+      recordIDs = recordings.map{ |rec| rec[:recordID] }
+      if recordIDs.length <= 0 # empty response
+        BigbluebuttonRecording.
+          where(available: true, server: server).
+          update_all(available: false)
+      else
+        BigbluebuttonRecording.
+          where(available: true, server: server).
+          where.not(recordid: recordIDs).
+          update_all(available: false)
+      end
     end
   end
 

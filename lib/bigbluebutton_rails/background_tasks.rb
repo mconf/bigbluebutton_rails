@@ -20,7 +20,7 @@ module BigbluebuttonRails
     def self.update_recordings
       BigbluebuttonServer.find_each do |server|
         begin
-          server.fetch_recordings
+          server.fetch_recordings(nil, true)
           Rails.logger.info "BackgroundTasks: List of recordings from #{server.url} updated successfully"
         rescue Exception => e
           Rails.logger.info "BackgroundTasks: Failure fetching recordings from #{server.inspect}"

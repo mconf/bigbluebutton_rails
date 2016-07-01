@@ -267,9 +267,27 @@ describe BigbluebuttonServer do
       let(:response) { { :recordings => [1, 2] } }
       before do
         @api_mock.should_receive(:get_recordings).with(params).and_return(response)
-        BigbluebuttonRecording.should_receive(:sync).with(server, response[:recordings])
+        BigbluebuttonRecording.should_receive(:sync).with(server, response[:recordings], false)
       end
       it { server.fetch_recordings(params) }
+    end
+
+    context "calls get_recordings when `full_sync` is set" do
+      let(:response) { { :recordings => [1, 2] } }
+      before do
+        @api_mock.should_receive(:get_recordings).with(params).and_return(response)
+        BigbluebuttonRecording.should_receive(:sync).with(server, response[:recordings], true)
+      end
+      it { server.fetch_recordings(params, true) }
+    end
+
+    context "calls get_recordings when `filters` is not set" do
+      let(:response) { { :recordings => [1, 2] } }
+      before do
+        @api_mock.should_receive(:get_recordings).with({}).and_return(response)
+        BigbluebuttonRecording.should_receive(:sync).with(server, response[:recordings], false)
+      end
+      it { server.fetch_recordings }
     end
 
     context "when the response is empty" do
