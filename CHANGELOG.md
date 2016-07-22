@@ -9,7 +9,7 @@
   recordings (when using filters in `getRecordings`).
 * [#133] Added option for applications to pass custom metadata when a meeting is being
   created without having to create these metadata in the database.
-* Renamed the attributes `BigbluebuttonServer#salt` to `BigbluebuttonServer#secret`
+* Renamed the attributes `BigbluebuttonServer#salt` to `BigbluebuttonServer#secret`.
 
 
 ------------------------------------
@@ -266,6 +266,7 @@ https://github.com/mconf/bigbluebutton_rails/wiki/Migrate-to-1.3.0
 * Controller to access servers and rooms
 * rooms_controller interacts with a BBB server using bigbluebutton-api-ruby
 
+[2.1.0]: https://github.com/mconf/bigbluebutton_rails/compare/v2.0.0...v2.1.0
 [2.0.0]: https://github.com/mconf/bigbluebutton_rails/compare/v1.4.0...v2.0.0
 [1.4.0]: https://github.com/mconf/bigbluebutton_rails/compare/v1.3.0...v1.4.0
 [1.3.0]: https://github.com/mconf/bigbluebutton_rails/compare/v1.2.0...v1.3.0
