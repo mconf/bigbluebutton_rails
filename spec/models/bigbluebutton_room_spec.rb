@@ -1258,14 +1258,66 @@ describe BigbluebuttonRoom do
 
   describe "#get_metadata_for_create" do
     let(:room) { FactoryGirl.create(:bigbluebutton_room, :server => nil) }
-    before {
-      @m1 = FactoryGirl.create(:bigbluebutton_room_metadata, :owner => room)
-      @m2 = FactoryGirl.create(:bigbluebutton_room_metadata, :owner => room)
-    }
-    it {
-      result = { "meta_#{@m1.name}" => @m1.content, "meta_#{@m2.name}" => @m2.content }
-      room.send(:get_metadata_for_create).should == result
-    }
+
+    context "returns the metadata from the database" do
+      before {
+        @m1 = FactoryGirl.create(:bigbluebutton_room_metadata, :owner => room)
+        @m2 = FactoryGirl.create(:bigbluebutton_room_metadata, :owner => room)
+      }
+      it {
+        result = { "meta_#{@m1.name}" => @m1.content, "meta_#{@m2.name}" => @m2.content }
+        room.send(:get_metadata_for_create).should == result
+      }
+    end
+
+    context "returns the dynamic metadata, if any" do
+      before {
+        BigbluebuttonRoom.class_eval do
+          def dynamic_metadata
+            {
+              "test1" => "value1",
+              "test2" => "value2"
+            }
+          end
+        end
+      }
+      after {
+        BigbluebuttonRoom.class_eval do
+          undef_method :dynamic_metadata
+        end
+      }
+
+      it {
+        result = { "meta_test1" => "value1", "meta_test2" => "value2" }
+        room.send(:get_metadata_for_create).should eql(result)
+      }
+    end
+
+    context "gives priority to the dynamic metadata" do
+      before {
+        BigbluebuttonRoom.class_eval do
+          def dynamic_metadata
+            {
+              "test1" => "value1",
+              "test2" => "value2"
+            }
+          end
+        end
+
+        @m1 = FactoryGirl.create(:bigbluebutton_room_metadata, owner: room, name: "test1", content: "content overwritten")
+        @m2 = FactoryGirl.create(:bigbluebutton_room_metadata, owner: room, name: "other", content: "other content")
+      }
+      after {
+        BigbluebuttonRoom.class_eval do
+          undef_method :dynamic_metadata
+        end
+      }
+
+      it {
+        result = { "meta_test1" => "value1", "meta_test2" => "value2", "meta_other" => "other content" }
+        room.send(:get_metadata_for_create).should eql(result)
+      }
+    end
   end
 
   describe "#get_current_meeting" do
@@ -1505,7 +1557,7 @@ describe BigbluebuttonRoom do
 
       context "doesn't add the invitation URL by default" do
         before {
-          mocked_api.should_receive(:create_meeting)  do |name, meetingid, opts|
+          mocked_api.should_receive(:create_meeting) do |name, meetingid, opts|
             opts.should_not have_key('meta_invitation-url')
             opts.should_not have_key(:'meta_invitation-url')
           end
@@ -1522,11 +1574,17 @@ describe BigbluebuttonRoom do
           end
 
           room.should respond_to(:invitation_url)
-          mocked_api.should_receive(:create_meeting)  do |name, meetingid, opts|
+          mocked_api.should_receive(:create_meeting) do |name, meetingid, opts|
             opts.should_not have_key('meta_invitation-url')
             opts.should_not have_key(:'meta_invitation-url')
           end
         }
+        after {
+          BigbluebuttonRoom.class_eval do
+            undef_method :invitation_url
+          end
+        }
+
         it { room.send(:internal_create_meeting) }
       end
 
@@ -1539,10 +1597,89 @@ describe BigbluebuttonRoom do
           end
 
           room.should respond_to(:invitation_url)
-          mocked_api.should_receive(:create_meeting)  do |name, meetingid, opts|
+          mocked_api.should_receive(:create_meeting) do |name, meetingid, opts|
             opts.should include('meta_invitation-url' => 'http://my-invitation.url')
           end
         }
+        after {
+          BigbluebuttonRoom.class_eval do
+            undef_method :invitation_url
+          end
+        }
+
+        it { room.send(:internal_create_meeting) }
+      end
+    end
+
+    context "adds the dynamic metadata, if any" do
+      before { mock_server_and_api }
+      let(:room) { FactoryGirl.create(:bigbluebutton_room) }
+
+      before {
+        mocked_api.stub(:"request_headers=")
+        room.server = mocked_server
+      }
+
+      it { room.should_not respond_to(:dynamic_metadata) }
+
+      context "doesn't havedefault dynamic metadata" do
+        before {
+          mocked_api.should_receive(:create_meeting) do |name, meetingid, opts|
+            opts.each do |key, value|
+              key.should_not match(/meta_/)
+            end
+          end
+        }
+        it { room.send(:internal_create_meeting) }
+      end
+
+      context "doesn't add the dynamic metadata if it returns nil" do
+        before {
+          BigbluebuttonRoom.class_eval do
+            def dynamic_metadata
+              nil
+            end
+          end
+
+          room.should respond_to(:dynamic_metadata)
+          mocked_api.should_receive(:create_meeting) do |name, meetingid, opts|
+            opts.each do |key, value|
+              key.should_not match(/meta_/)
+            end
+          end
+        }
+        after {
+          BigbluebuttonRoom.class_eval do
+            undef_method :dynamic_metadata
+          end
+        }
+
+        it { room.send(:internal_create_meeting) }
+      end
+
+      context "adds the value returned by BigbluebuttonRoom#invitation_url" do
+        before {
+          BigbluebuttonRoom.class_eval do
+            def dynamic_metadata
+              {
+                "test1" => "value1",
+                "test2" => "value2"
+              }
+            end
+          end
+
+          room.should respond_to(:dynamic_metadata)
+          mocked_api.should_receive(:create_meeting) do |name, meetingid, opts|
+            opts.should include('meta_test1' => 'value1')
+            opts.should include('meta_test2' => 'value2')
+          end
+        }
+        after {
+          BigbluebuttonRoom.class_eval do
+            undef_method :dynamic_metadata
+          end
+        }
+
         it { room.send(:internal_create_meeting) }
       end
     end

@@ -47,6 +47,12 @@ module BigbluebuttonRails
   mattr_accessor :metadata_user_name
   @@metadata_user_name = :'bbbrails-user-name'
 
+  # Name of the metadata parameter that will contain the room's invitation
+  # URL, in case `invitation_url_method` is implemented by the application.
+  # Has to be a symbol!
+  mattr_accessor :metadata_invitation_url
+  @@metadata_invitation_url = :'invitation-url'
+
   # List of invalid metadata keys. Invalid keys are usually keys that are
   # used by the gem and by the application. The application using this gem
   # can add items to this list as well.
@@ -55,29 +61,30 @@ module BigbluebuttonRails
   @@metadata_invalid_keys =
     [ @@metadata_room_id,
       @@metadata_user_id,
-      @@metadata_user_name ]
-
-  # Name of the metadata parameter that will contain the room's invitation
-  # URL, in case `invitation_url_method` is implemented by the application.
-  # Has to be a symbol!
-  mattr_accessor :metadata_invitation_url
-  @@metadata_invitation_url = :'invitation-url'
+      @@metadata_user_name,
+      @@metadata_invitation_url ]
 
   # Name of the attribute of a user that defines his name/username.
-  # Has to be a symbol!
   mattr_accessor :user_attr_name
   @@user_attr_name = :'name'
 
   # Name of the attribute of a user that defines his ID.
-  # Has to be a symbol!
   mattr_accessor :user_attr_id
   @@user_attr_id = :'id'
 
   # Name of the method that returns the invitation URL of a room.
   # Must be implemented by the application, there's no default implemented in this gem.
-  # Has to be a symbol!
   mattr_accessor :invitation_url_method
   @@invitation_url_method = :'invitation_url'
+
+  # Name of the method that returns a hash of metadata to be added to create calls.
+  # By default only the metadata created in the database and associated with the room
+  # will be used. This method can be used to dynamically decide on which metadata to
+  # use when a meeting is about to be created.
+  # Receives the meeting as argument and must return a hash where keys are metadata keys
+  # and values are the metadata values.
+  mattr_accessor :dynamic_metadata_method
+  @@dynamic_metadata_method = :'dynamic_metadata'
 
   # Whether or not the gem should pass the voice bridges set in the rooms when making
   # API calls. By default it is false, meaning that the voice bridge will never be

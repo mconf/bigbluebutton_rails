@@ -598,9 +598,18 @@ class BigbluebuttonRoom < ActiveRecord::Base
   end
 
   def get_metadata_for_create
-    self.metadata.inject({}) { |result, meta|
+    metadata = self.metadata.inject({}) { |result, meta|
       result["meta_#{meta.name}"] = meta.content; result
     }
+
+    dynamic_metadata = self.try(BigbluebuttonRails.dynamic_metadata_method)
+    unless dynamic_metadata.blank?
+      metadata = self.dynamic_metadata.inject(metadata) { |result, meta|
+        result["meta_#{meta[0]}"] = meta[1]; result
+      }
+    end
+
+    metadata
   end
 
   private
