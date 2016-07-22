@@ -1,6 +1,17 @@
 # Change Log
 
 
+## [2.1.0] - 2016-07-22
+
+* [#98] Improved how meeting records are created and ended. Now they are more reliable and
+  will work even if the resque workers are not running.
+* [#132] Fixed recordings being set as unavailable when making requests to a subset of the
+  recordings (when using filters in `getRecordings`).
+* [#133] Added option for applications to pass custom metadata when a meeting is being
+  created without having to create these metadata in the database.
+* Renamed the attributes `BigbluebuttonServer#salt` to `BigbluebuttonServer#secret`
+
+
 ------------------------------------
 
 All tickets below use references to IDs in our old issue tracking system.
