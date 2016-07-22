@@ -139,7 +139,7 @@ GEM
     mono_logger (1.1.0)
     multi_json (1.10.1)
     multi_test (0.1.1)
-    mysql2 (0.3.16)
+    mysql2 (0.3.18)
     net-http-digest_auth (1.4)
     net-http-persistent (2.9.4)
     nokogiri (1.6.2.1)
