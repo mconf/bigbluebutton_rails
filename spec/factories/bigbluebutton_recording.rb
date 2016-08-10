@@ -12,6 +12,7 @@ FactoryGirl.define do
     r.sequence(:recordid) { |n| "rec#{n}-#{SecureRandom.uuid}-#{DateTime.now.to_i}" }
     r.size { rand((20*1024**2)..(500*1024**2)) } # size ranging from 20Mb to 500Mb
     r.available true
+    r.description { Forgery(:lorem_ipsum).words(10) }
 
     after(:create) do |r|
       r.updated_at = r.updated_at.change(:usec => 0)

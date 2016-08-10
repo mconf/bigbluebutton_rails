@@ -72,7 +72,8 @@ describe Bigbluebutton::RecordingsController do
       }
       it {
         saved = BigbluebuttonRecording.find(recording)
-        saved.should have_same_attributes_as(new_recording, ['room_id', 'server_id', 'meeting_id', 'size'])
+        ignored = new_recording.attributes.keys - ['description'] # only description is editable
+        saved.should have_same_attributes_as(new_recording, ignored)
       }
       it { should set_the_flash.to(I18n.t('bigbluebutton_rails.recordings.notice.update.success')) }
     end
@@ -91,7 +92,7 @@ describe Bigbluebutton::RecordingsController do
       let(:attrs) { FactoryGirl.attributes_for(:bigbluebutton_recording) }
       let(:params) { { :bigbluebutton_recording => attrs } }
       let(:allowed_params) {
-        [ :recordid, :meetingid, :name, :published, :start_time, :end_time, :available, :description ]
+        [ :description ]
       }
       it {
         # we just check that the rails method 'permit' is being called on the hash with the

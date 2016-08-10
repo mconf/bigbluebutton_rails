@@ -45,16 +45,15 @@ describe Bigbluebutton::RecordingsController do
       end
 
       context "on failure" do
+        before {
+          BigbluebuttonRecording.any_instance.should_receive(:update_attributes).and_return(false)
+        }
         before(:each) {
-          new_recording.recordid = nil # invalid
           put :update, :id => @recording.to_param, :bigbluebutton_recording => new_recording.attributes, :format => 'json'
         }
         it { should respond_with(:unprocessable_entity) }
         it { should respond_with_content_type('application/json') }
-        it {
-          new_recording.save # should fail
-          should respond_with_json(new_recording.errors.full_messages.to_json)
-        }
+        it { should respond_with_json([].to_json) }
       end
     end
 

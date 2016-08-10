@@ -148,7 +148,7 @@ class Bigbluebutton::RecordingsController < ApplicationController
   end
 
   def recording_allowed_params
-    [ :recordid, :meetingid, :name, :published, :start_time, :end_time, :available, :description ]
+    [ :description ]
   end
 
   protected

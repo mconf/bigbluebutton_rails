@@ -11,48 +11,48 @@
   <% end %>
 
   <div class="field">
+    <%= f.label :description %><br />
+    <%= f.text_field :description %>
+  </div>
+  <div class="field">
     <%= f.label :id %><br />
     <%= @recording.id %>
   </div>
   <div class="field">
     <%= f.label :recordid %><br />
-    <%= f.text_field :recordid %>
+    <%= f.text_field :recordid, :disabled => true %>
   </div>
   <div class="field">
     <%= f.label :name %><br />
-    <%= f.text_field :name %>
+    <%= f.text_field :name, :disabled => true %>
   </div>
   <div class="field">
     <%= f.label :room_id %><br />
-    <%= f.text_field :room_id, :disabled => "disabled" %>
+    <%= f.text_field :room_id, :disabled => true %>
   </div>
   <div class="field">
     <%= f.label :server_id %><br />
-    <%= f.text_field :server_id, :disabled => "disabled" %>
+    <%= f.text_field :server_id, :disabled => true %>
   </div>
   <div class="field">
     <%= f.label :published %><br />
-    <%= f.check_box :published %>
+    <%= f.check_box :published, :disabled => true %>
   </div>
   <div class="field">
     <%= f.label :available %><br />
-    <%= f.check_box :available %>
+    <%= f.check_box :available, :disabled => true %>
   </div>
   <div class="field">
     <%= f.label :start_time %><br />
-    <%= f.text_field :start_time %>
+    <%= f.text_field :start_time, :disabled => true %>
   </div>
   <div class="field">
     <%= f.label :end_time %><br />
-    <%= f.text_field :end_time %>
-  </div>
-  <div class="field">
-    <%= f.label :description %><br />
-    <%= f.text_field :description %>
+    <%= f.text_field :end_time, :disabled => true %>
   </div>
   <div class="field">
     <%= f.label :size %><br />
-    <%= f.text_field :size %>
+    <%= f.text_field :size, :disabled => true %>
   </div>
 
   <p>
