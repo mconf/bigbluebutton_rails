@@ -501,9 +501,9 @@ class BigbluebuttonRoom < ActiveRecord::Base
   def select_server(api_method=nil)
     if self.server.nil?
       BigbluebuttonServer.
-        select("bigbluebutton_servers.*, count(bigbluebutton_rooms.id) as room_count").
+        select("bigbluebutton_servers.id, count(bigbluebutton_rooms.id) as room_count").
         joins("LEFT JOIN bigbluebutton_rooms ON bigbluebutton_servers.id = bigbluebutton_rooms.server_id").
-        group(:server_id).order("room_count ASC").first
+        group(:server_id, 'bigbluebutton_servers.id').order("room_count ASC").first
     else
       nil
     end

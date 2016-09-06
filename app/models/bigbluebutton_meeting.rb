@@ -16,6 +16,8 @@ class BigbluebuttonMeeting < ActiveRecord::Base
   validates :create_time, :presence => true
   validates :create_time, :uniqueness => { :scope => :room_id }
 
+  before_save :truncate_times
+
   # Whether the meeting was created by the `user` or not.
   def created_by?(user)
     unless user.nil?
@@ -23,6 +25,12 @@ class BigbluebuttonMeeting < ActiveRecord::Base
       self.creator_id == userid
     else
       false
+    end
+  end
+
+  def truncate_times
+    if start_time_changed?
+      write_attribute(:start_time, start_time.change(sec: start_time.sec))
     end
   end
 end

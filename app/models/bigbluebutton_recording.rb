@@ -23,13 +23,15 @@ class BigbluebuttonRecording < ActiveRecord::Base
 
   scope :published, -> { where(:published => true) }
 
+  before_save :truncate_times
+
   def to_param
     self.recordid
   end
 
   def default_playback_format
     playback_formats.joins(:playback_type)
-      .where("bigbluebutton_playback_types.default = ?", true).first
+      .where(bigbluebutton_playback_types: { default: true}).first
   end
 
   # Syncs the recordings in the db with the array of recordings in 'recordings',
@@ -236,4 +238,14 @@ class BigbluebuttonRecording < ActiveRecord::Base
     meeting
   end
 
+  def truncate_times
+    if start_time_changed?
+      write_attribute(:start_time, start_time.change(sec: start_time.sec))
+    end
+
+    if end_time_changed?
+      write_attribute(:end_time, start_time.change(sec: end_time.sec))
+    end
+  end
 end
+

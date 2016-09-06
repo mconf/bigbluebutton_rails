@@ -11,7 +11,7 @@ class BigbluebuttonPlaybackFormat < ActiveRecord::Base
   validates :recording_id, :presence => true
 
   scope :ordered, -> {
-    default = joins(:playback_type).where("bigbluebutton_playback_types.default = ?", true)
+    default = joins(:playback_type).where({:bigbluebutton_playback_types => { :default => true}})
     if default.pluck(:id).empty?
       others = all
     else

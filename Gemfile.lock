@@ -37,6 +37,9 @@ GEM
       activemodel (= 4.1.4)
       activesupport (= 4.1.4)
       arel (~> 5.0.0)
+    activerecord-sqlserver-adapter (4.1.2)
+      activerecord (~> 4.1.0)
+      arel
     activesupport (4.1.4)
       i18n (~> 0.6, >= 0.6.9)
       json (~> 1.7, >= 1.7.7)
@@ -113,8 +116,8 @@ GEM
     jquery-rails (2.3.0)
       railties (>= 3.0, < 5.0)
       thor (>= 0.14, < 2.0)
-    json (1.8.1)
-    json (1.8.1-java)
+    json (1.8.3)
+    json (1.8.3-java)
     launchy (2.4.2)
       addressable (~> 2.3)
     launchy (2.4.2-java)
@@ -135,11 +138,11 @@ GEM
       webrobots (>= 0.0.9, < 0.2)
     mime-types (1.25.1)
     mini_portile (0.6.0)
+    mini_portile2 (2.1.0)
     minitest (5.4.0)
     mono_logger (1.1.0)
     multi_json (1.10.1)
     multi_test (0.1.1)
-    mysql2 (0.3.18)
     net-http-digest_auth (1.4)
     net-http-persistent (2.9.4)
     nokogiri (1.6.2.1)
@@ -255,6 +258,8 @@ GEM
     thread_safe (0.3.4)
     thread_safe (0.3.4-java)
     tilt (1.4.1)
+    tiny_tds (1.0.4)
+      mini_portile2 (~> 2.0)
     treetop (1.4.15)
       polyglot
       polyglot (>= 0.3.1)
@@ -282,6 +287,7 @@ PLATFORMS
   ruby
 
 DEPENDENCIES
+  activerecord-sqlserver-adapter
   bbbot-ruby!
   bigbluebutton_rails!
   capybara (~> 2.2.0)
@@ -295,9 +301,9 @@ DEPENDENCIES
   forgery
   generator_spec
   jquery-rails
+  json (~> 1.8.2)
   launchy
   minitest
-  mysql2
   rails_best_practices
   rdoc
   rspec-activemodel-mocks
@@ -306,5 +312,9 @@ DEPENDENCIES
   shoulda-matchers (~> 2.6.1)
   simplecov (>= 0.4.0)
   therubyracer (~> 0.12.0)
+  tiny_tds
   uglifier (>= 1.0.3)
   webmock
+
+BUNDLED WITH
+   1.12.5

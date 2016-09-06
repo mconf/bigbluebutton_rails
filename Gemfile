@@ -2,7 +2,10 @@ source "http://rubygems.org"
 
 gemspec
 
-gem 'mysql2'
+gem 'json', '~> 1.8.2'
+gem 'tiny_tds'
+gem 'activerecord-sqlserver-adapter'
+
 gem "jquery-rails"
 gem "forgery"
 
@@ -33,6 +36,7 @@ group :test do
 
   # to use redis in-memory and clean it in-between tests, used for resque
   gem "fakeredis", :require => "fakeredis/rspec"
+
 end
 
 # Gems used by the test application
