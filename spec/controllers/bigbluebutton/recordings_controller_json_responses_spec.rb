@@ -14,21 +14,21 @@ describe Bigbluebutton::RecordingsController do
       before(:each) { get :index, :format => 'json' }
       it { should respond_with(:success) }
       it { should respond_with_content_type('application/json') }
-      it { should respond_with_json([@recording1, @recording2].to_json) }
+      it { should respond_with_json([@recording1, @recording2].to_json).ignoring_attributes }
     end
 
     describe "#show" do
       before(:each) { get :show, :id => recording.to_param, :format => 'json' }
       it { should respond_with(:success) }
       it { should respond_with_content_type('application/json') }
-      it { should respond_with_json(recording.to_json) }
+      it { should respond_with_json(recording.to_json).ignoring_attributes  }
     end
 
     describe "#show" do
       before(:each) { get :show, :id => recording.to_param, :format => 'json' }
       it { should respond_with(:success) }
       it { should respond_with_content_type('application/json') }
-      it { should respond_with_json(recording.to_json) }
+      it { should respond_with_json(recording.to_json).ignoring_attributes  }
     end
 
     describe "#update" do
