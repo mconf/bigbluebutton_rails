@@ -14,7 +14,7 @@ describe Bigbluebutton::ServersController do
       before(:each) { get :index, :format => 'json' }
       it { should respond_with(:success) }
       it { should respond_with_content_type('application/json') }
-      it { should respond_with_json([@server1, @server2].to_json) }
+      it { should respond_with_json([@server1, @server2].to_json).ignoring_attributes }
     end
 
     describe "#new" do
@@ -28,7 +28,7 @@ describe Bigbluebutton::ServersController do
       before(:each) { get :show, :id => server.to_param, :format => 'json' }
       it { should respond_with(:success) }
       it { should respond_with_content_type('application/json') }
-      it { should respond_with_json(server.to_json) }
+      it { should respond_with_json(server.to_json).ignoring_attributes }
     end
 
     describe "#create" do
@@ -162,7 +162,7 @@ describe Bigbluebutton::ServersController do
       before(:each) { get :rooms, :id => server.to_param, :format => 'json' }
       it { should respond_with(:success) }
       it { should respond_with_content_type('application/json') }
-      it { should respond_with_json([@room1, @room2].to_json) }
+      it { should respond_with_json([@room1, @room2].to_json).ignoring_attributes }
     end
 
     describe "#fetch_recordings" do

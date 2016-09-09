@@ -25,7 +25,7 @@ describe BigbluebuttonRoom do
     it { should have_db_column(:duration).of_type(:integer) }
     it { should have_db_column(:created_at).of_type(:datetime) }
     it { should have_db_column(:updated_at).of_type(:datetime) }
-    it { should have_db_column(:create_time).of_type(:integer) }
+    it { should have_db_column(:create_time).of_type(:decimal) }
     it { should have_db_index(:server_id) }
     it { should have_db_index(:meetingid).unique(true) }
     it "default values" do

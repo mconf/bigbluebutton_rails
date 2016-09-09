@@ -112,7 +112,7 @@ describe BigbluebuttonRecording do
       it { @recording.meetingid.should == data[0][:meetingID] }
       it { @recording.name.should == data[0][:name] }
       it { @recording.published.should == data[0][:published] }
-      it { @recording.end_time.utc.to_i.should == data[0][:endTime].utc.to_i }
+      it { @recording.end_time.sec.should == data[0][:endTime].sec }
       it { @recording.start_time.utc.to_i.should == data[0][:startTime].utc.to_i }
       it { @recording.server.should == new_server }
       it { @recording.room.should == @room }
@@ -144,7 +144,7 @@ describe BigbluebuttonRecording do
       it { @recording.meetingid.should == data[0][:meetingID] }
       it { @recording.name.should == data[0][:name] }
       it { @recording.published.should == data[0][:published] }
-      it { @recording.end_time.utc.to_i.should == data[0][:endTime].utc.to_i }
+      it { @recording.end_time.sec.should == data[0][:endTime].sec }
       it { @recording.start_time.utc.to_i.should == data[0][:startTime].utc.to_i }
       it { @recording.server.should == new_server }
       it { @recording.room.should == @room }
@@ -293,7 +293,7 @@ describe BigbluebuttonRecording do
       it { recording.meetingid.should == attrs[:meetingid] }
       it { recording.name.should == attrs[:name] }
       it { recording.published.should == !old_attrs[:published] }
-      it { recording.end_time.utc.to_i.should == attrs[:end_time].utc.to_i }
+      it { recording.end_time.sec.should == attrs[:end_time].sec }
       it { recording.start_time.utc.to_i.should == attrs[:start_time].utc.to_i }
       it { recording.size.should == attrs[:size] }
       it { recording.server.should == new_server }
@@ -341,7 +341,7 @@ describe BigbluebuttonRecording do
     it("sets meetingid") { @recording.meetingid.should == attrs[:meetingid] }
     it("sets name") { @recording.name.should == attrs[:name] }
     it("sets published") { @recording.published.should == attrs[:published] }
-    it("sets end_time") { @recording.end_time.utc.to_i.should == attrs[:end_time].utc.to_i }
+    it("sets end_time") { @recording.end_time.sec.should == attrs[:end_time].sec }
     it("sets start_time") { @recording.start_time.utc.to_i.should == attrs[:start_time].utc.to_i }
     it("sets server") { @recording.server.should == new_server }
     it("sets room") { @recording.room.should == @room }

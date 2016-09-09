@@ -2,9 +2,11 @@ source "http://rubygems.org"
 
 gemspec
 
+gem 'responders', '~> 2.0'
+
 gem 'json', '~> 1.8.2'
 gem 'tiny_tds'
-gem 'activerecord-sqlserver-adapter'
+gem 'activerecord-sqlserver-adapter', '~> 4.2.15'
 
 gem "jquery-rails"
 gem "forgery"

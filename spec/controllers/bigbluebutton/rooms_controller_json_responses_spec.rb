@@ -19,7 +19,7 @@ describe Bigbluebutton::RoomsController do
       before(:each) { get :index, :format => 'json' }
       it { should respond_with(:success) }
       it { should respond_with_content_type('application/json') }
-      it { should respond_with_json([@room1, @room2].to_json) }
+      it { should respond_with_json([@room1, @room2].to_json).ignoring_values }
     end
 
     describe "#new" do
@@ -37,7 +37,7 @@ describe Bigbluebutton::RoomsController do
       before(:each) { get :show, :id => room.to_param, :format => 'json' }
       it { should respond_with(:success) }
       it { should respond_with_content_type('application/json') }
-      it { should respond_with_json(room.to_json) }
+      it { should respond_with_json(room.to_json).ignoring_values }
     end
 
     describe "#create" do

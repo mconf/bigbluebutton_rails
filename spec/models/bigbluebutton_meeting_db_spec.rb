@@ -13,7 +13,7 @@ describe BigbluebuttonMeeting do
     it { should have_db_column(:recorded).of_type(:boolean) }
     it { should have_db_column(:creator_id).of_type(:integer) }
     it { should have_db_column(:creator_name).of_type(:string) }
-    it { should have_db_column(:create_time).of_type(:integer) }
+    it { should have_db_column(:create_time).of_type(:decimal) }
     it { should have_db_index([:meetingid, :create_time]).unique(true) }
     it { should have_db_column(:ended).of_type(:boolean) }
     it { should have_db_column(:server_url).of_type(:string) }

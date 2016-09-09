@@ -455,7 +455,7 @@ describe BigbluebuttonRoom do
       let(:time) { 1409531761442 }
       let(:new_moderator_api_password) { Forgery(:basic).password }
       let(:new_attendee_api_password) { Forgery(:basic).password }
-      let(:voice_bridge) { SecureRandom.random_number(99999) }
+      let(:voice_bridge) { SecureRandom.random_number(99999).to_s }
       let(:hash_create) {
         {
           :returncode => "SUCCESS", :meetingID => "test_id",
@@ -518,10 +518,10 @@ describe BigbluebuttonRoom do
             room.server = mocked_server
             room.send_create
           end
-          it { room.attendee_api_password.should be(new_attendee_api_password) }
-          it { room.moderator_api_password.should be(new_moderator_api_password) }
-          it { room.voice_bridge.should be(voice_bridge) }
-          it { room.changed?.should be(false) }
+          it { room.attendee_api_password.should eq(new_attendee_api_password) }
+          it { room.moderator_api_password.should eq(new_moderator_api_password) }
+          it { room.voice_bridge.should eq(voice_bridge) }
+          it { room.changed?.should be_false }
         end
 
         context "for a new record" do
@@ -535,9 +535,9 @@ describe BigbluebuttonRoom do
             new_room.server = mocked_server
             new_room.send_create
           end
-          it { new_room.attendee_api_password.should be(new_attendee_api_password) }
-          it { new_room.moderator_api_password.should be(new_moderator_api_password) }
-          it { new_room.voice_bridge.should be(voice_bridge) }
+          it { new_room.attendee_api_password.should eq(new_attendee_api_password) }
+          it { new_room.moderator_api_password.should eq(new_moderator_api_password) }
+          it { new_room.voice_bridge.should eq(voice_bridge) }
           it("doesn't save the record") { new_room.new_record?.should be(true) }
           it("doesn't create a meeting") { BigbluebuttonMeeting.where(room: new_room).should be_empty }
           it("doesn't schedule a meeting updater") {
@@ -556,8 +556,8 @@ describe BigbluebuttonRoom do
             room.server = mocked_server
             room.send_create(user)
           end
-          it { room.attendee_api_password.should be(new_attendee_api_password) }
-          it { room.moderator_api_password.should be(new_moderator_api_password) }
+          it { room.attendee_api_password.should eq(new_attendee_api_password) }
+          it { room.moderator_api_password.should eq(new_moderator_api_password) }
           it { room.changed?.should be(false) }
         end
 
@@ -573,8 +573,8 @@ describe BigbluebuttonRoom do
             room.server = mocked_server
             room.send_create(user, user_opts)
           end
-          it { room.attendee_api_password.should be(new_attendee_api_password) }
-          it { room.moderator_api_password.should be(new_moderator_api_password) }
+          it { room.attendee_api_password.should eq(new_attendee_api_password) }
+          it { room.moderator_api_password.should eq(new_moderator_api_password) }
           it { room.changed?.should be(false) }
         end
 
@@ -604,7 +604,7 @@ describe BigbluebuttonRoom do
           }
 
           context "sets the voice bridge in the params if there's a voice bridge" do
-            let(:voice_bridge) { SecureRandom.random_number(99999) }
+            let(:voice_bridge) { SecureRandom.random_number(99999).to_s }
             before do
               room.update_attributes(:voice_bridge => voice_bridge)
               create_params = get_create_params(room)
@@ -617,11 +617,11 @@ describe BigbluebuttonRoom do
               room.server = mocked_server
               room.send_create
             end
-            it { room.changed?.should be(false) }
+            it { room.should_not be_changed }
           end
 
           context "doesn't set the voice bridge if it's blank" do
-            let(:voice_bridge) { SecureRandom.random_number(99999) }
+            let(:voice_bridge) { SecureRandom.random_number(99999).to_s }
             before do
               room.update_attributes(:voice_bridge => "")
 
@@ -1329,12 +1329,12 @@ describe BigbluebuttonRoom do
     end
 
     context "if the room has a create_time set" do
+      let(:m1) { FactoryGirl.create(:bigbluebutton_meeting, :room => room, :create_time => Time.now.utc - 2.minutes) }
+      let(:m2) { FactoryGirl.create(:bigbluebutton_meeting, :room => room, :create_time => Time.now.utc) }
       before {
-        @m1 = FactoryGirl.create(:bigbluebutton_meeting, :room => room, :create_time => Time.now.utc - 2.minutes)
-        @m2 = FactoryGirl.create(:bigbluebutton_meeting, :room => room, :create_time => Time.now.utc)
-        room.update_attributes(create_time: @m1.create_time)
+        room.update_attributes(create_time: m1.create_time)
       }
-      it("returns the correct BigbluebuttonMeeting") { room.get_current_meeting.should eql(@m1) }
+      it("returns the correct BigbluebuttonMeeting") { room.get_current_meeting.should eq(m1) }
     end
   end
 

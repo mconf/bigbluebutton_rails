@@ -17,7 +17,7 @@ Gem::Specification.new do |s|
   s.test_files    = `git ls-files -- {test,spec,features}/*`.split("\n")
   s.require_paths = ["lib"]
 
-  s.add_dependency("rails", ">= 4.0.0")
+  s.add_dependency("rails", ">= 4.2.0")
   s.add_dependency("bigbluebutton-api-ruby", "~> 1.6")
   s.add_dependency("resque", "~> 1.25.1")
   s.add_dependency("resque-scheduler", "~> 3.0")
