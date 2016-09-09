@@ -9,6 +9,7 @@ class ApplicationController < ActionController::Base
 end
 
 class User
+  attr_accessor :username
   attr_accessor :name
   attr_accessor :id
 
