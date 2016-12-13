@@ -168,6 +168,11 @@ class BigbluebuttonServer < ActiveRecord::Base
     self.version
   end
 
+  # Returns the URL to the <tt>/check</tt> request in the server.
+  def check_url
+    self.api.check_url
+  end
+
   protected
 
   def init

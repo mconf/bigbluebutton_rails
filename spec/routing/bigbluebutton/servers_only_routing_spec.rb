@@ -37,7 +37,10 @@ describe ActionController do
       {:get => "/only-servers/bigbluebutton/servers/1/activity"}.
       should route_to(:controller => "bigbluebutton/servers", :action => "activity", :id => "1")
     }
-
+    it {
+      {:get => "/only-servers/bigbluebutton/servers/1/check"}.
+        should route_to(:controller => "bigbluebutton/servers", :action => "check", :id => "1")
+    }
   end
 
 end

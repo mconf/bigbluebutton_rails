@@ -447,4 +447,20 @@ describe BigbluebuttonServer do
     end
   end
 
+  describe "#check_url" do
+    let(:server) { FactoryGirl.create(:bigbluebutton_server) }
+
+    it { should respond_to(:check_url) }
+
+    context "returns what api.check_url returns" do
+      before do
+        @api_mock = double(BigBlueButton::BigBlueButtonApi)
+        server.stub(:api).and_return(@api_mock)
+        @api_mock.should_receive(:check_url).
+          and_return('http://test-server.com/check')
+      end
+      it { server.check_url.should eql('http://test-server.com/check') }
+    end
+  end
+
 end

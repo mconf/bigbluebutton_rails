@@ -583,4 +583,20 @@ describe Bigbluebutton::ServersController do
     end
   end
 
+  describe "#check" do
+    before do
+      # return our mocked server
+      BigbluebuttonServer.stub(:find_by_param).with(server.to_param).and_return(server)
+    end
+
+    context "on success" do
+      before(:each) {
+        server.should_receive(:check_url).and_return('http://test-server.com/check')
+        post :check, :id => server.to_param
+      }
+      it { should respond_with(:redirect) }
+      it { should redirect_to 'http://test-server.com/check' }
+    end
+  end
+
 end

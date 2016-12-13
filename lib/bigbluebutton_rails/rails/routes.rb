@@ -122,6 +122,7 @@ module ActionDispatch::Routing
           get :activity
           get :rooms
           get :recordings
+          get :check
           post :publish_recordings
           post :unpublish_recordings
           post :fetch_recordings

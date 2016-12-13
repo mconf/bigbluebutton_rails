@@ -157,6 +157,10 @@ class Bigbluebutton::ServersController < ApplicationController
     end
   end
 
+  def check
+    redirect_to @server.check_url
+  end
+
   protected
 
   def find_server
