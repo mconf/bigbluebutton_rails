@@ -8,7 +8,7 @@ describe Bigbluebutton::RoomsController do
     let(:bbb_error_msg) { SecureRandom.hex(250) }
     let(:bbb_error) { BigBlueButton::BigBlueButtonException.new(bbb_error_msg) }
     let(:http_referer) { bigbluebutton_server_path(mocked_server) }
-    let(:room) { FactoryGirl.create(:bigbluebutton_room, :server => mocked_server) }
+    let(:room) { FactoryGirl.create(:bigbluebutton_room) }
     before {
       BigbluebuttonRoom.stub(:find_by_param) { room }
       BigbluebuttonRoom.stub(:find) { room }

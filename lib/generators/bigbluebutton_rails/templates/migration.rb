@@ -11,7 +11,6 @@ class CreateBigbluebuttonRails < ActiveRecord::Migration
     end
 
     create_table :bigbluebutton_rooms do |t|
-      t.integer :server_id
       t.integer :owner_id
       t.string :owner_type
       t.string :meetingid
@@ -36,7 +35,6 @@ class CreateBigbluebuttonRails < ActiveRecord::Migration
       t.boolean :allow_start_stop_recording, default: true
       t.timestamps
     end
-    add_index :bigbluebutton_rooms, :server_id
     add_index :bigbluebutton_rooms, :meetingid, :unique => true
 
     create_table :bigbluebutton_room_options do |t|
@@ -92,7 +90,6 @@ class CreateBigbluebuttonRails < ActiveRecord::Migration
     end
 
     create_table :bigbluebutton_meetings do |t|
-      t.integer :server_id
       t.string :server_url
       t.string :server_secret
       t.integer :room_id

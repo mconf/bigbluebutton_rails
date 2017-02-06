@@ -1,7 +1,6 @@
 class BigbluebuttonMeeting < ActiveRecord::Base
   include ActiveModel::ForbiddenAttributesProtection
 
-  belongs_to :server, :class_name => 'BigbluebuttonServer'
   belongs_to :room, :class_name => 'BigbluebuttonRoom'
 
   has_one :recording,

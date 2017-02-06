@@ -106,11 +106,6 @@ class Bigbluebutton::ServersController < ApplicationController
     respond_with(@recordings)
   end
 
-  def rooms
-    @rooms ||= @server.rooms
-    respond_with(@rooms)
-  end
-
   def publish_recordings
     self.publish_unpublish(params[:recordings], true)
   end

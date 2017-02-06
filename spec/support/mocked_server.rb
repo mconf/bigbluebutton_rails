@@ -10,7 +10,7 @@ def mock_server_and_api
 
   # when testing rooms
   if defined?(room) and not room.nil?
-    room.stub(:server) { @server_mock }
+    room.stub(:select_server) { @server_mock }
     BigbluebuttonRoom.stub(:find_by_param) { room }
     BigbluebuttonRoom.stub(:find) { room }
   end

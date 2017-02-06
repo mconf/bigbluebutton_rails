@@ -185,19 +185,17 @@ class Bigbluebutton::RoomsController < ApplicationController
   def fetch_recordings
     error = false
 
-    if @room.server.nil?
-      error = true
-      message = t('bigbluebutton_rails.rooms.errors.fetch_recordings.no_server')
-    else
-      begin
-        # filter only recordings created by this room
-        filter = { :meetingID => @room.meetingid }
-        @room.server.fetch_recordings(filter)
+    begin
+      result = @room.fetch_recordings
+      if result
         message = t('bigbluebutton_rails.rooms.notice.fetch_recordings.success')
-      rescue BigBlueButton::BigBlueButtonException => e
+      else
         error = true
-        message = e.to_s[0..200]
+        message = t('bigbluebutton_rails.rooms.errors.fetch_recordings.no_server')
       end
+    rescue BigBlueButton::BigBlueButtonException => e
+      error = true
+      message = e.to_s[0..200]
     end
 
     respond_with do |format|
@@ -388,7 +386,7 @@ class Bigbluebutton::RoomsController < ApplicationController
   end
 
   def room_allowed_params
-    [ :name, :server_id, :meetingid, :attendee_key, :moderator_key, :welcome_msg,
+    [ :name, :meetingid, :attendee_key, :moderator_key, :welcome_msg,
       :private, :logout_url, :dial_number, :voice_bridge, :max_participants, :owner_id,
       :owner_type, :external, :param, :record_meeting, :duration, :default_layout, :presenter_share_only,
       :auto_start_video, :auto_start_audio, :background,

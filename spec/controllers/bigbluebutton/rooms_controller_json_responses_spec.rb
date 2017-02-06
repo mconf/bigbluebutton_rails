@@ -3,7 +3,7 @@ require 'spec_helper'
 describe Bigbluebutton::RoomsController do
   render_views
   let(:server) { FactoryGirl.create(:bigbluebutton_server) }
-  let(:room) { FactoryGirl.create(:bigbluebutton_room, :server => server) }
+  let(:room) { FactoryGirl.create(:bigbluebutton_room) }
   before do
     BigbluebuttonRoom.stub(:find_by_param) { room }
     BigbluebuttonRoom.stub(:find) { room }
@@ -13,8 +13,8 @@ describe Bigbluebutton::RoomsController do
 
     describe "#index" do
       before do
-        @room1 = FactoryGirl.create(:bigbluebutton_room, :server => server)
-        @room2 = FactoryGirl.create(:bigbluebutton_room, :server => server)
+        @room1 = FactoryGirl.create(:bigbluebutton_room)
+        @room2 = FactoryGirl.create(:bigbluebutton_room)
       end
       before(:each) { get :index, :format => 'json' }
       it { should respond_with(:success) }
@@ -41,7 +41,7 @@ describe Bigbluebutton::RoomsController do
     end
 
     describe "#create" do
-      let(:new_room) { FactoryGirl.build(:bigbluebutton_room, :server => server) }
+      let(:new_room) { FactoryGirl.build(:bigbluebutton_room) }
 
       context "on success" do
         before(:each) {

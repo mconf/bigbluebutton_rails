@@ -3,8 +3,6 @@ class BigbluebuttonRoom < ActiveRecord::Base
 
   belongs_to :owner, polymorphic: true
 
-  belongs_to :server, class_name: 'BigbluebuttonServer'
-
   has_many :recordings,
            :class_name => 'BigbluebuttonRecording',
            :foreign_key => 'room_id',
@@ -105,10 +103,9 @@ class BigbluebuttonRoom < ActiveRecord::Base
   #
   # Triggers API call: <tt>getMeetingInfo</tt>.
   def fetch_meeting_info
-    require_server :get_meeting_info
-
     begin
-      response = self.server.api.get_meeting_info(self.meetingid, self.moderator_api_password)
+      server = select_server(:get_meeting_info)
+      response = server.api.get_meeting_info(self.meetingid, self.moderator_api_password)
 
       @participant_count = response[:participantCount]
       @moderator_count = response[:moderatorCount]
@@ -147,16 +144,16 @@ class BigbluebuttonRoom < ActiveRecord::Base
   #
   # Triggers API call: <tt>isMeetingRunning</tt>.
   def fetch_is_running?
-    require_server :is_meeting_running
-    @running = self.server.api.is_meeting_running?(self.meetingid)
+    server = select_server(:is_meeting_running)
+    @running = server.api.is_meeting_running?(self.meetingid)
   end
 
   # Sends a call to the BBB server to end the meeting.
   #
   # Triggers API call: <tt>end</tt>.
   def send_end
-    require_server :end
-    response = self.server.api.end_meeting(self.meetingid, self.moderator_api_password)
+    server = select_server(:end)
+    response = server.api.end_meeting(self.meetingid, self.moderator_api_password)
 
     # enqueue an update in the meeting to end it faster
     Resque.enqueue(::BigbluebuttonMeetingUpdater, self.id)
@@ -170,18 +167,12 @@ class BigbluebuttonRoom < ActiveRecord::Base
   #   request. Can be passed by the application to enforce some values over the values
   #   that are taken from the database.
   #
-  # Will trigger 'select_server' to select a server where the meeting
-  # will be created. If a server is selected, the model is saved.
-  #
   # With the response, updates the following attributes:
   # * <tt>attendee_api_password</tt>
   # * <tt>moderator_api_password</tt>
   #
   # Triggers API call: <tt>create</tt>.
   def send_create(user=nil, user_opts={})
-    # updates the server whenever a meeting will be created and guarantees it has a meetingid
-    require_server :create
-
     self.meetingid = unique_meetingid() if self.meetingid.blank?
     self.moderator_api_password = internal_password() if self.moderator_api_password.blank?
     self.attendee_api_password = internal_password() if self.attendee_api_password.blank?
@@ -217,17 +208,18 @@ class BigbluebuttonRoom < ActiveRecord::Base
   #
   # Uses the API but does not require a request to the server.
   def join_url(username, role, key=nil, options={})
-    require_server :join_meeting_url
+    server = select_server(:join_meeting_url)
 
-    case role
-    when :moderator
-      r = self.server.api.join_meeting_url(self.meetingid, username, self.moderator_api_password, options)
-    when :attendee
-      r = self.server.api.join_meeting_url(self.meetingid, username, self.attendee_api_password, options)
-    else
-      r = self.server.api.join_meeting_url(self.meetingid, username, map_key_to_internal_password(key), options)
-    end
+    pass = case role
+           when :moderator
+             self.moderator_api_password
+           when :attendee
+             self.attendee_api_password
+           else
+             map_key_to_internal_password(key)
+           end
 
+    r = server.api.join_meeting_url(self.meetingid, username, pass, options)
     r.strip! unless r.nil?
     r
   end
@@ -356,11 +348,11 @@ class BigbluebuttonRoom < ActiveRecord::Base
         # has not yet been set as ended
         self.finish_meetings
 
+        server = select_server
         attrs = {
           room: self,
-          server: self.server,
-          server_url: self.server.url,
-          server_secret: self.server.secret,
+          server_url: server.url,
+          server_secret: server.secret,
           meetingid: self.meetingid,
           name: self.name,
           recorded: self.record_meeting,
@@ -415,17 +407,18 @@ class BigbluebuttonRoom < ActiveRecord::Base
   # Triggers API call: <tt>setConfigXML</tt>.
   def fetch_new_token
     if self.room_options.is_modified?
+      server = select_server(:set_config_xml)
 
       # get the default XML we will use to create a new one
-      config_xml = self.server.api.get_default_config_xml
+      config_xml = server.api.get_default_config_xml
 
       # set the options on the XML
       # returns true if something was changed
       config_xml = self.room_options.set_on_config_xml(config_xml)
       if config_xml
-        self.server.update_config(config_xml)
+        server.update_config(config_xml)
         # get the new token for the room, and return it
-        self.server.api.set_config_xml(self.meetingid, config_xml)
+        server.api.set_config_xml(self.meetingid, config_xml)
       else
         nil
       end
@@ -435,14 +428,17 @@ class BigbluebuttonRoom < ActiveRecord::Base
   end
 
   def available_layouts
+    server = select_server
     server.present? ? server.available_layouts : []
   end
 
   def available_layouts_names
+    server = select_server
     server.present? ? server.available_layouts_names : []
   end
 
   def available_layouts_for_select
+    server = select_server
     server.present? ? server.available_layouts_for_select : []
   end
 
@@ -461,52 +457,40 @@ class BigbluebuttonRoom < ActiveRecord::Base
     nil
   end
 
-  protected
-
-  def create_room_options
-    BigbluebuttonRoomOptions.create(:room => self)
-  end
-
-  # Every room needs a server to be used.
-  # The server of a room can change during the room's lifespan, but
-  # it should not change if the room is running or if it was created
-  # but not yet ended.
-  # Any action that requires a server should call 'require_server' before
-  # anything else.
-  # This method will automatically select a server if the room has no server
-  # set on it yet.
-  def require_server(api_method=nil)
-    selected_server = select_server(api_method)
-    unless selected_server.nil?
-      self.server = selected_server
-      self.save if selected_server && !self.new_record?
-    end
-    if self.server.nil?
-      msg = I18n.t('bigbluebutton_rails.rooms.errors.server.nil')
-      raise BigbluebuttonRails::ServerRequired.new(msg)
+  def fetch_recordings(filter={})
+    server = select_server(:get_recordings)
+    if server.present?
+      server.fetch_recordings(filter.merge({ meetingID: self.meetingid }))
+      true
+    else
+      false
     end
   end
 
-  # Selects the server with less rooms in it in case this room has no server
-  # set to it yet. Returns nil if there are no servers to select or if the
-  # room already has a server associated to it.
+  # Selects a server to be used by this room whenever it needs to make API calls.
+  # By default, if no servers are available an exception is raised.
   #
-  # This method can be overridden to change the way the server is selected
+  # This method can be overwritten to change the way the server is selected
   # before a room is used. `api_method` contains the API method that is being
-  # called. Any server returned here will be used. If no server is returned, the
-  # room will continue with its current server (if any).
+  # called. Any server returned here will be used. It *must* return a server,
+  # otherwise the API calls will fail and the code will probably break.
+  #
   # One good example is to always select a new server when a meeting is being
   # created (in case `api_method` is `:create`), making this a simple load
   # balancing tool that can work well in simple cases.
   def select_server(api_method=nil)
-    if self.server.nil?
-      BigbluebuttonServer.
-        select("bigbluebutton_servers.*, count(bigbluebutton_rooms.id) as room_count").
-        joins("LEFT JOIN bigbluebutton_rooms ON bigbluebutton_servers.id = bigbluebutton_rooms.server_id").
-        group(:server_id).order("room_count ASC").first
-    else
-      nil
+    server = BigbluebuttonServer.first
+    if server.nil?
+      msg = I18n.t('bigbluebutton_rails.rooms.errors.server.nil')
+      raise BigbluebuttonRails::ServerRequired.new(msg)
     end
+    server
+  end
+
+  protected
+
+  def create_room_options
+    BigbluebuttonRoomOptions.create(:room => self)
   end
 
   def init
@@ -561,8 +545,9 @@ class BigbluebuttonRoom < ActiveRecord::Base
       opts.merge!({ "meta_#{BigbluebuttonRails.metadata_invitation_url}" => invitation_url })
     end
 
-    self.server.api.request_headers = @request_headers # we need the client's IP
-    response = self.server.api.create_meeting(self.name, self.meetingid, opts)
+    server = select_server(:create)
+    server.api.request_headers = @request_headers # we need the client's IP
+    response = server.api.create_meeting(self.name, self.meetingid, opts)
 
     response
   end

@@ -3,15 +3,10 @@ require 'bigbluebutton_api'
 class BigbluebuttonServer < ActiveRecord::Base
   include ActiveModel::ForbiddenAttributesProtection
 
-  has_many :rooms,
-           :class_name => 'BigbluebuttonRoom',
-           :foreign_key => 'server_id',
-           :dependent => :nullify
-
   has_many :recordings,
-           :class_name => 'BigbluebuttonRecording',
-           :foreign_key => 'server_id',
-           :dependent => :nullify
+           class_name: 'BigbluebuttonRecording',
+           foreign_key: 'server_id',
+           dependent: :nullify
 
   has_one :config,
           class_name: 'BigbluebuttonServerConfig',
@@ -90,15 +85,21 @@ class BigbluebuttonServer < ActiveRecord::Base
     # updates the information in the rooms that are currently in BBB
     @meetings = []
     response[:meetings].each do |attr|
-      room = BigbluebuttonRoom.find_by_server_id_and_meetingid(self.id, attr[:meetingID])
+      room = BigbluebuttonRoom.find_by(meetingid: attr[:meetingID])
       # TODO: there might be more attributes returned by the API, review them all
       if room.nil?
-        room = BigbluebuttonRoom.new(:server => self, :meetingid => attr[:meetingID],
-                                     :name => attr[:meetingID], :attendee_api_password => attr[:attendeePW],
-                                     :moderator_api_password => attr[:moderatorPW], :external => true, :private => true)
+        attrs = {
+          meetingid: attr[:meetingID],
+          name: attr[:meetingID],
+          attendee_api_password: attr[:attendeePW],
+          moderator_api_password: attr[:moderatorPW],
+          external: true,
+          private: true
+        }
+        room = BigbluebuttonRoom.new(attrs)
       else
-        room.update_attributes(:attendee_api_password => attr[:attendeePW],
-                               :moderator_api_password => attr[:moderatorPW])
+        room.update_attributes(attendee_api_password: attr[:attendeePW],
+                               moderator_api_password: attr[:moderatorPW])
       end
       room.running = attr[:running]
       room.update_current_meeting_record

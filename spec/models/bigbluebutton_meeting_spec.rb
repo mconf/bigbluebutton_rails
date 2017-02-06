@@ -8,9 +8,6 @@ describe BigbluebuttonMeeting do
 
   before { FactoryGirl.create(:bigbluebutton_meeting) }
 
-  it { should belong_to(:server) }
-  it { should_not validate_presence_of(:server_id) }
-
   it { should belong_to(:room) }
   it { should validate_presence_of(:room) }
 

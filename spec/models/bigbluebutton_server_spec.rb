@@ -6,8 +6,6 @@ describe BigbluebuttonServer do
     BigbluebuttonServer.new.should be_a_kind_of(ActiveRecord::Base)
   end
 
-  it { should have_many(:rooms).dependent(:nullify) }
-
   it { should have_many(:recordings).dependent(:nullify) }
 
   it { should have_one(:config).dependent(:destroy) }
@@ -29,18 +27,9 @@ describe BigbluebuttonServer do
     it { should validate_uniqueness_of(:param) }
   end
 
-  it "has associated rooms" do
-    server = FactoryGirl.create(:bigbluebutton_server)
-    server.rooms.should be_empty
-
-    r = FactoryGirl.create(:bigbluebutton_room, :server => server)
-    server = BigbluebuttonServer.find(server.id)
-    server.rooms.should == [r]
-  end
-
   it "has associated recordings" do
     server = FactoryGirl.create(:bigbluebutton_server)
-    server.rooms.should be_empty
+    server.recordings.should be_empty
 
     r = FactoryGirl.create(:bigbluebutton_recording, :server => server)
     server = BigbluebuttonServer.find(server.id)
@@ -170,8 +159,9 @@ describe BigbluebuttonServer do
 
   describe "#fetch_meetings" do
     let(:server) { FactoryGirl.create(:bigbluebutton_server) }
-    let(:room1) { FactoryGirl.create(:bigbluebutton_room, :server => server, :meetingid => "room1") }
-    let(:room2) { FactoryGirl.create(:bigbluebutton_room, :server => server, :meetingid => "room2") }
+    let(:room1) { FactoryGirl.create(:bigbluebutton_room, :meetingid => "room1") }
+    let(:room2) { FactoryGirl.create(:bigbluebutton_room, :meetingid => "room2") }
+    let!(:api) { double(BigBlueButton::BigBlueButtonApi) }
 
     # the hashes should be exactly as returned by bigbluebutton-api-ruby to be sure we are testing it right
     let(:meetings) {
@@ -188,9 +178,9 @@ describe BigbluebuttonServer do
     }
 
     before {
-      @api_mock = double(BigBlueButton::BigBlueButtonApi)
-      server.stub(:api).and_return(@api_mock)
-      @api_mock.should_receive(:get_meetings).and_return(hash)
+      server.stub(:api).and_return(api)
+      BigbluebuttonServer.any_instance.stub(:api).and_return(api)
+      api.should_receive(:get_meetings).and_return(hash)
       server.fetch_meetings
 
       # the keys are updated during fetch_meetings
@@ -205,7 +195,6 @@ describe BigbluebuttonServer do
     it { server.meetings[1].should have_same_attributes_as(room2) }
     it { server.meetings[2].meetingid.should == "im not in the db" }
     it { server.meetings[2].name.should == "im not in the db" }
-    it { server.meetings[2].server.should == server }
     it { server.meetings[2].attendee_api_password.should == "pass" }
     it { server.meetings[2].moderator_api_password.should == "pass" }
     it { server.meetings[2].running.should == true }
