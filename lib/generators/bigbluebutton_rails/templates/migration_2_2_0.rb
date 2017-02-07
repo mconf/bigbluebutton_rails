@@ -62,7 +62,7 @@ class BigbluebuttonRailsTo220 < ActiveRecord::Migration
     meeting_id = recording.meeting_id
     if meeting_id.nil?
       meeting = BigbluebuttonMeeting.where("meetingid = ? AND created_at > ? AND created_at < ?",
-                recording.meetingid, Time.at(recording.start_time)-2.minutes, Time.at(recording.start_time)+2.minutes).last
+                recording.meetingid, Time.at(recording.start_time)-2.minutes, Time.at(recording.start_time)+2.minutes).first
 
       if meeting.nil?
         meeting_id = nil
