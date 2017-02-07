@@ -61,7 +61,7 @@ class BigbluebuttonRoom < ActiveRecord::Base
 
   # Note: these params need to be fetched from the server before being accessed
   attr_accessor :running, :participant_count, :moderator_count, :attendees,
-                :has_been_forcibly_ended, :start_time, :end_time
+                :has_been_forcibly_ended, :end_time
 
   after_initialize :init
   after_create :create_room_options
@@ -99,7 +99,7 @@ class BigbluebuttonRoom < ActiveRecord::Base
   # * <tt>moderator_count</tt>
   # * <tt>running</tt>
   # * <tt>has_been_forcibly_ended</tt>
-  # * <tt>start_time</tt>
+  # * <tt>create_time</tt>
   # * <tt>end_time</tt>
   # * <tt>attendees</tt> (array of <tt>BigbluebuttonAttendee</tt>)
   #
@@ -114,7 +114,6 @@ class BigbluebuttonRoom < ActiveRecord::Base
       @moderator_count = response[:moderatorCount]
       @running = response[:running]
       @has_been_forcibly_ended = response[:hasBeenForciblyEnded]
-      @start_time = response[:startTime]
       @end_time = response[:endTime]
       @attendees = []
       if response[:attendees].present?
@@ -255,7 +254,7 @@ class BigbluebuttonRoom < ActiveRecord::Base
   # From: http://alicebobandmallory.com/articles/2009/11/02/comparing-instance-variables-in-ruby
   def instance_variables_compare(o)
     vars = [ :@running, :@participant_count, :@moderator_count, :@attendees,
-             :@has_been_forcibly_ended, :@start_time, :@end_time ]
+             :@has_been_forcibly_ended, :@end_time ]
     Hash[*vars.map { |v|
            self.instance_variable_get(v)!=o.instance_variable_get(v) ?
            [v,o.instance_variable_get(v)] : []}.flatten]
@@ -327,7 +326,7 @@ class BigbluebuttonRoom < ActiveRecord::Base
     unless self.create_time.nil?
       attrs = {
         :running => self.running,
-        :start_time => self.start_time.try(:utc)
+        :create_time => self.create_time
       }
       # note: it's important to update the 'ended' attr so the meeting is
       # reopened in case it was mistakenly considered as ended
@@ -367,7 +366,6 @@ class BigbluebuttonRoom < ActiveRecord::Base
           create_time: self.create_time,
           running: self.running,
           ended: false,
-          start_time: self.start_time.try(:utc)
         }
         unless metadata.nil?
           begin
@@ -519,7 +517,6 @@ class BigbluebuttonRoom < ActiveRecord::Base
     @moderator_count = 0
     @running = false
     @has_been_forcibly_ended = false
-    @start_time = nil
     @end_time = nil
     @attendees = []
   end

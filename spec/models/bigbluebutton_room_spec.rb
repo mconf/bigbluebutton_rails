@@ -67,7 +67,7 @@ describe BigbluebuttonRoom do
 
   # attr_accessors
   [:running, :participant_count, :moderator_count, :attendees,
-   :has_been_forcibly_ended, :start_time, :end_time, :external,
+   :has_been_forcibly_ended, :create_time, :end_time, :external,
    :server, :request_headers, :record_meeting, :duration].each do |attr|
     it { should respond_to(attr) }
     it { should respond_to("#{attr}=") }
@@ -139,7 +139,7 @@ describe BigbluebuttonRoom do
       room.moderator_count.should be(0)
       room.running.should be(false)
       room.has_been_forcibly_ended.should be(false)
-      room.start_time.should be_nil
+      room.create_time.should be_nil
       room.end_time.should be_nil
       room.attendees.should eql([])
       room.request_headers.should == {}
@@ -314,7 +314,7 @@ describe BigbluebuttonRoom do
         it { room.has_been_forcibly_ended.should == false }
         it { room.participant_count.should == 0 }
         it { room.moderator_count.should == 0 }
-        it { room.start_time.should == nil }
+        it { room.create_time.should == nil }
         it { room.reload.create_time.should == nil }
         it { room.end_time.should == nil }
         it { room.attendees.should == [] }
@@ -332,7 +332,6 @@ describe BigbluebuttonRoom do
         it { room.has_been_forcibly_ended.should == false }
         it { room.participant_count.should == 4 }
         it { room.moderator_count.should == 2 }
-        it { room.start_time.should == DateTime.parse("Wed Apr 06 17:09:57 UTC 2011") }
         it { room.reload.create_time.should == 1466876909 }
         it { room.end_time.should == nil }
         it {
@@ -658,7 +657,6 @@ describe BigbluebuttonRoom do
           it { subject.recorded.should eql(room.record_meeting) }
           it { subject.create_time.should eql(room.create_time) }
           it { subject.create_time.should eql(room.create_time) }
-          it { subject.start_time.should eql(room.start_time) }
           it { subject.ended.should eql(false) }
         end
 
@@ -1323,8 +1321,8 @@ describe BigbluebuttonRoom do
   describe "#get_current_meeting" do
     let(:room) { FactoryGirl.create(:bigbluebutton_room, :server => nil) }
 
-    context "if there's no start_time set in the room" do
-      before { room.start_time = nil }
+    context "if there's no create_time set in the room" do
+      before { room.create_time = nil }
       it { room.get_current_meeting.should be_nil }
     end
 
@@ -1360,7 +1358,7 @@ describe BigbluebuttonRoom do
       before {
         room.create_time = Time.now.utc
         room.running = !room.running # to change its default value
-        room.start_time = Time.at(Time.now.to_i - 123)  # to change its default value
+        room.create_time = Time.at(Time.now.to_i - 123)  # to change its default value
       }
 
       context "and no metadata was passed" do
@@ -1374,7 +1372,7 @@ describe BigbluebuttonRoom do
         }
         subject { BigbluebuttonMeeting.find_by_room_id(room.id) }
         it("sets running") { subject.running.should eq(room.running) }
-        it("sets start_time") { subject.start_time.utc.to_i.should eq(room.start_time.utc.to_i) }
+        it("sets create_time") { subject.create_time.should eq(room.create_time.to_i) }
         it("doesn't set creator_id") { subject.creator_id.should be_nil }
         it("doesn't set creator_name") { subject.creator_name.should be_nil }
       end
@@ -1390,7 +1388,7 @@ describe BigbluebuttonRoom do
         }
         subject { BigbluebuttonMeeting.find_by_room_id(room.id) }
         it("sets running") { subject.running.should eq(room.running) }
-        it("sets start_time") { subject.start_time.utc.to_i.should eq(room.start_time.utc.to_i) }
+        it("sets create_time") { subject.create_time.should eq(room.create_time.to_i) }
         it("sets creator_id") { subject.creator_id.should eq(user.id) }
         it("sets creator_name") { subject.creator_name.should eq(user.name) }
       end
@@ -1406,7 +1404,7 @@ describe BigbluebuttonRoom do
         }
         subject { BigbluebuttonMeeting.find_by_room_id(room.id) }
         it("sets running") { subject.running.should eq(room.running) }
-        it("sets start_time") { subject.start_time.utc.to_i.should eq(room.start_time.utc.to_i) }
+        it("sets create_time") { subject.create_time.should eq(room.create_time.to_i) }
         it("sets ended") { subject.ended.should be(false) }
       end
     end
@@ -1447,7 +1445,7 @@ describe BigbluebuttonRoom do
         room.create_time = Time.now.utc
         room.running = !room.running # to change its default value
         room.record_meeting = !room.record_meeting # to change its default value
-        room.start_time = Time.at(Time.now.to_i - 123)  # to change its default value
+        room.create_time = Time.at(Time.now.to_i - 123)  # to change its default value
       }
 
       context "if there's no meeting associated yet creates one" do
@@ -1466,7 +1464,7 @@ describe BigbluebuttonRoom do
           it("sets name") { subject.name.should eq(room.name) }
           it("sets recorded") { subject.recorded.should eq(room.record_meeting) }
           it("sets running") { subject.running.should eq(room.running) }
-          it("sets start_time") { subject.start_time.utc.to_i.should eq(room.start_time.utc.to_i) }
+          it("sets create_time") { subject.create_time.should eq(room.create_time.to_i) }
           it("doesn't set creator_id") { subject.creator_id.should be_nil }
           it("doesn't set creator_name") { subject.creator_name.should be_nil }
         end

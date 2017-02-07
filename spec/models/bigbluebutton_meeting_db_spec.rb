@@ -8,7 +8,6 @@ describe BigbluebuttonMeeting do
     it { should have_db_column(:room_id).of_type(:integer) }
     it { should have_db_column(:meetingid).of_type(:string) }
     it { should have_db_column(:name).of_type(:string) }
-    it { should have_db_column(:start_time).of_type(:datetime) }
     it { should have_db_column(:running).of_type(:boolean) }
     it { should have_db_column(:recorded).of_type(:boolean) }
     it { should have_db_column(:creator_id).of_type(:integer) }

@@ -20,8 +20,8 @@
         <span class="not_running">Not running</span>
       <% end %>
     </div>
-    <% unless room.start_time.nil? %>
-      Started at: <%= room.start_time.strftime("%F, %R UTC%z") %><br/>
+    <% unless room.create_time.nil? %>
+      Started at: <%= Time.at(room.create_time).strftime("%F, %R UTC%z") %><br/>
     <% end %>
     <% unless room.end_time.nil? %>
       Ended at: <%= room.end_time.strftime("%F, %R UTC%z") %> (forcibly ended: <%= room.has_been_forcibly_ended %>)

@@ -86,6 +86,8 @@ namespace :spec do
     sh "bundle exec rails generate bigbluebutton_rails:install 1.3.0 --migration-only --force"
     sh "bundle exec rails generate bigbluebutton_rails:install 1.4.0 --migration-only --force"
     sh "bundle exec rails generate bigbluebutton_rails:install 2.0.0 --migration-only --force"
+    sh "bundle exec rails generate bigbluebutton_rails:install 2.1.0 --migration-only --force"
+    sh "bundle exec rails generate bigbluebutton_rails:install 2.2.0 --migration-only --force"
 
     sh "bundle exec rake db:drop RAILS_ENV=test"
     sh "bundle exec rake db:create RAILS_ENV=test"
@@ -97,6 +99,8 @@ namespace :spec do
     # Rake::Task["cucumber"].invoke
 
     cd "spec/rails_app/"
+    sh "bundle exec rails destroy bigbluebutton_rails:install 2.2.0 --migration-only"
+    sh "bundle exec rails destroy bigbluebutton_rails:install 2.1.0 --migration-only"
     sh "bundle exec rails destroy bigbluebutton_rails:install 2.0.0 --migration-only"
     sh "bundle exec rails destroy bigbluebutton_rails:install 1.4.0 --migration-only"
     sh "bundle exec rails destroy bigbluebutton_rails:install 1.3.0 --migration-only"
