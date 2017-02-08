@@ -1,4 +1,4 @@
-# -*- coding: utf-8 -*-
+# coding: utf-8
 require 'spec_helper'
 
 describe BigbluebuttonRoom do
@@ -806,6 +806,39 @@ describe BigbluebuttonRoom do
         }
         subject { room.join_url(username, :attendee, nil, join_options) }
         it("returns the correct url") { subject.should eq(expected) }
+      end
+
+      context "with guest role" do
+        let(:expected) { 'expected-url' }
+
+        context "when guest support is disabled" do
+          before {
+            room.should_receive(:select_server).and_return(mocked_server)
+            mocked_api.should_receive(:join_meeting_url)
+              .with(room.meetingid, username, room.attendee_api_password, join_options)
+              .and_return(expected)
+          }
+          subject { room.join_url(username, :guest, nil, join_options) }
+          it("returns the correct url") { subject.should eq(expected) }
+        end
+
+        context "when guest support is enabled" do
+          before {
+            @guest_support_before = BigbluebuttonRails.guest_support
+            BigbluebuttonRails.guest_support = true
+
+            room.should_receive(:select_server).and_return(mocked_server)
+            params = { guest: true }.merge(join_options)
+            mocked_api.should_receive(:join_meeting_url)
+              .with(room.meetingid, username, room.attendee_api_password, params)
+              .and_return(expected)
+          }
+          after {
+            BigbluebuttonRails.guest_support = @guest_support_before
+          }
+          subject { room.join_url(username, :guest, nil, join_options) }
+          it("returns the correct url") { subject.should eq(expected) }
+        end
       end
 
       context "without a role" do

@@ -96,6 +96,12 @@ module BigbluebuttonRails
   mattr_accessor :use_local_voice_bridges
   @@use_local_voice_bridges = false
 
+  # If set to true, the role `guest` can be used to join users in a session. When used,
+  # a parameter "guest=true" is passed to the API call.
+  # This is an option available in Mconf-Live.
+  mattr_accessor :guest_support
+  @@guest_support = false
+
   # Finds the BigbluebuttonRoom associated with the recording data in 'data', if any.
   # TODO: if not found, remove the association or keep the old one?
   def self.match_room_recording(data)

@@ -215,6 +215,11 @@ class BigbluebuttonRoom < ActiveRecord::Base
              self.moderator_api_password
            when :attendee
              self.attendee_api_password
+           when :guest
+             if BigbluebuttonRails.guest_support
+               options = { guest: true }.merge(options)
+             end
+             self.attendee_api_password
            else
              map_key_to_internal_password(key)
            end
