@@ -22,8 +22,6 @@ describe BigbluebuttonServer do
 
   context "uniqueness of" do
     before(:each) { FactoryGirl.create(:bigbluebutton_server) }
-    it { should validate_uniqueness_of(:url) }
-    it { should validate_uniqueness_of(:name) }
     it { should validate_uniqueness_of(:param) }
   end
 

@@ -20,12 +20,10 @@ class BigbluebuttonServer < ActiveRecord::Base
 
   validates :name,
             :presence => true,
-            :uniqueness => true,
             :length => { :minimum => 1, :maximum => 500 }
 
   validates :url,
             :presence => true,
-            :uniqueness => true,
             :length => { :maximum => 500 },
             :format => { :with => /http[s]?:\/\/.*\/bigbluebutton\/api/,
                          :message => I18n.t('bigbluebutton_rails.servers.errors.url_format') }
@@ -62,6 +60,11 @@ class BigbluebuttonServer < ActiveRecord::Base
     config_without_initialize || build_config
   end
   alias_method_chain :config, :initialize
+
+  # Helper to get the default server
+  def self.default
+    self.first
+  end
 
   # Returns the API object (<tt>BigBlueButton::BigBlueButtonAPI</tt> defined in
   # <tt>bigbluebutton-api-ruby</tt>) associated with this server.
