@@ -4,21 +4,21 @@ class BigbluebuttonRoom < ActiveRecord::Base
   belongs_to :owner, polymorphic: true
 
   has_many :recordings,
-           :class_name => 'BigbluebuttonRecording',
-           :foreign_key => 'room_id',
-           :dependent => :nullify
+           class_name: 'BigbluebuttonRecording',
+           foreign_key: 'room_id',
+           dependent: :nullify
 
   has_many :metadata,
-           :class_name => 'BigbluebuttonMetadata',
-           :as => :owner,
-           :dependent => :destroy,
-           :inverse_of => :owner
+           class_name: 'BigbluebuttonMetadata',
+           as: :owner,
+           dependent: :destroy,
+           inverse_of: :owner
 
   has_one :room_options,
-          :class_name => 'BigbluebuttonRoomOptions',
-          :foreign_key => 'room_id',
-          :autosave => true,
-          :dependent => :destroy
+          class_name: 'BigbluebuttonRoomOptions',
+          foreign_key: 'room_id',
+          autosave: true,
+          dependent: :destroy
 
   delegate :default_layout, :default_layout=, :to => :room_options
   delegate :presenter_share_only, :presenter_share_only=, :to => :room_options

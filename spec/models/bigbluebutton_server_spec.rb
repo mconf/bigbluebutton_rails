@@ -6,7 +6,7 @@ describe BigbluebuttonServer do
     BigbluebuttonServer.new.should be_a_kind_of(ActiveRecord::Base)
   end
 
-  it { should have_many(:recordings).dependent(:nullify) }
+  it { should have_many(:recordings).dependent(:destroy) }
 
   it { should have_one(:config).dependent(:destroy) }
   it { should delegate(:update_config).to(:config) }
@@ -31,9 +31,24 @@ describe BigbluebuttonServer do
     server = FactoryGirl.create(:bigbluebutton_server)
     server.recordings.should be_empty
 
-    r = FactoryGirl.create(:bigbluebutton_recording, :server => server)
+    r = FactoryGirl.create(:bigbluebutton_recording, server: server)
     server = BigbluebuttonServer.find(server.id)
     server.recordings.should == [r]
+  end
+
+  context "destroys associated recordings when destroyed" do
+    let!(:server) { FactoryGirl.create(:bigbluebutton_server) }
+    let!(:rec1) { FactoryGirl.create(:bigbluebutton_recording, server: server) }
+    let!(:rec2) { FactoryGirl.create(:bigbluebutton_recording, server: server) }
+    let!(:rec3) { FactoryGirl.create(:bigbluebutton_recording) }
+
+    it {
+      server.recordings.count.should eql(2)
+      server.destroy
+      BigbluebuttonRecording.find_by(recordid: rec1.recordid).should be_nil
+      BigbluebuttonRecording.find_by(recordid: rec2.recordid).should be_nil
+      BigbluebuttonRecording.find_by(recordid: rec3.recordid).should_not be_nil
+    }
   end
 
   it { should ensure_length_of(:name).is_at_least(1).is_at_most(500) }

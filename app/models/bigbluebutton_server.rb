@@ -6,7 +6,7 @@ class BigbluebuttonServer < ActiveRecord::Base
   has_many :recordings,
            class_name: 'BigbluebuttonRecording',
            foreign_key: 'server_id',
-           dependent: :nullify
+           dependent: :destroy
 
   has_one :config,
           class_name: 'BigbluebuttonServerConfig',
