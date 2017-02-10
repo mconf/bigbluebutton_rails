@@ -55,6 +55,11 @@ class BigbluebuttonServer < ActiveRecord::Base
   before_save :check_for_version_update
   after_update :check_for_config_update
 
+  # Schedules a recording update right after a recording server is added.
+  after_create do
+    Resque.enqueue(::BigbluebuttonUpdateRecordings, self.id)
+  end
+
   # In case there's no config created yet, build one.
   def config_with_initialize
     config_without_initialize || build_config
