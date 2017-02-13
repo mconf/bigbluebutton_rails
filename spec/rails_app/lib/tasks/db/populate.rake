@@ -86,10 +86,10 @@ namespace :db do
           # Basic metadata the gem always adds and should always be there
           basic_metadata =
             [{
-               :name => BigbluebuttonRails.metadata_user_id,
+               :name => BigbluebuttonRails.configuration.metadata_user_id,
                :content => Forgery(:basic).number(:at_most => 1000)
              }, {
-               :name => BigbluebuttonRails.metadata_user_name,
+               :name => BigbluebuttonRails.configuration.metadata_user_name,
                :content => Forgery(:name).full_name
              }]
           basic_metadata.each do |meta_params|

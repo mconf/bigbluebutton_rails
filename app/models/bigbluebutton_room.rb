@@ -104,7 +104,7 @@ class BigbluebuttonRoom < ActiveRecord::Base
   # Triggers API call: <tt>getMeetingInfo</tt>.
   def fetch_meeting_info
     begin
-      server = select_server(:get_meeting_info)
+      server = BigbluebuttonRails.configuration.select_server.call(self, :get_meeting_info)
       response = server.api.get_meeting_info(self.meetingid, self.moderator_api_password)
 
       @participant_count = response[:participantCount]
@@ -144,7 +144,7 @@ class BigbluebuttonRoom < ActiveRecord::Base
   #
   # Triggers API call: <tt>isMeetingRunning</tt>.
   def fetch_is_running?
-    server = select_server(:is_meeting_running)
+    server = BigbluebuttonRails.configuration.select_server.call(self, :is_meeting_running)
     @running = server.api.is_meeting_running?(self.meetingid)
   end
 
@@ -152,7 +152,7 @@ class BigbluebuttonRoom < ActiveRecord::Base
   #
   # Triggers API call: <tt>end</tt>.
   def send_end
-    server = select_server(:end)
+    server = BigbluebuttonRails.configuration.select_server.call(self, :end)
     response = server.api.end_meeting(self.meetingid, self.moderator_api_password)
 
     # enqueue an update in the meeting to end it faster
@@ -208,7 +208,7 @@ class BigbluebuttonRoom < ActiveRecord::Base
   #
   # Uses the API but does not require a request to the server.
   def join_url(username, role, key=nil, options={})
-    server = select_server(:join_meeting_url)
+    server = BigbluebuttonRails.configuration.select_server.call(self, :join_meeting_url)
 
     pass = case role
            when :moderator
@@ -216,7 +216,7 @@ class BigbluebuttonRoom < ActiveRecord::Base
            when :attendee
              self.attendee_api_password
            when :guest
-             if BigbluebuttonRails.guest_support
+             if BigbluebuttonRails.configuration.guest_support
                options = { guest: true }.merge(options)
              end
              self.attendee_api_password
@@ -332,8 +332,8 @@ class BigbluebuttonRoom < ActiveRecord::Base
 
       unless metadata.nil?
         begin
-          attrs[:creator_id] = metadata[BigbluebuttonRails.metadata_user_id].to_i
-          attrs[:creator_name] = metadata[BigbluebuttonRails.metadata_user_name]
+          attrs[:creator_id] = metadata[BigbluebuttonRails.configuration.metadata_user_id].to_i
+          attrs[:creator_name] = metadata[BigbluebuttonRails.configuration.metadata_user_name]
         rescue
           attrs[:creator_id] = nil
           attrs[:creator_name] = nil
@@ -353,7 +353,7 @@ class BigbluebuttonRoom < ActiveRecord::Base
         # has not yet been set as ended
         self.finish_meetings
 
-        server = select_server
+        server = BigbluebuttonRails.configuration.select_server.call(self)
         attrs = {
           room: self,
           server_url: server.url,
@@ -368,8 +368,8 @@ class BigbluebuttonRoom < ActiveRecord::Base
         }
         unless metadata.nil?
           begin
-            attrs[:creator_id] = metadata[BigbluebuttonRails.metadata_user_id].to_i
-            attrs[:creator_name] = metadata[BigbluebuttonRails.metadata_user_name]
+            attrs[:creator_id] = metadata[BigbluebuttonRails.configuration.metadata_user_id].to_i
+            attrs[:creator_name] = metadata[BigbluebuttonRails.configuration.metadata_user_name]
           rescue
             attrs[:creator_id] = nil
             attrs[:creator_name] = nil
@@ -412,7 +412,7 @@ class BigbluebuttonRoom < ActiveRecord::Base
   # Triggers API call: <tt>setConfigXML</tt>.
   def fetch_new_token
     if self.room_options.is_modified?
-      server = select_server(:set_config_xml)
+      server = BigbluebuttonRails.configuration.select_server.call(self, :set_config_xml)
 
       # get the default XML we will use to create a new one
       config_xml = server.api.get_default_config_xml
@@ -433,17 +433,17 @@ class BigbluebuttonRoom < ActiveRecord::Base
   end
 
   def available_layouts
-    server = select_server
+    server = BigbluebuttonRails.configuration.select_server.call(self)
     server.present? ? server.available_layouts : []
   end
 
   def available_layouts_names
-    server = select_server
+    server = BigbluebuttonRails.configuration.select_server.call(self)
     server.present? ? server.available_layouts_names : []
   end
 
   def available_layouts_for_select
-    server = select_server
+    server = BigbluebuttonRails.configuration.select_server.call(self)
     server.present? ? server.available_layouts_for_select : []
   end
 
@@ -463,7 +463,7 @@ class BigbluebuttonRoom < ActiveRecord::Base
   end
 
   def fetch_recordings(filter={})
-    server = select_server(:get_recordings)
+    server = BigbluebuttonRails.configuration.select_server.call(self, :get_recordings)
     if server.present?
       server.fetch_recordings(filter.merge({ meetingID: self.meetingid }))
       true
@@ -472,17 +472,6 @@ class BigbluebuttonRoom < ActiveRecord::Base
     end
   end
 
-  # Selects a server to be used by this room whenever it needs to make API calls.
-  # By default, if no servers are available an exception is raised.
-  #
-  # This method can be overwritten to change the way the server is selected
-  # before a room is used. `api_method` contains the API method that is being
-  # called. Any server returned here will be used. It *must* return a server,
-  # otherwise the API calls will fail and the code will probably break.
-  #
-  # One good example is to always select a new server when a meeting is being
-  # created (in case `api_method` is `:create`), making this a simple load
-  # balancing tool that can work well in simple cases.
   def select_server(api_method=nil)
     server = BigbluebuttonServer.first
     if server.nil?
@@ -530,7 +519,7 @@ class BigbluebuttonRoom < ActiveRecord::Base
 
     # Set the voice bridge only if the gem is configured to do so and the voice bridge
     # is not blank.
-    if BigbluebuttonRails.use_local_voice_bridges && !self.voice_bridge.blank?
+    if BigbluebuttonRails.configuration.use_local_voice_bridges && !self.voice_bridge.blank?
       opts.merge!({ :voiceBridge => self.voice_bridge })
     end
 
@@ -538,19 +527,19 @@ class BigbluebuttonRoom < ActiveRecord::Base
 
     # Add information about the user that is creating the meeting (if any)
     unless user.nil?
-      userid = user.send(BigbluebuttonRails.user_attr_id)
-      username = user.send(BigbluebuttonRails.user_attr_name)
-      opts.merge!({ "meta_#{BigbluebuttonRails.metadata_user_id}" => userid })
-      opts.merge!({ "meta_#{BigbluebuttonRails.metadata_user_name}" => username })
+      userid = user.send(BigbluebuttonRails.configuration.user_attr_id)
+      username = user.send(BigbluebuttonRails.configuration.user_attr_name)
+      opts.merge!({ "meta_#{BigbluebuttonRails.configuration.metadata_user_id}" => userid })
+      opts.merge!({ "meta_#{BigbluebuttonRails.configuration.metadata_user_name}" => username })
     end
 
     # Add the invitation URL, if any
-    invitation_url = self.try(BigbluebuttonRails.invitation_url_method)
-    unless invitation_url.nil?
-      opts.merge!({ "meta_#{BigbluebuttonRails.metadata_invitation_url}" => invitation_url })
+    url = BigbluebuttonRails.configuration.get_invitation_url.call(self)
+    unless url.nil?
+      opts.merge!({ "meta_#{BigbluebuttonRails.configuration.metadata_invitation_url}" => url })
     end
 
-    server = select_server(:create)
+    server = BigbluebuttonRails.configuration.select_server.call(self, :create)
     server.api.request_headers = @request_headers # we need the client's IP
     response = server.api.create_meeting(self.name, self.meetingid, opts)
 
@@ -592,9 +581,9 @@ class BigbluebuttonRoom < ActiveRecord::Base
       result["meta_#{meta.name}"] = meta.content; result
     }
 
-    dynamic_metadata = self.try(BigbluebuttonRails.dynamic_metadata_method)
+    dynamic_metadata = BigbluebuttonRails.configuration.get_dynamic_metadata.call(self)
     unless dynamic_metadata.blank?
-      metadata = self.dynamic_metadata.inject(metadata) { |result, meta|
+      metadata = dynamic_metadata.inject(metadata) { |result, meta|
         result["meta_#{meta[0]}"] = meta[1]; result
       }
     end

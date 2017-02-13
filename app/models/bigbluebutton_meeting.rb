@@ -18,7 +18,7 @@ class BigbluebuttonMeeting < ActiveRecord::Base
   # Whether the meeting was created by the `user` or not.
   def created_by?(user)
     unless user.nil?
-      userid = user.send(BigbluebuttonRails.user_attr_id)
+      userid = user.send(BigbluebuttonRails.configuration.user_attr_id)
       self.creator_id == userid
     else
       false

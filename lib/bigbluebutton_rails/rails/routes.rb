@@ -83,10 +83,10 @@ module ActionDispatch::Routing
 
     def bigbluebutton_routes_default(*params) #:nodoc:
       options = params.extract_options!
-      options_scope = options.has_key?(:scope) ? options[:scope] : BigbluebuttonRails.routing_scope
+      options_scope = options.has_key?(:scope) ? options[:scope] : BigbluebuttonRails.configuration.routing_scope
       options_as = options.has_key?(:as) ? options[:as] : options_scope
       options_only = options.has_key?(:only) ? options[:only] : ["servers", "rooms", "recordings", "playback_types"]
-      BigbluebuttonRails.set_controllers(options[:controllers])
+      BigbluebuttonRails.configuration.set_controllers(options[:controllers])
 
       scope options_scope, :as => options_as do
         add_routes_for_servers if options_only.include?("servers")
@@ -101,7 +101,7 @@ module ActionDispatch::Routing
     end
 
     def add_routes_for_rooms #:nodoc:
-      resources :rooms, :controller => BigbluebuttonRails.controllers[:rooms] do
+      resources :rooms, :controller => BigbluebuttonRails.configuration.controllers[:rooms] do
         member do
           get :join
           get :running
@@ -117,7 +117,7 @@ module ActionDispatch::Routing
     end
 
     def add_routes_for_servers #:nodoc:
-      resources :servers, :controller => BigbluebuttonRails.controllers[:servers] do
+      resources :servers, :controller => BigbluebuttonRails.configuration.controllers[:servers] do
         member do
           get :activity
           get :rooms
@@ -132,7 +132,7 @@ module ActionDispatch::Routing
 
     def add_routes_for_recordings #:nodoc:
       resources :recordings, :except => [:new, :create],
-                             :controller => BigbluebuttonRails.controllers[:recordings] do
+                             :controller => BigbluebuttonRails.configuration.controllers[:recordings] do
         member do
           get :play
           post :publish
@@ -143,7 +143,7 @@ module ActionDispatch::Routing
 
     def add_routes_for_playback_types #:nodoc:
       resources :playback_types, :only => [:update],
-                                 :controller => BigbluebuttonRails.controllers[:playback_types]
+                                 :controller => BigbluebuttonRails.configuration.controllers[:playback_types]
     end
   end
 end

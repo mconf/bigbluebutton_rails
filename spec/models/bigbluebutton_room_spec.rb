@@ -283,8 +283,8 @@ describe BigbluebuttonRoom do
       }
       let(:metadata) {
         m = {}
-        m[BigbluebuttonRails.metadata_user_id] = user.id
-        m[BigbluebuttonRails.metadata_user_name] = user.name
+        m[BigbluebuttonRails.configuration.metadata_user_id] = user.id
+        m[BigbluebuttonRails.configuration.metadata_user_name] = user.name
         m
       }
       let(:hash_info2) {
@@ -585,11 +585,11 @@ describe BigbluebuttonRoom do
 
         context "when it's set to use local voice bridges" do
           before {
-            @use_local_voice_bridges = BigbluebuttonRails.use_local_voice_bridges
-            BigbluebuttonRails.use_local_voice_bridges = true
+            @use_local_voice_bridges = BigbluebuttonRails.configuration.use_local_voice_bridges
+            BigbluebuttonRails.configuration.use_local_voice_bridges = true
           }
           after {
-            BigbluebuttonRails.use_local_voice_bridges = @use_local_voice_bridges
+            BigbluebuttonRails.configuration.use_local_voice_bridges = @use_local_voice_bridges
           }
 
           context "sets the voice bridge in the params if there's a voice bridge" do
@@ -824,8 +824,8 @@ describe BigbluebuttonRoom do
 
         context "when guest support is enabled" do
           before {
-            @guest_support_before = BigbluebuttonRails.guest_support
-            BigbluebuttonRails.guest_support = true
+            @guest_support_before = BigbluebuttonRails.configuration.guest_support
+            BigbluebuttonRails.configuration.guest_support = true
 
             room.should_receive(:select_server).and_return(mocked_server)
             params = { guest: true }.merge(join_options)
@@ -834,7 +834,7 @@ describe BigbluebuttonRoom do
               .and_return(expected)
           }
           after {
-            BigbluebuttonRails.guest_support = @guest_support_before
+            BigbluebuttonRails.configuration.guest_support = @guest_support_before
           }
           subject { room.join_url(username, :guest, nil, join_options) }
           it("returns the correct url") { subject.should eq(expected) }
@@ -1208,18 +1208,10 @@ describe BigbluebuttonRoom do
 
     context "returns the dynamic metadata, if any" do
       before {
-        BigbluebuttonRoom.class_eval do
-          def dynamic_metadata
-            {
-              "test1" => "value1",
-              "test2" => "value2"
-            }
+        BigbluebuttonRails.configure do |config|
+          config.get_dynamic_metadata = Proc.new do |room|
+            { "test1" => "value1", "test2" => "value2" }
           end
-        end
-      }
-      after {
-        BigbluebuttonRoom.class_eval do
-          undef_method :dynamic_metadata
         end
       }
 
@@ -1231,22 +1223,14 @@ describe BigbluebuttonRoom do
 
     context "gives priority to the dynamic metadata" do
       before {
-        BigbluebuttonRoom.class_eval do
-          def dynamic_metadata
-            {
-              "test1" => "value1",
-              "test2" => "value2"
-            }
+        BigbluebuttonRails.configure do |config|
+          config.get_dynamic_metadata = Proc.new do |room|
+            { "test1" => "value1", "test2" => "value2" }
           end
         end
 
         @m1 = FactoryGirl.create(:bigbluebutton_room_metadata, owner: room, name: "test1", content: "content overwritten")
         @m2 = FactoryGirl.create(:bigbluebutton_room_metadata, owner: room, name: "other", content: "other content")
-      }
-      after {
-        BigbluebuttonRoom.class_eval do
-          undef_method :dynamic_metadata
-        end
       }
 
       it {
@@ -1289,8 +1273,8 @@ describe BigbluebuttonRoom do
       let(:user) { FactoryGirl.build(:user) }
       let(:metadata) {
         m = {}
-        m[BigbluebuttonRails.metadata_user_id] = user.id
-        m[BigbluebuttonRails.metadata_user_name] = user.name
+        m[BigbluebuttonRails.configuration.metadata_user_id] = user.id
+        m[BigbluebuttonRails.configuration.metadata_user_name] = user.name
         m
       }
       before {
@@ -1376,8 +1360,8 @@ describe BigbluebuttonRoom do
       let(:user) { FactoryGirl.build(:user) }
       let(:metadata) {
         m = {}
-        m[BigbluebuttonRails.metadata_user_id] = user.id
-        m[BigbluebuttonRails.metadata_user_name] = user.name
+        m[BigbluebuttonRails.configuration.metadata_user_id] = user.id
+        m[BigbluebuttonRails.configuration.metadata_user_name] = user.name
         m
       }
       before {
@@ -1504,21 +1488,15 @@ describe BigbluebuttonRoom do
 
       context "doesn't add the invitation URL if BigbluebuttonRoom#invitation_url returns nil" do
         before {
-          BigbluebuttonRoom.class_eval do
-            def invitation_url
+          BigbluebuttonRails.configure do |config|
+            config.get_invitation_url = Proc.new do |room|
               nil
             end
           end
 
-          room.should respond_to(:invitation_url)
           mocked_api.should_receive(:create_meeting) do |name, meetingid, opts|
             opts.should_not have_key('meta_invitation-url')
             opts.should_not have_key(:'meta_invitation-url')
-          end
-        }
-        after {
-          BigbluebuttonRoom.class_eval do
-            undef_method :invitation_url
           end
         }
 
@@ -1527,20 +1505,14 @@ describe BigbluebuttonRoom do
 
       context "adds the value returned by BigbluebuttonRoom#invitation_url" do
         before {
-          BigbluebuttonRoom.class_eval do
-            def invitation_url
+          BigbluebuttonRails.configure do |config|
+            config.get_invitation_url = Proc.new do |room|
               'http://my-invitation.url'
             end
           end
 
-          room.should respond_to(:invitation_url)
           mocked_api.should_receive(:create_meeting) do |name, meetingid, opts|
             opts.should include('meta_invitation-url' => 'http://my-invitation.url')
-          end
-        }
-        after {
-          BigbluebuttonRoom.class_eval do
-            undef_method :invitation_url
           end
         }
 
@@ -1572,22 +1544,16 @@ describe BigbluebuttonRoom do
 
       context "doesn't add the dynamic metadata if it returns nil" do
         before {
-          BigbluebuttonRoom.class_eval do
-            def dynamic_metadata
+          BigbluebuttonRails.configure do |config|
+            config.get_dynamic_metadata = Proc.new do |room|
               nil
             end
           end
 
-          room.should respond_to(:dynamic_metadata)
           mocked_api.should_receive(:create_meeting) do |name, meetingid, opts|
             opts.each do |key, value|
               key.should_not match(/meta_/)
             end
-          end
-        }
-        after {
-          BigbluebuttonRoom.class_eval do
-            undef_method :dynamic_metadata
           end
         }
 
@@ -1596,24 +1562,15 @@ describe BigbluebuttonRoom do
 
       context "adds the value returned by BigbluebuttonRoom#invitation_url" do
         before {
-          BigbluebuttonRoom.class_eval do
-            def dynamic_metadata
-              {
-                "test1" => "value1",
-                "test2" => "value2"
-              }
+          BigbluebuttonRails.configure do |config|
+            config.get_dynamic_metadata = Proc.new do |room|
+              { "test1" => "value1", "test2" => "value2" }
             end
           end
 
-          room.should respond_to(:dynamic_metadata)
           mocked_api.should_receive(:create_meeting) do |name, meetingid, opts|
             opts.should include('meta_test1' => 'value1')
             opts.should include('meta_test2' => 'value2')
-          end
-        }
-        after {
-          BigbluebuttonRoom.class_eval do
-            undef_method :dynamic_metadata
           end
         }
 
