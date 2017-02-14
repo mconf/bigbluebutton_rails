@@ -13,7 +13,7 @@ if File.exists?(file)
   else
     server = config['servers'][config['servers'].keys.first]
   end
-  server['version'] = '0.9' unless server.has_key?('version')
+  server['version'] = '1.0' unless server.has_key?('version')
   server['name'] = URI.parse(server['url']).host
 
   BigbluebuttonServer.create!(server)

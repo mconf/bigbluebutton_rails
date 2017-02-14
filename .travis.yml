@@ -3,6 +3,7 @@ language: ruby
 bundler_args: "--without production development"
 before_script:
   - "cp spec/rails_app/config/database.yml.travis spec/rails_app/config/database.yml"
+  - "cp spec/rails_app/features/config.yml.example spec/rails_app/features/config.yml"
   - "mysql -e 'create database bigbluebutton_rails_test;'"
   - "mysql -e 'create database bigbluebutton_rails_dev;'"
 cache: bundler
