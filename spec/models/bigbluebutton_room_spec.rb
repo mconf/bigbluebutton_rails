@@ -149,7 +149,7 @@ describe BigbluebuttonRoom do
         b.meetingid.should == "user defined"
       }
     end
-   end
+  end
 
   describe "#room_options" do
     it "is created when the room is created" do

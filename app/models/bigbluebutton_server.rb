@@ -62,7 +62,7 @@ class BigbluebuttonServer < ActiveRecord::Base
 
   # In case there's no config created yet, build one.
   def config_with_initialize
-    config_without_initialize || build_config
+    config_without_initialize || build_config(server: self)
   end
   alias_method_chain :config, :initialize
 

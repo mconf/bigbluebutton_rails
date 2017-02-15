@@ -334,6 +334,7 @@ describe BigbluebuttonServer do
         @server.config # access it so the new obj is created
       }
       it { @server.config.should_not be_nil }
+      it { @server.config.server.should eql(@server) }
       it("is not promptly saved") {
         @server.config.new_record?.should be(true)
       }
