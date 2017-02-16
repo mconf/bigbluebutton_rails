@@ -8,10 +8,6 @@
   <% @rooms.each do |room| %>
     <li>
       <div class="field"><label><%= BigbluebuttonRoom.human_attribute_name(:id) %></label> <%= room.id %></div>
-      <div class="field">
-        <label><%= BigbluebuttonRoom.human_attribute_name(:server_id) %></label> <%= room.server_id %>
-        <%= link_to('(view server)', bigbluebutton_server_path(room.server)) unless room.server.nil? %>
-      </div>
       <div class="field"><label><%= BigbluebuttonRoom.human_attribute_name(:name) %></label> <%= room.name %></div>
       <div class="field"><label><%= BigbluebuttonRoom.human_attribute_name(:meetingid) %></label> <%= room.meetingid %></div>
       <div class="field"><label><%= BigbluebuttonRoom.human_attribute_name(:private) %></label> <%= room.private %></div>

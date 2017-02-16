@@ -2,12 +2,13 @@ require 'spec_helper'
 
 describe Bigbluebutton::ServersController do
   render_views
-  let(:server) { FactoryGirl.create(:bigbluebutton_server) }
+  let!(:server) { FactoryGirl.create(:bigbluebutton_server) }
 
   context "json responses for" do
 
     describe "#index" do
       before do
+        BigbluebuttonServer.destroy_all
         @server1 = FactoryGirl.create(:bigbluebutton_server)
         @server2 = FactoryGirl.create(:bigbluebutton_server)
       end
@@ -66,12 +67,11 @@ describe Bigbluebutton::ServersController do
 
     describe "#update" do
       let(:new_server) { FactoryGirl.build(:bigbluebutton_server) }
-      before { @server = server }
 
       context "on success" do
         before(:each) {
           BigbluebuttonServer.any_instance.stub(:set_api_version_from_server)
-          put :update, :id => @server.to_param, :bigbluebutton_server => new_server.attributes, :format => 'json'
+          put :update, :id => server.to_param, :bigbluebutton_server => new_server.attributes, :format => 'json'
         }
         it { should respond_with(:success) }
         it { should respond_with_content_type('application/json') }
@@ -81,7 +81,7 @@ describe Bigbluebutton::ServersController do
       context "on failure" do
         before(:each) {
           new_server.url = nil # invalid
-          put :update, :id => @server.to_param, :bigbluebutton_server => new_server.attributes, :format => 'json'
+          put :update, :id => server.to_param, :bigbluebutton_server => new_server.attributes, :format => 'json'
         }
         it { should respond_with(:unprocessable_entity) }
         it { should respond_with_content_type('application/json') }
@@ -94,8 +94,7 @@ describe Bigbluebutton::ServersController do
 
     describe "#destroy" do
       before :each do
-        @server = server
-        delete :destroy, :id => @server.to_param, :format => 'json'
+        delete :destroy, :id => server.to_param, :format => 'json'
       end
       it { should respond_with(:success) }
       it { should respond_with_content_type('application/json') }
@@ -103,8 +102,8 @@ describe Bigbluebutton::ServersController do
     end
 
     describe "#activity" do
-      let(:room1) { FactoryGirl.create(:bigbluebutton_room, :server => server) }
-      let(:room2) { FactoryGirl.create(:bigbluebutton_room, :server => server) }
+      let(:room1) { FactoryGirl.create(:bigbluebutton_room) }
+      let(:room2) { FactoryGirl.create(:bigbluebutton_room) }
       before do
         # so we return our mocked server
         BigbluebuttonServer.stub(:find_by_param).with(server.to_param).
@@ -152,17 +151,6 @@ describe Bigbluebutton::ServersController do
         it { should respond_with_json([room1, room2].to_json) }
       end
 
-    end
-
-    describe "#rooms" do
-      before do
-        @room1 = FactoryGirl.create(:bigbluebutton_room, :server => server)
-        @room2 = FactoryGirl.create(:bigbluebutton_room, :server => server)
-      end
-      before(:each) { get :rooms, :id => server.to_param, :format => 'json' }
-      it { should respond_with(:success) }
-      it { should respond_with_content_type('application/json') }
-      it { should respond_with_json([@room1, @room2].to_json) }
     end
 
     describe "#fetch_recordings" do

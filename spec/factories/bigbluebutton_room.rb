@@ -3,7 +3,6 @@ FactoryGirl.define do
     # meetingid with a random factor to avoid duplicated ids in consecutive test runs
     r.sequence(:meetingid) { |n| "meeting-#{n}-" + SecureRandom.hex(4) }
 
-    r.association :server, :factory => :bigbluebutton_server
     r.sequence(:name) { |n| "Name#{n}" }
     r.attendee_key { Forgery(:basic).password :at_least => 10, :at_most => 16 }
     r.moderator_key { Forgery(:basic).password :at_least => 10, :at_most => 16 }

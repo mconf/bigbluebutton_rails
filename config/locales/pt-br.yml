@@ -50,7 +50,6 @@ pt-br:
         private: Privada
         presenter_share_only: "Somente apresentador compartilha áudio e vídeo"
         record: Gravar
-        server_id: "ID do Servidor"
         voice_bridge: "Voice Bridge"
         welcome_msg: "Mensagem de boas-vindas"
       bigbluebutton_server:

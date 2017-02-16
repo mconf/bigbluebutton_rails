@@ -129,8 +129,6 @@ module TemplateHelpers
 
   # internal form in rooms/new and room/:id/edit
   def check_room_form
-    has_element("input#bigbluebutton_room_server_id",
-                { :name => 'bigbluebutton_room[server_id]', :type => 'text' })
     has_element("input#bigbluebutton_room_name",
                 { :name => 'bigbluebutton_room[name]', :type => 'text' })
     has_element("input#bigbluebutton_room_meetingid",
@@ -174,7 +172,6 @@ module TemplateHelpers
   def check_show_room(options)
     room = options[:room] || BigbluebuttonRoom.last
 
-    page_has_content(room.server_id)
     page_has_content(room.name)
     page_has_content(room.meetingid)
     page_has_content(room.private)
@@ -220,7 +217,6 @@ module TemplateHelpers
     rooms.each do |room|
       within(make_selector("ul#bbbrails_list>li:nth(#{n})")) do
         # room data
-        has_content(room.server_id) unless room.server.nil?
         has_content(room.name)
         has_content(room.meetingid)
         has_content(room.attendee_key)

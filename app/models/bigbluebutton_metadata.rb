@@ -21,7 +21,7 @@ class BigbluebuttonMetadata < ActiveRecord::Base
   # validates :name, :exclusion => {
   #   :in => lambda do |m|
   #     if m.owner_type == "BigbluebuttonRoom"
-  #       BigbluebuttonRails.metadata_invalid_keys.map(&:to_s)
+  #       BigbluebuttonRails.configuration.metadata_invalid_keys.map(&:to_s)
   #     else
   #       []
   #     end
@@ -29,7 +29,7 @@ class BigbluebuttonMetadata < ActiveRecord::Base
   # }
   def exclusion_of_name_in_reserved_metadata_keys
     keys = if owner_type == "BigbluebuttonRoom"
-             BigbluebuttonRails.metadata_invalid_keys.map(&:to_s)
+             BigbluebuttonRails.configuration.metadata_invalid_keys.map(&:to_s)
            else
              []
            end

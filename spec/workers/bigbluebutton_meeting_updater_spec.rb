@@ -31,7 +31,7 @@ describe BigbluebuttonMeetingUpdater do
 
       before {
         expect(BigbluebuttonRoom).to receive(:find).with(room.id).and_return(room)
-        room.server.stub(:api) { api }
+        expect_any_instance_of(BigbluebuttonServer).to receive(:api).and_return(api)
         expect(api).to receive(:get_meeting_info).once { raise exception }
         expect(room).to receive(:finish_meetings).once
       }
@@ -48,7 +48,7 @@ describe BigbluebuttonMeetingUpdater do
 
       before {
         expect(BigbluebuttonRoom).to receive(:find).with(room.id).and_return(room)
-        room.server.stub(:api) { api }
+        expect_any_instance_of(BigbluebuttonServer).to receive(:api).and_return(api)
         expect(api).to receive(:get_meeting_info).once { raise exception }
         expect(room).to receive(:finish_meetings)
       }
@@ -65,7 +65,7 @@ describe BigbluebuttonMeetingUpdater do
 
       before {
         expect(BigbluebuttonRoom).to receive(:find).with(room.id).and_return(room)
-        room.server.stub(:api) { api }
+        expect_any_instance_of(BigbluebuttonServer).to receive(:api).and_return(api)
         expect(api).to receive(:get_meeting_info).once { raise exception }
         expect(room).to receive(:finish_meetings)
       }

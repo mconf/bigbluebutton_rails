@@ -1,9 +1,9 @@
 class BigbluebuttonRecording < ActiveRecord::Base
   include ActiveModel::ForbiddenAttributesProtection
 
-  belongs_to :server, :class_name => 'BigbluebuttonServer'
-  belongs_to :room, :class_name => 'BigbluebuttonRoom'
-  belongs_to :meeting, :class_name => 'BigbluebuttonMeeting'
+  belongs_to :server, class_name: 'BigbluebuttonServer'
+  belongs_to :room, class_name: 'BigbluebuttonRoom'
+  belongs_to :meeting, class_name: 'BigbluebuttonMeeting'
 
   validates :server, :presence => true
 
@@ -97,7 +97,7 @@ class BigbluebuttonRecording < ActiveRecord::Base
   # BigBlueButtonApi#get_recordings but with the keys already converted to our format.
   def self.update_recording(server, recording, data)
     recording.server = server
-    recording.room = BigbluebuttonRails.match_room_recording(data)
+    recording.room = BigbluebuttonRails.configuration.match_room_recording.call(data)
     recording.attributes = data.slice(:meetingid, :name, :published, :start_time, :end_time, :size)
     recording.available = true
     recording.save!
@@ -112,7 +112,7 @@ class BigbluebuttonRecording < ActiveRecord::Base
     filtered = data.slice(:recordid, :meetingid, :name, :published, :start_time, :end_time, :size)
     recording = BigbluebuttonRecording.create(filtered)
     recording.available = true
-    recording.room = BigbluebuttonRails.match_room_recording(data)
+    recording.room = BigbluebuttonRails.configuration.match_room_recording.call(data)
     recording.server = server
     recording.description = I18n.t('bigbluebutton_rails.recordings.default.description', :time => Time.at(recording.start_time).utc.to_formatted_s(:long))
     recording.meeting = BigbluebuttonRecording.find_matching_meeting(recording)

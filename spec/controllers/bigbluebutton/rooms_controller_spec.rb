@@ -6,8 +6,8 @@ require 'bigbluebutton_api'
 
 describe Bigbluebutton::RoomsController do
   render_views
-  let(:server) { FactoryGirl.create(:bigbluebutton_server) }
-  let(:room) { FactoryGirl.create(:bigbluebutton_room, :server => server) }
+  let!(:server) { FactoryGirl.create(:bigbluebutton_server) }
+  let!(:room) { FactoryGirl.create(:bigbluebutton_room) }
   let(:params_to_ignore) { ['moderator_api_password', 'attendee_api_password', 'create_time'] }
 
   describe "#index" do
@@ -86,7 +86,6 @@ describe Bigbluebutton::RoomsController do
       request.env["HTTP_REFERER"] = http_referer
       controller.should_receive(:set_request_headers)
       mock_server_and_api
-      room.server = mocked_server
       controller.stub(:bigbluebutton_user) { user }
     }
 
@@ -137,7 +136,7 @@ describe Bigbluebutton::RoomsController do
   end
 
   describe "#create" do
-    let(:new_room) { FactoryGirl.build(:bigbluebutton_room, :server => server) }
+    let(:new_room) { FactoryGirl.build(:bigbluebutton_room) }
 
     context "on success" do
       before :each do
@@ -206,7 +205,7 @@ describe Bigbluebutton::RoomsController do
       let(:attrs) { FactoryGirl.attributes_for(:bigbluebutton_room) }
       let(:params) { { :bigbluebutton_room => attrs } }
       let(:allowed_params) {
-        [ :name, :server_id, :meetingid, :attendee_key, :moderator_key, :welcome_msg,
+        [ :name, :meetingid, :attendee_key, :moderator_key, :welcome_msg,
           :private, :logout_url, :dial_number, :voice_bridge, :max_participants, :owner_id,
           :owner_type, :external, :param, :record_meeting, :duration, :default_layout, :presenter_share_only,
           :auto_start_video, :auto_start_audio, :background,
@@ -247,21 +246,20 @@ describe Bigbluebutton::RoomsController do
 
   describe "#update" do
     let(:new_room) { FactoryGirl.build(:bigbluebutton_room) }
-    before { @room = room } # need this to trigger let(:room) and actually create the room
 
     context "on success" do
       before :each do
         expect {
-          put :update, :id => @room.to_param, :bigbluebutton_room => new_room.attributes
+          put :update, :id => room.to_param, :bigbluebutton_room => new_room.attributes
         }.not_to change{ BigbluebuttonRoom.count }
       end
       it {
-        saved = BigbluebuttonRoom.find(@room)
+        saved = BigbluebuttonRoom.find(room)
         should respond_with(:redirect)
         should redirect_to bigbluebutton_room_path(saved)
       }
       it {
-        saved = BigbluebuttonRoom.find(@room)
+        saved = BigbluebuttonRoom.find(room)
         saved.should have_same_attributes_as(new_room, params_to_ignore)
       }
       it { should set_the_flash.to(I18n.t('bigbluebutton_rails.rooms.notice.update.success')) }
@@ -270,16 +268,16 @@ describe Bigbluebutton::RoomsController do
     context "on failure" do
       before :each do
         new_room.name = nil # invalid
-        put :update, :id => @room.to_param, :bigbluebutton_room => new_room.attributes
+        put :update, :id => room.to_param, :bigbluebutton_room => new_room.attributes
       end
       it { should render_template(:edit) }
-      it { should assign_to(:room).with(@room) }
+      it { should assign_to(:room).with(room) }
     end
 
     context "with :redir_url" do
       context "on success" do
         before(:each) {
-          put :update, :id => @room.to_param, :bigbluebutton_room => new_room.attributes, :redir_url => "/any"
+          put :update, :id => room.to_param, :bigbluebutton_room => new_room.attributes, :redir_url => "/any"
         }
         it { should respond_with(:redirect) }
         it { should redirect_to "/any" }
@@ -288,7 +286,7 @@ describe Bigbluebutton::RoomsController do
       context "on failure" do
         before(:each) {
           new_room.name = nil # invalid
-          put :update, :id => @room.to_param, :bigbluebutton_room => new_room.attributes, :redir_url => "/any"
+          put :update, :id => room.to_param, :bigbluebutton_room => new_room.attributes, :redir_url => "/any"
         }
         it { should respond_with(:redirect) }
         it { should redirect_to "/any" }
@@ -299,7 +297,7 @@ describe Bigbluebutton::RoomsController do
       let(:attrs) { FactoryGirl.attributes_for(:bigbluebutton_room) }
       let(:params) { { :bigbluebutton_room => attrs } }
       let(:allowed_params) {
-        [ :name, :server_id, :meetingid, :attendee_key, :moderator_key, :welcome_msg,
+        [ :name, :meetingid, :attendee_key, :moderator_key, :welcome_msg,
           :private, :logout_url, :dial_number, :voice_bridge, :max_participants, :owner_id,
           :owner_type, :external, :param, :record_meeting, :duration, :default_layout, :presenter_share_only,
           :auto_start_video, :auto_start_audio, :background,
@@ -309,12 +307,12 @@ describe Bigbluebutton::RoomsController do
       it {
         # we just check that the rails method 'permit' is being called on the hash with the
         # correct parameters
-        BigbluebuttonRoom.stub(:find_by_param).and_return(@room)
-        @room.stub(:update_attributes).and_return(true)
+        BigbluebuttonRoom.stub(:find_by_param).and_return(room)
+        room.stub(:update_attributes).and_return(true)
         attrs.stub(:permit).and_return(attrs)
         controller.stub(:params).and_return(params)
 
-        put :update, :id => @room.to_param, :bigbluebutton_room => attrs
+        put :update, :id => room.to_param, :bigbluebutton_room => attrs
         attrs.should have_received(:permit).with(*allowed_params)
       }
     end
@@ -323,15 +321,15 @@ describe Bigbluebutton::RoomsController do
     describe "if parameters are not informed" do
       before(:each) {}
       it {
-        put :update, :id => @room.to_param
-        should redirect_to(bigbluebutton_room_path(@room))
+        put :update, :id => room.to_param
+        should redirect_to(bigbluebutton_room_path(room))
       }
     end
 
     context "doesn't override @room" do
       let!(:other_room) { FactoryGirl.create(:bigbluebutton_room) }
       before { controller.instance_variable_set(:@room, other_room) }
-      before(:each) { put :update, :id => @room.to_param, :bigbluebutton_room => new_room.attributes }
+      before(:each) { put :update, :id => room.to_param, :bigbluebutton_room => new_room.attributes }
       it { should assign_to(:room).with(other_room) }
     end
   end
@@ -817,7 +815,7 @@ describe Bigbluebutton::RoomsController do
 
     context "if the room has no server associated" do
       before(:each) {
-        room.stub(:server) { nil }
+        room.stub(:select_server) { nil }
         post :fetch_recordings, :id => room.to_param
       }
       it { should respond_with(:redirect) }
@@ -834,9 +832,10 @@ describe Bigbluebutton::RoomsController do
         it {should respond_with(:redirect) }
         it { should redirect_to "/any" }
       end
+
       context "on failure" do
         before(:each) {
-          room.stub(:server) { nil }
+          room.stub(:select_server) { nil }
           post :fetch_recordings, :id => room.to_param, :redir_url => "/any"
         }
         it {should respond_with(:redirect) }
@@ -848,7 +847,6 @@ describe Bigbluebutton::RoomsController do
       let!(:other_room) { FactoryGirl.create(:bigbluebutton_room) }
       before {
         controller.instance_variable_set(:@room, other_room)
-        other_room.server = nil
       }
       before(:each) { post :fetch_recordings, :id => room.to_param }
       it { should assign_to(:room).with(other_room) }
@@ -862,7 +860,7 @@ describe Bigbluebutton::RoomsController do
       FactoryGirl.create(:bigbluebutton_recording)
 
       # one that belongs to another room in the same server
-      room2 = FactoryGirl.create(:bigbluebutton_room, :server => room.server)
+      room2 = FactoryGirl.create(:bigbluebutton_room)
       FactoryGirl.create(:bigbluebutton_recording, :room => room2)
     end
     before(:each) { get :recordings, :id => room.to_param }

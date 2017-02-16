@@ -18,11 +18,20 @@ module BigbluebuttonRails
         ActiveRecord::Generators::Base.next_migration_number(dirname)
       end
 
+      def source_root
+        BigbluebuttonRails::Generators::InstallGenerator.source_root
+      end
+
       def create_migration_file
         if migrate_to_version.blank?
           migration_template "#{migration_path}/migration.rb", "db/migrate/create_bigbluebutton_rails.rb"
         else
-          migration_template "#{migration_path}/migration_#{version_filename}.rb", "db/migrate/bigbluebutton_rails_to_#{version_filename}.rb"
+          migrations = Dir.glob(File.join(source_root, migration_path, "migration_#{version_filename}*"))
+          migrations.sort.each do |path|
+            filename = File.basename(path)
+            target_filename = filename.gsub('migration', 'bigbluebutton_rails_to')
+            migration_template "#{migration_path}/#{filename}", "db/migrate/#{target_filename}"
+          end
         end
       end
 

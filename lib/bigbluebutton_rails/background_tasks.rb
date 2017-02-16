@@ -17,11 +17,15 @@ module BigbluebuttonRails
       end
     end
 
-    def self.update_recordings
+    # Updates the recordings for all servers if `server_id` is nil or or for the
+    # server with id `server_id`.
+    def self.update_recordings(server_id=nil)
       BigbluebuttonServer.find_each do |server|
         begin
-          server.fetch_recordings(nil, true)
-          Rails.logger.info "BackgroundTasks: List of recordings from #{server.url} updated successfully"
+          if server_id.nil? || server_id == server.id
+            server.fetch_recordings(nil, true)
+            Rails.logger.info "BackgroundTasks: List of recordings from #{server.url} updated successfully"
+          end
         rescue Exception => e
           Rails.logger.info "BackgroundTasks: Failure fetching recordings from #{server.inspect}"
           Rails.logger.info "BackgroundTasks: #{e.inspect}"

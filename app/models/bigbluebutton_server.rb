@@ -3,15 +3,10 @@ require 'bigbluebutton_api'
 class BigbluebuttonServer < ActiveRecord::Base
   include ActiveModel::ForbiddenAttributesProtection
 
-  has_many :rooms,
-           :class_name => 'BigbluebuttonRoom',
-           :foreign_key => 'server_id',
-           :dependent => :nullify
-
   has_many :recordings,
-           :class_name => 'BigbluebuttonRecording',
-           :foreign_key => 'server_id',
-           :dependent => :nullify
+           class_name: 'BigbluebuttonRecording',
+           foreign_key: 'server_id',
+           dependent: :destroy
 
   has_one :config,
           class_name: 'BigbluebuttonServerConfig',
@@ -25,12 +20,10 @@ class BigbluebuttonServer < ActiveRecord::Base
 
   validates :name,
             :presence => true,
-            :uniqueness => true,
             :length => { :minimum => 1, :maximum => 500 }
 
   validates :url,
             :presence => true,
-            :uniqueness => true,
             :length => { :maximum => 500 },
             :format => { :with => /http[s]?:\/\/.*\/bigbluebutton\/api/,
                          :message => I18n.t('bigbluebutton_rails.servers.errors.url_format') }
@@ -62,11 +55,21 @@ class BigbluebuttonServer < ActiveRecord::Base
   before_save :check_for_version_update
   after_update :check_for_config_update
 
+  # Schedules a recording update right after a recording server is added.
+  after_create do
+    Resque.enqueue(::BigbluebuttonUpdateRecordings, self.id)
+  end
+
   # In case there's no config created yet, build one.
   def config_with_initialize
-    config_without_initialize || build_config
+    config_without_initialize || build_config(server: self)
   end
   alias_method_chain :config, :initialize
+
+  # Helper to get the default server
+  def self.default
+    self.first
+  end
 
   # Returns the API object (<tt>BigBlueButton::BigBlueButtonAPI</tt> defined in
   # <tt>bigbluebutton-api-ruby</tt>) associated with this server.
@@ -90,15 +93,21 @@ class BigbluebuttonServer < ActiveRecord::Base
     # updates the information in the rooms that are currently in BBB
     @meetings = []
     response[:meetings].each do |attr|
-      room = BigbluebuttonRoom.find_by_server_id_and_meetingid(self.id, attr[:meetingID])
+      room = BigbluebuttonRoom.find_by(meetingid: attr[:meetingID])
       # TODO: there might be more attributes returned by the API, review them all
       if room.nil?
-        room = BigbluebuttonRoom.new(:server => self, :meetingid => attr[:meetingID],
-                                     :name => attr[:meetingID], :attendee_api_password => attr[:attendeePW],
-                                     :moderator_api_password => attr[:moderatorPW], :external => true, :private => true)
+        attrs = {
+          meetingid: attr[:meetingID],
+          name: attr[:meetingID],
+          attendee_api_password: attr[:attendeePW],
+          moderator_api_password: attr[:moderatorPW],
+          external: true,
+          private: true
+        }
+        room = BigbluebuttonRoom.new(attrs)
       else
-        room.update_attributes(:attendee_api_password => attr[:attendeePW],
-                               :moderator_api_password => attr[:moderatorPW])
+        room.update_attributes(attendee_api_password: attr[:attendeePW],
+                               moderator_api_password: attr[:moderatorPW])
       end
       room.running = attr[:running]
       room.update_current_meeting_record

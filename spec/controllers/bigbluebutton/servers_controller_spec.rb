@@ -142,7 +142,6 @@ describe Bigbluebutton::ServersController do
 
   describe "#update" do
     let(:new_server) { FactoryGirl.build(:bigbluebutton_server) }
-    before { @server = server } # need this to trigger let(:server) and actually create the object
 
     context "on success" do
       let(:new_server) { FactoryGirl.build(:bigbluebutton_server, version: "") }
@@ -150,16 +149,16 @@ describe Bigbluebutton::ServersController do
       before {
         BigBlueButton::BigBlueButtonApi.any_instance.should_receive(:get_api_version).and_return("0.9")
         expect {
-          put :update, id: @server.to_param, bigbluebutton_server: new_server.attributes
+          put :update, id: server.to_param, bigbluebutton_server: new_server.attributes
         }.not_to change { BigbluebuttonServer.count }
       }
       it {
-        saved = BigbluebuttonServer.find(@server)
+        saved = BigbluebuttonServer.find(server)
         should respond_with(:redirect)
         should redirect_to(bigbluebutton_server_path(saved))
       }
       it {
-        saved = BigbluebuttonServer.find(@server)
+        saved = BigbluebuttonServer.find(server)
         saved.should_not have_same_attributes_as(new_server)
         saved.version.should == "0.9"
       }
@@ -169,10 +168,10 @@ describe Bigbluebutton::ServersController do
     context "on failure" do
       before :each do
         new_server.url = nil # invalid
-        put :update, :id => @server.to_param, :bigbluebutton_server => new_server.attributes
+        put :update, :id => server.to_param, :bigbluebutton_server => new_server.attributes
       end
       it { should render_template(:edit) }
-      it { should assign_to(:server).with(@server) }
+      it { should assign_to(:server).with(server) }
     end
 
     describe "params handling" do
@@ -185,12 +184,12 @@ describe Bigbluebutton::ServersController do
       it {
         # we just check that the rails method 'permit' is being called on the hash with the
         # correct parameters
-        BigbluebuttonServer.stub(:find_by_param).and_return(@server)
-        @server.stub(:update_attributes).and_return(true)
+        BigbluebuttonServer.stub(:find_by_param).and_return(server)
+        server.stub(:update_attributes).and_return(true)
         attrs.stub(:permit).and_return(attrs)
         controller.stub(:params).and_return(params)
 
-        put :update, :id => @server.to_param, :bigbluebutton_server => attrs
+        put :update, :id => server.to_param, :bigbluebutton_server => attrs
         attrs.should have_received(:permit).with(*allowed_params)
       }
     end
@@ -198,8 +197,8 @@ describe Bigbluebutton::ServersController do
     # to make sure it doesn't break if the hash informed doesn't have the key :bigbluebutton_server
     describe "if parameters are not informed" do
       it {
-        put :update, :id => @server.to_param
-        should redirect_to(bigbluebutton_server_path(@server))
+        put :update, :id => server.to_param
+        should redirect_to(bigbluebutton_server_path(server))
       }
     end
 
@@ -207,7 +206,7 @@ describe Bigbluebutton::ServersController do
       context "on success" do
         before(:each) {
           BigbluebuttonServer.any_instance.should_receive(:set_api_version_from_server).and_return(anything)
-          put :update, :id => @server.to_param, :bigbluebutton_server => new_server.attributes, :redir_url => '/any'
+          put :update, :id => server.to_param, :bigbluebutton_server => new_server.attributes, :redir_url => '/any'
         }
         it { should respond_with(:redirect) }
         it { should redirect_to "/any" }
@@ -216,7 +215,7 @@ describe Bigbluebutton::ServersController do
       context "on failure" do
         before(:each) {
           new_server.url = nil # invalid
-          put :update, :id => @server.to_param, :bigbluebutton_server => new_server.attributes, :redir_url => '/any'
+          put :update, :id => server.to_param, :bigbluebutton_server => new_server.attributes, :redir_url => '/any'
         }
         it { should respond_with(:redirect) }
         it { should redirect_to "/any" }
@@ -228,7 +227,7 @@ describe Bigbluebutton::ServersController do
       before { controller.instance_variable_set(:@server, other_server) }
       before(:each) {
         BigbluebuttonServer.any_instance.should_receive(:set_api_version_from_server).and_return(anything)
-        put :update, :id => @server.to_param, :bigbluebutton_server => new_server.attributes
+        put :update, :id => server.to_param, :bigbluebutton_server => new_server.attributes
       }
       it { should assign_to(:server).with(other_server) }
     end
@@ -266,8 +265,8 @@ describe Bigbluebutton::ServersController do
   end
 
   describe "#activity" do
-    let(:room1) { FactoryGirl.create(:bigbluebutton_room, :server => server) }
-    let(:room2) { FactoryGirl.create(:bigbluebutton_room, :server => server) }
+    let(:room1) { FactoryGirl.create(:bigbluebutton_room) }
+    let(:room2) { FactoryGirl.create(:bigbluebutton_room) }
     before do
       # return our mocked server
       BigbluebuttonServer.stub(:find_by_param).with(server.to_param).
@@ -334,40 +333,6 @@ describe Bigbluebutton::ServersController do
       it { should assign_to(:server).with(other_server) }
     end
   end # #activity
-
-  describe "#rooms" do
-    context "basic" do
-      before do
-        @room1 = FactoryGirl.create(:bigbluebutton_room, :server => server)
-        @room2 = FactoryGirl.create(:bigbluebutton_room, :server => server)
-        FactoryGirl.create(:bigbluebutton_room)
-      end
-      before(:each) { get :rooms, :id => server.to_param }
-      it { should respond_with(:success) }
-      it { should render_template(:rooms) }
-      it { should assign_to(:rooms).with([@room1, @room2]) }
-    end
-
-    context "doesn't override @server" do
-      let!(:other_server) { FactoryGirl.create(:bigbluebutton_server) }
-      before { controller.instance_variable_set(:@server, other_server) }
-      before(:each) { get :rooms, :id => server.to_param }
-      it { should assign_to(:server).with(other_server) }
-    end
-
-    context "doesn't override @rooms" do
-      let!(:my_rooms) {
-        [ FactoryGirl.create(:bigbluebutton_room, server: server),
-          FactoryGirl.create(:bigbluebutton_room, server: server) ]
-      }
-      before {
-        3.times { FactoryGirl.create(:bigbluebutton_room, server: server) }
-        controller.instance_variable_set(:@rooms, my_rooms)
-      }
-      before(:each) { get :rooms, :id => server.to_param }
-      it { should assign_to(:rooms).with(my_rooms) }
-    end
-  end
 
   describe "#publish_recordings" do
     let(:recording_ids) { "id1,id2,id3" }
@@ -553,7 +518,7 @@ describe Bigbluebutton::ServersController do
         FactoryGirl.create(:bigbluebutton_recording)
 
         # one that belongs to another server but to a room that's in the target server
-        room = FactoryGirl.create(:bigbluebutton_room, :server => server)
+        room = FactoryGirl.create(:bigbluebutton_room)
         FactoryGirl.create(:bigbluebutton_recording, :room => room)
       end
       before(:each) { get :recordings, :id => server.to_param }

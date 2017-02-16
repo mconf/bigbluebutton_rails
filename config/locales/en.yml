@@ -50,7 +50,6 @@ en:
         private: Private
         presenter_share_only: "Only presenter shares audio and video"
         record: Record
-        server_id: "Server ID"
         voice_bridge: "Voice Bridge"
         welcome_msg: "Welcome Message"
       bigbluebutton_server:
