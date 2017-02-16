@@ -92,7 +92,7 @@ namespace :spec do
     sh "bundle exec rake db:drop RAILS_ENV=test"
     sh "bundle exec rake db:create RAILS_ENV=test"
     sh "bundle exec rake db:migrate RAILS_ENV=test"
-    sh "bundle exec rake db:test:prepare RAILS_ENV=test"
+    sh "bundle exec rake db:seed RAILS_ENV=test"
 
     cd "../.."
     Rake::Task["spec"].invoke
