@@ -177,7 +177,7 @@ class BigbluebuttonRoom < ActiveRecord::Base
     self.attendee_api_password = internal_password() if self.attendee_api_password.blank?
     self.save unless self.new_record?
 
-    response = internal_create_meeting(user, user_opts)
+    server, response = internal_create_meeting(user, user_opts)
     unless response.nil?
       self.attendee_api_password = response[:attendeePW]
       self.moderator_api_password = response[:moderatorPW]
@@ -188,7 +188,7 @@ class BigbluebuttonRoom < ActiveRecord::Base
         self.save
 
         # creates the meeting object since the create was successful
-        create_meeting_record(response[:metadata])
+        create_meeting_record(response, server, user_opts)
 
         # enqueue an update in the meeting with a small delay we assume to be
         # enough for the user to fully join the meeting
@@ -344,7 +344,7 @@ class BigbluebuttonRoom < ActiveRecord::Base
     end
   end
 
-  def create_meeting_record(metadata=nil)
+  def create_meeting_record(response, server, user_opts={})
     unless get_current_meeting.present?
       if self.create_time.present?
 
@@ -352,7 +352,6 @@ class BigbluebuttonRoom < ActiveRecord::Base
         # has not yet been set as ended
         self.finish_meetings
 
-        server = BigbluebuttonRails.configuration.select_server.call(self)
         attrs = {
           room: self,
           server_url: server.url,
@@ -364,6 +363,17 @@ class BigbluebuttonRoom < ActiveRecord::Base
           running: self.running,
           ended: false,
         }
+        # the parameters the user might have overwritten in the create call
+        # note: recorded is not in the API response, so we can't just get these
+        # attributes from there
+        attrs_user = {
+          meetingid: user_opts[:meetingID],
+          name: user_opts[:name],
+          recorded: user_opts[:record]
+        }.delete_if { |k, v| v.nil? }
+        attrs.merge!(attrs_user)
+
+        metadata = response[:metadata]
         unless metadata.nil?
           begin
             attrs[:creator_id] = metadata[BigbluebuttonRails.configuration.metadata_user_id].to_i
@@ -373,6 +383,7 @@ class BigbluebuttonRoom < ActiveRecord::Base
             attrs[:creator_name] = nil
           end
         end
+
         BigbluebuttonMeeting.create(attrs)
 
         Rails.logger.error "Did not create a current meeting because there was no create_time on room #{self.meetingid}"
@@ -384,6 +395,9 @@ class BigbluebuttonRoom < ActiveRecord::Base
 
   # Sets all meetings related to this room as not running
   def finish_meetings
+    to_be_finished = BigbluebuttonMeeting.where(ended: false)
+      .where(room_id: self.id).count
+
     BigbluebuttonMeeting.where(ended: false)
       .where(room_id: self.id)
       .update_all(running: false, ended: true)
@@ -393,6 +407,15 @@ class BigbluebuttonRoom < ActiveRecord::Base
     BigbluebuttonMeeting.where(running: true, ended: true)
       .where(room_id: self.id)
       .update_all(running: false, ended: true)
+
+    if to_be_finished > 0
+      # start trying to get the recording for this room
+      # since we don't have a way to know exactly when a recording is done, we
+      # have to keep polling the server for them
+      # 3 times so it tries at: 4, 9, 14 and 19
+      # no point going more since there is a global synchronization process
+      Resque.enqueue_in(4.minutes, ::BigbluebuttonRecordingsForRoom, self.id, 3)
+    end
   end
 
   # Gets a 'configToken' to use when joining the room.
@@ -501,17 +524,17 @@ class BigbluebuttonRoom < ActiveRecord::Base
 
   def internal_create_meeting(user=nil, user_opts={})
     opts = {
-      :record => self.record_meeting,
-      :duration => self.duration,
-      :moderatorPW => self.moderator_api_password,
-      :attendeePW => self.attendee_api_password,
-      :welcome => self.welcome_msg.blank? ? default_welcome_message : self.welcome_msg,
-      :dialNumber => self.dial_number,
-      :logoutURL => self.full_logout_url || self.logout_url,
-      :maxParticipants => self.max_participants,
-      :moderatorOnlyMessage => self.moderator_only_message,
-      :autoStartRecording => self.auto_start_recording,
-      :allowStartStopRecording => self.allow_start_stop_recording
+      record: record_meeting,
+      duration: self.duration,
+      moderatorPW: self.moderator_api_password,
+      attendeePW: self.attendee_api_password,
+      welcome: self.welcome_msg.blank? ? default_welcome_message : self.welcome_msg,
+      dialNumber: self.dial_number,
+      logoutURL: self.full_logout_url || self.logout_url,
+      maxParticipants: self.max_participants,
+      moderatorOnlyMessage: self.moderator_only_message,
+      autoStartRecording: self.auto_start_recording,
+      allowStartStopRecording: self.allow_start_stop_recording
     }.merge(user_opts)
 
     # Set the voice bridge only if the gem is configured to do so and the voice bridge
@@ -540,7 +563,7 @@ class BigbluebuttonRoom < ActiveRecord::Base
     server.api.request_headers = @request_headers # we need the client's IP
     response = server.api.create_meeting(self.name, self.meetingid, opts)
 
-    response
+    return server, response
   end
 
   # Returns the default welcome message to be shown in a conference in case

@@ -1337,7 +1337,7 @@ describe BigbluebuttonRoom do
       let!(:meeting) { FactoryGirl.create(:bigbluebutton_meeting, room: room, ended: false, running: true, create_time: room.create_time) }
       subject {
         expect {
-          room.create_meeting_record
+          room.create_meeting_record({}, server)
         }.not_to change{ BigbluebuttonMeeting.count }
       }
       it { BigbluebuttonMeeting.where(room: room).count.should be(1) }
@@ -1369,11 +1369,10 @@ describe BigbluebuttonRoom do
       }
 
       context "if there's no meeting associated yet creates one" do
-        context "and no metadata was passed" do
+        context "and there's no metadata in the response" do
           before(:each) {
             expect {
-              room.should_receive(:select_server).and_return(server)
-              room.create_meeting_record
+              room.create_meeting_record({}, server)
             }.to change{ BigbluebuttonMeeting.count }.by(1)
           }
           subject { BigbluebuttonMeeting.last }
@@ -1389,15 +1388,35 @@ describe BigbluebuttonRoom do
           it("doesn't set creator_name") { subject.creator_name.should be_nil }
         end
 
-        context "and metadata was passed" do
+        context "and there's metadata in the response" do
           before(:each) {
             expect {
-              room.create_meeting_record(metadata)
+              room.create_meeting_record({ metadata: metadata }, server)
             }.to change{ BigbluebuttonMeeting.count }.by(1)
           }
           subject { BigbluebuttonMeeting.last }
           it("sets creator_id") { subject.creator_id.should eq(user.id) }
           it("sets creator_name") { subject.creator_name.should eq(user.name) }
+        end
+
+        context "and there are user attributes" do
+          let(:user_attrs) {
+            {
+              meetingID: room.meetingid + "-2",
+              name: room.name + "-2",
+              record: false # important to be false here
+            }
+          }
+          before(:each) {
+            room.record_meeting = true
+            expect {
+              room.create_meeting_record({}, server, user_attrs)
+            }.to change{ BigbluebuttonMeeting.count }.by(1)
+          }
+          subject { BigbluebuttonMeeting.last }
+          it("sets meetingid") { subject.meetingid.should eq(room.meetingid + '-2') }
+          it("sets name") { subject.name.should eq(room.name + '-2') }
+          it("sets recorded") { subject.recorded.should eq(false) }
         end
       end
 
@@ -1408,7 +1427,7 @@ describe BigbluebuttonRoom do
         before(:each) {
           BigbluebuttonMeeting.where(room: room, ended: false).count.should be(2)
           expect {
-            room.create_meeting_record(metadata)
+            room.create_meeting_record({ metadata: metadata }, server)
           }.to change{ BigbluebuttonMeeting.count }.by(1)
         }
         it { BigbluebuttonMeeting.where(room: room).count.should be(3) }
@@ -1452,6 +1471,26 @@ describe BigbluebuttonRoom do
       it { meeting.reload.running.should be(false) }
       it { meeting.reload.ended.should be(true) }
     end
+
+    context "enqueues a worker to fetch recordings" do
+
+      context "if at least one meeting was ended" do
+        let!(:meeting1) { FactoryGirl.create(:bigbluebutton_meeting, room: room, ended: false, running: true) }
+        before {
+          expect(Resque).to receive(:enqueue_in).with(4.minutes, ::BigbluebuttonRecordingsForRoom, room.id, 3)
+        }
+        it { room.finish_meetings }
+      end
+
+      context "not if no meeting was ended" do
+        let!(:meeting1) { FactoryGirl.create(:bigbluebutton_meeting, room: room, ended: true, running: true) }
+        before {
+          expect(Resque).not_to receive(:enqueue_in)
+        }
+        it { room.finish_meetings }
+      end
+
+    end
   end
 
   describe "#internal_create_meeting" do
@@ -1461,6 +1500,7 @@ describe BigbluebuttonRoom do
     it "sets the request headers"
     it "calls api.create_meeting"
     it "accepts additional user options to override the options in the database"
+    it "returns the server selected and the response"
 
     context "adds the invitation URL, if any" do
       before { mock_server_and_api }
