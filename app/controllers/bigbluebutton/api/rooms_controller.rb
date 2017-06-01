@@ -29,7 +29,12 @@ class Bigbluebutton::Api::RoomsController < ApplicationController
 
   def join
     error_room_not_running unless check_is_running
-    @url = @room.parameterized_join_url(@user_name, @user_role, nil)
+
+    # map "meta[_-]" to "userdata-"
+    meta = params.select{ |k,v| k.match(/^meta[-_]/) }
+    meta = meta.map{ |k,v| { k.gsub(/^meta[-_]/, 'userdata-') => v } }.reduce(:merge)
+
+    @url = @room.parameterized_join_url(@user_name, @user_role, nil, meta)
   end
 
   protected

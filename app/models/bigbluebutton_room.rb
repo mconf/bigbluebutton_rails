@@ -228,10 +228,10 @@ class BigbluebuttonRoom < ActiveRecord::Base
     r
   end
 
-  def parameterized_join_url(username, role, id)
+  def parameterized_join_url(username, role, id, options={})
     # gets the token with the configurations for this user/room
     token = self.fetch_new_token
-    options = if token.nil? then {} else { :configToken => token } end
+    options.merge!({ configToken: token }) unless token.blank?
 
     # set the create time and the user id, if they exist
     options.merge!({ createTime: self.create_time }) unless self.create_time.blank?
