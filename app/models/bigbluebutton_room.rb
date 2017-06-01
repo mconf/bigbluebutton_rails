@@ -228,6 +228,17 @@ class BigbluebuttonRoom < ActiveRecord::Base
     r
   end
 
+  def parameterized_join_url(username, role, id)
+    # gets the token with the configurations for this user/room
+    token = self.fetch_new_token
+    options = if token.nil? then {} else { :configToken => token } end
+
+    # set the create time and the user id, if they exist
+    options.merge!({ createTime: self.create_time }) unless self.create_time.blank?
+    options.merge!({ userID: id }) unless id.blank?
+
+    self.join_url(username, role, nil, options)
+  end
 
   # Returns the role of the user based on the key given.
   # The return value can be <tt>:moderator</tt>, <tt>:attendee</tt>, or

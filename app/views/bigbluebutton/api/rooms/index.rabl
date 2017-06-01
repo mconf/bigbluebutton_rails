@@ -1,6 +1,6 @@
 collection @rooms => :data
 
-node(:type) { |obj| obj.class.name }
+node(:type) { |obj| api_type_of(obj) }
 node(:id) { |obj| obj.id.to_s }
 
 node :attributes do |room|
@@ -27,8 +27,8 @@ node :relationships, :unless => lambda { |r| r.owner.nil? } do |room|
         :self => url
       },
       :data => {
+        :type => api_type_of(owner),
         :id => owner.id.to_s,
-        :type => owner.class.name,
         :attributes => {
           :name => owner.name
         }

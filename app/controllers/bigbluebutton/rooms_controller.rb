@@ -241,7 +241,7 @@ class Bigbluebutton::RoomsController < ApplicationController
   protected
 
   def find_room
-    @room ||= BigbluebuttonRoom.find_by_param(params[:id])
+    @room ||= BigbluebuttonRoom.find_by(param: params[:id])
   end
 
   def set_request_headers
@@ -347,16 +347,9 @@ class Bigbluebutton::RoomsController < ApplicationController
         end
       end
 
-      # gets the token with the configurations for this user/room
-      token = @room.fetch_new_token
-      options = if token.nil? then {} else { :configToken => token } end
-
-      # set the create time and the user id, if they exist
-      options.merge!({ createTime: @room.create_time }) unless @room.create_time.blank?
-      options.merge!({ userID: id }) unless id.blank?
-
       # room created and running, try to join it
-      url = @room.join_url(username, role, nil, options)
+      url = @room.parameterized_join_url(username, role, id)
+
       unless url.nil?
 
         # change the protocol to join with a mobile device

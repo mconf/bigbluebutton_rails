@@ -68,6 +68,17 @@ en:
       bigbluebutton_server: "Web Conference Server"
       bigbluebutton_server_config: "Web Conference Server Configurations"
   bigbluebutton_rails:
+    api:
+      rooms:
+        missing_params:
+          msg: "You did not inform one or more required parameters"
+          title: "Missing parameters"
+        room_not_found:
+          msg: "Could not find the target room"
+          title: "Resource not found"
+        room_not_running:
+          msg: "There's no meeting currently running in this room"
+          title: "Meeting not running"
     bigbluebutton: BigBlueButton
     metadata:
       errors:

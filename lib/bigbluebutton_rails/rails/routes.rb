@@ -87,6 +87,7 @@ module ActionDispatch::Routing
           end
           member do
             get :running, to: 'bigbluebutton/api/rooms#running'
+            post :join, to: 'bigbluebutton/api/rooms#join'
           end
         end
       end

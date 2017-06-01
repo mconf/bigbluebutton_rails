@@ -1,8 +1,10 @@
-object @room => :data
+object false
 
-node(:type) { |obj| obj.class.name }
-node(:id) { |obj| obj.id.to_s }
+child(@room => :data) {
+  node(:type) { |obj| api_type_of(obj) }
+  node(:id) { |obj| obj.id.to_s }
 
-node :attributes do |room|
-  { :running => room.is_running? }
-end
+  node :attributes do |room|
+    { :running => room.is_running? }
+  end
+}
