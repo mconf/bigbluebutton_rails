@@ -35,7 +35,7 @@ class BigbluebuttonRailsTo220B < ActiveRecord::Migration
     end
 
     BigbluebuttonRecording.where(meeting_id: nil).where.not(room_id: nil).find_each do |rec|
-      BigbluebuttonMeeting.create do |m|
+      meeting = BigbluebuttonMeeting.create do |m|
         creator_data = find_creator_data(rec)
         m.server_id = rec.server_id
         m.room_id = rec.room_id
@@ -50,7 +50,8 @@ class BigbluebuttonRailsTo220B < ActiveRecord::Migration
         m.create_time = rec.start_time
         m.ended = true
       end
-      rec.update_attributes(meeting_id: BigbluebuttonRecording.find_matching_meeting(rec).try(:id))
+      rec.update_attributes(meeting_id: meeting.id)
+      puts "Created a meeting for the recording id-#{rec.id}: Meeting id-#{meeting.id}"
     end
   end
 
@@ -60,12 +61,8 @@ class BigbluebuttonRailsTo220B < ActiveRecord::Migration
       meeting = BigbluebuttonMeeting.where("meetingid = ? AND created_at > ? AND created_at < ?",
                 recording.meetingid, Time.at(recording.start_time)-2.minutes, Time.at(recording.start_time)+2.minutes).first
 
-      if meeting.nil?
-        meeting_id = nil
-      else
-        if BigbluebuttonRecording.find_by_meeting_id(meeting.id).present?
-          meeting_id = nil
-        else
+      unless meeting.nil?
+        unless BigbluebuttonRecording.find_by(meeting_id: meeting.id).present?
           meeting_id = meeting.id
         end
       end
@@ -81,11 +78,11 @@ class BigbluebuttonRailsTo220B < ActiveRecord::Migration
   def find_creator_data(recording)
     creator_data = []
     if recording.room.owner.is_a?(User)
-      creator_id = recording.room.owner.id
-      creator_name = recording.room.owner.name
+      creator_id = recording.room.try(:owner).try(:id)
+      creator_name = recording.room.try(:owner).try(:name)
     elsif recording.room.owner.is_a?(Space)
-      creator_id = recording.room.owner.admins.first.id
-      creator_name = recording.room.owner.admins.first.name
+      creator_id = recording.room.try(:owner).try(:admins).try(:first).try(:id)
+      creator_name = recording.room.try(:owner).try(:admins).try(:first).try(:name)
     end
     creator_data = [creator_id, creator_name]
   end
