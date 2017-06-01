@@ -1,12 +1,11 @@
 collection @rooms => :data
 
 node(:type) { |obj| api_type_of(obj) }
-node(:id) { |obj| obj.id.to_s }
+node(:id) { |obj| obj.to_param }
 
 node :attributes do |room|
-  attrs = { :identifier => room.param }
-  [ :meetingid, :name, :attendee_key, :moderator_key, :welcome_msg, :logout_url,
-    :voice_bridge, :dial_number, :max_participants, :private ].each { |attr|
+  attrs = { }
+  [ :name, :private ].each { |attr|
     attrs.merge!({ :"#{attr}" => room.send(attr) })
   }
   attrs
@@ -23,16 +22,20 @@ node :relationships, :unless => lambda { |r| r.owner.nil? } do |room|
         end
   { :owner =>
     {
-      :links => {
-        :self => url
-      },
       :data => {
         :type => api_type_of(owner),
-        :id => owner.id.to_s,
+        :id => owner.to_param,
         :attributes => {
           :name => owner.name
         }
+      },
+      :links => {
+        :self => url
       }
     }
   }
+end
+
+node :links do |room|
+  { self: join_webconf_path(room) }
 end
