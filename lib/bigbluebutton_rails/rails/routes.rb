@@ -79,6 +79,20 @@ module ActionDispatch::Routing
       send("bigbluebutton_routes_#{params[0].to_s}", options)
     end
 
+    def bigbluebutton_api_routes(api_scope='/api/conference')
+      scope api_scope do
+        resources :rooms do
+          collection do
+            get :index, to: 'bigbluebutton/api/rooms#index'
+          end
+          member do
+            get :running, to: 'bigbluebutton/api/rooms#running'
+            post :join, to: 'bigbluebutton/api/rooms#join'
+          end
+        end
+      end
+    end
+
     protected
 
     def bigbluebutton_routes_default(*params) #:nodoc:

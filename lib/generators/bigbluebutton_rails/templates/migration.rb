@@ -56,8 +56,8 @@ class CreateBigbluebuttonRails < ActiveRecord::Migration
       t.string :meetingid
       t.string :name
       t.boolean :published, :default => false
-      t.datetime :start_time
-      t.datetime :end_time
+      t.decimal :start_time, precision: 14, scale: 0
+      t.decimal :end_time, precision: 14, scale: 0
       t.boolean :available, :default => true
       t.string :description
       t.integer :size, limit: 8, default: 0
@@ -95,7 +95,6 @@ class CreateBigbluebuttonRails < ActiveRecord::Migration
       t.integer :room_id
       t.string :meetingid
       t.string :name
-      t.datetime :start_time
       t.decimal :create_time, precision: 14, scale: 0
       t.boolean :running, :default => false
       t.boolean :recorded, :default => false

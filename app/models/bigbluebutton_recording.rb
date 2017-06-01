@@ -114,7 +114,7 @@ class BigbluebuttonRecording < ActiveRecord::Base
     recording.available = true
     recording.room = BigbluebuttonRails.configuration.match_room_recording.call(data)
     recording.server = server
-    recording.description = I18n.t('bigbluebutton_rails.recordings.default.description', :time => recording.start_time.utc.to_formatted_s(:long))
+    recording.description = I18n.t('bigbluebutton_rails.recordings.default.description', :time => Time.at(recording.start_time).utc.to_formatted_s(:long))
     recording.meeting = BigbluebuttonRecording.find_matching_meeting(recording)
     recording.save!
 
@@ -215,20 +215,22 @@ class BigbluebuttonRecording < ActiveRecord::Base
   end
 
   # Finds the BigbluebuttonMeeting that generated this recording. The meeting is searched using
-  # the room associated with this recording and the create time of the meeting, taken from
-  # the recording's ID.
+  # the meetingid associated with this recording and the create time of the meeting, taken from
+  # the recording's ID. There are some flexible clauses that try to match very close or truncated
+  # timestamps from recordings start times to meeting create times.
   def self.find_matching_meeting(recording)
     meeting = nil
-
-    unless recording.nil? or recording.room.nil?
-
-      # recordid is something like: 'dd2816950ce2f1e0a928c1a5b8d5b526e9b3e32c-1381978014526'
-      # the create time of the meeting is the timestamp at the end
-      start_time = recording.recordid.match(/-(\d*)$/)
-      unless start_time.nil?
-        start_time = start_time[1]
-        start_time = Time.at(start_time.to_i).to_datetime.utc
-        meeting = BigbluebuttonMeeting.where(:room_id => recording.room.id, :start_time => start_time).last
+    unless recording.nil? #or recording.room.nil?
+      unless recording.start_time.nil?
+        start_time = recording.start_time
+        meeting = BigbluebuttonMeeting.where("meetingid = ? AND create_time = ?", recording.meetingid, start_time).last
+          if meeting.nil?
+            meeting = BigbluebuttonMeeting.where("meetingid = ? AND create_time DIV 1000 = ?", recording.meetingid, start_time).last
+          end
+          if meeting.nil?
+            div_start_time = (start_time/10)
+            meeting = BigbluebuttonMeeting.where("meetingid = ? AND create_time DIV 10 = ?", recording.meetingid, div_start_time).last
+          end
         logger.info "Recording: meeting found for the recording #{recording.inspect}: #{meeting.inspect}"
       end
     end

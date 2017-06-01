@@ -1,5 +1,15 @@
 # Change Log
 
+## [2.2.0] - _Unreleased_
+
+* [#136] Improve matching between recordings and meetings and migrate old recordings to
+  always (when possible) have a meeting associated.
+* Add new worker to fetch recordings after meetings are ended to improve the speed with which
+  recordings are found after meetings
+* Fix setting the `recorded` attributes in newly created meetings, it was always using the
+  attributes from model, without considering that it is possible to override these attributes when
+  making a "create" call (which is exactly what Mconf-Web does).
+
 
 ## [2.1.0] - 2016-07-22
 
@@ -266,6 +276,7 @@ https://github.com/mconf/bigbluebutton_rails/wiki/Migrate-to-1.3.0
 * Controller to access servers and rooms
 * rooms_controller interacts with a BBB server using bigbluebutton-api-ruby
 
+[2.2.0]: https://github.com/mconf/bigbluebutton_rails/compare/v2.1.0...v2.2.0
 [2.1.0]: https://github.com/mconf/bigbluebutton_rails/compare/v2.0.0...v2.1.0
 [2.0.0]: https://github.com/mconf/bigbluebutton_rails/compare/v1.4.0...v2.0.0
 [1.4.0]: https://github.com/mconf/bigbluebutton_rails/compare/v1.3.0...v1.4.0

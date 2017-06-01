@@ -7,4 +7,21 @@ module BigbluebuttonRails
   # room that does not have a server associated
   class ServerRequired < StandardError; end
 
+  # To help create responses for API errors
+  class APIError < StandardError
+    def initialize(msg, code=500, title=nil)
+      @title = title || msg
+      @code = code
+      super(msg)
+    end
+
+    def code
+      @code
+    end
+
+    def title
+      @title
+    end
+  end
+
 end

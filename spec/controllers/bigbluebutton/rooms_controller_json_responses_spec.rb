@@ -5,7 +5,7 @@ describe Bigbluebutton::RoomsController do
   let(:server) { FactoryGirl.create(:bigbluebutton_server) }
   let(:room) { FactoryGirl.create(:bigbluebutton_room) }
   before do
-    BigbluebuttonRoom.stub(:find_by_param) { room }
+    BigbluebuttonRoom.stub(:find_by) { room }
     BigbluebuttonRoom.stub(:find) { room }
   end
 

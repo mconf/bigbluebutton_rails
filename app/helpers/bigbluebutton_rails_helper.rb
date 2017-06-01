@@ -41,4 +41,8 @@ module BigbluebuttonRailsHelper
     "badges/apple_store_#{I18n.locale}.png"
   end
 
+  def api_type_of(obj)
+    type = obj.class.name.demodulize.underscore.dasherize
+    type.gsub(/bigbluebutton-/, '')
+  end
 end

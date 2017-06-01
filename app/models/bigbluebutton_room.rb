@@ -59,7 +59,7 @@ class BigbluebuttonRoom < ActiveRecord::Base
 
   # Note: these params need to be fetched from the server before being accessed
   attr_accessor :running, :participant_count, :moderator_count, :attendees,
-                :has_been_forcibly_ended, :start_time, :end_time
+                :has_been_forcibly_ended, :end_time
 
   after_initialize :init
   after_create :create_room_options
@@ -97,7 +97,7 @@ class BigbluebuttonRoom < ActiveRecord::Base
   # * <tt>moderator_count</tt>
   # * <tt>running</tt>
   # * <tt>has_been_forcibly_ended</tt>
-  # * <tt>start_time</tt>
+  # * <tt>create_time</tt>
   # * <tt>end_time</tt>
   # * <tt>attendees</tt> (array of <tt>BigbluebuttonAttendee</tt>)
   #
@@ -111,7 +111,6 @@ class BigbluebuttonRoom < ActiveRecord::Base
       @moderator_count = response[:moderatorCount]
       @running = response[:running]
       @has_been_forcibly_ended = response[:hasBeenForciblyEnded]
-      @start_time = response[:startTime]
       @end_time = response[:endTime]
       @attendees = []
       if response[:attendees].present?
@@ -178,7 +177,7 @@ class BigbluebuttonRoom < ActiveRecord::Base
     self.attendee_api_password = internal_password() if self.attendee_api_password.blank?
     self.save unless self.new_record?
 
-    response = internal_create_meeting(user, user_opts)
+    server, response = internal_create_meeting(user, user_opts)
     unless response.nil?
       self.attendee_api_password = response[:attendeePW]
       self.moderator_api_password = response[:moderatorPW]
@@ -189,7 +188,7 @@ class BigbluebuttonRoom < ActiveRecord::Base
         self.save
 
         # creates the meeting object since the create was successful
-        create_meeting_record(response[:metadata])
+        create_meeting_record(response, server, user_opts)
 
         # enqueue an update in the meeting with a small delay we assume to be
         # enough for the user to fully join the meeting
@@ -229,6 +228,17 @@ class BigbluebuttonRoom < ActiveRecord::Base
     r
   end
 
+  def parameterized_join_url(username, role, id, options={})
+    # gets the token with the configurations for this user/room
+    token = self.fetch_new_token
+    options.merge!({ configToken: token }) unless token.blank?
+
+    # set the create time and the user id, if they exist
+    options.merge!({ createTime: self.create_time }) unless self.create_time.blank?
+    options.merge!({ userID: id }) unless id.blank?
+
+    self.join_url(username, role, nil, options)
+  end
 
   # Returns the role of the user based on the key given.
   # The return value can be <tt>:moderator</tt>, <tt>:attendee</tt>, or
@@ -252,7 +262,7 @@ class BigbluebuttonRoom < ActiveRecord::Base
   # From: http://alicebobandmallory.com/articles/2009/11/02/comparing-instance-variables-in-ruby
   def instance_variables_compare(o)
     vars = [ :@running, :@participant_count, :@moderator_count, :@attendees,
-             :@has_been_forcibly_ended, :@start_time, :@end_time ]
+             :@has_been_forcibly_ended, :@end_time ]
     Hash[*vars.map { |v|
            self.instance_variable_get(v)!=o.instance_variable_get(v) ?
            [v,o.instance_variable_get(v)] : []}.flatten]
@@ -324,7 +334,7 @@ class BigbluebuttonRoom < ActiveRecord::Base
     unless self.create_time.nil?
       attrs = {
         :running => self.running,
-        :start_time => self.start_time.try(:utc)
+        :create_time => self.create_time
       }
       # note: it's important to update the 'ended' attr so the meeting is
       # reopened in case it was mistakenly considered as ended
@@ -345,7 +355,7 @@ class BigbluebuttonRoom < ActiveRecord::Base
     end
   end
 
-  def create_meeting_record(metadata=nil)
+  def create_meeting_record(response, server, user_opts={})
     unless get_current_meeting.present?
       if self.create_time.present?
 
@@ -353,7 +363,6 @@ class BigbluebuttonRoom < ActiveRecord::Base
         # has not yet been set as ended
         self.finish_meetings
 
-        server = BigbluebuttonRails.configuration.select_server.call(self)
         attrs = {
           room: self,
           server_url: server.url,
@@ -364,8 +373,18 @@ class BigbluebuttonRoom < ActiveRecord::Base
           create_time: self.create_time,
           running: self.running,
           ended: false,
-          start_time: self.start_time.try(:utc)
         }
+        # the parameters the user might have overwritten in the create call
+        # note: recorded is not in the API response, so we can't just get these
+        # attributes from there
+        attrs_user = {
+          meetingid: user_opts[:meetingID],
+          name: user_opts[:name],
+          recorded: user_opts[:record]
+        }.delete_if { |k, v| v.nil? }
+        attrs.merge!(attrs_user)
+
+        metadata = response[:metadata]
         unless metadata.nil?
           begin
             attrs[:creator_id] = metadata[BigbluebuttonRails.configuration.metadata_user_id].to_i
@@ -375,6 +394,7 @@ class BigbluebuttonRoom < ActiveRecord::Base
             attrs[:creator_name] = nil
           end
         end
+
         BigbluebuttonMeeting.create(attrs)
 
         Rails.logger.error "Did not create a current meeting because there was no create_time on room #{self.meetingid}"
@@ -386,6 +406,9 @@ class BigbluebuttonRoom < ActiveRecord::Base
 
   # Sets all meetings related to this room as not running
   def finish_meetings
+    to_be_finished = BigbluebuttonMeeting.where(ended: false)
+      .where(room_id: self.id).count
+
     BigbluebuttonMeeting.where(ended: false)
       .where(room_id: self.id)
       .update_all(running: false, ended: true)
@@ -395,6 +418,15 @@ class BigbluebuttonRoom < ActiveRecord::Base
     BigbluebuttonMeeting.where(running: true, ended: true)
       .where(room_id: self.id)
       .update_all(running: false, ended: true)
+
+    if to_be_finished > 0
+      # start trying to get the recording for this room
+      # since we don't have a way to know exactly when a recording is done, we
+      # have to keep polling the server for them
+      # 3 times so it tries at: 4, 9, 14 and 19
+      # no point going more since there is a global synchronization process
+      Resque.enqueue_in(4.minutes, ::BigbluebuttonRecordingsForRoom, self.id, 3)
+    end
   end
 
   # Gets a 'configToken' to use when joining the room.
@@ -497,24 +529,23 @@ class BigbluebuttonRoom < ActiveRecord::Base
     @moderator_count = 0
     @running = false
     @has_been_forcibly_ended = false
-    @start_time = nil
     @end_time = nil
     @attendees = []
   end
 
   def internal_create_meeting(user=nil, user_opts={})
     opts = {
-      :record => self.record_meeting,
-      :duration => self.duration,
-      :moderatorPW => self.moderator_api_password,
-      :attendeePW => self.attendee_api_password,
-      :welcome => self.welcome_msg.blank? ? default_welcome_message : self.welcome_msg,
-      :dialNumber => self.dial_number,
-      :logoutURL => self.full_logout_url || self.logout_url,
-      :maxParticipants => self.max_participants,
-      :moderatorOnlyMessage => self.moderator_only_message,
-      :autoStartRecording => self.auto_start_recording,
-      :allowStartStopRecording => self.allow_start_stop_recording
+      record: record_meeting,
+      duration: self.duration,
+      moderatorPW: self.moderator_api_password,
+      attendeePW: self.attendee_api_password,
+      welcome: self.welcome_msg.blank? ? default_welcome_message : self.welcome_msg,
+      dialNumber: self.dial_number,
+      logoutURL: self.full_logout_url || self.logout_url,
+      maxParticipants: self.max_participants,
+      moderatorOnlyMessage: self.moderator_only_message,
+      autoStartRecording: self.auto_start_recording,
+      allowStartStopRecording: self.allow_start_stop_recording
     }.merge(user_opts)
 
     # Set the voice bridge only if the gem is configured to do so and the voice bridge
@@ -543,7 +574,7 @@ class BigbluebuttonRoom < ActiveRecord::Base
     server.api.request_headers = @request_headers # we need the client's IP
     response = server.api.create_meeting(self.name, self.meetingid, opts)
 
-    response
+    return server, response
   end
 
   # Returns the default welcome message to be shown in a conference in case

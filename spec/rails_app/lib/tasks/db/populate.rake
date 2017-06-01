@@ -64,6 +64,24 @@ namespace :db do
           metadata.save!
         end
 
+        2.times do |n2|
+          params = {
+            :server_id => 0,
+            :room_id => room.id,
+            :meetingid => room.meetingid,
+            :name => "Name-#{n1}-#{n2}",
+            :create_time => Time.now - rand(5).hours,
+            :running => false,
+            :recorded => true,
+            :creator_id => rand(12),
+            :creator_name => "Name-#{n1}-#{n2}",
+            :ended => true
+          }
+          time = params[:create_time]
+          puts "    - Creating meeting #{params[:name]}"
+          meeting = BigbluebuttonMeeting.create(params)
+        end
+
         # Recordings
         2.times do |n3|
           params = {
@@ -72,10 +90,10 @@ namespace :db do
             :name => "Rec-#{n1}-#{n2}-#{n3}",
             :published => true,
             :available => true,
-            :start_time => Time.now - rand(5).hours,
-            :end_time => Time.now + rand(5).hours
+            :start_time => meeting.create_time,
+            :end_time => meeting.create_time + rand(5).hours
           }
-          time = params[:start_time].utc.to_formatted_s(:long)
+          time = params[:start_time]
           params[:description] = I18n.t('bigbluebutton_rails.recordings.default.description', :time => time)
           puts "    - Creating recording #{params[:name]}"
           recording = BigbluebuttonRecording.create(params)
