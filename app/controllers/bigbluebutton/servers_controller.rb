@@ -2,7 +2,6 @@ class Bigbluebutton::ServersController < ApplicationController
   include BigbluebuttonRails::InternalControllerMethods
 
   respond_to :html
-  respond_to :json, :only => [:index, :show, :new, :create, :update, :destroy, :activity, :rooms]
   before_filter :find_server, :except => [:index, :new, :create]
 
   def index
@@ -47,14 +46,8 @@ class Bigbluebutton::ServersController < ApplicationController
       if error
         flash[:error] = message
         format.html { render :activity }
-        format.json {
-          array = @server.meetings
-          array.insert(0, { :message => message })
-          render :json => array, :status => :error
-        }
       else
         format.html
-        format.json
       end
     end
   end
@@ -68,10 +61,8 @@ class Bigbluebutton::ServersController < ApplicationController
           message = t('bigbluebutton_rails.servers.notice.create.success')
           redirect_to_using_params @server, :notice => message
         }
-        format.json { render :json => @server, :status => :created }
       else
         format.html { redirect_to_params_or_render :new }
-        format.json { render :json => @server.errors.full_messages, :status => :unprocessable_entity }
       end
     end
   end
@@ -83,10 +74,8 @@ class Bigbluebutton::ServersController < ApplicationController
           message = t('bigbluebutton_rails.servers.notice.update.success')
           redirect_to_using_params @server, :notice => message
         }
-        format.json { render :json => true, :status => :ok }
       else
         format.html { redirect_to_params_or_render :edit }
-        format.json { render :json => @server.errors.full_messages, :status => :unprocessable_entity }
       end
     end
   end
@@ -97,7 +86,6 @@ class Bigbluebutton::ServersController < ApplicationController
 
     respond_with do |format|
       format.html { redirect_to_using_params bigbluebutton_servers_url }
-      format.json { render :json => true, :status => :ok }
     end
   end
 
@@ -142,13 +130,6 @@ class Bigbluebutton::ServersController < ApplicationController
         flash[error ? :error : :notice] = message
         redirect_to bigbluebutton_server_path(@server)
       }
-      format.json {
-        if error
-          render :json => { :message => message }, :status => :error
-        else
-          render :json => true, :status => :ok
-        end
-      }
     end
   end
 
@@ -174,7 +155,6 @@ class Bigbluebutton::ServersController < ApplicationController
           end
           redirect_to_using_params recordings_bigbluebutton_server_path(@server), :notice => message
         }
-        format.json { render :json => message }
       end
     rescue BigBlueButton::BigBlueButtonException => e
       respond_with do |format|
@@ -182,7 +162,6 @@ class Bigbluebutton::ServersController < ApplicationController
           flash[:error] = e.to_s[0..200]
           redirect_to_using_params recordings_bigbluebutton_server_path(@server)
         }
-        format.json { render :json => e.to_s, :status => :error }
       end
     end
   end

@@ -14,8 +14,8 @@ class Bigbluebutton::RoomsController < ApplicationController
   before_filter :join_check_can_create, :only => :join
   before_filter :join_check_redirect_to_mobile, :only => :join
 
-  respond_to :html, :except => :running
-  respond_to :json, :only => [:running, :show, :new, :index, :create, :update]
+  respond_to :html, except: :running
+  respond_to :json, only: :running
 
   def index
     @rooms ||= BigbluebuttonRoom.all
@@ -50,15 +50,11 @@ class Bigbluebutton::RoomsController < ApplicationController
         format.html {
           redirect_to_using_params bigbluebutton_room_path(@room), :notice => message
         }
-        format.json {
-          render :json => { :message => message }, :status => :created
-        }
       else
         format.html {
           message = t('bigbluebutton_rails.rooms.notice.create.failure')
           redirect_to_params_or_render :new, :error => message
         }
-        format.json { render :json => @room.errors.full_messages, :status => :unprocessable_entity }
       end
     end
   end
@@ -70,13 +66,11 @@ class Bigbluebutton::RoomsController < ApplicationController
         format.html {
           redirect_to_using_params bigbluebutton_room_path(@room), :notice => message
         }
-        format.json { render :json => { :message => message } }
       else
         format.html {
           message = t('bigbluebutton_rails.rooms.notice.update.failure')
           redirect_to_params_or_render :edit, :error => message
         }
-        format.json { render :json => @room.errors.full_messages, :status => :unprocessable_entity }
       end
     end
   end
@@ -99,13 +93,6 @@ class Bigbluebutton::RoomsController < ApplicationController
       format.html {
         flash[:error] = message if error
         redirect_to_using_params bigbluebutton_rooms_url
-      }
-      format.json {
-        if error
-          render :json => { :message => message }, :status => :error
-        else
-          render :json => { :message => message }
-        end
       }
     end
   end
@@ -163,14 +150,12 @@ class Bigbluebutton::RoomsController < ApplicationController
           flash[:error] = message
           redirect_to_using_params :back
         }
-        format.json { render :json => message, :status => :error }
       end
     else
       respond_with do |format|
         format.html {
           redirect_to_using_params bigbluebutton_room_path(@room), :notice => message
         }
-        format.json { render :json => message }
       end
     end
 
@@ -203,13 +188,6 @@ class Bigbluebutton::RoomsController < ApplicationController
         flash[error ? :error : :notice] = message
         redirect_to_using_params bigbluebutton_room_path(@room)
       }
-      format.json {
-        if error
-          render :json => { :message => message }, :status => :error
-        else
-          render :json => true, :status => :ok
-        end
-      }
     end
   end
 
@@ -224,7 +202,6 @@ class Bigbluebutton::RoomsController < ApplicationController
       message = t('bigbluebutton_rails.rooms.notice.generate_dial_number.success')
       respond_with do |format|
         format.html { redirect_to_using_params :back, notice: message }
-        format.json { render json: true, status: :ok }
       end
     else
       message = t('bigbluebutton_rails.rooms.errors.generate_dial_number.not_unique')
@@ -233,7 +210,6 @@ class Bigbluebutton::RoomsController < ApplicationController
           flash[:error] = message
           redirect_to_using_params :back
         }
-        format.json { render json: { message: message }, status: :error }
       end
     end
   end
