@@ -10,7 +10,7 @@ describe Bigbluebutton::RoomsController do
     let(:http_referer) { bigbluebutton_server_path(mocked_server) }
     let(:room) { FactoryGirl.create(:bigbluebutton_room) }
     before {
-      BigbluebuttonRoom.stub(:find_by_param) { room }
+      BigbluebuttonRoom.stub(:find_by) { room }
       BigbluebuttonRoom.stub(:find) { room }
       mock_server_and_api
       request.env["HTTP_REFERER"] = http_referer
@@ -69,7 +69,7 @@ describe Bigbluebutton::RoomsController do
         before {
           controller.should_receive(:bigbluebutton_role).with(room).and_return(:moderator)
           room.stub(:select_server).and_return(mocked_server)
-          BigbluebuttonRoom.stub(:find_by_param).and_return(room)
+          BigbluebuttonRoom.stub(:find_by).and_return(room)
         }
 
         it "catches exception on the first is_meeting_running" do
