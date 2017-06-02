@@ -8,6 +8,10 @@ class BigbluebuttonMeeting < ActiveRecord::Base
           :foreign_key => 'meeting_id',
           :dependent => :nullify
 
+  has_many :attendees,
+           :class_name => 'BigbluebuttonAttendees',
+           :dependent => :destroy
+
   validates :room, :presence => true
 
   validates :meetingid, :presence => true, :length => { :minimum => 1, :maximum => 100 }

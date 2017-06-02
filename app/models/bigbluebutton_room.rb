@@ -90,7 +90,7 @@ class BigbluebuttonRoom < ActiveRecord::Base
   # The response is parsed and stored in the model. You can access it using attributes such as:
   #
   #   room.participant_count
-  #   room.attendees[0].full_name
+  #   room.current_attendees[0].full_name
   #
   # The attributes changed are:
   # * <tt>participant_count</tt>
@@ -99,7 +99,7 @@ class BigbluebuttonRoom < ActiveRecord::Base
   # * <tt>has_been_forcibly_ended</tt>
   # * <tt>create_time</tt>
   # * <tt>end_time</tt>
-  # * <tt>attendees</tt> (array of <tt>BigbluebuttonAttendee</tt>)
+  # * <tt>current_attendees</tt> (array of <tt>BigbluebuttonAttendee</tt>)
   #
   # Triggers API call: <tt>getMeetingInfo</tt>.
   def fetch_meeting_info
@@ -112,12 +112,12 @@ class BigbluebuttonRoom < ActiveRecord::Base
       @running = response[:running]
       @has_been_forcibly_ended = response[:hasBeenForciblyEnded]
       @end_time = response[:endTime]
-      @attendees = []
+      @current_attendees = []
       if response[:attendees].present?
         response[:attendees].each do |att|
           attendee = BigbluebuttonAttendee.new
           attendee.from_hash(att)
-          @attendees << attendee
+          @current_attendees << attendee
         end
       end
 
@@ -137,6 +137,34 @@ class BigbluebuttonRoom < ActiveRecord::Base
     end
 
     response
+  end
+
+  def fetch_meeting_stats(meeting)
+    server = BigbluebuttonRails.configuration.select_server.call(self, :send_api_request)
+    response = server.api.send_api_request(:getStats, { meetingID: self.meetingid })
+
+    meeting.update_attributes(got_stats: true)
+
+    all_meetings = response[:stats][:meeting]
+    all_meetings = [all_meetings] unless all_meetings.is_a?(Array)
+    my_meeting = all_meetings.select{ |meetings| meetings[:epochStartTime].to_s == meeting.create_time.to_s }.first
+
+    all_participants = my_meeting[:participants][:participant]
+    all_participants = [all_participants] unless all_participants.is_a?(Array)
+
+    all_participants.each do |participant|
+      join_epoch = (my_meeting[:epochStartTime].to_i - my_meeting[:startTime].to_i + participant[:joinTime].to_i).to_s
+      left_epoch = (my_meeting[:epochStartTime].to_i - my_meeting[:startTime].to_i + participant[:leftTime].to_i).to_s
+
+      BigbluebuttonAttendees.create do |a|
+        a.user_id = participant[:userID]
+        a.extern_user_id = participant[:externUserID]
+        a.user_name = participant[:userName]
+        a.join_time = join_epoch
+        a.left_time = left_epoch
+        a.bigbluebutton_meeting_id = meeting.id
+      end
+    end
   end
 
   # Fetches the BBB server to see if the meeting is running. Sets <tt>running</tt>
@@ -250,7 +278,7 @@ class BigbluebuttonRoom < ActiveRecord::Base
   # if they are have all equal values.
   # From: http://alicebobandmallory.com/articles/2009/11/02/comparing-instance-variables-in-ruby
   def instance_variables_compare(o)
-    vars = [ :@running, :@participant_count, :@moderator_count, :@attendees,
+    vars = [ :@running, :@participant_count, :@moderator_count, :@current_attendees,
              :@has_been_forcibly_ended, :@end_time ]
     Hash[*vars.map { |v|
            self.instance_variable_get(v)!=o.instance_variable_get(v) ?
@@ -519,7 +547,7 @@ class BigbluebuttonRoom < ActiveRecord::Base
     @running = false
     @has_been_forcibly_ended = false
     @end_time = nil
-    @attendees = []
+    @current_attendees = []
   end
 
   def internal_create_meeting(user=nil, user_opts={})

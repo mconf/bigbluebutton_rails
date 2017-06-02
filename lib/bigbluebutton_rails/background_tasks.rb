@@ -17,6 +17,23 @@ module BigbluebuttonRails
       end
     end
 
+    # Gets additional informations about an ended meeting, like it's duration and a list
+    # of participants with join and leave timestamp
+    def self.get_stats
+      BigbluebuttonMeeting.where(got_stats: nil, ended: true)
+                          .where("create_time > ?", (DateTime.now.utc - 1.day).strftime('%Q').to_i ).find_each do |meeting|
+        begin
+          Rails.logger.info "BackgroundTasks: Checking if the meeting has getStats content: #{meeting.inspect}"
+          room = meeting.room
+          if room.present?
+            room.fetch_meeting_stats(meeting)
+          end
+        rescue Exception => e
+          Rails.logger.info "BackgroundTasks: Failure fetching the stats from #{meeting.inspect}"
+        end
+      end
+    end
+
     # Updates the recordings for all servers if `server_id` is nil or or for the
     # server with id `server_id`.
     def self.update_recordings(server_id=nil)
