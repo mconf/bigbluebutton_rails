@@ -143,8 +143,6 @@ class BigbluebuttonRoom < ActiveRecord::Base
     server = BigbluebuttonRails.configuration.select_server.call(self, :send_api_request)
     response = server.api.send_api_request(:getStats, { meetingID: self.meetingid })
 
-    meeting.update_attributes(got_stats: true)
-
     all_meetings = response[:stats][:meeting]
     all_meetings = [all_meetings] unless all_meetings.is_a?(Array)
     my_meeting = all_meetings.select{ |meetings| meetings[:epochStartTime].to_s == meeting.create_time.to_s }.first
@@ -165,6 +163,7 @@ class BigbluebuttonRoom < ActiveRecord::Base
         a.bigbluebutton_meeting_id = meeting.id
       end
     end
+    meeting.update_attributes(got_stats: true)
   end
 
   # Fetches the BBB server to see if the meeting is running. Sets <tt>running</tt>
