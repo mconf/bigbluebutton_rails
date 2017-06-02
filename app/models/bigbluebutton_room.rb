@@ -79,7 +79,7 @@ class BigbluebuttonRoom < ActiveRecord::Base
   # Currently used to send the client's IP to the load balancer.
   attr_accessor :request_headers
 
-  scope :order_by_recent, -> (direction='ASC') {
+  scope :order_by_activity, -> (direction='ASC') {
     BigbluebuttonRoom.joins(:meetings)
       .group('bigbluebutton_rooms.id')
       .order("MAX(bigbluebutton_meetings.create_time) #{direction}")

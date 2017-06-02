@@ -70,6 +70,9 @@ en:
   bigbluebutton_rails:
     api:
       rooms:
+        invalid_pagination:
+          msg: "One or more pagination parameters are wrong"
+          title: "Invalid pagination parameters"
         missing_params:
           msg: "You did not inform one or more required parameters"
           title: "Missing parameters"

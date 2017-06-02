@@ -2,12 +2,14 @@
 require 'bigbluebutton_api'
 
 class Bigbluebutton::Api::RoomsController < ApplicationController
-  include BigbluebuttonRails::InternalControllerMethods
+  include BigbluebuttonRails::APIControllerMethods
 
   skip_before_filter :verify_authenticity_token
 
   before_filter :set_content_type
   before_filter :set_request_headers
+
+  before_filter :validate_pagination, only: :index
 
   before_filter :find_room, only: [:running, :join]
 
@@ -18,17 +20,19 @@ class Bigbluebutton::Api::RoomsController < ApplicationController
   def index
     query = BigbluebuttonRoom
 
-    if params[:sort]
-      sort_str = map_sort_string(params[:sort], ['recent', 'name'])
-      if sort_str.match(/recent/) # if requested relevance, only it will be used, ignore the rest
-        recent_order = sort_str.match(/recent ASC/) ? 'DESC' : 'ASC' # yes, inverse logic!
-        query = query.order_by_recent(recent_order)
-      else
-        query = query.order(sort_str)
-      end
+    sort_str = map_sort(params[:sort], 'name ASC', ['activity', 'name'])
+    # if requested activity, only it will be used, ignore the rest
+    if sort_str.match(/activity/)
+      activity_order = sort_str.match(/activity ASC/) ? 'DESC' : 'ASC' # yes, inverse logic!
+      query = query.order_by_activity(activity_order)
     else
-      query = query.order('name ASC')
+      query = query.order(sort_str)
     end
+
+    # Limits and pagination
+    limit, page = map_pagination(params[:page], 10)
+    query = query.limit(limit)
+    @pagination_links = map_pagination_links(page)
 
     @rooms = query.all
     respond_with(@rooms)
@@ -92,45 +96,6 @@ class Bigbluebutton::Api::RoomsController < ApplicationController
     # TODO: how to do it even if there is no room set?
     unless @room.nil?
       @room.request_headers["x-forwarded-for"] = request.remote_ip
-    end
-  end
-
-  def error_room_not_found
-    msg = t('bigbluebutton_rails.api.rooms.room_not_found.msg')
-    title = t('bigbluebutton_rails.api.rooms.room_not_found.title')
-    @errors = [BigbluebuttonRails::APIError.new(msg, 400, title)]
-    render 'bigbluebutton/api/error'
-  end
-
-  def error_room_not_running
-    msg = t('bigbluebutton_rails.api.rooms.room_not_running.msg')
-    title = t('bigbluebutton_rails.api.rooms.room_not_running.title')
-    @errors = [BigbluebuttonRails::APIError.new(msg, 400, title)]
-    render 'bigbluebutton/api/error'
-  end
-
-  def error_missing_params
-    msg = t('bigbluebutton_rails.api.rooms.missing_params.msg')
-    title = t('bigbluebutton_rails.api.rooms.missing_params.title')
-    @errors = [BigbluebuttonRails::APIError.new(msg, 400, title)]
-    render 'bigbluebutton/api/error'
-  end
-
-  def map_sort_string(param, allowed=[])
-    param.split(',').inject('') do |memo, obj|
-      if obj[0] == '-'
-        attr = obj.gsub(/^-/, '')
-        order = 'DESC'
-      else
-        attr = obj
-        order = 'ASC'
-      end
-      if allowed.blank? || allowed.include?(attr)
-        memo = "#{memo}," unless memo.blank?
-        memo = "#{memo} #{attr} #{order}"
-      else
-        memo
-      end
     end
   end
 end
