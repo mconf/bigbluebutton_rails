@@ -6,14 +6,14 @@ class Bigbluebutton::Api::RoomsController < ApplicationController
 
   skip_before_filter :verify_authenticity_token
 
-  before_filter :set_content_type
-  before_filter :set_request_headers
-
   before_filter :validate_pagination, only: :index
 
   before_filter :find_room, only: [:running, :join]
 
   before_filter :join_user_params, only: :join
+
+  before_filter :set_content_type
+  before_filter :set_request_headers
 
   respond_to :json
 
@@ -47,7 +47,9 @@ class Bigbluebutton::Api::RoomsController < ApplicationController
 
     # map "meta[_-]" to "userdata-"
     meta = params.select{ |k,v| k.match(/^meta[-_]/) }
-    meta = meta.map{ |k,v| { k.gsub(/^meta[-_]/, 'userdata-') => v } }.reduce(:merge)
+    unless meta.blank?
+      meta = meta.map{ |k,v| { k.gsub(/^meta[-_]/, 'userdata-') => v } }.reduce(:merge)
+    end
 
     @url = @room.parameterized_join_url(@user_name, @user_role, nil, meta)
   end
@@ -73,6 +75,7 @@ class Bigbluebutton::Api::RoomsController < ApplicationController
       key = params[:key]
       return error_missing_params if key.blank?
       @user_role = @room.user_role(key)
+      return error_invalid_key if @user_role.blank?
     else
       @user_role = guest_role
     end
@@ -89,12 +92,12 @@ class Bigbluebutton::Api::RoomsController < ApplicationController
   end
 
   def set_content_type
-    self.content_type = 'application/vnd.api+json; charset=utf-8'
+    self.content_type = 'application/vnd.api+json'
   end
 
   def set_request_headers
     # TODO: how to do it even if there is no room set?
-    unless @room.nil?
+    if @room.present?
       @room.request_headers["x-forwarded-for"] = request.remote_ip
     end
   end

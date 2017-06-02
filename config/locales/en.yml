@@ -73,6 +73,9 @@ en:
         invalid_pagination:
           msg: "One or more pagination parameters are wrong"
           title: "Invalid pagination parameters"
+        invalid_key:
+          msg: "The key informed is not valid for this room"
+          title: "Invalid key"
         missing_params:
           msg: "You did not inform one or more required parameters"
           title: "Missing parameters"

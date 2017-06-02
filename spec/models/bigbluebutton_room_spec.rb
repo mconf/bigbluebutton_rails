@@ -887,6 +887,85 @@ describe BigbluebuttonRoom do
       end
     end
 
+    describe "#parameterized_join_url" do
+      let(:username) { Forgery(:name).full_name }
+      let(:role) { :attendee }
+      let(:id) { 'fake-user-id' }
+
+      context "sets a config token" do
+        context "when it exists" do
+          before {
+            room.create_time = nil
+            room.should_receive(:fetch_new_token).and_return('fake-token')
+            room.should_receive(:join_url).with(username, role, nil, { configToken: 'fake-token' })
+          }
+          it { room.parameterized_join_url(username, role, nil, { }) }
+        end
+
+        context "not when it doesn't exist" do
+          before {
+            room.create_time = nil
+            room.should_receive(:fetch_new_token).and_return(nil)
+            room.should_receive(:join_url).with(username, role, nil, { })
+          }
+          it { room.parameterized_join_url(username, role, nil, { }) }
+        end
+      end
+
+      context "sets a create time" do
+        context "when it exists" do
+          before {
+            room.stub(:fetch_new_token).and_return(nil)
+            room.should_receive(:join_url).with(username, role, nil, { createTime: room.create_time })
+          }
+          it { room.parameterized_join_url(username, role, nil, { }) }
+        end
+
+        context "when it doesn't exist" do
+          before {
+            room.create_time = nil
+            room.stub(:fetch_new_token).and_return(nil)
+            room.should_receive(:join_url).with(username, role, nil, { })
+          }
+          it { room.parameterized_join_url(username, role, nil, { }) }
+        end
+      end
+
+      context "sets a user id" do
+        context "when it exists" do
+          before {
+            room.create_time = nil
+            room.stub(:fetch_new_token).and_return(nil)
+            room.should_receive(:join_url).with(username, role, nil, { userID: 'fake-user-id' })
+          }
+          it { room.parameterized_join_url(username, role, 'fake-user-id', { }) }
+        end
+
+        context "when it doesn't exist" do
+          before {
+            room.create_time = nil
+            room.stub(:fetch_new_token).and_return(nil)
+            room.should_receive(:join_url).with(username, role, nil, { })
+          }
+          it { room.parameterized_join_url(username, role, nil, { }) }
+        end
+      end
+
+      context "returns #join_url" do
+        let(:expected_url) { 'https://fake-return-url.no/join?here=1' }
+        before {
+          room.stub(:fetch_new_token).and_return('fake-token')
+          room.should_receive(:join_url)
+            .with(username, role, nil, {
+                    userID: 'fake-user-id', configToken: 'fake-token', createTime: room.create_time
+                  }).and_return(expected_url)
+        }
+        it {
+          room.parameterized_join_url(username, role, 'fake-user-id', { }).should eql(expected_url)
+        }
+      end
+    end
+
     describe "#fetch_new_token" do
       let(:config_xml) {
         '<config>

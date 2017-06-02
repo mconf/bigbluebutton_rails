@@ -14,6 +14,14 @@ describe BigbluebuttonRailsHelper do
     it("uses UTF-8") { should match /choe=UTF-8/ }
   end
 
+  describe "#api_typeof" do
+    it { api_type_of(FactoryGirl.create(:bigbluebutton_room)).should eql('room') }
+    it { api_type_of(FactoryGirl.create(:bigbluebutton_server)).should eql('server') }
+    it { api_type_of(FactoryGirl.create(:bigbluebutton_recording)).should eql('recording') }
+
+    context "for a new class" do
+      class MyUserClass; end
+      it { api_type_of(MyUserClass.new).should eql('my-user-class') }
+    end
+  end
 end
-
-

@@ -240,15 +240,17 @@ class BigbluebuttonRoom < ActiveRecord::Base
   end
 
   def parameterized_join_url(username, role, id, options={})
+    opts = options.clone
+
     # gets the token with the configurations for this user/room
     token = self.fetch_new_token
-    options.merge!({ configToken: token }) unless token.blank?
+    opts.merge!({ configToken: token }) unless token.blank?
 
     # set the create time and the user id, if they exist
-    options.merge!({ createTime: self.create_time }) unless self.create_time.blank?
-    options.merge!({ userID: id }) unless id.blank?
+    opts.merge!({ createTime: self.create_time }) unless self.create_time.blank?
+    opts.merge!({ userID: id }) unless id.blank?
 
-    self.join_url(username, role, nil, options)
+    self.join_url(username, role, nil, opts)
   end
 
   # Returns the role of the user based on the key given.
@@ -257,10 +259,12 @@ class BigbluebuttonRoom < ActiveRecord::Base
   # params:: Hash with a key :key
   def user_role(params)
     role = nil
-    if params && params.has_key?(:key)
-      if self.moderator_key == params[:key]
+    key = params.is_a?(String) ? params : (params && params.has_key?(:key) ? params[:key] : nil)
+
+    unless key.blank?
+      if self.moderator_key == key
         role = :moderator
-      elsif self.attendee_key == params[:key]
+      elsif self.attendee_key == key
         role = :attendee
       end
     end
