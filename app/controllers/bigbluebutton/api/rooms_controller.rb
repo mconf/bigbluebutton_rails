@@ -11,15 +11,26 @@ class Bigbluebutton::Api::RoomsController < ApplicationController
 
   before_filter :find_room, only: [:running, :join]
 
-  # join sequence
   before_filter :join_user_params, only: :join
-  # before_filter :join_check_can_create, only: :join
-  # before_filter :join_check_redirect_to_mobile, only: :join
 
   respond_to :json
 
   def index
-    @rooms ||= BigbluebuttonRoom.all
+    query = BigbluebuttonRoom
+
+    if params[:sort]
+      sort_str = map_sort_string(params[:sort], ['recent', 'name'])
+      if sort_str.match(/recent/) # if requested relevance, only it will be used, ignore the rest
+        recent_order = sort_str.match(/recent ASC/) ? 'DESC' : 'ASC' # yes, inverse logic!
+        query = query.order_by_recent(recent_order)
+      else
+        query = query.order(sort_str)
+      end
+    else
+      query = query.order('name ASC')
+    end
+
+    @rooms = query.all
     respond_with(@rooms)
   end
 
@@ -103,5 +114,23 @@ class Bigbluebutton::Api::RoomsController < ApplicationController
     title = t('bigbluebutton_rails.api.rooms.missing_params.title')
     @errors = [BigbluebuttonRails::APIError.new(msg, 400, title)]
     render 'bigbluebutton/api/error'
+  end
+
+  def map_sort_string(param, allowed=[])
+    param.split(',').inject('') do |memo, obj|
+      if obj[0] == '-'
+        attr = obj.gsub(/^-/, '')
+        order = 'DESC'
+      else
+        attr = obj
+        order = 'ASC'
+      end
+      if allowed.blank? || allowed.include?(attr)
+        memo = "#{memo}," unless memo.blank?
+        memo = "#{memo} #{attr} #{order}"
+      else
+        memo
+      end
+    end
   end
 end

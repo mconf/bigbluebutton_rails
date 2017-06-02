@@ -14,6 +14,11 @@ class BigbluebuttonRoom < ActiveRecord::Base
            dependent: :destroy,
            inverse_of: :owner
 
+  has_many :meetings,
+           class_name: 'BigbluebuttonMeeting',
+           foreign_key: 'room_id',
+           dependent: :destroy
+
   has_one :room_options,
           class_name: 'BigbluebuttonRoomOptions',
           foreign_key: 'room_id',
@@ -73,6 +78,12 @@ class BigbluebuttonRoom < ActiveRecord::Base
   # in all GET/POST requests to a webconf server.
   # Currently used to send the client's IP to the load balancer.
   attr_accessor :request_headers
+
+  scope :order_by_recent, -> (direction='ASC') {
+    BigbluebuttonRoom.joins(:meetings)
+      .group('bigbluebutton_rooms.id')
+      .order("MAX(bigbluebutton_meetings.create_time) #{direction}")
+  }
 
   # In case there's no room_options created yet, build one
   # (happens usually when an old database is migrated).
