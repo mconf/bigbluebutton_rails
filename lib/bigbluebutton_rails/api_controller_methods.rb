@@ -83,6 +83,12 @@ module BigbluebuttonRails
           links
         end
 
+        def map_search(param)
+          if param && param[:terms]
+            param[:terms].split(',').map(&:strip)
+          end
+        end
+
         def error_room_not_found
           msg = t('bigbluebutton_rails.api.rooms.room_not_found.msg')
           title = t('bigbluebutton_rails.api.rooms.room_not_found.title')

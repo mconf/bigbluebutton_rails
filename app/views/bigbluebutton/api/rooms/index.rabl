@@ -1,6 +1,10 @@
 object false
 
-child @rooms, :root => :data, :object_root => false do
+node :links do
+  @pagination_links
+end
+
+child @rooms, :root => :data, :object_root => false, :if => lambda { |r| @rooms.size > 0 } do
   node(:type) { |obj| api_type_of(obj) }
   node(:id) { |obj| obj.to_param }
 
@@ -36,6 +40,6 @@ child @rooms, :root => :data, :object_root => false do
   end
 end
 
-node :links do
-  @pagination_links
+node :data, :if => lambda { |r| @rooms.size == 0 } do
+  []
 end

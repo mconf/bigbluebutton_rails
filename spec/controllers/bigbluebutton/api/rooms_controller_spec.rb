@@ -32,6 +32,37 @@ describe Bigbluebutton::Api::RoomsController do
       end
     end
 
+    context "empty response" do
+      before { room.destroy }
+      before(:each) { get :index, format: :json }
+      it { JSON.parse(response.body)['data'].should be_empty }
+    end
+
+    context "filtering" do
+      before { room.update_attributes(name: "La Lo", param: "lalo-1") }
+      let!(:room2) { FactoryGirl.create(:bigbluebutton_room, name: "La Le", param: "lale-2") }
+      let!(:room3) { FactoryGirl.create(:bigbluebutton_room, name: "Li Lo", param: "lilo") }
+
+      context "filters by terms" do
+        before(:each) { get :index, filter: { terms: 'la' }, format: :json }
+        it { JSON.parse(response.body)['data'].length.should be(2) }
+        it { JSON.parse(response.body)['data'][0]['attributes']['name'].should eql("La Le") }
+        it { JSON.parse(response.body)['data'][1]['attributes']['name'].should eql("La Lo") }
+      end
+
+      context "orders by number of matches" do
+        before(:each) { get :index, filter: { terms: 'la,1' }, format: :json }
+        it { JSON.parse(response.body)['data'].length.should be(2) }
+        it { JSON.parse(response.body)['data'][0]['attributes']['name'].should eql("La Lo") }
+        it { JSON.parse(response.body)['data'][1]['attributes']['name'].should eql("La Le") }
+      end
+
+      context "strips the terms" do
+        before(:each) { get :index, filter: { terms: ' la  ' }, format: :json }
+        it { JSON.parse(response.body)['data'].length.should be(2) }
+      end
+    end
+
     context "sorting" do
       let!(:room2) { FactoryGirl.create(:bigbluebutton_room, name: room.name + "-2") }
       let!(:room3) { FactoryGirl.create(:bigbluebutton_room, name: room.name + "-3") }
@@ -57,7 +88,7 @@ describe Bigbluebutton::Api::RoomsController do
         it { JSON.parse(response.body)['data'][2]['attributes']['name'].should eql(room3.name) }
       end
 
-      context "orders by recent" do
+      context "orders by activity" do
         before {
           FactoryGirl.create(:bigbluebutton_meeting, create_time: Time.now - 2.hours, room: room)
           FactoryGirl.create(:bigbluebutton_meeting, create_time: Time.now, room: room2)
@@ -69,7 +100,7 @@ describe Bigbluebutton::Api::RoomsController do
         it { JSON.parse(response.body)['data'][2]['attributes']['name'].should eql(room.name) }
       end
 
-      context "orders by recentDESC" do
+      context "orders by activity DESC" do
         before {
           FactoryGirl.create(:bigbluebutton_meeting, create_time: Time.now - 2.hours, room: room)
           FactoryGirl.create(:bigbluebutton_meeting, create_time: Time.now, room: room2)

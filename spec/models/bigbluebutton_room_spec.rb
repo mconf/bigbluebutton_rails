@@ -80,6 +80,105 @@ describe BigbluebuttonRoom do
 
   it { should respond_to(:is_running?) }
 
+  describe ".order_by_activity" do
+    let!(:room1) { FactoryGirl.create(:bigbluebutton_room) }
+    let!(:room2) { FactoryGirl.create(:bigbluebutton_room) }
+    let!(:room3) { FactoryGirl.create(:bigbluebutton_room) }
+    let!(:room4) { FactoryGirl.create(:bigbluebutton_room) }
+    let!(:meeting1) { FactoryGirl.create(:bigbluebutton_meeting, create_time: Time.now - 2.hours, room: room1) }
+    let!(:meeting2) { FactoryGirl.create(:bigbluebutton_meeting, create_time: Time.now, room: room2) }
+    let!(:meeting3) { FactoryGirl.create(:bigbluebutton_meeting, create_time: Time.now - 1.hour, room: room3) }
+    let!(:meeting4) { FactoryGirl.create(:bigbluebutton_meeting, create_time: Time.now - 3.hour, room: room4) }
+
+    context "ASC" do
+      subject { BigbluebuttonRoom.order_by_activity }
+      it { subject[0].should eql(room4) }
+      it { subject[1].should eql(room1) }
+      it { subject[2].should eql(room3) }
+      it { subject[3].should eql(room2) }
+    end
+
+    context "DESC" do
+      subject { BigbluebuttonRoom.order_by_activity('DESC') }
+      it { subject[0].should eql(room2) }
+      it { subject[1].should eql(room3) }
+      it { subject[2].should eql(room1) }
+      it { subject[3].should eql(room4) }
+    end
+  end
+
+  describe ".search_by_terms" do
+    let!(:rooms) {
+      [
+        FactoryGirl.create(:bigbluebutton_room, name: "La Lo", param: "lalo-1"),
+        FactoryGirl.create(:bigbluebutton_room, name: "La Le", param: "lale-2"),
+        FactoryGirl.create(:bigbluebutton_room, name: "Li Lo", param: "lilo")
+      ]
+    }
+    let(:subject) { BigbluebuttonRoom.search_by_terms(terms) }
+
+    context '1 term finds something' do
+      let(:terms) { ['la'] }
+      it { subject.count.should be(2) }
+      it { subject.should include(rooms[0], rooms[1]) }
+    end
+
+    context 'composite term finds something' do
+      let(:terms) { ['la lo'] }
+      it { subject.count.should be(1) }
+      it { subject.should include(rooms[0]) }
+    end
+
+    context '2 terms find something' do
+      let(:terms) { ['la', 'lo'] }
+      it { subject.count.should be(3) }
+      it { subject.should include(rooms[0], rooms[1], rooms[2]) }
+    end
+
+    context '1 term finds nothing 1 term finds something' do
+      let(:terms) { ['la', 'notfound'] }
+      it { subject.count.should be(2) }
+      it { subject.should include(rooms[0], rooms[1]) }
+    end
+
+    context '1 term finds nothing' do
+      let(:terms) { ['notfound'] }
+      it { subject.count.should eq(0) }
+    end
+
+    context 'multiple terms find nothing' do
+      let(:terms) { ['nope', 'not', 'found'] }
+      it { subject.count.should eq(0) }
+    end
+
+    context "searches by both name and params" do
+      let(:terms) { ['abcdef'] }
+      before {
+        rooms[1].update_attributes(name: 'abcdef')
+        rooms[2].update_attributes(param: 'abcdef')
+      }
+      it { subject.count.should be(2) }
+      it { subject.should include(rooms[1], rooms[2]) }
+    end
+
+    context "returns a Relation object" do
+      let(:terms) { [''] }
+      it { subject.should be_kind_of(ActiveRecord::Relation) }
+    end
+
+    context "accepts a string as parameter" do
+      let(:terms) { 'la' }
+      it { subject.count.should be(2) }
+      it { subject.should include(rooms[0], rooms[1]) }
+    end
+
+    context "is chainable" do
+      subject { BigbluebuttonRoom.search_by_terms('l').where(id: rooms[0].id) }
+      it { subject.count.should be(1) }
+      it { subject.should include(rooms[0]) }
+    end
+  end
+
   describe "#user_role" do
     let(:room) { FactoryGirl.build(:bigbluebutton_room, :moderator_key => "mod", :attendee_key => "att") }
     it { should respond_to(:user_role) }

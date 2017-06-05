@@ -21,9 +21,13 @@ class Bigbluebutton::Api::RoomsController < ApplicationController
   def index
     query = BigbluebuttonRoom
 
+    # Search
+    search_terms = map_search(params[:filter])
+    query = query.search_by_terms(search_terms) unless search_terms.blank?
+
+    # Sort
     sort_str = map_sort(params[:sort], 'name ASC', ['activity', 'name'])
-    # if requested activity, only it will be used, ignore the rest
-    if sort_str.match(/activity/)
+    if sort_str.match(/activity/) # if requested activity ignore the rest
       activity_order = sort_str.match(/activity ASC/) ? 'DESC' : 'ASC' # yes, inverse logic!
       query = query.order_by_activity(activity_order)
     else

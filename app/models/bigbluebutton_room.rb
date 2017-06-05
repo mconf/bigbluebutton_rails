@@ -85,6 +85,27 @@ class BigbluebuttonRoom < ActiveRecord::Base
       .order("MAX(bigbluebutton_meetings.create_time) #{direction}")
   }
 
+  scope :search_by_terms, -> (words) {
+    if words.present?
+      words ||= []
+      words = [words] unless words.is_a?(Array)
+      query_strs = []
+      query_params = []
+      query_orders = []
+
+      words.reject(&:blank?).each do |word|
+        str  = "name LIKE ? OR param LIKE ?"
+        query_strs << str
+        query_params += ["%#{word}%", "%#{word}%"]
+        query_orders += [
+          "CASE WHEN name LIKE '%#{word}%' THEN 1 ELSE 0 END + \
+           CASE WHEN param LIKE '%#{word}%' THEN 1 ELSE 0 END"
+        ]
+      end
+      where(query_strs.join(' OR '), *query_params.flatten).order(query_orders.join(' + ') + " DESC")
+    end
+  }
+
   # In case there's no room_options created yet, build one
   # (happens usually when an old database is migrated).
   def room_options_with_initialize
