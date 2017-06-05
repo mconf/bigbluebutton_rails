@@ -5,6 +5,159 @@ describe Bigbluebutton::Api::RoomsController do
   render_views
   let!(:room) { FactoryGirl.create(:bigbluebutton_room) }
 
+  describe "#index" do
+    context "basic" do
+      before(:each) { get :index, format: :json }
+      it { should respond_with(:success) }
+      it { should respond_with_content_type('json') }
+      it { should assign_to(:rooms).with([room]) }
+      it { JSON.parse(response.body)['data'].should be_an_instance_of(Array) }
+      it { JSON.parse(response.body)['data'][0]['type'].should eql('room') }
+      it { JSON.parse(response.body)['data'][0]['id'].should eql(room.to_param) }
+    end
+
+    context "content" do
+      let(:owner) { FactoryGirl.create(:bigbluebutton_server) } # could be any model
+      before { room.update_attributes(owner: owner) }
+      before(:each) { get :index, format: :json }
+
+      it { JSON.parse(response.body)['data'][0]['attributes']['name'].should eql(room.name) }
+      it { JSON.parse(response.body)['data'][0]['attributes']['private'].should eql(room.private) }
+      it { JSON.parse(response.body)['data'][0]['links']['self'].should eql(room.short_path) }
+
+      context "includes the owner in the response" do
+        it { JSON.parse(response.body)['data'][0]['relationships']['owner']['data']['type'].should eql('server') }
+        it { JSON.parse(response.body)['data'][0]['relationships']['owner']['data']['id'].should eql(owner.to_param) }
+        it { JSON.parse(response.body)['data'][0]['relationships']['owner']['data']['attributes']['name'].should eql(owner.name) }
+      end
+    end
+
+    context "sorting" do
+      let!(:room2) { FactoryGirl.create(:bigbluebutton_room, name: room.name + "-2") }
+      let!(:room3) { FactoryGirl.create(:bigbluebutton_room, name: room.name + "-3") }
+
+      context "orders by name" do
+        before(:each) { get :index, sort: 'name', format: :json }
+        it { JSON.parse(response.body)['data'][0]['attributes']['name'].should eql(room.name) }
+        it { JSON.parse(response.body)['data'][1]['attributes']['name'].should eql(room2.name) }
+        it { JSON.parse(response.body)['data'][2]['attributes']['name'].should eql(room3.name) }
+      end
+
+      context "orders by name DESC" do
+        before(:each) { get :index, sort: '-name', format: :json }
+        it { JSON.parse(response.body)['data'][0]['attributes']['name'].should eql(room3.name) }
+        it { JSON.parse(response.body)['data'][1]['attributes']['name'].should eql(room2.name) }
+        it { JSON.parse(response.body)['data'][2]['attributes']['name'].should eql(room.name) }
+      end
+
+      context "orders by name by default" do
+        before(:each) { get :index, format: :json }
+        it { JSON.parse(response.body)['data'][0]['attributes']['name'].should eql(room.name) }
+        it { JSON.parse(response.body)['data'][1]['attributes']['name'].should eql(room2.name) }
+        it { JSON.parse(response.body)['data'][2]['attributes']['name'].should eql(room3.name) }
+      end
+
+      context "orders by recent" do
+        before {
+          FactoryGirl.create(:bigbluebutton_meeting, create_time: Time.now - 2.hours, room: room)
+          FactoryGirl.create(:bigbluebutton_meeting, create_time: Time.now, room: room2)
+          FactoryGirl.create(:bigbluebutton_meeting, create_time: Time.now - 1.hour, room: room3)
+        }
+        before(:each) { get :index, sort: 'activity', format: :json }
+        it { JSON.parse(response.body)['data'][0]['attributes']['name'].should eql(room2.name) }
+        it { JSON.parse(response.body)['data'][1]['attributes']['name'].should eql(room3.name) }
+        it { JSON.parse(response.body)['data'][2]['attributes']['name'].should eql(room.name) }
+      end
+
+      context "orders by recentDESC" do
+        before {
+          FactoryGirl.create(:bigbluebutton_meeting, create_time: Time.now - 2.hours, room: room)
+          FactoryGirl.create(:bigbluebutton_meeting, create_time: Time.now, room: room2)
+          FactoryGirl.create(:bigbluebutton_meeting, create_time: Time.now - 1.hour, room: room3)
+        }
+        before(:each) { get :index, sort: '-activity', format: :json }
+        it { JSON.parse(response.body)['data'][0]['attributes']['name'].should eql(room.name) }
+        it { JSON.parse(response.body)['data'][1]['attributes']['name'].should eql(room3.name) }
+        it { JSON.parse(response.body)['data'][2]['attributes']['name'].should eql(room2.name) }
+      end
+
+      context "doesn't order by anything else" do
+        before {
+          FactoryGirl.create(:bigbluebutton_room, attendee_key: "2")
+          FactoryGirl.create(:bigbluebutton_room, attendee_key: "1")
+          FactoryGirl.create(:bigbluebutton_room, attendee_key: "0")
+        }
+        before(:each) { get :index, sort: 'attendee_key', format: :json }
+        it { JSON.parse(response.body)['data'][0]['attributes']['name'].should eql(room.name) }
+        it { JSON.parse(response.body)['data'][1]['attributes']['name'].should eql(room2.name) }
+        it { JSON.parse(response.body)['data'][2]['attributes']['name'].should eql(room3.name) }
+      end
+    end
+
+    context "pagination" do
+      context "limits to 10 by default" do
+        before {
+          15.times { FactoryGirl.create(:bigbluebutton_room) }
+        }
+        before(:each) { get :index, format: :json }
+        it { JSON.parse(response.body)['data'].length.should be(10) }
+      end
+
+      context "paginates" do
+        before {
+          9.times { FactoryGirl.create(:bigbluebutton_room) }
+          @rooms = BigbluebuttonRoom.order('name').all
+        }
+
+        context "returns the selected page" do
+          before(:each) { get :index, page: { size: 2, number: 3 }, format: :json }
+          it { JSON.parse(response.body)['data'].length.should be(2) }
+          it { JSON.parse(response.body)['data'][0]['attributes']['name'].should eql(@rooms[4].name) }
+          it { JSON.parse(response.body)['data'][1]['attributes']['name'].should eql(@rooms[5].name) }
+        end
+
+        context "returns the first page by default" do
+          before(:each) { get :index, page: { size: 3 }, format: :json }
+          it { JSON.parse(response.body)['data'].length.should be(3) }
+          it { JSON.parse(response.body)['data'][0]['attributes']['name'].should eql(@rooms[0].name) }
+          it { JSON.parse(response.body)['data'][1]['attributes']['name'].should eql(@rooms[1].name) }
+          it { JSON.parse(response.body)['data'][2]['attributes']['name'].should eql(@rooms[2].name) }
+        end
+
+        context "includes the pagination links in the response" do
+          before(:each) { get :index, page: { size: 2, number: 3 }, format: :json }
+          it { JSON.parse(response.body)['links']['self'].should eql(request.original_url) }
+          it {
+            uri = URI.parse(request.original_url)
+            query = Rack::Utils.parse_query(uri.query)
+            query["page[number]"] = 4
+            uri.query = Rack::Utils.build_query(query)
+            JSON.parse(response.body)['links']['next'].should eql(uri.to_s)
+          }
+          it {
+            uri = URI.parse(request.original_url)
+            query = Rack::Utils.parse_query(uri.query)
+            query["page[number]"] = 2
+            uri.query = Rack::Utils.build_query(query)
+            JSON.parse(response.body)['links']['prev'].should eql(uri.to_s)
+          }
+          it {
+            uri = URI.parse(request.original_url)
+            query = Rack::Utils.parse_query(uri.query)
+            query["page[number]"] = 1
+            uri.query = Rack::Utils.build_query(query)
+            JSON.parse(response.body)['links']['first'].should eql(uri.to_s)
+          }
+
+          context "doesn't include 'prev' when in the first page" do
+            before(:each) { get :index, page: { size: 2, number: 1 }, format: :json }
+            it { JSON.parse(response.body)['links']['prev'].should be_nil }
+          end
+        end
+      end
+    end
+  end
+
   describe "#running" do
     before {
       mock_server_and_api

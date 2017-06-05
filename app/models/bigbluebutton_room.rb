@@ -528,6 +528,12 @@ class BigbluebuttonRoom < ActiveRecord::Base
     server
   end
 
+  # Short URL for this room. Can be overwritten by applications that want to use a
+  # different route.
+  def short_path
+    Rails.application.routes.url_helpers.join_bigbluebutton_room_path(self)
+  end
+
   protected
 
   def create_room_options

@@ -12,8 +12,9 @@ class Bigbluebutton::Api::RoomsController < ApplicationController
 
   before_filter :join_user_params, only: :join
 
+  # only for the ones that trigger API calls
+  before_filter :set_request_headers, only: [:join, :running]
   before_filter :set_content_type
-  before_filter :set_request_headers
 
   respond_to :json
 
@@ -30,11 +31,11 @@ class Bigbluebutton::Api::RoomsController < ApplicationController
     end
 
     # Limits and pagination
-    limit, page = map_pagination(params[:page], 10)
-    query = query.limit(limit)
+    limit, offset, page = map_pagination(params[:page], 10)
+    query = query.limit(limit).offset(offset)
     @pagination_links = map_pagination_links(page)
 
-    @rooms = query.all
+    @rooms = query
     respond_with(@rooms)
   end
 
@@ -96,9 +97,6 @@ class Bigbluebutton::Api::RoomsController < ApplicationController
   end
 
   def set_request_headers
-    # TODO: how to do it even if there is no room set?
-    if @room.present?
-      @room.request_headers["x-forwarded-for"] = request.remote_ip
-    end
+    @room.request_headers["x-forwarded-for"] = request.remote_ip if @room.present?
   end
 end

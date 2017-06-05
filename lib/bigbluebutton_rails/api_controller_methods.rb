@@ -54,7 +54,7 @@ module BigbluebuttonRails
             offset = 0 if offset < 0
           end
 
-          ["#{offset},#{limit}", page]
+          [limit, offset, page]
         end
 
         def map_pagination_links(current)

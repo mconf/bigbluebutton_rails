@@ -1246,6 +1246,11 @@ describe BigbluebuttonRoom do
     it { should respond_to(:"full_logout_url=") }
   end
 
+  describe "#short_path" do
+    subject { FactoryGirl.create(:bigbluebutton_room) }
+    it { subject.short_path.should eql("/bigbluebutton/rooms/#{subject.to_param}/join") }
+  end
+
   describe "#select_server" do
     let(:server) { FactoryGirl.create(:bigbluebutton_server) }
     let(:room) { FactoryGirl.create(:bigbluebutton_room) }
