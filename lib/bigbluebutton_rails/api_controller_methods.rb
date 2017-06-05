@@ -28,11 +28,11 @@ module BigbluebuttonRails
           param = params[:page]
           if param
             if param[:size]
-              size = Integer(param[:size]) rescue false
+              size = Integer(param[:size]) rescue nil
               return error_invalid_pagination if size.nil? || size < 1
             end
             if param[:number]
-              page = Integer(param[:number]) rescue false
+              page = Integer(param[:number]) rescue nil
               return error_invalid_pagination if page.nil? || page < 1
             end
           end
@@ -41,14 +41,14 @@ module BigbluebuttonRails
         def map_pagination(param, default)
           limit = default
           if param && param[:size]
-            limit = Integer(param[:size]) rescue false
+            limit = Integer(param[:size]) rescue nil
           end
           limit = default if !limit || limit < 1
 
           offset = 0
           page = 1
           if param && param[:number]
-            page = Integer(param[:number]) rescue false
+            page = Integer(param[:number]) rescue nil
             page ||= 1
             offset = (page-1)*limit
             offset = 0 if offset < 0
