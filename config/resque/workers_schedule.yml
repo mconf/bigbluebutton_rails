@@ -8,7 +8,7 @@ get_stats:
   every:
     - "2m"
   class: BigbluebuttonGetStats
-  description: "Checks for meeting's stats. Currently works on Mconf-Live servers and will get a list of participants and meeting duration."
+  description: "Checks for meeting's stats. Currently works on Mconf-Live servers and will get a list of participants and meeting duration. Same as 'rake bigbluebutton_rails:meetings:get_stats'"
 
 update_recordings:
   every:

@@ -13,7 +13,7 @@ class BigbluebuttonRailsTo220B < ActiveRecord::Migration
       meeting.update_attributes( create_time: meeting.start_time.to_i )
     end
 
-    add_column :bigbluebutton_meetings, :finish_time, :datetime
+    add_column :bigbluebutton_meetings, :finish_time, :decimal, precision: 14, scale: 0
     add_column :bigbluebutton_meetings, :got_stats, :string
 
     remove_column :bigbluebutton_meetings, :start_time, :datetime
