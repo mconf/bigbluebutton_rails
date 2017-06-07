@@ -280,29 +280,36 @@ The list of meetings is also periodically synchronized using Resque-scheduler
 ### Associating rooms and servers
 
 Rooms must be associated with a server to function. When a meeting is created,
-it is created in the server that's associated with the room. The association
-is done using the `server_id` attribute in `BigbluebuttonRoom`. So
-applications that use this gem can manage all the associations by simply
-setting this attribute.
-
+it is created in the server that's associated with the room.
 By default, this gem automatically selects a server **if one is needed and the
-room has no server yet**. If a room already has a server, the gem will never
-change it.
+room has no server yet**.
 
-To change this behavior, applications can override the method
-`{BigbluebuttonRoom#select_server}[https://github.com/mconf/bigbluebutton_rail
-s/blob/5decf3fa7767002303cf8bda524dcbeca0a9146c/app/models/bigbluebutton_room.
-rb#L413]`. This method is called by all methods that trigger API calls,
+To change this behavior, applications can override the configuration
+`BigbluebuttonRails.configuration.select_server`. This attribute receives a
+function that will be called inside all methods that trigger API calls,
 methods that need a server to work properly. It receives a parameter that
-indicates which API call will be sent to the server.
-
-If the method returns a server, the server will be associated with the room.
-If the method returns `nil`, the room will maintain the server it had
-previously (if any).
+indicates which API call will be sent to the server and expects the function
+to return a `BigbluebuttonServer`.
 
 One common use would be to override this method to always select a new server
 when a meeting is created (when the argument received is `:create`). This
 would allow the implementation of a simple load balancing mechanism.
+
+To configure it, add a code like the one below to one initializer in your
+application:
+
+```ruby
+BigbluebuttonRails.configure do |config|
+  config.select_server = Proc.new do |room, api_method=nil|
+    if room.name == 'special-room'
+      BigbluebuttonServer.find_by(name: 'special-server')
+    else
+      BigbluebuttonServer.first
+    end
+  end
+end
+```
+
 
 ### Example application
 

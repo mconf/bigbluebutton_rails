@@ -1,27 +1,15 @@
 class BigbluebuttonRailsTo220B < ActiveRecord::Migration
   def up
-    create_table :bigbluebutton_attendees do |t|
-      t.string :user_id
-      t.string :extern_user_id
-      t.string :user_name
-      t.decimal :join_time, precision: 14, scale: 0
-      t.decimal :left_time, precision: 14, scale: 0
-      t.integer :bigbluebutton_meeting_id
+    BigbluebuttonMeeting.where(create_time: nil).find_each do |meeting|
+      meeting.update_attribute(create_time, meeting.start_time.to_i)
     end
 
-    BigbluebuttonMeeting.where(create_time: nil).each do |meeting|
-      meeting.update_attributes( create_time: meeting.start_time.to_i )
-    end
-
-    add_column :bigbluebutton_meetings, :finish_time, :decimal, precision: 14, scale: 0
-    add_column :bigbluebutton_meetings, :got_stats, :string
-
-    remove_column :bigbluebutton_meetings, :start_time, :datetime
+    remove_column :bigbluebutton_meetings, :start_time
 
     add_column :bigbluebutton_recordings, :temp_start_time, :decimal, precision: 14, scale: 0
     add_column :bigbluebutton_recordings, :temp_end_time, :decimal, precision: 14, scale: 0
 
-    BigbluebuttonRecording.all.each do |rec|
+    BigbluebuttonRecording.find_each do |rec|
       rec.update_attributes(
         temp_start_time: rec.start_time.to_i,
         temp_end_time: rec.end_time.to_i
@@ -34,40 +22,49 @@ class BigbluebuttonRailsTo220B < ActiveRecord::Migration
     rename_column :bigbluebutton_recordings, :temp_start_time, :start_time
     rename_column :bigbluebutton_recordings, :temp_end_time, :end_time
 
-    BigbluebuttonRecording.all.each do |rec|
+    BigbluebuttonRecording.find_each do |rec|
       rec.update_attributes(
         meeting_id: BigbluebuttonRecording.find_matching_meeting(rec).try(:id)
       )
     end
 
-    BigbluebuttonRecording.all.each do |rec|
+    BigbluebuttonRecording.where(meeting_id: nil).find_each do |rec|
       rec.update_attributes(
         meeting_id: find_matching_meeting_closer_create_time(rec)
       )
     end
 
-   BigbluebuttonRecording.all.each do |rec|
-      if rec.meeting_id.nil?
-        unless rec.room_id.nil?
-          BigbluebuttonMeeting.create do |m|
-            creator_data = find_creator_data(rec)
-            m.server_id = rec.server_id
-            m.room_id = rec.room_id
-            m.meetingid = rec.meetingid
-            m.name = rec.name
-            m.running = false
-            m.recorded = true
-            m.creator_id = creator_data[0]
-            m.creator_name = creator_data[1]
-            m.server_url = nil
-            m.server_secret = nil
-            m.create_time = rec.start_time
-            m.ended = true
-          end
-          rec.update_attributes(meeting_id: BigbluebuttonRecording.find_matching_meeting(rec).try(:id))
-        end
+    BigbluebuttonRecording.where(meeting_id: nil).where.not(room_id: nil).find_each do |rec|
+      meeting = BigbluebuttonMeeting.create do |m|
+        creator_data = find_creator_data(rec)
+        m.server_id = rec.server_id
+        m.room_id = rec.room_id
+        m.meetingid = rec.meetingid
+        m.name = rec.name
+        m.running = false
+        m.recorded = true
+        m.creator_id = creator_data[0]
+        m.creator_name = creator_data[1]
+        m.server_url = nil
+        m.server_secret = nil
+        m.create_time = rec.start_time
+        m.ended = true
       end
+      rec.update_attributes(meeting_id: meeting.id)
+      puts "Created a meeting for the recording id-#{rec.id}: Meeting id-#{meeting.id}"
     end
+
+    create_table :bigbluebutton_attendees do |t|
+      t.string :user_id
+      t.string :extern_user_id
+      t.string :user_name
+      t.decimal :join_time, precision: 14, scale: 0
+      t.decimal :left_time, precision: 14, scale: 0
+      t.integer :bigbluebutton_meeting_id
+    end
+
+    add_column :bigbluebutton_meetings, :finish_time, :decimal, precision: 14, scale: 0
+    add_column :bigbluebutton_meetings, :got_stats, :string
   end
 
   def find_matching_meeting_closer_create_time(recording)
@@ -76,12 +73,8 @@ class BigbluebuttonRailsTo220B < ActiveRecord::Migration
       meeting = BigbluebuttonMeeting.where("meetingid = ? AND created_at > ? AND created_at < ?",
                 recording.meetingid, Time.at(recording.start_time)-2.minutes, Time.at(recording.start_time)+2.minutes).first
 
-      if meeting.nil?
-        meeting_id = nil
-      else
-        if BigbluebuttonRecording.find_by_meeting_id(meeting.id).present?
-          meeting_id = nil
-        else
+      unless meeting.nil?
+        unless BigbluebuttonRecording.find_by(meeting_id: meeting.id).present?
           meeting_id = meeting.id
         end
       end
@@ -97,11 +90,11 @@ class BigbluebuttonRailsTo220B < ActiveRecord::Migration
   def find_creator_data(recording)
     creator_data = []
     if recording.room.owner.is_a?(User)
-      creator_id = recording.room.owner.id
-      creator_name = recording.room.owner.name
+      creator_id = recording.room.try(:owner).try(:id)
+      creator_name = recording.room.try(:owner).try(:name)
     elsif recording.room.owner.is_a?(Space)
-      creator_id = recording.room.owner.admins.first.id
-      creator_name = recording.room.owner.admins.first.name
+      creator_id = recording.room.try(:owner).try(:admins).try(:first).try(:id)
+      creator_name = recording.room.try(:owner).try(:admins).try(:first).try(:name)
     end
     creator_data = [creator_id, creator_name]
   end

@@ -14,6 +14,11 @@ class BigbluebuttonRoom < ActiveRecord::Base
            dependent: :destroy,
            inverse_of: :owner
 
+  has_many :meetings,
+           class_name: 'BigbluebuttonMeeting',
+           foreign_key: 'room_id',
+           dependent: :destroy
+
   has_one :room_options,
           class_name: 'BigbluebuttonRoomOptions',
           foreign_key: 'room_id',
@@ -73,6 +78,33 @@ class BigbluebuttonRoom < ActiveRecord::Base
   # in all GET/POST requests to a webconf server.
   # Currently used to send the client's IP to the load balancer.
   attr_accessor :request_headers
+
+  scope :order_by_activity, -> (direction='ASC') {
+    BigbluebuttonRoom.joins(:meetings)
+      .group('bigbluebutton_rooms.id')
+      .order("MAX(bigbluebutton_meetings.create_time) #{direction}")
+  }
+
+  scope :search_by_terms, -> (words) {
+    if words.present?
+      words ||= []
+      words = [words] unless words.is_a?(Array)
+      query_strs = []
+      query_params = []
+      query_orders = []
+
+      words.reject(&:blank?).each do |word|
+        str  = "name LIKE ? OR param LIKE ?"
+        query_strs << str
+        query_params += ["%#{word}%", "%#{word}%"]
+        query_orders += [
+          "CASE WHEN name LIKE '%#{word}%' THEN 1 ELSE 0 END + \
+           CASE WHEN param LIKE '%#{word}%' THEN 1 ELSE 0 END"
+        ]
+      end
+      where(query_strs.join(' OR '), *query_params.flatten).order(query_orders.join(' + ') + " DESC")
+    end
+  }
 
   # In case there's no room_options created yet, build one
   # (happens usually when an old database is migrated).
@@ -261,6 +293,19 @@ class BigbluebuttonRoom < ActiveRecord::Base
     r
   end
 
+  def parameterized_join_url(username, role, id, options={})
+    opts = options.clone
+
+    # gets the token with the configurations for this user/room
+    token = self.fetch_new_token
+    opts.merge!({ configToken: token }) unless token.blank?
+
+    # set the create time and the user id, if they exist
+    opts.merge!({ createTime: self.create_time }) unless self.create_time.blank?
+    opts.merge!({ userID: id }) unless id.blank?
+
+    self.join_url(username, role, nil, opts)
+  end
 
   # Returns the role of the user based on the key given.
   # The return value can be <tt>:moderator</tt>, <tt>:attendee</tt>, or
@@ -268,10 +313,12 @@ class BigbluebuttonRoom < ActiveRecord::Base
   # params:: Hash with a key :key
   def user_role(params)
     role = nil
-    if params && params.has_key?(:key)
-      if self.moderator_key == params[:key]
+    key = params.is_a?(String) ? params : (params && params.has_key?(:key) ? params[:key] : nil)
+
+    unless key.blank?
+      if self.moderator_key == key
         role = :moderator
-      elsif self.attendee_key == params[:key]
+      elsif self.attendee_key == key
         role = :attendee
       end
     end
@@ -533,6 +580,12 @@ class BigbluebuttonRoom < ActiveRecord::Base
       raise BigbluebuttonRails::ServerRequired.new(msg)
     end
     server
+  end
+
+  # Short URL for this room. Can be overwritten by applications that want to use a
+  # different route.
+  def short_path
+    Rails.application.routes.url_helpers.join_bigbluebutton_room_path(self)
   end
 
   protected

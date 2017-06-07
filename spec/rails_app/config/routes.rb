@@ -2,6 +2,8 @@ RailsApp::Application.routes.draw do
 
   bigbluebutton_routes :default
 
+  bigbluebutton_api_routes
+
   bigbluebutton_routes :default, :scope => "webconference"
 
   resources :users do
