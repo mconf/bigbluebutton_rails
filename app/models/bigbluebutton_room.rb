@@ -63,7 +63,7 @@ class BigbluebuttonRoom < ActiveRecord::Base
   validates :moderator_key, :presence => true, :if => :private?
 
   # Note: these params need to be fetched from the server before being accessed
-  attr_accessor :running, :participant_count, :moderator_count, :attendees,
+  attr_accessor :running, :participant_count, :moderator_count, :current_attendees,
                 :has_been_forcibly_ended, :end_time
 
   after_initialize :init

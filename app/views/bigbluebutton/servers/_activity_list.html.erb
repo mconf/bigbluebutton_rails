@@ -26,7 +26,7 @@
     <% unless room.end_time.nil? %>
       Ended at: <%= room.end_time.strftime("%F, %R UTC%z") %> (forcibly ended: <%= room.has_been_forcibly_ended %>)
     <% end %>
-    <% unless room.attendees.count == 0 %>
+    <% unless room.current_attendees.count == 0 %>
       Participants (<%= room.participant_count %> total, <%= room.moderator_count %> moderators):
       <div class="bbbrails_meeting_attendees">
         <div class="header">
@@ -34,7 +34,7 @@
           <div class="field">ID</div>
           <div class="field">Name</div>
         </div>
-        <% room.attendees.each do |attendee| %>
+        <% room.current_attendees.each do |attendee| %>
           <div class="row">
             <div class="field"><%= attendee.role %></div>
             <div class="field"><%= attendee.user_id %></div>

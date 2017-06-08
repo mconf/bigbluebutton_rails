@@ -63,7 +63,7 @@ describe BigbluebuttonRoom do
   it { should accept_nested_attributes_for(:metadata).allow_destroy(true) }
 
   # attr_accessors
-  [:running, :participant_count, :moderator_count, :attendees,
+  [:running, :participant_count, :moderator_count, :current_attendees,
    :has_been_forcibly_ended, :create_time, :end_time, :external,
    :request_headers, :record_meeting, :duration].each do |attr|
     it { should respond_to(attr) }
@@ -237,7 +237,7 @@ describe BigbluebuttonRoom do
       room.has_been_forcibly_ended.should be(false)
       room.create_time.should be_nil
       room.end_time.should be_nil
-      room.attendees.should eql([])
+      room.current_attendees.should eql([])
       room.request_headers.should == {}
     end
 
@@ -410,7 +410,7 @@ describe BigbluebuttonRoom do
         it { room.create_time.should == nil }
         it { room.reload.create_time.should == nil }
         it { room.end_time.should == nil }
-        it { room.attendees.should == [] }
+        it { room.current_attendees.should == [] }
       end
 
       context "fetches meeting info when the meeting is running" do
@@ -430,7 +430,7 @@ describe BigbluebuttonRoom do
           users.each do |att|
             attendee = BigbluebuttonAttendee.new
             attendee.from_hash(att)
-            room.attendees.should include(attendee)
+            room.current_attendees.should include(attendee)
           end
         }
       end
