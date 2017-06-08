@@ -334,6 +334,60 @@ describe BigbluebuttonRoom do
     before { mock_server_and_api }
     let(:room) { FactoryGirl.create(:bigbluebutton_room) }
 
+    describe "#fetch_meeting_stats" do
+      let!(:meeting) { FactoryGirl.create(:bigbluebutton_meeting, meetingid: room.meetingid, room: room, ended: true, running: false, create_time: "1496849802529") }
+
+      context "fetches stats for meetings" do
+        # these hashes should be exactly as returned by bigbluebutton-api-ruby to be sure we are testing it right
+        let(:hash_info) {
+          { :returncode=>true, :stats=>{:meeting=>[{:meetingID=>meeting.meetingid, :meetingName=>"admin",
+            :recordID=>"a0a5186e8ad1c576461da995a2b2e894dc7a1cfb-1496849802529", :epochStartTime=>"1496849802529", :startTime=>"6461874839",
+            :endTime=>"6461893242", :participants=>{:participant=>{:userID=>"kha2sycmaotz_2", :externUserID=>"1", :userName=>"admin", :joinTime=>"6461875282",
+            :leftTime=>"6461893242"}}}, {:meetingID=>meeting.meetingid, :meetingName=>"admin", :recordID=>"a0a5186e8ad1c576461da995a2b2e894dc7a1cfb-1496947081207",
+            :epochStartTime=>"1496947081207", :startTime=>"6559154251", :endTime=>"6559174875", :participants=>{:participant=>{:userID=>"ipy6lxew6hwv_2", :externUserID=>"1",
+            :userName=>"admin", :joinTime=>"6559158878", :leftTime=>"6559174875"}}}]}, :messageKey=>"", :message=>""
+          }
+        }
+
+        it { should respond_to(:fetch_meeting_stats) }
+
+        context "fetches meeting stats and creates a new attendee" do
+          before {
+            mocked_api.should_receive(:send_api_request).
+              with(:getStats, { meetingID: room.meetingid }).and_return(hash_info)
+            room.should_receive(:select_server).and_return(mocked_server)
+          }
+          it { expect { room.fetch_meeting_stats(meeting) }.to change{ BigbluebuttonAttendees.count }.by(1) }
+          it { room.fetch_meeting_stats(meeting)
+               meeting.reload.finish_time.should_not be_nil
+             }
+          it { room.fetch_meeting_stats(meeting)
+               meeting.reload.got_stats.should eql("yes")
+             }
+        end
+      end
+
+      context "if the server does not support getStats api call" do
+        let!(:exception) {
+          e = BigBlueButton::BigBlueButtonException.new('404')
+          e
+        }
+        before {
+          room.should_receive(:select_server).and_return(mocked_server)
+          expect(mocked_api).to receive(:send_api_request).with(:getStats, { meetingID: room.meetingid }) { raise exception }
+          expect(room).not_to receive(:get_stats)
+        }
+        it { expect { room.fetch_meeting_stats(meeting) }.not_to raise_exception }
+        it { expect { room.fetch_meeting_stats(meeting) }.not_to change{ BigbluebuttonAttendees.count } }
+        it { room.fetch_meeting_stats(meeting)
+             meeting.reload.finish_time.should be_nil
+           }
+        it { room.fetch_meeting_stats(meeting)
+             meeting.reload.got_stats.should eql("not_supported")
+           }
+      end
+    end
+
     describe "#fetch_is_running?" do
 
       it { should respond_to(:fetch_is_running?) }
