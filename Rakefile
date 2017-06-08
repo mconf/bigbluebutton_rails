@@ -39,8 +39,7 @@ namespace :rails_app do
   desc 'Setup the db in the rails app used in tests.'
   task :db do
     cd File.join(File.dirname(__FILE__), "spec", "rails_app")
-    sh "bundle exec rake db:drop db:create db:migrate db:seed RAILS_ENV=development"
-    sh "bundle exec rake db:drop db:create db:migrate db:seed RAILS_ENV=test"
+    sh "bundle exec rake db:drop db:create db:migrate db:seed"
     cd File.dirname(__FILE__)
   end
 
