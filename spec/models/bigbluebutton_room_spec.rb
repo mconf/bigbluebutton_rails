@@ -584,7 +584,7 @@ describe BigbluebuttonRoom do
         it { room.send_end }
       end
 
-      context "schedules a BigbluebuttonMeetingUpdater" do
+      context "schedules a BigbluebuttonMeetingUpdaterWorker" do
         before {
           room.should_receive(:select_server).and_return(mocked_server)
           mocked_api.should_receive(:end_meeting)
@@ -595,7 +595,7 @@ describe BigbluebuttonRoom do
 
         subject { Resque.peek(:bigbluebutton_rails) }
         it("should have a job schedule") { subject.should_not be_nil }
-        it("the job should be the right one") { subject['class'].should eq('BigbluebuttonMeetingUpdater') }
+        it("the job should be the right one") { subject['class'].should eq('BigbluebuttonMeetingUpdaterWorker') }
         it("the job should have the correct parameters") { subject['args'].should eq([room.id]) }
       end
     end
@@ -797,7 +797,7 @@ describe BigbluebuttonRoom do
           it { subject.ended.should eql(false) }
         end
 
-        context "enqueues a BigbluebuttonMeetingUpdater" do
+        context "enqueues a BigbluebuttonMeetingUpdaterWorker" do
           before do
             mocked_api.should_receive(:create_meeting)
               .with(room.name, room.meetingid, expected_params)
@@ -810,7 +810,7 @@ describe BigbluebuttonRoom do
           end
           subject { Resque.peek(:bigbluebutton_rails) }
           it("should have a job schedule") { subject.should_not be_nil }
-          it("the job should be the right one") { subject['class'].should eq('BigbluebuttonMeetingUpdater') }
+          it("the job should be the right one") { subject['class'].should eq('BigbluebuttonMeetingUpdaterWorker') }
           it("the job should have the correct parameters") { subject['args'].should eq([room.id, 10]) }
         end
       end
@@ -1714,7 +1714,7 @@ describe BigbluebuttonRoom do
       context "if at least one meeting was ended" do
         let!(:meeting1) { FactoryGirl.create(:bigbluebutton_meeting, room: room, ended: false, running: true) }
         before {
-          expect(Resque).to receive(:enqueue_in).with(4.minutes, ::BigbluebuttonRecordingsForRoom, room.id, 3)
+          expect(Resque).to receive(:enqueue_in).with(4.minutes, ::BigbluebuttonRecordingsForRoomWorker, room.id, 3)
         }
         it { room.finish_meetings }
       end

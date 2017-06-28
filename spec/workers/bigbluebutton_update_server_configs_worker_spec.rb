@@ -1,9 +1,9 @@
 require 'spec_helper'
 
-describe BigbluebuttonUpdateServerConfigs do
+describe BigbluebuttonUpdateServerConfigsWorker do
 
   it "uses the queue :bigbluebutton_rails" do
-    BigbluebuttonUpdateServerConfigs.instance_variable_get(:@queue).should eql(:bigbluebutton_rails)
+    BigbluebuttonUpdateServerConfigsWorker.instance_variable_get(:@queue).should eql(:bigbluebutton_rails)
   end
 
   describe "#perform" do
@@ -23,7 +23,7 @@ describe BigbluebuttonUpdateServerConfigs do
         expect(servers[1]).to receive(:update_config).once
         expect(servers[2]).to receive(:update_config).once
       }
-      it { BigbluebuttonUpdateServerConfigs.perform }
+      it { BigbluebuttonUpdateServerConfigsWorker.perform }
     end
 
     context "updates the version of each server" do
@@ -36,7 +36,7 @@ describe BigbluebuttonUpdateServerConfigs do
         expect(servers[0]).to receive(:set_api_version_from_server).at_least(:once).and_return(new_version)
         expect(servers[1]).to receive(:set_api_version_from_server).at_least(:once).and_return(new_version)
         expect(servers[2]).to receive(:set_api_version_from_server).at_least(:once).and_return(new_version)
-        BigbluebuttonUpdateServerConfigs.perform
+        BigbluebuttonUpdateServerConfigsWorker.perform
       }
       it { servers[0].version.should eql(new_version) }
       it { servers[1].version.should eql(new_version) }

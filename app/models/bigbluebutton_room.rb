@@ -220,7 +220,7 @@ class BigbluebuttonRoom < ActiveRecord::Base
     response = server.api.end_meeting(self.meetingid, self.moderator_api_password)
 
     # enqueue an update in the meeting to end it faster
-    Resque.enqueue(::BigbluebuttonMeetingUpdater, self.id)
+    Resque.enqueue(::BigbluebuttonMeetingUpdaterWorker, self.id)
 
     response
   end
@@ -257,7 +257,7 @@ class BigbluebuttonRoom < ActiveRecord::Base
 
         # enqueue an update in the meeting with a small delay we assume to be
         # enough for the user to fully join the meeting
-        Resque.enqueue(::BigbluebuttonMeetingUpdater, self.id, 10.seconds)
+        Resque.enqueue(::BigbluebuttonMeetingUpdaterWorker, self.id, 10.seconds)
       end
     end
 
@@ -494,7 +494,7 @@ class BigbluebuttonRoom < ActiveRecord::Base
       # have to keep polling the server for them
       # 3 times so it tries at: 4, 9, 14 and 19
       # no point going more since there is a global synchronization process
-      Resque.enqueue_in(4.minutes, ::BigbluebuttonRecordingsForRoom, self.id, 3)
+      Resque.enqueue_in(4.minutes, ::BigbluebuttonRecordingsForRoomWorker, self.id, 3)
     end
   end
 
