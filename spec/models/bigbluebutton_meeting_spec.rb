@@ -62,21 +62,20 @@ describe BigbluebuttonMeeting do
     let!(:meeting) { FactoryGirl.create(:bigbluebutton_meeting, room: room, ended: true, running: false, create_time: "1496849802529") }
     before { mock_server_and_api }
 
-    context "fetches stats for meetings" do
-      # these hashes should be exactly as returned by bigbluebutton-api-ruby to be sure we are testing it right
-      let(:hash_info) {
-        { :returncode=>true, :stats=>{:meeting=>[{:meetingID=>meeting.meetingid, :meetingName=>"admin",
-          :recordID=>"a0a5186e8ad1c576461da995a2b2e894dc7a1cfb-1496849802529", :epochStartTime=>"1496849802529", :startTime=>"6461874839",
-          :endTime=>"6461893242", :participants=>{:participant=>{:userID=>"kha2sycmaotz_2", :externUserID=>"1", :userName=>"admin", :joinTime=>"6461875282",
-          :leftTime=>"6461893242"}}}, {:meetingID=>meeting.meetingid, :meetingName=>"admin", :recordID=>"a0a5186e8ad1c576461da995a2b2e894dc7a1cfb-1496947081207",
-          :epochStartTime=>"1496947081207", :startTime=>"6559154251", :endTime=>"6559174875", :participants=>{:participant=>{:userID=>"ipy6lxew6hwv_2", :externUserID=>"1",
-          :userName=>"admin", :joinTime=>"6559158878", :leftTime=>"6559174875"}}}]}, :messageKey=>"", :message=>""
-        }
+    let(:hash_info) {
+      { :returncode=>true, :stats=>{:meeting=>[{:meetingID=>meeting.meetingid, :meetingName=>"admin",
+        :recordID=>"a0a5186e8ad1c576461da995a2b2e894dc7a1cfb-1496849802529", :epochStartTime=>"1496849802529", :startTime=>"6461874839",
+        :endTime=>"6461893242", :participants=>{:participant=>{:userID=>"kha2sycmaotz_2", :externUserID=>"1", :userName=>"admin", :joinTime=>"6461875282",
+        :leftTime=>"6461893242"}}}, {:meetingID=>meeting.meetingid, :meetingName=>"admin", :recordID=>"a0a5186e8ad1c576461da995a2b2e894dc7a1cfb-1496947081207",
+        :epochStartTime=>"1496947081207", :startTime=>"6559154251", :endTime=>"6559174875", :participants=>{:participant=>{:userID=>"ipy6lxew6hwv_2", :externUserID=>"1",
+        :userName=>"admin", :joinTime=>"6559158878", :leftTime=>"6559174875"}}}]}, :messageKey=>"", :message=>""
       }
+    }
 
+    context "fetches stats for meetings" do
       it { should respond_to(:fetch_and_update_stats) }
 
-      context "fetches meeting stats and creates a new attendee" do
+      context "fetches meeting stats and creates attendees" do
         before {
           mocked_api.should_receive(:send_api_request).
             with(:getStats, { meetingID: meeting.meetingid }).and_return(hash_info)
@@ -96,8 +95,7 @@ describe BigbluebuttonMeeting do
 
     context "if the server does not support getStats api call" do
       let!(:exception) {
-        e = BigBlueButton::BigBlueButtonException.new('404')
-        e
+        BigBlueButton::BigBlueButtonException.new('any error')
       }
       before {
         room.should_receive(:select_server).and_return(mocked_server)
@@ -115,7 +113,18 @@ describe BigbluebuttonMeeting do
         meeting.reload.got_stats.should eql("not_supported")
       }
     end
-  end
 
+    context "doesn't recreate attendees that already exist" do
+      before {
+        mocked_api.stub(:send_api_request).
+          with(:getStats, { meetingID: meeting.meetingid }).and_return(hash_info)
+        room.should_receive(:select_server).and_return(mocked_server)
+      }
+      it {
+        expect { meeting.fetch_and_update_stats }.to change{ BigbluebuttonAttendee.count }.by(1)
+        expect { meeting.fetch_and_update_stats }.not_to change{ BigbluebuttonAttendee.count }
+      }
+    end
+  end
 
 end

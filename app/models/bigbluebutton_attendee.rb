@@ -6,6 +6,7 @@ class BigbluebuttonAttendee < ActiveRecord::Base
 
   validates :bigbluebutton_meeting_id, :presence => true
 
+  # TODO: no role on getStats yet, but it exists on getMeetings
   attr_accessor :role
 
   def duration

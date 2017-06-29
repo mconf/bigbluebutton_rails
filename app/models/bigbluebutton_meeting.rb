@@ -84,15 +84,17 @@ class BigbluebuttonMeeting < ActiveRecord::Base
         join_epoch = (my_meeting[:epochStartTime].to_i - my_meeting[:startTime].to_i + participant[:joinTime].to_i).to_s
         left_epoch = (my_meeting[:epochStartTime].to_i - my_meeting[:startTime].to_i + participant[:leftTime].to_i).to_s
 
-        BigbluebuttonAttendee.create do |a|
-          a.user_id = participant[:userID]
-          a.external_user_id = participant[:externUserID]
-          a.user_name = participant[:userName]
-          a.join_time = join_epoch
-          a.left_time = left_epoch
-          a.bigbluebutton_meeting_id = self.id
-        end
+        attrs = {
+          :user_id => participant[:userID],
+          :external_user_id => participant[:externUserID],
+          :user_name => participant[:userName],
+          :join_time => join_epoch,
+          :left_time => left_epoch,
+          :bigbluebutton_meeting_id => self.id
+        }
+        BigbluebuttonAttendee.where(attrs).first_or_create
       end
+
       finish_time = (my_meeting[:epochStartTime].to_i - my_meeting[:startTime].to_i + my_meeting[:endTime].to_i).to_s
       self.update_attributes(got_stats: "yes", finish_time: finish_time)
       true
