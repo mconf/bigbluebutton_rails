@@ -122,7 +122,7 @@ class BigbluebuttonRoom < ActiveRecord::Base
   # The response is parsed and stored in the model. You can access it using attributes such as:
   #
   #   room.participant_count
-  #   room.current_attendees[0].full_name
+  #   room.current_attendees[0].user_name
   #
   # The attributes changed are:
   # * <tt>participant_count</tt>
@@ -169,39 +169,6 @@ class BigbluebuttonRoom < ActiveRecord::Base
     end
 
     response
-  end
-
-  def fetch_meeting_stats(meeting)
-    begin
-      server = BigbluebuttonRails.configuration.select_server.call(self, :send_api_request)
-      response = server.api.send_api_request(:getStats, { meetingID: self.meetingid })
-
-      all_meetings = response[:stats][:meeting]
-      all_meetings = [all_meetings] unless all_meetings.is_a?(Array)
-      my_meeting = all_meetings.select{ |meetings| meetings[:epochStartTime].to_s == meeting.create_time.to_s }.first
-
-      all_participants = my_meeting[:participants][:participant]
-      all_participants = [all_participants] unless all_participants.is_a?(Array)
-
-      all_participants.each do |participant|
-        join_epoch = (my_meeting[:epochStartTime].to_i - my_meeting[:startTime].to_i + participant[:joinTime].to_i).to_s
-        left_epoch = (my_meeting[:epochStartTime].to_i - my_meeting[:startTime].to_i + participant[:leftTime].to_i).to_s
-
-        BigbluebuttonAttendees.create do |a|
-          a.user_id = participant[:userID]
-          a.extern_user_id = participant[:externUserID]
-          a.user_name = participant[:userName]
-          a.join_time = join_epoch
-          a.left_time = left_epoch
-          a.bigbluebutton_meeting_id = meeting.id
-        end
-      end
-      finish_time = (my_meeting[:epochStartTime].to_i - my_meeting[:startTime].to_i + my_meeting[:endTime].to_i).to_s
-      meeting.update_attributes(got_stats: "yes", finish_time: finish_time)
-
-    rescue BigBlueButton::BigBlueButtonException => e
-      meeting.update_attributes(got_stats: "not_supported")
-    end
   end
 
   # Fetches the BBB server to see if the meeting is running. Sets <tt>running</tt>

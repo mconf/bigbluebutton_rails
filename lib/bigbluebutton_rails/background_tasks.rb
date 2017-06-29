@@ -21,13 +21,11 @@ module BigbluebuttonRails
     # of participants with join and leave timestamp
     def self.get_stats
       BigbluebuttonMeeting.where(got_stats: nil, ended: true)
-                          .where("create_time > ?", (DateTime.now.utc - 1.day).strftime('%Q').to_i ).find_each do |meeting|
+        .where("create_time > ?", (DateTime.now.utc - 1.day).strftime('%Q').to_i)
+        .find_each do |meeting|
 
         Rails.logger.info "BackgroundTasks: Checking if the meeting has getStats content: #{meeting.inspect}"
-        room = meeting.room
-        if room.present?
-          room.fetch_meeting_stats(meeting)
-        end
+        meeting.fetch_and_update_stats(meeting)
       end
     end
 

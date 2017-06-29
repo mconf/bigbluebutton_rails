@@ -22,19 +22,21 @@ describe BigbluebuttonRails::BackgroundTasks do
         }
       }
 
-      context "creates a new attendee on BigbluebuttonAttendees" do
+      context "creates a new attendee on BigbluebuttonAttendee" do
         before {
           mocked_api.should_receive(:send_api_request).
             with(:getStats, { meetingID: room.meetingid }).and_return(hash_info)
           room.should_receive(:select_server).and_return(mocked_server)
         }
-        it { expect { room.fetch_meeting_stats(meeting) }.to change{ BigbluebuttonAttendees.count }.by(1) }
-        it { room.fetch_meeting_stats(meeting)
-             meeting.reload.finish_time.should_not be_nil
-           }
-        it { room.fetch_meeting_stats(meeting)
-             meeting.reload.got_stats.should eql("yes")
-           }
+        it { expect { meeting.fetch_and_update_stats }.to change{ BigbluebuttonAttendee.count }.by(1) }
+        it {
+          meeting.fetch_and_update_stats
+          meeting.reload.finish_time.should_not be_nil
+        }
+        it {
+          meeting.fetch_and_update_stats
+          meeting.reload.got_stats.should eql("yes")
+        }
       end
 
       context "sets the flag if the server does not support getStats" do
@@ -43,14 +45,16 @@ describe BigbluebuttonRails::BackgroundTasks do
           expect(mocked_api).to receive(:send_api_request).with(:getStats, { meetingID: room.meetingid }) { raise exception }
           expect(room).not_to receive(:get_stats)
         }
-        it { expect { room.fetch_meeting_stats(meeting) }.not_to raise_exception }
-        it { expect { room.fetch_meeting_stats(meeting) }.not_to change{ BigbluebuttonAttendees.count } }
-        it { room.fetch_meeting_stats(meeting)
-             meeting.reload.finish_time.should be_nil
-           }
-        it { room.fetch_meeting_stats(meeting)
-             meeting.reload.got_stats.should eql("not_supported")
-           }
+        it { expect { meeting.fetch_and_update_stats }.not_to raise_exception }
+        it { expect { meeting.fetch_and_update_stats }.not_to change{ BigbluebuttonAttendee.count } }
+        it {
+          meeting.fetch_and_update_stats
+          meeting.reload.finish_time.should be_nil
+        }
+        it {
+          meeting.fetch_and_update_stats
+          meeting.reload.got_stats.should eql("not_supported")
+        }
       end
     end
   end
