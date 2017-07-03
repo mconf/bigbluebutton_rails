@@ -22,7 +22,8 @@ describe BigbluebuttonMeeting do
   context "got_stats included in" do
     it { should allow_value(nil).for(:got_stats) }
     it { should allow_value('yes').for(:got_stats) }
-    it { should allow_value('not_supported').for(:got_stats) }
+    it { should allow_value('failed').for(:got_stats) }
+    it { should allow_value('nodata').for(:got_stats) }
     it { should_not allow_value('no').for(:got_stats) }
     it { should_not allow_value(true).for(:got_stats) }
     it { should_not allow_value(false).for(:got_stats) }
@@ -72,24 +73,18 @@ describe BigbluebuttonMeeting do
       }
     }
 
-    context "fetches stats for meetings" do
-      it { should respond_to(:fetch_and_update_stats) }
+    it { should respond_to(:fetch_and_update_stats) }
 
+    context "fetches stats for meetings" do
       context "fetches meeting stats and creates attendees" do
         before {
           mocked_api.should_receive(:send_api_request).
             with(:getStats, { meetingID: meeting.meetingid }).and_return(hash_info)
           room.should_receive(:select_server).and_return(mocked_server)
+          expect { meeting.fetch_and_update_stats }.to change{ BigbluebuttonAttendee.count }.by(1)
         }
-        it { expect { meeting.fetch_and_update_stats }.to change{ BigbluebuttonAttendee.count }.by(1) }
-        it {
-          meeting.fetch_and_update_stats
-          meeting.reload.finish_time.should_not be_nil
-        }
-        it {
-          meeting.fetch_and_update_stats
-          meeting.reload.got_stats.should eql("yes")
-        }
+        it { meeting.reload.finish_time.should_not be_nil }
+        it { meeting.reload.got_stats.should eql("yes") }
       end
     end
 
@@ -99,18 +94,85 @@ describe BigbluebuttonMeeting do
       }
       before {
         room.should_receive(:select_server).and_return(mocked_server)
-        expect(mocked_api).to receive(:send_api_request).with(:getStats, { meetingID: meeting.meetingid }) { raise exception }
+        expect(mocked_api).to receive(:send_api_request).with(:getStats, { meetingID: meeting.meetingid }) {
+          raise exception
+        }
         expect(meeting).not_to receive(:get_stats)
       }
       it { expect { meeting.fetch_and_update_stats }.not_to raise_exception }
       it { expect { meeting.fetch_and_update_stats }.not_to change{ BigbluebuttonAttendee.count } }
       it {
-        meeting.fetch_and_update_stats
+        meeting.fetch_and_update_stats.should be(false)
         meeting.reload.finish_time.should be_nil
+        meeting.reload.got_stats.should eql("failed")
       }
+    end
+
+    context "if there's no server associated with the meeting" do
+      before {
+        room.should_receive(:select_server).and_return(nil)
+        expect(mocked_api).not_to receive(:send_api_request)
+        expect(meeting).not_to receive(:get_stats)
+      }
+      it { expect { meeting.fetch_and_update_stats }.not_to change{ BigbluebuttonAttendee.count } }
       it {
-        meeting.fetch_and_update_stats
-        meeting.reload.got_stats.should eql("not_supported")
+        meeting.fetch_and_update_stats.should be(false)
+        meeting.reload.finish_time.should be_nil
+        meeting.reload.got_stats.should eql("failed")
+      }
+    end
+
+    context "if there's no data in the response" do
+      let(:hash_info) {
+        { :returncode => true, :messageKey => 'noStats' }
+      }
+      before {
+        room.should_receive(:select_server).and_return(mocked_server)
+        mocked_api.should_receive(:send_api_request).
+          with(:getStats, { meetingID: meeting.meetingid }).and_return(hash_info)
+        expect(meeting).not_to receive(:get_stats)
+      }
+      it { expect { meeting.fetch_and_update_stats }.not_to change{ BigbluebuttonAttendee.count } }
+      it {
+        meeting.fetch_and_update_stats.should be(false)
+        meeting.reload.finish_time.should be_nil
+        meeting.reload.got_stats.should eql("nodata")
+      }
+    end
+
+    context "if the target meeting is not found" do
+      let(:hash_info) {
+        { :returncode => true, :stats => { :meeting => [] }, :messageKey => "", :message => "" }
+      }
+      before {
+        room.should_receive(:select_server).and_return(mocked_server)
+        mocked_api.should_receive(:send_api_request).
+          with(:getStats, { meetingID: meeting.meetingid }).and_return(hash_info)
+        expect(meeting).not_to receive(:get_stats)
+      }
+      it { expect { meeting.fetch_and_update_stats }.not_to change{ BigbluebuttonAttendee.count } }
+      it {
+        meeting.fetch_and_update_stats.should be(false)
+        meeting.reload.finish_time.should be_nil
+        meeting.reload.got_stats.should eql("nodata")
+      }
+    end
+
+    context "if there's an error parsing the XML" do
+      let(:hash_info) {
+        { :returncode => true, :stats => 'this will trigger an error', :messageKey => "", :message => "" }
+      }
+      before {
+        room.should_receive(:select_server).and_return(mocked_server)
+        mocked_api.should_receive(:send_api_request).
+          with(:getStats, { meetingID: meeting.meetingid }).and_return(hash_info)
+        expect(meeting).not_to receive(:get_stats)
+      }
+      it { expect { meeting.fetch_and_update_stats }.not_to change{ BigbluebuttonAttendee.count } }
+      it {
+        meeting.fetch_and_update_stats.should be(false)
+        meeting.reload.finish_time.should be_nil
+        meeting.reload.got_stats.should eql("failed")
       }
     end
 

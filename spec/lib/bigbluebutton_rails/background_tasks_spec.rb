@@ -5,57 +5,34 @@ describe BigbluebuttonRails::BackgroundTasks do
   describe ".get_stats" do
     before { mock_server_and_api }
 
-    context "fetches the stats" do
-      let(:room) { FactoryGirl.create(:bigbluebutton_room) }
-      let!(:meeting) { FactoryGirl.create(:bigbluebutton_meeting, meetingid: room.meetingid, room: room, ended: true, running: false, create_time: "1496849802529") }
-      let!(:exception) {
-        e = BigBlueButton::BigBlueButtonException.new('404')
-        e
+    context "calls #fetch_and_update_stats for all meetings" do
+      let(:meeting1) { FactoryGirl.create(:bigbluebutton_meeting) }
+      let(:meeting2) { FactoryGirl.create(:bigbluebutton_meeting) }
+      let(:meeting3) { FactoryGirl.create(:bigbluebutton_meeting) }
+      before {
+        BigbluebuttonMeeting.stub(:find_each)
+          .and_yield(meeting1)
+          .and_yield(meeting2)
+          .and_yield(meeting3)
+        meeting1.should_receive(:fetch_and_update_stats)
+        meeting2.should_receive(:fetch_and_update_stats)
+        meeting3.should_receive(:fetch_and_update_stats)
       }
-      let(:hash_info) {
-        { :returncode=>true, :stats=>{:meeting=>[{:meetingID=>meeting.meetingid, :meetingName=>"admin",
-          :recordID=>"a0a5186e8ad1c576461da995a2b2e894dc7a1cfb-1496849802529", :epochStartTime=>"1496849802529", :startTime=>"6461874839",
-          :endTime=>"6461893242", :participants=>{:participant=>{:userID=>"kha2sycmaotz_2", :externUserID=>"1", :userName=>"admin", :joinTime=>"6461875282",
-          :leftTime=>"6461893242"}}}, {:meetingID=>meeting.meetingid, :meetingName=>"admin", :recordID=>"a0a5186e8ad1c576461da995a2b2e894dc7a1cfb-1496947081207",
-          :epochStartTime=>"1496947081207", :startTime=>"6559154251", :endTime=>"6559174875", :participants=>{:participant=>{:userID=>"ipy6lxew6hwv_2", :externUserID=>"1",
-          :userName=>"admin", :joinTime=>"6559158878", :leftTime=>"6559174875"}}}]}, :messageKey=>"", :message=>""
-        }
+      it { BigbluebuttonRails::BackgroundTasks.get_stats }
+    end
+
+    context "calls get stats only for the target meetings" do
+      let(:meeting1) { FactoryGirl.create(:bigbluebutton_meeting) }
+      let(:meeting2) { FactoryGirl.create(:bigbluebutton_meeting) }
+      let(:meeting3) { FactoryGirl.create(:bigbluebutton_meeting) }
+      before {
+        @filter = BigbluebuttonMeeting.where(meetingid: meeting1.meetingid)
+        @filter.stub(:find_each).and_yield(meeting1)
+        meeting1.should_receive(:fetch_and_update_stats)
+        meeting2.should_not_receive(:fetch_and_update_stats)
+        meeting3.should_not_receive(:fetch_and_update_stats)
       }
-
-      context "creates a new attendee on BigbluebuttonAttendee" do
-        before {
-          mocked_api.should_receive(:send_api_request).
-            with(:getStats, { meetingID: room.meetingid }).and_return(hash_info)
-          room.should_receive(:select_server).and_return(mocked_server)
-        }
-        it { expect { meeting.fetch_and_update_stats }.to change{ BigbluebuttonAttendee.count }.by(1) }
-        it {
-          meeting.fetch_and_update_stats
-          meeting.reload.finish_time.should_not be_nil
-        }
-        it {
-          meeting.fetch_and_update_stats
-          meeting.reload.got_stats.should eql("yes")
-        }
-      end
-
-      context "sets the flag if the server does not support getStats" do
-        before {
-          room.should_receive(:select_server).and_return(mocked_server)
-          expect(mocked_api).to receive(:send_api_request).with(:getStats, { meetingID: room.meetingid }) { raise exception }
-          expect(room).not_to receive(:get_stats)
-        }
-        it { expect { meeting.fetch_and_update_stats }.not_to raise_exception }
-        it { expect { meeting.fetch_and_update_stats }.not_to change{ BigbluebuttonAttendee.count } }
-        it {
-          meeting.fetch_and_update_stats
-          meeting.reload.finish_time.should be_nil
-        }
-        it {
-          meeting.fetch_and_update_stats
-          meeting.reload.got_stats.should eql("not_supported")
-        }
-      end
+      it { BigbluebuttonRails::BackgroundTasks.get_stats(@filter) }
     end
   end
 

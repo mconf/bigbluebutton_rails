@@ -542,7 +542,7 @@ describe BigbluebuttonRoom do
         }
 
         subject { Resque.peek(:bigbluebutton_rails) }
-        it("should have a job schedule") { subject.should_not be_nil }
+        it("should have a job scheduled") { subject.should_not be_nil }
         it("the job should be the right one") { subject['class'].should eq('BigbluebuttonMeetingUpdaterWorker') }
         it("the job should have the correct parameters") { subject['args'].should eq([room.id]) }
       end
@@ -1657,12 +1657,14 @@ describe BigbluebuttonRoom do
       it { meeting.reload.ended.should be(true) }
     end
 
-    context "enqueues a worker to fetch recordings" do
-
+    context "enqueues workers to fetch recordings and get stats" do
       context "if at least one meeting was ended" do
         let!(:meeting1) { FactoryGirl.create(:bigbluebutton_meeting, room: room, ended: false, running: true) }
+        let!(:meeting2) { FactoryGirl.create(:bigbluebutton_meeting, room: room, ended: false, running: true) }
         before {
           expect(Resque).to receive(:enqueue_in).with(4.minutes, ::BigbluebuttonRecordingsForRoomWorker, room.id, 3)
+          expect(Resque).to receive(:enqueue_in).with(1.minute, ::BigbluebuttonGetStatsForMeetingWorker, meeting1.id, 2)
+          expect(Resque).to receive(:enqueue_in).with(1.minute, ::BigbluebuttonGetStatsForMeetingWorker, meeting2.id, 2)
         }
         it { room.finish_meetings }
       end
@@ -1674,7 +1676,6 @@ describe BigbluebuttonRoom do
         }
         it { room.finish_meetings }
       end
-
     end
   end
 
