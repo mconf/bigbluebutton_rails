@@ -6,7 +6,7 @@ services:
     build: .
     tty: true
     ports:
-      - "3001:3000"
+      - "3000:3000"
     depends_on:
       - dev_db
       - dev_redis
@@ -17,7 +17,7 @@ services:
       - RAILS_ENV=development
     volumes:
       - $PWD:/usr/src/app
-    command: bash -c "cd spec/rails_app && rails s -p3000"
+    command: bash -c "cd spec/rails_app && rake db:create db:migrate && rails s -p3000"
   dev_db:
     image: mysql:5.6
     expose:
