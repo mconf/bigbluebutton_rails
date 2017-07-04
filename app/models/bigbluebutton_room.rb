@@ -442,21 +442,7 @@ class BigbluebuttonRoom < ActiveRecord::Base
 
   # Sets all meetings related to this room as not running
   def finish_meetings
-    to_be_finished = BigbluebuttonMeeting.where(ended: false, room_id: self.id)
-
-    if to_be_finished.count > 0
-      # start trying to get the recording for this room
-      # since we don't have a way to know exactly when a recording is done, we
-      # have to keep polling the server for them
-      # 3 times so it tries at: 4, 9, 14 and 19
-      # no point trying more since there is a global synchronization process
-      Resque.enqueue_in(4.minutes, ::BigbluebuttonRecordingsForRoomWorker, self.id, 3)
-
-      # start trying to get stats for the meeting too
-      to_be_finished.find_each do |meeting|
-        Resque.enqueue_in(1.minute, ::BigbluebuttonGetStatsForMeetingWorker, meeting.id, 2)
-      end
-    end
+    to_be_finished = BigbluebuttonMeeting.where(ended: false, room_id: self.id).to_a
 
     BigbluebuttonMeeting.where(ended: false)
       .where(room_id: self.id)
@@ -467,6 +453,20 @@ class BigbluebuttonRoom < ActiveRecord::Base
     BigbluebuttonMeeting.where(running: true, ended: true)
       .where(room_id: self.id)
       .update_all(running: false, ended: true)
+
+    if to_be_finished.count > 0
+      # start trying to get the recording for this room
+      # since we don't have a way to know exactly when a recording is done, we
+      # have to keep polling the server for them
+      # 3 times so it tries at: 4, 9, 14 and 19
+      # no point trying more since there is a global synchronization process
+      Resque.enqueue_in(4.minutes, ::BigbluebuttonRecordingsForRoomWorker, self.id, 3)
+
+      # start trying to get stats for the meeting too
+      to_be_finished.each do |meeting|
+        Resque.enqueue_in(1.minute, ::BigbluebuttonGetStatsForMeetingWorker, meeting.id, 2)
+      end
+    end
   end
 
   # Gets a 'configToken' to use when joining the room.

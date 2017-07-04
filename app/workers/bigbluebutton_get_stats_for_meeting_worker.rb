@@ -15,7 +15,7 @@ class BigbluebuttonGetStatsForMeetingWorker
       got_it = meeting.fetch_and_update_stats
 
       if tries_left > 0 && !got_it
-        Resque.enqueue_in(5.minute, ::BigbluebuttonGetStatsForMeetingWorker, self.id, tries_left - 1)
+        Resque.enqueue_in(5.minute, ::BigbluebuttonGetStatsForMeetingWorker, meeting.id, tries_left - 1)
       end
     end
   end
