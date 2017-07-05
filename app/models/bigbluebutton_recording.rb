@@ -119,6 +119,11 @@ class BigbluebuttonRecording < ActiveRecord::Base
     recording.save!
 
     sync_additional_data(recording, data)
+
+    # new recording, get stats for the meeting
+    if recording.meeting.present?
+      Resque.enqueue(::BigbluebuttonGetStatsForMeetingWorker, recording.meeting.id, 2)
+    end
   end
 
   # Syncs data that's not directly stored in the recording itself but in

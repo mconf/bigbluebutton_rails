@@ -63,7 +63,7 @@ class BigbluebuttonRoom < ActiveRecord::Base
   validates :moderator_key, :presence => true, :if => :private?
 
   # Note: these params need to be fetched from the server before being accessed
-  attr_accessor :running, :participant_count, :moderator_count, :attendees,
+  attr_accessor :running, :participant_count, :moderator_count, :current_attendees,
                 :has_been_forcibly_ended, :end_time
 
   after_initialize :init
@@ -122,7 +122,7 @@ class BigbluebuttonRoom < ActiveRecord::Base
   # The response is parsed and stored in the model. You can access it using attributes such as:
   #
   #   room.participant_count
-  #   room.attendees[0].full_name
+  #   room.current_attendees[0].user_name
   #
   # The attributes changed are:
   # * <tt>participant_count</tt>
@@ -131,7 +131,7 @@ class BigbluebuttonRoom < ActiveRecord::Base
   # * <tt>has_been_forcibly_ended</tt>
   # * <tt>create_time</tt>
   # * <tt>end_time</tt>
-  # * <tt>attendees</tt> (array of <tt>BigbluebuttonAttendee</tt>)
+  # * <tt>current_attendees</tt> (array of <tt>BigbluebuttonAttendee</tt>)
   #
   # Triggers API call: <tt>getMeetingInfo</tt>.
   def fetch_meeting_info
@@ -144,12 +144,12 @@ class BigbluebuttonRoom < ActiveRecord::Base
       @running = response[:running]
       @has_been_forcibly_ended = response[:hasBeenForciblyEnded]
       @end_time = response[:endTime]
-      @attendees = []
+      @current_attendees = []
       if response[:attendees].present?
         response[:attendees].each do |att|
           attendee = BigbluebuttonAttendee.new
           attendee.from_hash(att)
-          @attendees << attendee
+          @current_attendees << attendee
         end
       end
 
@@ -187,7 +187,7 @@ class BigbluebuttonRoom < ActiveRecord::Base
     response = server.api.end_meeting(self.meetingid, self.moderator_api_password)
 
     # enqueue an update in the meeting to end it faster
-    Resque.enqueue(::BigbluebuttonMeetingUpdater, self.id)
+    Resque.enqueue(::BigbluebuttonMeetingUpdaterWorker, self.id)
 
     response
   end
@@ -224,7 +224,7 @@ class BigbluebuttonRoom < ActiveRecord::Base
 
         # enqueue an update in the meeting with a small delay we assume to be
         # enough for the user to fully join the meeting
-        Resque.enqueue(::BigbluebuttonMeetingUpdater, self.id, 10.seconds)
+        Resque.enqueue(::BigbluebuttonMeetingUpdaterWorker, self.id, 10.seconds)
       end
     end
 
@@ -297,7 +297,7 @@ class BigbluebuttonRoom < ActiveRecord::Base
   # if they are have all equal values.
   # From: http://alicebobandmallory.com/articles/2009/11/02/comparing-instance-variables-in-ruby
   def instance_variables_compare(o)
-    vars = [ :@running, :@participant_count, :@moderator_count, :@attendees,
+    vars = [ :@running, :@participant_count, :@moderator_count, :@current_attendees,
              :@has_been_forcibly_ended, :@end_time ]
     Hash[*vars.map { |v|
            self.instance_variable_get(v)!=o.instance_variable_get(v) ?
@@ -442,26 +442,31 @@ class BigbluebuttonRoom < ActiveRecord::Base
 
   # Sets all meetings related to this room as not running
   def finish_meetings
-    to_be_finished = BigbluebuttonMeeting.where(ended: false)
-      .where(room_id: self.id).count
+    to_be_finished = BigbluebuttonMeeting.where(ended: false, room_id: self.id).to_a
+    now = DateTime.now.strftime('%Q').to_i
 
     BigbluebuttonMeeting.where(ended: false)
       .where(room_id: self.id)
-      .update_all(running: false, ended: true)
+      .update_all(running: false, ended: true, finish_time: now)
 
     # in case there are inconsistent meetings marked as running
     # but that already ended
     BigbluebuttonMeeting.where(running: true, ended: true)
       .where(room_id: self.id)
-      .update_all(running: false, ended: true)
+      .update_all(running: false, ended: true, finish_time: now)
 
-    if to_be_finished > 0
+    if to_be_finished.count > 0
       # start trying to get the recording for this room
       # since we don't have a way to know exactly when a recording is done, we
       # have to keep polling the server for them
       # 3 times so it tries at: 4, 9, 14 and 19
-      # no point going more since there is a global synchronization process
-      Resque.enqueue_in(4.minutes, ::BigbluebuttonRecordingsForRoom, self.id, 3)
+      # no point trying more since there is a global synchronization process
+      Resque.enqueue_in(4.minutes, ::BigbluebuttonRecordingsForRoomWorker, self.id, 3)
+
+      # start trying to get stats for the meeting too
+      to_be_finished.each do |meeting|
+        Resque.enqueue_in(1.minute, ::BigbluebuttonGetStatsForMeetingWorker, meeting.id, 2)
+      end
     end
   end
 
@@ -572,7 +577,7 @@ class BigbluebuttonRoom < ActiveRecord::Base
     @running = false
     @has_been_forcibly_ended = false
     @end_time = nil
-    @attendees = []
+    @current_attendees = []
   end
 
   def internal_create_meeting(user=nil, user_opts={})

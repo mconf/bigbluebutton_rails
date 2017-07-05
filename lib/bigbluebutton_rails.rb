@@ -3,8 +3,6 @@ require 'browser'
 require 'resque'
 require 'resque-scheduler'
 
-require 'classes/bigbluebutton_attendee'
-
 require 'bigbluebutton_rails/rails'
 require 'bigbluebutton_rails/configuration'
 require 'bigbluebutton_rails/utils'
