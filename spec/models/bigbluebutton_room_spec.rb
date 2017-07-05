@@ -1645,16 +1645,26 @@ describe BigbluebuttonRoom do
 
     context "if there's a current meeting not running, ends it" do
       let!(:meeting) { FactoryGirl.create(:bigbluebutton_meeting, room: room, ended: false, running: false, create_time: room.create_time) }
-      before(:each) { room.finish_meetings }
+      let!(:now) { DateTime.now }
+      before(:each) {
+        DateTime.stub(:now).and_return(now)
+        room.finish_meetings
+      }
       it { meeting.reload.running.should be(false) }
       it { meeting.reload.ended.should be(true) }
+      it { meeting.reload.finish_time.should be(now.strftime("%Q").to_i) }
     end
 
     context "ends meetings are already ended but still set as running" do
       let!(:meeting) { FactoryGirl.create(:bigbluebutton_meeting, room: room, ended: true, running: true) }
-      before(:each) { room.finish_meetings }
+      let!(:now) { DateTime.now }
+      before(:each) {
+        DateTime.stub(:now).and_return(now)
+        room.finish_meetings
+      }
       it { meeting.reload.running.should be(false) }
       it { meeting.reload.ended.should be(true) }
+      it { meeting.reload.finish_time.should be(now.strftime("%Q").to_i) }
     end
 
     context "enqueues workers to fetch recordings and get stats" do

@@ -12,9 +12,16 @@ class BigbluebuttonGetStatsForMeetingWorker
     meeting = BigbluebuttonMeeting.find(meeting_id)
     if meeting.present?
       Rails.logger.info "BigbluebuttonGetStatsForMeetingWorker calling getStats for #{meeting.inspect}"
-      got_it = meeting.fetch_and_update_stats
+
+      if meeting.got_stats == 'yes'
+        Rails.logger.info "BigbluebuttonGetStatsForMeetingWorker already have stats, aborting"
+        got_it = true
+      else
+        got_it = meeting.fetch_and_update_stats
+      end
 
       if tries_left > 0 && !got_it
+        Rails.logger.info "BigbluebuttonGetStatsForMeetingWorker scheduling a worker to try again more #{tries_left - 1}x"
         Resque.enqueue_in(5.minute, ::BigbluebuttonGetStatsForMeetingWorker, meeting.id, tries_left - 1)
       end
     end

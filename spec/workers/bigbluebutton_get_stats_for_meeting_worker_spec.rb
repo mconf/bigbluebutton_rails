@@ -28,6 +28,16 @@ describe BigbluebuttonGetStatsForMeetingWorker do
       it { BigbluebuttonGetStatsForMeetingWorker.perform(meeting.id, 2) }
     end
 
+    context "if already have the stats" do
+      before {
+        meeting.update_attributes(got_stats: 'yes')
+        BigbluebuttonMeeting.stub(:find).and_return(meeting)
+        meeting.should_not_receive(:fetch_and_update_stats)
+        expect(Resque).not_to receive(:enqueue_in)
+      }
+      it { BigbluebuttonGetStatsForMeetingWorker.perform(meeting.id, 2) }
+    end
+
     context "if there are still tries left but already got the stats" do
       before {
         BigbluebuttonMeeting.stub(:find).and_return(meeting)

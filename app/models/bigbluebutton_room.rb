@@ -443,16 +443,17 @@ class BigbluebuttonRoom < ActiveRecord::Base
   # Sets all meetings related to this room as not running
   def finish_meetings
     to_be_finished = BigbluebuttonMeeting.where(ended: false, room_id: self.id).to_a
+    now = DateTime.now.strftime('%Q').to_i
 
     BigbluebuttonMeeting.where(ended: false)
       .where(room_id: self.id)
-      .update_all(running: false, ended: true)
+      .update_all(running: false, ended: true, finish_time: now)
 
     # in case there are inconsistent meetings marked as running
     # but that already ended
     BigbluebuttonMeeting.where(running: true, ended: true)
       .where(room_id: self.id)
-      .update_all(running: false, ended: true)
+      .update_all(running: false, ended: true, finish_time: now)
 
     if to_be_finished.count > 0
       # start trying to get the recording for this room
