@@ -24,7 +24,7 @@ group :test do
   gem "generator_spec"
   gem "rspec-rails", '~> 2.99.0'
   gem 'rspec-activemodel-mocks'
-  gem "bbbot-ruby", :git => "git://github.com/mconf/bbbot-ruby.git"
+  # gem "bbbot-ruby", :git => "git://github.com/mconf/bbbot-ruby.git"
   gem "capybara", "~> 2.2.0"
   gem "capybara-mechanize" # for remote requests
   gem "capybara-webkit" # best option found for js
