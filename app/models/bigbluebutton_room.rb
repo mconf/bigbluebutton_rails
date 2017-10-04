@@ -271,6 +271,8 @@ class BigbluebuttonRoom < ActiveRecord::Base
     opts.merge!({ createTime: self.create_time }) unless self.create_time.blank?
     opts.merge!({ userID: id }) unless id.blank?
 
+    opts.merge!(self.get_metadata_for_join(User.find_by(username: username)))
+
     self.join_url(username, role, nil, opts)
   end
 
@@ -655,6 +657,21 @@ class BigbluebuttonRoom < ActiveRecord::Base
     }
 
     dynamic_metadata = BigbluebuttonRails.configuration.get_dynamic_metadata.call(self)
+    unless dynamic_metadata.blank?
+      metadata = dynamic_metadata.inject(metadata) { |result, meta|
+        result["meta_#{meta[0]}"] = meta[1]; result
+      }
+    end
+
+    metadata
+  end
+
+  def get_metadata_for_join(user)
+    metadata = self.metadata.inject({}) { |result, meta|
+      result["meta_#{meta.name}"] = meta.content; result
+    }
+
+    dynamic_metadata = BigbluebuttonRails.configuration.get_dynamic_metadata_join.call(self, user)
     unless dynamic_metadata.blank?
       metadata = dynamic_metadata.inject(metadata) { |result, meta|
         result["meta_#{meta[0]}"] = meta[1]; result
