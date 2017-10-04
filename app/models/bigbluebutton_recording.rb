@@ -32,6 +32,21 @@ class BigbluebuttonRecording < ActiveRecord::Base
       .where("bigbluebutton_playback_types.default = ?", true).first
   end
 
+  # Returns the overall (i.e. for all recordings) average length of recordings in seconds
+  # Uses the length of the default playback format
+  def self.overall_average_length
+    avg = BigbluebuttonPlaybackFormat.joins(:playback_type)
+          .where("bigbluebutton_playback_types.default = ?", true).average(:length)
+    avg.nil? ? 0 : (avg.truncate(2) * 60)
+  end
+
+  # Returns the overall (i.e. for all recordings) average size of recordings in bytes
+  # Uses the length of the default playback format
+  def self.overall_average_size
+    avg = BigbluebuttonRecording.average(:size)
+    avg.nil? ? 0 : avg
+  end
+
   # Syncs the recordings in the db with the array of recordings in 'recordings',
   # as received from BigBlueButtonApi#get_recordings.
   # Will add new recordings that are not in the db yet and update the ones that
