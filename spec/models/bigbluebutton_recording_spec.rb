@@ -66,6 +66,38 @@ describe BigbluebuttonRecording do
     end
   end
 
+  describe ".overall_average_length" do
+    context "when there's no recording" do
+      it { BigbluebuttonRecording.overall_average_length.should eql(0) }
+    end
+
+    context "when there are a few recordings" do
+      let!(:recording1) { FactoryGirl.create(:bigbluebutton_recording) }
+      let!(:recording2) { FactoryGirl.create(:bigbluebutton_recording) }
+      let!(:type_default) { FactoryGirl.create(:bigbluebutton_playback_type, default: true) }
+      let!(:type_other) { FactoryGirl.create(:bigbluebutton_playback_type, default: false) }
+      let!(:format_other_rec1) { FactoryGirl.create(:bigbluebutton_playback_format, recording: recording1, playback_type: type_other, length: 50) }
+      let!(:format_default_rec1) { FactoryGirl.create(:bigbluebutton_playback_format, recording: recording1, playback_type: type_default, length: 100) }
+      let!(:format_other_rec2) { FactoryGirl.create(:bigbluebutton_playback_format, recording: recording2, playback_type: type_other, length: 50) }
+      let!(:format_default_rec2) { FactoryGirl.create(:bigbluebutton_playback_format, recording: recording2, playback_type: type_default, length: 100) }
+
+      it { BigbluebuttonRecording.overall_average_length.should eql(6000.0) }
+    end
+  end
+
+  describe ".overall_average_size" do
+    context "when there's no recording" do
+      it { BigbluebuttonRecording.overall_average_size.should eql(0) }
+    end
+
+    context "when there are a few recordings" do
+      let!(:recording1) { FactoryGirl.create(:bigbluebutton_recording, size: 100000000) } # 100 MB
+      let!(:recording2) { FactoryGirl.create(:bigbluebutton_recording, size: 200000000) } # 200 MB
+
+      it { BigbluebuttonRecording.overall_average_size.should eql(150000000) }
+    end
+  end
+
   describe ".sync" do
     let(:data) {
       [
