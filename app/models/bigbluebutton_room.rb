@@ -272,11 +272,7 @@ class BigbluebuttonRoom < ActiveRecord::Base
     opts.merge!({ userID: id }) unless id.blank?
     opts.merge!({ record: User.find_by(id: id).can_record })
 
-    puts "PARAMETERIZED_JOIN_URL"
-
     opts.merge!(self.get_metadata_for_join(User.find_by(id: id)))
-
-    puts self.join_url(username, role, nil, opts)
 
     self.join_url(username, role, nil, opts)
   end
