@@ -17,6 +17,7 @@ module BigbluebuttonRails
     attr_accessor :match_room_recording
     attr_accessor :get_invitation_url
     attr_accessor :get_dynamic_metadata
+    attr_accessor :get_dynamic_metadata_join
 
     def initialize
       @controllers = {

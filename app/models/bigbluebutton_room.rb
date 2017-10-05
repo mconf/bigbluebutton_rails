@@ -270,8 +270,13 @@ class BigbluebuttonRoom < ActiveRecord::Base
     # set the create time and the user id, if they exist
     opts.merge!({ createTime: self.create_time }) unless self.create_time.blank?
     opts.merge!({ userID: id }) unless id.blank?
+    opts.merge!({ record: User.find_by(id: id).can_record })
 
-    opts.merge!(self.get_metadata_for_join(User.find_by(username: username)))
+    puts "PARAMETERIZED_JOIN_URL"
+
+    opts.merge!(self.get_metadata_for_join(User.find_by(id: id)))
+
+    puts self.join_url(username, role, nil, opts)
 
     self.join_url(username, role, nil, opts)
   end
