@@ -110,6 +110,13 @@ module BigbluebuttonRails
           render 'bigbluebutton/api/error'
         end
 
+        def error_forbidden
+          msg = t('bigbluebutton_rails.api.rooms.forbidden.msg')
+          title = t('bigbluebutton_rails.api.rooms.forbidden.title')
+          @errors = [BigbluebuttonRails::APIError.new(msg, 403, title)]
+          render 'bigbluebutton/api/error'
+        end
+
         def error_invalid_key
           msg = t('bigbluebutton_rails.api.rooms.invalid_key.msg')
           title = t('bigbluebutton_rails.api.rooms.invalid_key.title')
