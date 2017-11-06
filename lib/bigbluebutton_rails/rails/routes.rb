@@ -81,7 +81,7 @@ module ActionDispatch::Routing
 
     def bigbluebutton_api_routes(api_scope='/api/conference')
       scope api_scope do
-        resources :rooms do
+        resources :rooms, only: [] do
           collection do
             get :index, to: 'bigbluebutton/api/rooms#index'
           end
