@@ -324,61 +324,37 @@ working, check out the test application at `spec/rails_app/`!
 
 ## Contributing/Development
 
-Fork this repository, clone your fork and start by installing the
-dependencies:
-
-    bundle install
-
-Note: if you're getting an error installing `capybara-webkit`, most likely you
-need to install QT, see:
-https://github.com/thoughtbot/capybara-webkit/wiki/Installing-Qt-and-compiling
--capybara-webkit
-
-First copy `spec/rails_app/config/database.yml.example` to
+To setup an environment, first copy `spec/rails_app/config/database.yml.example` to
 `spec/rails_app/config/database.yml`. It uses MySQL since this is the database
-recommended for the applications that use this gem. You have to set the
-appropriate password for your MySQL user.
+recommended for the applications that use this gem.
 
-Save `spec/rails_app/features/config.yml.example` as
-`spec/rails_app/features/config.yml` and edit it to set values for an existent
-BigBlueButton server. You will need it to run the integration tests. For more
-information see the page
-[Testing](https://github.com/mconf/bigbluebutton_rails/wiki/Testing) in our
-wiki.
+You can start the example application (from `spec/rails_app`) with:
 
-Prepare the `rails_app` used for tests:
+    docker-compose up dev
 
-    rake rails_app:install
-    rake rails_app:db SERVER=my-server # select a server you defined in 'config.yml'
-    rake rails_app:populate            # to create fake data, optional
+It will probably not work straight away, because you need to setup the application first.
+Do so with:
 
-Run the tests:
+    docker-compose run dev rake rails_app:install
+    docker-compose run dev rake rails_app:db
 
-    rake spec
-    rake cucumber SERVER=my-server
+    # optionally:
+    docker-compose run dev rake rails_app:populate # to create fake data
 
-Or simply:
+Then try the `up dev` command again and it should open up a server. Access `localhost:3000`
+to see it.
 
-    rake SERVER=my-server
+To run the tests the process is exactly the same, just replace the `dev` target with `test`:
+
+    docker-compose up test
 
 If you're adding migrations to the gem, test them with:
 
-    rake spec:migrations
-
-Note: If you don't set the SERVER variable, the first server in `config.yml`
-will be used.
-
-You can also start the test application and navigate to `localhost:3000` to
-check it:
-
-    cd spec/rails_app/
-    rails server
+    docker-compose run test rake spec:migrations
 
 If you need to keep track of meetings, run the resque workers with:
 
-    rake resque:work QUEUE='bigbluebutton_rails'
-
-Develop. :)
+    docker-compose run dev rake resque:work QUEUE='bigbluebutton_rails'
 
 If you want your code to be integrated in this repository, please fork it,
 create a branch with your modifications and submit a pull request.
@@ -390,7 +366,7 @@ create a branch with your modifications and submit a pull request.
 
 Coverage is analyzed by default when you run:
 
-    rake spec
+    docker-compose up test
 
 Run it and look at the file `coverage/index.html`.
 
@@ -401,7 +377,7 @@ the code.
 
 Run:
 
-    rake best_practices
+    docker-compose run dev rake best_practices
 
 And look at the file `rails_best_practices_output.html` to see the tips.
 
