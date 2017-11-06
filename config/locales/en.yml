@@ -69,7 +69,10 @@ en:
       bigbluebutton_server_config: "Web Conference Server Configurations"
   bigbluebutton_rails:
     api:
-      rooms:
+      errors:
+        forbidden:
+          msg: "You are not authorized to make this API call"
+          title: "Forbidden"
         invalid_pagination:
           msg: "One or more pagination parameters are wrong"
           title: "Invalid pagination parameters"

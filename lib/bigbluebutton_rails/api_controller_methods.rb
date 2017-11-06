@@ -90,43 +90,43 @@ module BigbluebuttonRails
         end
 
         def error_room_not_found
-          msg = t('bigbluebutton_rails.api.rooms.room_not_found.msg')
-          title = t('bigbluebutton_rails.api.rooms.room_not_found.title')
+          msg = t('bigbluebutton_rails.api.errors.room_not_found.msg')
+          title = t('bigbluebutton_rails.api.errors.room_not_found.title')
           @errors = [BigbluebuttonRails::APIError.new(msg, 404, title)]
           render 'bigbluebutton/api/error'
         end
 
         def error_room_not_running
-          msg = t('bigbluebutton_rails.api.rooms.room_not_running.msg')
-          title = t('bigbluebutton_rails.api.rooms.room_not_running.title')
+          msg = t('bigbluebutton_rails.api.errors.room_not_running.msg')
+          title = t('bigbluebutton_rails.api.errors.room_not_running.title')
           @errors = [BigbluebuttonRails::APIError.new(msg, 400, title)]
           render 'bigbluebutton/api/error'
         end
 
         def error_missing_params
-          msg = t('bigbluebutton_rails.api.rooms.missing_params.msg')
-          title = t('bigbluebutton_rails.api.rooms.missing_params.title')
+          msg = t('bigbluebutton_rails.api.errors.missing_params.msg')
+          title = t('bigbluebutton_rails.api.errors.missing_params.title')
           @errors = [BigbluebuttonRails::APIError.new(msg, 400, title)]
           render 'bigbluebutton/api/error'
         end
 
         def error_forbidden
-          msg = t('bigbluebutton_rails.api.rooms.forbidden.msg')
-          title = t('bigbluebutton_rails.api.rooms.forbidden.title')
+          msg = t('bigbluebutton_rails.api.errors.forbidden.msg')
+          title = t('bigbluebutton_rails.api.errors.forbidden.title')
           @errors = [BigbluebuttonRails::APIError.new(msg, 403, title)]
           render 'bigbluebutton/api/error'
         end
 
         def error_invalid_key
-          msg = t('bigbluebutton_rails.api.rooms.invalid_key.msg')
-          title = t('bigbluebutton_rails.api.rooms.invalid_key.title')
+          msg = t('bigbluebutton_rails.api.errors.invalid_key.msg')
+          title = t('bigbluebutton_rails.api.errors.invalid_key.title')
           @errors = [BigbluebuttonRails::APIError.new(msg, 403, title)]
           render 'bigbluebutton/api/error'
         end
 
         def error_invalid_pagination
-          msg = t('bigbluebutton_rails.api.rooms.invalid_pagination.msg')
-          title = t('bigbluebutton_rails.api.rooms.invalid_pagination.title')
+          msg = t('bigbluebutton_rails.api.errors.invalid_pagination.msg')
+          title = t('bigbluebutton_rails.api.errors.invalid_pagination.title')
           @errors = [BigbluebuttonRails::APIError.new(msg, 400, title)]
           render 'bigbluebutton/api/error'
         end

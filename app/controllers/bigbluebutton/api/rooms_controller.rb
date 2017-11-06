@@ -5,7 +5,7 @@ class Bigbluebutton::Api::RoomsController < ApplicationController
   include BigbluebuttonRails::APIControllerMethods
 
   skip_before_filter :verify_authenticity_token
-  # before_filter :authenticate_api
+  before_filter :authenticate_api
 
   before_filter :validate_pagination, only: :index
 
@@ -109,6 +109,9 @@ class Bigbluebutton::Api::RoomsController < ApplicationController
     authorization = request.headers["Authorization"]
     secret = authorization.gsub(/^Bearer /, '') if authorization.present?
     server_secret = BigbluebuttonRails.configuration.api_secret
-    error_forbidden if server_secret.blank? || secret.blank? || secret != server_secret
+    if server_secret != '' &&
+       (server_secret.nil? || secret.blank? || secret != server_secret)
+      error_forbidden
+    end
   end
 end

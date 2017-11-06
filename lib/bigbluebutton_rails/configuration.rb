@@ -75,7 +75,8 @@ module BigbluebuttonRails
       # "123123123123" is the secret set in `api_secret`.
       # Notice that this header has the secret in clear text in the HTTP request, so
       # only use it if your application is hosted with HTTPS.
-      # Leaving it as nil with deny all API requests.
+      # Set it to an empty string to disable authentication. Set it to nil to deny all
+      # requests (disable the API).
       @api_secret = nil
     end
 
