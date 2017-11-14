@@ -1,6 +1,6 @@
 # Change Log
 
-## [2.2.0] - _Unreleased_
+## [2.3.0] - _Unreleased_
 
 * [#136] Improve matching between recordings and meetings and migrate old recordings to
   always (when possible) have a meeting associated.
@@ -9,6 +9,28 @@
 * Fix setting the `recorded` attributes in newly created meetings, it was always using the
   attributes from model, without considering that it is possible to override these attributes when
   making a "create" call (which is exactly what Mconf-Web does).
+
+
+## [2.2.0] - 2017-10-04
+
+* Make only description editable in recordings, since all other attributes are taken from
+  the server and editing them won't change them in the server.
+* Fix possible error when joining as guest but with permissions to create the room.
+* Add action "check" to servers, redirects to the server's `/check`, an optional module in
+  BigBlueButton.
+* Remove db association between servers and rooms/meetings. Now servers are selected on the
+  fly for a room that needs one. There's no association between them in the database anymore.
+* Destroy recordings when their server is removed.
+* Don't require `Server#url` and `Server#name` to be unique.
+* Add `guest_support`, originally in Mconf-Web only. This feature is optional and disabled
+  by default. Only works in Mconf-Live at this point (future feature on BigBlueButton).
+* Fetch recordings of a server right after it is created.
+* Improve how the gem is configured, add BigbluebuttonRails::Configuration. Makes it clearer
+  how customizable variables and methods can be customized.
+* Create a config for servers not in the db yet, so that we can fetch configs for servers
+  not in the database.
+* Update how the welcome message is set when there's a dial number set.
+* Add helper methods to BigbluebuttonRecording. Used to calculate size and length of recordings.
 
 
 ## [2.1.0] - 2016-07-22
