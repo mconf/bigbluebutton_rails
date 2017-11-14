@@ -28,12 +28,12 @@ class BigbluebuttonServer < ActiveRecord::Base
             :format => { :with => /http[s]?:\/\/.*\/bigbluebutton\/api/,
                          :message => I18n.t('bigbluebutton_rails.servers.errors.url_format') }
 
-  validates :param,
+  validates :slug,
             :presence => true,
             :uniqueness => true,
             :length => { :minimum => 3 },
             :format => { :with => /\A[a-zA-Z\d_]+[a-zA-Z\d_-]*[a-zA-Z\d_]+\z/,
-                         :message => I18n.t('bigbluebutton_rails.servers.errors.param_format') }
+                         :message => I18n.t('bigbluebutton_rails.servers.errors.slug_format') }
 
   validates :secret,
             :presence => true,
@@ -47,7 +47,7 @@ class BigbluebuttonServer < ActiveRecord::Base
   attr_reader :meetings
 
   after_initialize :init
-  before_validation :set_param
+  before_validation :set_slug
 
   after_create :create_config
   after_create :update_config
@@ -160,7 +160,7 @@ class BigbluebuttonServer < ActiveRecord::Base
   end
 
   def to_param
-    self.param
+    self.slug
   end
 
   def set_api_version_from_server
@@ -189,10 +189,10 @@ class BigbluebuttonServer < ActiveRecord::Base
     @meetings = []
   end
 
-  # if :param wasn't set, sets it as :name downcase and parameterized
-  def set_param
-    if self.param.blank?
-      self.param = self.name.parameterize.downcase unless self.name.nil?
+  # if :slug wasn't set, sets it as :name downcase and parameterized
+  def set_slug
+    if self.slug.blank?
+      self.slug = self.name.parameterize.downcase unless self.name.nil?
     end
   end
 

@@ -63,7 +63,7 @@ class Bigbluebutton::Api::RoomsController < ApplicationController
   protected
 
   def find_room
-    @room ||= BigbluebuttonRoom.find_by(param: params[:id])
+    @room ||= BigbluebuttonRoom.find_by(slug: params[:id])
     error_room_not_found if @room.nil?
   end
 

@@ -40,9 +40,9 @@ describe BigbluebuttonRoom do
   it { should validate_presence_of(:name) }
   it { should ensure_length_of(:name).is_at_least(1).is_at_most(150) }
 
-  it { should validate_presence_of(:param) }
-  it { should validate_uniqueness_of(:param) }
-  it { should ensure_length_of(:param).is_at_least(1) }
+  it { should validate_presence_of(:slug) }
+  it { should validate_uniqueness_of(:slug) }
+  it { should ensure_length_of(:slug).is_at_least(1) }
 
   it { should be_boolean(:private) }
 
@@ -74,7 +74,7 @@ describe BigbluebuttonRoom do
     it { should respond_to(:to_param) }
     it {
       r = FactoryGirl.create(:bigbluebutton_room)
-      r.to_param.should be(r.param)
+      r.to_param.should be(r.slug)
     }
   end
 
@@ -110,9 +110,9 @@ describe BigbluebuttonRoom do
   describe ".search_by_terms" do
     let!(:rooms) {
       [
-        FactoryGirl.create(:bigbluebutton_room, name: "La Lo", param: "lalo-1"),
-        FactoryGirl.create(:bigbluebutton_room, name: "La Le", param: "lale-2"),
-        FactoryGirl.create(:bigbluebutton_room, name: "Li Lo", param: "lilo")
+        FactoryGirl.create(:bigbluebutton_room, name: "La Lo", slug: "lalo-1"),
+        FactoryGirl.create(:bigbluebutton_room, name: "La Le", slug: "lale-2"),
+        FactoryGirl.create(:bigbluebutton_room, name: "Li Lo", slug: "lilo")
       ]
     }
     let(:subject) { BigbluebuttonRoom.search_by_terms(terms) }
@@ -155,7 +155,7 @@ describe BigbluebuttonRoom do
       let(:terms) { ['abcdef'] }
       before {
         rooms[1].update_attributes(name: 'abcdef')
-        rooms[2].update_attributes(param: 'abcdef')
+        rooms[2].update_attributes(slug: 'abcdef')
       }
       it { subject.count.should be(2) }
       it { subject.should include(rooms[1], rooms[2]) }
@@ -277,40 +277,38 @@ describe BigbluebuttonRoom do
     end
   end
 
-  context "#param format" do
-    let(:msg) { I18n.t('bigbluebutton_rails.rooms.errors.param_format') }
-    it { should_not allow_value("123 321").for(:param).with_message(msg) }
-    it { should_not allow_value("").for(:param).with_message(msg) }
-    it { should_not allow_value("ab@c").for(:param).with_message(msg) }
-    it { should_not allow_value("ab#c").for(:param).with_message(msg) }
-    it { should_not allow_value("ab$c").for(:param).with_message(msg) }
-    it { should_not allow_value("ab%c").for(:param).with_message(msg) }
-    it { should_not allow_value("ábcd").for(:param).with_message(msg) }
-    it { should_not allow_value("-abc").for(:param).with_message(msg) }
-    it { should_not allow_value("abc-").for(:param).with_message(msg) }
-    it { should_not allow_value("-").for(:param).with_message(msg) }
-    it { should allow_value("_abc").for(:param).with_message(msg) }
-    it { should allow_value("abc_").for(:param).with_message(msg) }
-    it { should allow_value("abc").for(:param).with_message(msg) }
-    it { should allow_value("123").for(:param).with_message(msg) }
-    it { should allow_value("1").for(:param).with_message(msg) }
-    it { should allow_value("a").for(:param).with_message(msg) }
-    it { should allow_value("_").for(:param).with_message(msg) }
-    it { should allow_value("abc-123_d5").for(:param).with_message(msg) }
+  context "#slug format" do
+    let(:msg) { I18n.t('bigbluebutton_rails.rooms.errors.slug_format') }
+    it { should_not allow_value("123 321").for(:slug).with_message(msg) }
+    it { should_not allow_value("").for(:slug).with_message(msg) }
+    it { should_not allow_value("ab@c").for(:slug).with_message(msg) }
+    it { should_not allow_value("ab#c").for(:slug).with_message(msg) }
+    it { should_not allow_value("ab$c").for(:slug).with_message(msg) }
+    it { should_not allow_value("ab%c").for(:slug).with_message(msg) }
+    it { should_not allow_value("ábcd").for(:slug).with_message(msg) }
+    it { should_not allow_value("-abc").for(:slug).with_message(msg) }
+    it { should_not allow_value("abc-").for(:slug).with_message(msg) }
+    it { should_not allow_value("-").for(:slug).with_message(msg) }
+    it { should allow_value("_abc").for(:slug).with_message(msg) }
+    it { should allow_value("abc_").for(:slug).with_message(msg) }
+    it { should allow_value("abc").for(:slug).with_message(msg) }
+    it { should allow_value("123").for(:slug).with_message(msg) }
+    it { should allow_value("1").for(:slug).with_message(msg) }
+    it { should allow_value("a").for(:slug).with_message(msg) }
+    it { should allow_value("_").for(:slug).with_message(msg) }
+    it { should allow_value("abc-123_d5").for(:slug).with_message(msg) }
   end
 
-  context "sets param as the downcased parameterized name if param is" do
+  context "sets slug as the downcased parameterized name if slug is" do
     after :each do
       @room.save.should be_truthy
-      @room.param.should == @room.name.downcase.parameterize
+      @room.slug.should == @room.name.downcase.parameterize
     end
     it "nil" do
-      @room = FactoryGirl.build(:bigbluebutton_room, :param => nil,
-                            :name => "-My Name@ _Is Odd_-")
+      @room = FactoryGirl.build(:bigbluebutton_room, slug: nil, name: "-My Name@ _Is Odd_-")
     end
     it "empty" do
-      @room = FactoryGirl.build(:bigbluebutton_room, :param => "",
-                            :name => "-My Name@ _Is Odd_-")
+      @room = FactoryGirl.build(:bigbluebutton_room, slug: "", name: "-My Name@ _Is Odd_-")
     end
   end
 

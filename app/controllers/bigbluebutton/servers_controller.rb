@@ -140,7 +140,7 @@ class Bigbluebutton::ServersController < ApplicationController
   protected
 
   def find_server
-    @server ||= BigbluebuttonServer.find_by_param(params[:id])
+    @server ||= BigbluebuttonServer.find_by(slug: params[:id])
   end
 
   def publish_unpublish(ids, publish)
@@ -175,7 +175,7 @@ class Bigbluebutton::ServersController < ApplicationController
   end
 
   def server_allowed_params
-    [ :name, :url, :secret, :param ]
+    [ :name, :url, :secret, :slug ]
   end
 
 end

@@ -46,16 +46,16 @@ en:
         moderator_key: "Key for moderators"
         moderator_only_message: "Message to be shown to moderators only"
         name: Name
-        param: "String ID"
         private: Private
         presenter_share_only: "Only presenter shares audio and video"
         record: Record
+        slug: "String ID"
         voice_bridge: "Voice Bridge"
         welcome_msg: "Welcome Message"
       bigbluebutton_server:
         name: Name
-        param: "String ID"
         secret: "Shared Secret"
+        slug: "String ID"
         url: URL
         version: Version
       bigbluebutton_server_config:
@@ -136,9 +136,9 @@ en:
           wrong_params: "Wrong params in your request."
         generate_dial_number:
           not_unique: "We're sorry, but it wasn't possible to generate a unique dial number for this room. You can either try again or manually set a dial number."
-        param_format: "can only use letters, numbers and the symbols \"-\" or \"_\" (not at the begin or end)"
         server:
           nil: "Your room must be associated to a server to execute this operation."
+        slug_format: "can only use letters, numbers and the symbols \"-\" or \"_\" (not at the begin or end)"
       notice:
         create:
           failure: "Your room could not be created."
@@ -158,7 +158,7 @@ en:
           success: "Your room was successfully updated."
     servers:
       errors:
-        param_format: "you can only use letters, numbers and the symbols \"-\" or \"_\" (not at the begin or end)"
+        slug_format: "you can only use letters, numbers and the symbols \"-\" or \"_\" (not at the begin or end)"
         url_format: "should use the pattern http://<server>/bigbluebutton/api"
       notice:
         create:

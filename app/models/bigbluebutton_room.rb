@@ -47,12 +47,12 @@ class BigbluebuttonRoom < ActiveRecord::Base
     :presence => true,
     :numericality => { :only_integer => true, :greater_than_or_equal_to => 0 }
 
-  validates :param,
+  validates :slug,
             :presence => true,
             :uniqueness => true,
             :length => { :minimum => 1 },
             :format => { :with => /\A([a-zA-Z\d_]|[a-zA-Z\d_]+[a-zA-Z\d_-]*[a-zA-Z\d_]+)\z/,
-                         :message => I18n.t('bigbluebutton_rails.rooms.errors.param_format') }
+                         :message => I18n.t('bigbluebutton_rails.rooms.errors.slug_format') }
 
   # Passwords are 16 character strings
   # See http://groups.google.com/group/bigbluebutton-dev/browse_thread/thread/9be5aae1648bcab?pli=1
@@ -68,7 +68,7 @@ class BigbluebuttonRoom < ActiveRecord::Base
 
   after_initialize :init
   after_create :create_room_options
-  before_validation :set_param
+  before_validation :set_slug
   before_validation :set_keys
 
   # the full logout_url used when logout_url is a relative path
@@ -94,12 +94,12 @@ class BigbluebuttonRoom < ActiveRecord::Base
       query_orders = []
 
       words.reject(&:blank?).each do |word|
-        str  = "name LIKE ? OR param LIKE ?"
+        str  = "name LIKE ? OR slug LIKE ?"
         query_strs << str
         query_params += ["%#{word}%", "%#{word}%"]
         query_orders += [
           "CASE WHEN name LIKE '%#{word}%' THEN 1 ELSE 0 END + \
-           CASE WHEN param LIKE '%#{word}%' THEN 1 ELSE 0 END"
+           CASE WHEN slug LIKE '%#{word}%' THEN 1 ELSE 0 END"
         ]
       end
       where(query_strs.join(' OR '), *query_params.flatten).order(query_orders.join(' + ') + " DESC")
@@ -313,7 +313,7 @@ class BigbluebuttonRoom < ActiveRecord::Base
   end
 
   def to_param
-    self.param
+    self.slug
   end
 
   # The create logic.
@@ -634,10 +634,10 @@ class BigbluebuttonRoom < ActiveRecord::Base
     end
   end
 
-  # if :param wasn't set, sets it as :name downcase and parameterized
-  def set_param
-    if self.param.blank?
-      self.param = self.name.parameterize.downcase unless self.name.nil?
+  # if :slug wasn't set, sets it as :name downcase and parameterized
+  def set_slug
+    if self.slug.blank?
+      self.slug = self.name.parameterize.downcase unless self.name.nil?
     end
   end
 

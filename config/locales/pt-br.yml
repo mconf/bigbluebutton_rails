@@ -46,16 +46,16 @@ pt-br:
         moderator_key: "Chave para moderadores"
         moderator_only_message: "Mensagem mostrada somente aos moderadores"
         name: Nome
-        param: Identificador
         private: Privada
         presenter_share_only: "Somente apresentador compartilha áudio e vídeo"
         record: Gravar
+        slug: Identificador
         voice_bridge: "Voice Bridge"
         welcome_msg: "Mensagem de boas-vindas"
       bigbluebutton_server:
         name: Nome
-        param: Identificador
         secret: "Chave de segurança"
+        slug: Identificador
         url: URL
         version: Versão
       bigbluebutton_server_config:
@@ -116,9 +116,9 @@ pt-br:
           wrong_params: "Parâmetros errados na sua requisição."
         generate_dial_number:
           not_unique: "Desculpe, mas não foi possível gerar um número de discagem único. Você pode tentar novamente ou então atribuir um número manualmente."
-        param_format: "você pode usar apenas letras, números e os símbolos \"-\" ou \"_\" (não no começo ou fim)"
         server:
           nil: "Sua sala deve ser associada a um servidor para executar esta operação."
+        slug_format: "você pode usar apenas letras, números e os símbolos \"-\" ou \"_\" (não no começo ou fim)"
       notice:
         create:
           failure: "Sua sala não pôde ser criada."
@@ -138,7 +138,7 @@ pt-br:
           success: "Sua sala foi atualizada com sucesso."
     servers:
       errors:
-        param_format: "você pode usar apenas letras, números e os símbolos \"-\" ou \"_\" (não no começo ou fim)"
+        slug_format: "você pode usar apenas letras, números e os símbolos \"-\" ou \"_\" (não no começo ou fim)"
         url_format: "deve utilizar o padrão http://<servidor>/bigbluebutton/api"
       notice:
         create:

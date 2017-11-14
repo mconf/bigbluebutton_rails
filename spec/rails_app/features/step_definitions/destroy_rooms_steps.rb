@@ -12,6 +12,6 @@ When /^the removed room should not be listed$/i do
   doesnt_have_content(@room.attendee_key)
   doesnt_have_content(@room.moderator_key)
   doesnt_have_content(@room.voice_bridge)
-  doesnt_have_content(@room.param)
+  doesnt_have_content(@room.slug)
 end
 

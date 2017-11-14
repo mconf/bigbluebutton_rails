@@ -6,7 +6,7 @@ class CreateBigbluebuttonRails < ActiveRecord::Migration
       t.string :url
       t.string :secret
       t.string :version
-      t.string :param
+      t.string :slug
       t.timestamps
     end
 
@@ -24,7 +24,7 @@ class CreateBigbluebuttonRails < ActiveRecord::Migration
       t.integer :max_participants
       t.boolean :private, :default => false
       t.boolean :external, :default => false
-      t.string :param
+      t.string :slug
       t.boolean :record_meeting, :default => false
       t.integer :duration, :default => 0
       t.string :attendee_api_password
