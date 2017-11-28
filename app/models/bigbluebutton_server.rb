@@ -78,7 +78,7 @@ class BigbluebuttonServer < ActiveRecord::Base
 
     version = self.version
     version = set_api_version_from_server if version.blank?
-    @api = BigBlueButton::BigBlueButtonApi.new(self.url, self.secret, version.to_s, true)
+    @api = BigBlueButton::BigBlueButtonApi.new(self.url, self.secret, version.to_s, false)
   end
 
   # Fetches the meetings currently created in the server (running or not).
