@@ -18,11 +18,11 @@ describe BigbluebuttonServer do
   it { should validate_presence_of(:name) }
   it { should validate_presence_of(:url) }
   it { should validate_presence_of(:secret) }
-  it { should validate_presence_of(:param) }
+  it { should validate_presence_of(:slug) }
 
   context "uniqueness of" do
     before(:each) { FactoryGirl.create(:bigbluebutton_server) }
-    it { should validate_uniqueness_of(:param) }
+    it { should validate_uniqueness_of(:slug) }
   end
 
   it "has associated recordings" do
@@ -52,13 +52,13 @@ describe BigbluebuttonServer do
   it { should ensure_length_of(:name).is_at_least(1).is_at_most(500) }
   it { should ensure_length_of(:url).is_at_most(500) }
   it { should ensure_length_of(:secret).is_at_least(1).is_at_most(500) }
-  it { should ensure_length_of(:param).is_at_least(3) }
+  it { should ensure_length_of(:slug).is_at_least(3) }
 
   context ".to_param" do
     it { should respond_to(:to_param) }
     it {
       s = FactoryGirl.create(:bigbluebutton_server)
-      s.to_param.should be(s.param)
+      s.to_param.should be(s.slug)
     }
   end
 
@@ -80,37 +80,35 @@ describe BigbluebuttonServer do
     it { should_not allow_value('0.7').for(:version) }
   end
 
-  context "param format" do
-    let(:msg) { I18n.t('bigbluebutton_rails.servers.errors.param_format') }
-    it { should_not allow_value("123 321").for(:param).with_message(msg) }
-    it { should_not allow_value("").for(:param).with_message(msg) }
-    it { should_not allow_value("ab@c").for(:param).with_message(msg) }
-    it { should_not allow_value("ab#c").for(:param).with_message(msg) }
-    it { should_not allow_value("ab$c").for(:param).with_message(msg) }
-    it { should_not allow_value("ab%c").for(:param).with_message(msg) }
-    it { should_not allow_value("ábcd").for(:param).with_message(msg) }
-    it { should_not allow_value("-abc").for(:param).with_message(msg) }
-    it { should_not allow_value("abc-").for(:param).with_message(msg) }
-    it { should_not allow_value("-").for(:param).with_message(msg) }
-    it { should allow_value("_abc").for(:param).with_message(msg) }
-    it { should allow_value("abc_").for(:param).with_message(msg) }
-    it { should allow_value("abc").for(:param).with_message(msg) }
-    it { should allow_value("123").for(:param).with_message(msg) }
-    it { should allow_value("abc-123_d5").for(:param).with_message(msg) }
+  context "slug format" do
+    let(:msg) { I18n.t('bigbluebutton_rails.servers.errors.slug_format') }
+    it { should_not allow_value("123 321").for(:slug).with_message(msg) }
+    it { should_not allow_value("").for(:slug).with_message(msg) }
+    it { should_not allow_value("ab@c").for(:slug).with_message(msg) }
+    it { should_not allow_value("ab#c").for(:slug).with_message(msg) }
+    it { should_not allow_value("ab$c").for(:slug).with_message(msg) }
+    it { should_not allow_value("ab%c").for(:slug).with_message(msg) }
+    it { should_not allow_value("ábcd").for(:slug).with_message(msg) }
+    it { should_not allow_value("-abc").for(:slug).with_message(msg) }
+    it { should_not allow_value("abc-").for(:slug).with_message(msg) }
+    it { should_not allow_value("-").for(:slug).with_message(msg) }
+    it { should allow_value("_abc").for(:slug).with_message(msg) }
+    it { should allow_value("abc_").for(:slug).with_message(msg) }
+    it { should allow_value("abc").for(:slug).with_message(msg) }
+    it { should allow_value("123").for(:slug).with_message(msg) }
+    it { should allow_value("abc-123_d5").for(:slug).with_message(msg) }
   end
 
   context "sets param as the downcased parameterized name if param is" do
     after :each do
       @server.save.should be(true)
-      @server.param.should == @server.name.downcase.parameterize
+      @server.slug.should == @server.name.downcase.parameterize
     end
     it "nil" do
-      @server = FactoryGirl.build(:bigbluebutton_server, :param => nil,
-                              :name => "-My Name@ _Is Odd_-")
+      @server = FactoryGirl.build(:bigbluebutton_server, slug: nil, name: "-My Name@ _Is Odd_-")
     end
     it "empty" do
-      @server = FactoryGirl.build(:bigbluebutton_server, :param => "",
-                              :name => "-My Name@ _Is Odd_-")
+      @server = FactoryGirl.build(:bigbluebutton_server, slug: "", name: "-My Name@ _Is Odd_-")
     end
   end
 

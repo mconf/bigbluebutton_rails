@@ -40,9 +40,9 @@ describe BigbluebuttonRoom do
   it { should validate_presence_of(:name) }
   it { should ensure_length_of(:name).is_at_least(1).is_at_most(150) }
 
-  it { should validate_presence_of(:param) }
-  it { should validate_uniqueness_of(:param) }
-  it { should ensure_length_of(:param).is_at_least(1) }
+  it { should validate_presence_of(:slug) }
+  it { should validate_uniqueness_of(:slug) }
+  it { should ensure_length_of(:slug).is_at_least(1) }
 
   it { should be_boolean(:private) }
 
@@ -63,7 +63,7 @@ describe BigbluebuttonRoom do
   it { should accept_nested_attributes_for(:metadata).allow_destroy(true) }
 
   # attr_accessors
-  [:running, :participant_count, :moderator_count, :attendees,
+  [:running, :participant_count, :moderator_count, :current_attendees,
    :has_been_forcibly_ended, :create_time, :end_time, :external,
    :request_headers, :record_meeting, :duration].each do |attr|
     it { should respond_to(attr) }
@@ -74,7 +74,7 @@ describe BigbluebuttonRoom do
     it { should respond_to(:to_param) }
     it {
       r = FactoryGirl.create(:bigbluebutton_room)
-      r.to_param.should be(r.param)
+      r.to_param.should be(r.slug)
     }
   end
 
@@ -110,9 +110,9 @@ describe BigbluebuttonRoom do
   describe ".search_by_terms" do
     let!(:rooms) {
       [
-        FactoryGirl.create(:bigbluebutton_room, name: "La Lo", param: "lalo-1"),
-        FactoryGirl.create(:bigbluebutton_room, name: "La Le", param: "lale-2"),
-        FactoryGirl.create(:bigbluebutton_room, name: "Li Lo", param: "lilo")
+        FactoryGirl.create(:bigbluebutton_room, name: "La Lo", slug: "lalo-1"),
+        FactoryGirl.create(:bigbluebutton_room, name: "La Le", slug: "lale-2"),
+        FactoryGirl.create(:bigbluebutton_room, name: "Li Lo", slug: "lilo")
       ]
     }
     let(:subject) { BigbluebuttonRoom.search_by_terms(terms) }
@@ -155,7 +155,7 @@ describe BigbluebuttonRoom do
       let(:terms) { ['abcdef'] }
       before {
         rooms[1].update_attributes(name: 'abcdef')
-        rooms[2].update_attributes(param: 'abcdef')
+        rooms[2].update_attributes(slug: 'abcdef')
       }
       it { subject.count.should be(2) }
       it { subject.should include(rooms[1], rooms[2]) }
@@ -237,7 +237,7 @@ describe BigbluebuttonRoom do
       room.has_been_forcibly_ended.should be(false)
       room.create_time.should be_nil
       room.end_time.should be_nil
-      room.attendees.should eql([])
+      room.current_attendees.should eql([])
       room.request_headers.should == {}
     end
 
@@ -277,40 +277,38 @@ describe BigbluebuttonRoom do
     end
   end
 
-  context "#param format" do
-    let(:msg) { I18n.t('bigbluebutton_rails.rooms.errors.param_format') }
-    it { should_not allow_value("123 321").for(:param).with_message(msg) }
-    it { should_not allow_value("").for(:param).with_message(msg) }
-    it { should_not allow_value("ab@c").for(:param).with_message(msg) }
-    it { should_not allow_value("ab#c").for(:param).with_message(msg) }
-    it { should_not allow_value("ab$c").for(:param).with_message(msg) }
-    it { should_not allow_value("ab%c").for(:param).with_message(msg) }
-    it { should_not allow_value("ábcd").for(:param).with_message(msg) }
-    it { should_not allow_value("-abc").for(:param).with_message(msg) }
-    it { should_not allow_value("abc-").for(:param).with_message(msg) }
-    it { should_not allow_value("-").for(:param).with_message(msg) }
-    it { should allow_value("_abc").for(:param).with_message(msg) }
-    it { should allow_value("abc_").for(:param).with_message(msg) }
-    it { should allow_value("abc").for(:param).with_message(msg) }
-    it { should allow_value("123").for(:param).with_message(msg) }
-    it { should allow_value("1").for(:param).with_message(msg) }
-    it { should allow_value("a").for(:param).with_message(msg) }
-    it { should allow_value("_").for(:param).with_message(msg) }
-    it { should allow_value("abc-123_d5").for(:param).with_message(msg) }
+  context "#slug format" do
+    let(:msg) { I18n.t('bigbluebutton_rails.rooms.errors.slug_format') }
+    it { should_not allow_value("123 321").for(:slug).with_message(msg) }
+    it { should_not allow_value("").for(:slug).with_message(msg) }
+    it { should_not allow_value("ab@c").for(:slug).with_message(msg) }
+    it { should_not allow_value("ab#c").for(:slug).with_message(msg) }
+    it { should_not allow_value("ab$c").for(:slug).with_message(msg) }
+    it { should_not allow_value("ab%c").for(:slug).with_message(msg) }
+    it { should_not allow_value("ábcd").for(:slug).with_message(msg) }
+    it { should_not allow_value("-abc").for(:slug).with_message(msg) }
+    it { should_not allow_value("abc-").for(:slug).with_message(msg) }
+    it { should_not allow_value("-").for(:slug).with_message(msg) }
+    it { should allow_value("_abc").for(:slug).with_message(msg) }
+    it { should allow_value("abc_").for(:slug).with_message(msg) }
+    it { should allow_value("abc").for(:slug).with_message(msg) }
+    it { should allow_value("123").for(:slug).with_message(msg) }
+    it { should allow_value("1").for(:slug).with_message(msg) }
+    it { should allow_value("a").for(:slug).with_message(msg) }
+    it { should allow_value("_").for(:slug).with_message(msg) }
+    it { should allow_value("abc-123_d5").for(:slug).with_message(msg) }
   end
 
-  context "sets param as the downcased parameterized name if param is" do
+  context "sets slug as the downcased parameterized name if slug is" do
     after :each do
       @room.save.should be_truthy
-      @room.param.should == @room.name.downcase.parameterize
+      @room.slug.should == @room.name.downcase.parameterize
     end
     it "nil" do
-      @room = FactoryGirl.build(:bigbluebutton_room, :param => nil,
-                            :name => "-My Name@ _Is Odd_-")
+      @room = FactoryGirl.build(:bigbluebutton_room, slug: nil, name: "-My Name@ _Is Odd_-")
     end
     it "empty" do
-      @room = FactoryGirl.build(:bigbluebutton_room, :param => "",
-                            :name => "-My Name@ _Is Odd_-")
+      @room = FactoryGirl.build(:bigbluebutton_room, slug: "", name: "-My Name@ _Is Odd_-")
     end
   end
 
@@ -410,7 +408,7 @@ describe BigbluebuttonRoom do
         it { room.create_time.should == nil }
         it { room.reload.create_time.should == nil }
         it { room.end_time.should == nil }
-        it { room.attendees.should == [] }
+        it { room.current_attendees.should == [] }
       end
 
       context "fetches meeting info when the meeting is running" do
@@ -430,7 +428,9 @@ describe BigbluebuttonRoom do
           users.each do |att|
             attendee = BigbluebuttonAttendee.new
             attendee.from_hash(att)
-            room.attendees.should include(attendee)
+            found = room.current_attendees.select{ |a| a.user_name == attendee.user_name }[0]
+            found.user_id.should eql(attendee.user_id)
+            found.role.should eql(attendee.role)
           end
         }
       end
@@ -530,7 +530,7 @@ describe BigbluebuttonRoom do
         it { room.send_end }
       end
 
-      context "schedules a BigbluebuttonMeetingUpdater" do
+      context "schedules a BigbluebuttonMeetingUpdaterWorker" do
         before {
           room.should_receive(:select_server).and_return(mocked_server)
           mocked_api.should_receive(:end_meeting)
@@ -540,8 +540,8 @@ describe BigbluebuttonRoom do
         }
 
         subject { Resque.peek(:bigbluebutton_rails) }
-        it("should have a job schedule") { subject.should_not be_nil }
-        it("the job should be the right one") { subject['class'].should eq('BigbluebuttonMeetingUpdater') }
+        it("should have a job scheduled") { subject.should_not be_nil }
+        it("the job should be the right one") { subject['class'].should eq('BigbluebuttonMeetingUpdaterWorker') }
         it("the job should have the correct parameters") { subject['args'].should eq([room.id]) }
       end
     end
@@ -743,7 +743,7 @@ describe BigbluebuttonRoom do
           it { subject.ended.should eql(false) }
         end
 
-        context "enqueues a BigbluebuttonMeetingUpdater" do
+        context "enqueues a BigbluebuttonMeetingUpdaterWorker" do
           before do
             mocked_api.should_receive(:create_meeting)
               .with(room.name, room.meetingid, expected_params)
@@ -756,7 +756,7 @@ describe BigbluebuttonRoom do
           end
           subject { Resque.peek(:bigbluebutton_rails) }
           it("should have a job schedule") { subject.should_not be_nil }
-          it("the job should be the right one") { subject['class'].should eq('BigbluebuttonMeetingUpdater') }
+          it("the job should be the right one") { subject['class'].should eq('BigbluebuttonMeetingUpdaterWorker') }
           it("the job should have the correct parameters") { subject['args'].should eq([room.id, 10]) }
         end
       end
@@ -1643,24 +1643,36 @@ describe BigbluebuttonRoom do
 
     context "if there's a current meeting not running, ends it" do
       let!(:meeting) { FactoryGirl.create(:bigbluebutton_meeting, room: room, ended: false, running: false, create_time: room.create_time) }
-      before(:each) { room.finish_meetings }
+      let!(:now) { DateTime.now }
+      before(:each) {
+        DateTime.stub(:now).and_return(now)
+        room.finish_meetings
+      }
       it { meeting.reload.running.should be(false) }
       it { meeting.reload.ended.should be(true) }
+      it { meeting.reload.finish_time.should be(now.strftime("%Q").to_i) }
     end
 
     context "ends meetings are already ended but still set as running" do
       let!(:meeting) { FactoryGirl.create(:bigbluebutton_meeting, room: room, ended: true, running: true) }
-      before(:each) { room.finish_meetings }
+      let!(:now) { DateTime.now }
+      before(:each) {
+        DateTime.stub(:now).and_return(now)
+        room.finish_meetings
+      }
       it { meeting.reload.running.should be(false) }
       it { meeting.reload.ended.should be(true) }
+      it { meeting.reload.finish_time.should be(now.strftime("%Q").to_i) }
     end
 
-    context "enqueues a worker to fetch recordings" do
-
+    context "enqueues workers to fetch recordings and get stats" do
       context "if at least one meeting was ended" do
         let!(:meeting1) { FactoryGirl.create(:bigbluebutton_meeting, room: room, ended: false, running: true) }
+        let!(:meeting2) { FactoryGirl.create(:bigbluebutton_meeting, room: room, ended: false, running: true) }
         before {
-          expect(Resque).to receive(:enqueue_in).with(4.minutes, ::BigbluebuttonRecordingsForRoom, room.id, 3)
+          expect(Resque).to receive(:enqueue_in).with(4.minutes, ::BigbluebuttonRecordingsForRoomWorker, room.id, 3)
+          expect(Resque).to receive(:enqueue_in).with(1.minute, ::BigbluebuttonGetStatsForMeetingWorker, meeting1.id, 2)
+          expect(Resque).to receive(:enqueue_in).with(1.minute, ::BigbluebuttonGetStatsForMeetingWorker, meeting2.id, 2)
         }
         it { room.finish_meetings }
       end
@@ -1672,7 +1684,6 @@ describe BigbluebuttonRoom do
         }
         it { room.finish_meetings }
       end
-
     end
   end
 

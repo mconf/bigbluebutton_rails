@@ -8,19 +8,19 @@
 # might have only one of the formats done).
 
 # A resque worker to get the recordings of a room.
-class BigbluebuttonRecordingsForRoom
+class BigbluebuttonRecordingsForRoomWorker
   @queue = :bigbluebutton_rails
 
   def self.perform(room_id, tries_left=0)
-    Rails.logger.info "BigbluebuttonRecordingsForRoom worker running"
+    Rails.logger.info "BigbluebuttonRecordingsForRoomWorker worker running"
 
     room = BigbluebuttonRoom.find(room_id)
     if room.present?
-      Rails.logger.info "BigbluebuttonRecordingsForRoom getting recordings for #{room.inspect}"
+      Rails.logger.info "BigbluebuttonRecordingsForRoomWorker getting recordings for #{room.inspect}"
       room.fetch_recordings
 
       if tries_left > 0
-        Resque.enqueue_in(5.minutes, ::BigbluebuttonRecordingsForRoom, room_id, tries_left - 1)
+        Resque.enqueue_in(5.minutes, ::BigbluebuttonRecordingsForRoomWorker, room_id, tries_left - 1)
       end
     end
   end

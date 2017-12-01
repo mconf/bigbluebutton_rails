@@ -6,7 +6,7 @@ class CreateBigbluebuttonRails < ActiveRecord::Migration
       t.string :url
       t.string :secret
       t.string :version
-      t.string :param
+      t.string :slug
       t.timestamps
     end
 
@@ -24,7 +24,7 @@ class CreateBigbluebuttonRails < ActiveRecord::Migration
       t.integer :max_participants
       t.boolean :private, :default => false
       t.boolean :external, :default => false
-      t.string :param
+      t.string :slug
       t.boolean :record_meeting, :default => false
       t.integer :duration, :default => 0
       t.string :attendee_api_password
@@ -96,11 +96,13 @@ class CreateBigbluebuttonRails < ActiveRecord::Migration
       t.string :meetingid
       t.string :name
       t.decimal :create_time, precision: 14, scale: 0
+      t.decimal :finish_time, precision: 14, scale: 0
       t.boolean :running, :default => false
       t.boolean :recorded, :default => false
       t.integer :creator_id
       t.string :creator_name
       t.boolean :ended, :default => false
+      t.string :got_stats
       t.timestamps
     end
     add_index :bigbluebutton_meetings, [:meetingid, :create_time], :unique => true
@@ -110,6 +112,17 @@ class CreateBigbluebuttonRails < ActiveRecord::Migration
       t.text :available_layouts
       t.timestamps
     end
+
+    create_table :bigbluebutton_attendees do |t|
+      t.string :user_id
+      t.string :external_user_id
+      t.string :user_name
+      t.decimal :join_time, precision: 14, scale: 0
+      t.decimal :left_time, precision: 14, scale: 0
+      t.integer :bigbluebutton_meeting_id
+      t.timestamps
+    end
+
   end
 
   def self.down

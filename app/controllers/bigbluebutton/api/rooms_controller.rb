@@ -5,6 +5,7 @@ class Bigbluebutton::Api::RoomsController < ApplicationController
   include BigbluebuttonRails::APIControllerMethods
 
   skip_before_filter :verify_authenticity_token
+  before_filter :authenticate_api
 
   before_filter :validate_pagination, only: :index
 
@@ -51,18 +52,18 @@ class Bigbluebutton::Api::RoomsController < ApplicationController
     error_room_not_running unless check_is_running
 
     # map "meta[_-]" to "userdata-"
-    meta = params.select{ |k,v| k.match(/^meta[-_]/) }
-    unless meta.blank?
-      meta = meta.map{ |k,v| { k.gsub(/^meta[-_]/, 'userdata-') => v } }.reduce(:merge)
+    options = params.select{ |k,v| k.match(/^meta[-_]/) }
+    unless options.blank?
+      options = options.map{ |k,v| { k.gsub(/^meta[-_]/, 'userdata-') => v } }.reduce(:merge)
     end
 
-    @url = @room.parameterized_join_url(@user_name, @user_role, nil, meta)
+    @url = @room.parameterized_join_url(@user_name, @user_role, nil, options)
   end
 
   protected
 
   def find_room
-    @room ||= BigbluebuttonRoom.find_by(param: params[:id])
+    @room ||= BigbluebuttonRoom.find_by(slug: params[:id])
     error_room_not_found if @room.nil?
   end
 
@@ -102,5 +103,15 @@ class Bigbluebutton::Api::RoomsController < ApplicationController
 
   def set_request_headers
     @room.request_headers["x-forwarded-for"] = request.remote_ip if @room.present?
+  end
+
+  def authenticate_api
+    authorization = request.headers["Authorization"]
+    secret = authorization.gsub(/^Bearer /, '') if authorization.present?
+    server_secret = BigbluebuttonRails.configuration.api_secret
+    if server_secret != '' &&
+       (server_secret.nil? || secret.blank? || secret != server_secret)
+      error_forbidden
+    end
   end
 end

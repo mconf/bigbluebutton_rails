@@ -66,6 +66,38 @@ describe BigbluebuttonRecording do
     end
   end
 
+  describe ".overall_average_length" do
+    context "when there's no recording" do
+      it { BigbluebuttonRecording.overall_average_length.should eql(0) }
+    end
+
+    context "when there are a few recordings" do
+      let!(:recording1) { FactoryGirl.create(:bigbluebutton_recording) }
+      let!(:recording2) { FactoryGirl.create(:bigbluebutton_recording) }
+      let!(:type_default) { FactoryGirl.create(:bigbluebutton_playback_type, default: true) }
+      let!(:type_other) { FactoryGirl.create(:bigbluebutton_playback_type, default: false) }
+      let!(:format_other_rec1) { FactoryGirl.create(:bigbluebutton_playback_format, recording: recording1, playback_type: type_other, length: 50) }
+      let!(:format_default_rec1) { FactoryGirl.create(:bigbluebutton_playback_format, recording: recording1, playback_type: type_default, length: 100) }
+      let!(:format_other_rec2) { FactoryGirl.create(:bigbluebutton_playback_format, recording: recording2, playback_type: type_other, length: 50) }
+      let!(:format_default_rec2) { FactoryGirl.create(:bigbluebutton_playback_format, recording: recording2, playback_type: type_default, length: 100) }
+
+      it { BigbluebuttonRecording.overall_average_length.should eql(6000.0) }
+    end
+  end
+
+  describe ".overall_average_size" do
+    context "when there's no recording" do
+      it { BigbluebuttonRecording.overall_average_size.should eql(0) }
+    end
+
+    context "when there are a few recordings" do
+      let!(:recording1) { FactoryGirl.create(:bigbluebutton_recording, size: 100000000) } # 100 MB
+      let!(:recording2) { FactoryGirl.create(:bigbluebutton_recording, size: 200000000) } # 200 MB
+
+      it { BigbluebuttonRecording.overall_average_size.should eql(150000000) }
+    end
+  end
+
   describe ".sync" do
     let(:data) {
       [
@@ -350,6 +382,15 @@ describe BigbluebuttonRecording do
       time = Time.at(data[:start_time]).utc.to_formatted_s(:long)
       @recording.description.should == I18n.t('bigbluebutton_rails.recordings.default.description', :time => time)
     }
+    context "schedules a BigbluebuttonGetStatsForMeetingWorker" do
+      subject {
+        # the second job scheduled
+        Resque.peek(:bigbluebutton_rails, 1, 1)
+      }
+      it("should have a job scheduled") { subject.should_not be_nil }
+      it("the job should be the right one") { subject['class'].should eq('BigbluebuttonGetStatsForMeetingWorker') }
+      it("the job should have the correct parameters") { subject['args'].should eq([@meeting.id, 2]) }
+    end
   end
 
   describe ".adapt_recording_hash" do

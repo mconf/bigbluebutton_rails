@@ -4,7 +4,7 @@ FactoryGirl.define do
     s.sequence(:url) { |n| "http://bigbluebutton#{n}.test.com/bigbluebutton/api" }
     s.secret { Forgery(:basic).password :at_least => 30, :at_most => 40 }
     s.version '0.9'
-    s.sequence(:param) { |n| "server-#{n}" }
+    s.sequence(:slug) { |n| "server-#{n}" }
   end
 
   after(:create) do |s|

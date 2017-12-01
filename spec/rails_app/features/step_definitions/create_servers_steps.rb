@@ -4,7 +4,7 @@ When /^registers a new server$/i do
   fill_in("bigbluebutton_server[url]", :with => attrs[:url])
   fill_in("bigbluebutton_server[secret]", :with => attrs[:secret])
   fill_in("bigbluebutton_server[version]", :with => attrs[:version])
-  fill_in("bigbluebutton_server[param]", :with => attrs[:param])
+  fill_in("bigbluebutton_server[slug]", :with => attrs[:slug])
   click_button("Create")
 end
 
@@ -14,7 +14,7 @@ When /^registers a new server with a wrong URL$/i do
   fill_in("bigbluebutton_server[url]", :with => "invalid url")
   fill_in("bigbluebutton_server[secret]", :with => attrs[:secret])
   fill_in("bigbluebutton_server[version]", :with => attrs[:version])
-  fill_in("bigbluebutton_server[param]", :with => attrs[:param])
+  fill_in("bigbluebutton_server[slug]", :with => attrs[:slug])
   click_button("Create")
 end
 

@@ -10,7 +10,7 @@ When /^registers a new room$/i do
   fill_in("bigbluebutton_room[dial_number]", :with => attrs[:dial_number])
   fill_in("bigbluebutton_room[max_participants]", :with => attrs[:max_participants])
   check("bigbluebutton_room[external]") if attrs[:external]
-  fill_in("bigbluebutton_room[param]", :with => attrs[:param])
+  fill_in("bigbluebutton_room[slug]", :with => attrs[:slug])
   # Note: voice_bridge is generated when the BigbluebuttonRoom is created
   click_button("Create")
 end
@@ -27,7 +27,7 @@ When /^registers a new room with wrong parameters$/i do
   fill_in("bigbluebutton_room[dial_number]", :with => attrs[:dial_number])
   fill_in("bigbluebutton_room[max_participants]", :with => attrs[:max_participants])
   check("bigbluebutton_room[external]") if attrs[:external]
-  fill_in("bigbluebutton_room[param]", :with => attrs[:param])
+  fill_in("bigbluebutton_room[slug]", :with => attrs[:slug])
   click_button("Create")
 end
 

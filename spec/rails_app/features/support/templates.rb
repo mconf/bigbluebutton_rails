@@ -37,13 +37,13 @@ module TemplateHelpers
                 { :name => 'bigbluebutton_server[secret]', :type => 'text' })
     has_element("input#bigbluebutton_server_version",
                 { :name => 'bigbluebutton_server[version]', :type => 'text' })
-    has_element("input#bigbluebutton_server_param",
-                { :name => 'bigbluebutton_server[param]', :type => 'text' })
+    has_element("input#bigbluebutton_server_slug",
+                { :name => 'bigbluebutton_server[slug]', :type => 'text' })
     has_element("label", { :for => 'bigbluebutton_server_name' })
     has_element("label", { :for => 'bigbluebutton_server_url' })
     has_element("label", { :for => 'bigbluebutton_server_secret' })
     has_element("label", { :for => 'bigbluebutton_server_version' })
-    has_element("label", { :for => 'bigbluebutton_server_param' })
+    has_element("label", { :for => 'bigbluebutton_server_slug' })
     has_element("input", { :name => 'commit', :type => 'submit' })
   end
 
@@ -55,7 +55,7 @@ module TemplateHelpers
     page_has_content(server.url)
     page_has_content(server.secret)
     page_has_content(server.version)
-    page_has_content(server.param)
+    page_has_content(server.slug)
     has_element("a", { :href => edit_bigbluebutton_server_path(server) }) # edit
     has_element("a", { :href => activity_bigbluebutton_server_path(server) }) # activity
     has_element("a", { :href => rooms_bigbluebutton_server_path(server) }) # rooms
@@ -76,7 +76,7 @@ module TemplateHelpers
         has_content(server.url)
         has_content(server.secret)
         has_content(server.version)
-        has_content(server.param)
+        has_content(server.slug)
         has_content(server.url)
         # action links
         has_element("a", { :href => bigbluebutton_server_path(server) }) # show
@@ -149,8 +149,8 @@ module TemplateHelpers
                 { :name => 'bigbluebutton_room[max_participants]', :type => 'text' })
     has_element("input#bigbluebutton_room_external",
                 { :name => 'bigbluebutton_room[external]', :type => 'checkbox' })
-    has_element("input#bigbluebutton_room_param",
-                { :name => 'bigbluebutton_room[param]', :type => 'text' })
+    has_element("input#bigbluebutton_room_slug",
+                { :name => 'bigbluebutton_room[slug]', :type => 'text' })
     has_element("input#bigbluebutton_room_voice_bridge",
                 { :name => 'bigbluebutton_room[voice_bridge]', :type => 'text' })
     has_element("label", { :for => 'bigbluebutton_room_name' })
@@ -163,7 +163,7 @@ module TemplateHelpers
     has_element("label", { :for => 'bigbluebutton_room_dial_number' })
     has_element("label", { :for => 'bigbluebutton_room_max_participants' })
     has_element("label", { :for => 'bigbluebutton_room_external' })
-    has_element("label", { :for => 'bigbluebutton_room_param' })
+    has_element("label", { :for => 'bigbluebutton_room_slug' })
     has_element("label", { :for => 'bigbluebutton_room_voice_bridge' })
     has_element("input", { :name => 'commit', :type => 'submit' })
   end
@@ -183,7 +183,7 @@ module TemplateHelpers
     page_has_content(room.voice_bridge)
     page_has_content(room.max_participants)
     page_has_content(room.external)
-    page_has_content(room.param)
+    page_has_content(room.slug)
     # action links
     has_element("a", { :href => edit_bigbluebutton_room_path(room) }) # edit
     has_element("a", { :href => bigbluebutton_room_path(room) }) # show
@@ -224,7 +224,7 @@ module TemplateHelpers
         has_content(room.logout_url)
         has_content(room.dial_number)
         has_content(room.voice_bridge)
-        has_content(room.param)
+        has_content(room.slug)
         # action links
         unless room.server.nil?
           has_element("a", { :href => bigbluebutton_server_path(room.server) }) # show server

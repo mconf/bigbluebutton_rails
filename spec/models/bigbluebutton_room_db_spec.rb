@@ -19,7 +19,7 @@ describe BigbluebuttonRoom do
     it { should have_db_column(:max_participants).of_type(:integer) }
     it { should have_db_column(:private).of_type(:boolean) }
     it { should have_db_column(:external).of_type(:boolean) }
-    it { should have_db_column(:param).of_type(:string) }
+    it { should have_db_column(:slug).of_type(:string) }
     it { should have_db_column(:record_meeting).of_type(:boolean) }
     it { should have_db_column(:duration).of_type(:integer) }
     it { should have_db_column(:created_at).of_type(:datetime) }

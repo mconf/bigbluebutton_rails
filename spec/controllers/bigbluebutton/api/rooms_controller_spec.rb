@@ -5,7 +5,110 @@ describe Bigbluebutton::Api::RoomsController do
   render_views
   let!(:room) { FactoryGirl.create(:bigbluebutton_room) }
 
+  before {
+    @previous = BigbluebuttonRails.configuration.api_secret
+    BigbluebuttonRails.configuration.api_secret = "" # all allowed
+  }
+  after {
+    BigbluebuttonRails.configuration.api_secret = @previous
+  }
+
+  shared_examples "an authenticated API call" do
+
+    context "when the server has a secret" do
+      before {
+        @previous = BigbluebuttonRails.configuration.api_secret
+        BigbluebuttonRails.configuration.api_secret = "123123"
+      }
+      after {
+        BigbluebuttonRails.configuration.api_secret = @previous
+      }
+
+      [nil, "WRONG", '', "bearer 123123"].each do |auth_header|
+        context "forbids the authorization header #{auth_header.inspect}" do
+          before(:each) {
+            request.headers['Authorization'] = auth_header
+            action
+          }
+          it { JSON.parse(response.body)['errors'][0]['status'].should eql('403') }
+          it {
+            title = JSON.parse(response.body)['errors'][0]['title']
+            title.should eql(I18n.t('bigbluebutton_rails.api.errors.forbidden.title'))
+          }
+          it {
+            detail = JSON.parse(response.body)['errors'][0]['detail']
+            detail.should eql(I18n.t('bigbluebutton_rails.api.errors.forbidden.msg'))
+          }
+        end
+      end
+
+      context "when the valid secret is informed" do
+        before(:each) {
+          request.headers['Authorization'] = "Bearer 123123"
+          action
+        }
+        it { JSON.parse(response.body)['errors'].should be_nil }
+        it { JSON.parse(response.body)['data'].should_not be_nil }
+      end
+    end
+
+    context "when the server has a nil secret" do
+      before {
+        @previous = BigbluebuttonRails.configuration.api_secret
+        BigbluebuttonRails.configuration.api_secret = nil
+      }
+      after {
+        BigbluebuttonRails.configuration.api_secret = @previous
+      }
+
+      [nil, "WRONG", '', "bearer 123123"].each do |auth_header|
+        context "forbids the authorization header #{auth_header.inspect}" do
+          before(:each) {
+            request.headers['Authorization'] = auth_header
+            action
+          }
+          it { JSON.parse(response.body)['errors'][0]['status'].should eql('403') }
+          it {
+            title = JSON.parse(response.body)['errors'][0]['title']
+            title.should eql(I18n.t('bigbluebutton_rails.api.errors.forbidden.title'))
+          }
+          it {
+            detail = JSON.parse(response.body)['errors'][0]['detail']
+            detail.should eql(I18n.t('bigbluebutton_rails.api.errors.forbidden.msg'))
+          }
+        end
+      end
+    end
+
+    context "when the server has an empty string as secret" do
+      before {
+        @previous = BigbluebuttonRails.configuration.api_secret
+        BigbluebuttonRails.configuration.api_secret = ''
+      }
+      after {
+        BigbluebuttonRails.configuration.api_secret = @previous
+      }
+
+      [nil, "WRONG", '', "bearer 123123"].each do |auth_header|
+        context "forbids the authorization header #{auth_header.inspect}" do
+          before(:each) {
+            request.headers['Authorization'] = auth_header
+            action
+          }
+          it { JSON.parse(response.body)['errors'].should be_nil }
+          it { JSON.parse(response.body)['data'].should_not be_nil }
+        end
+      end
+    end
+
+  end
+
   describe "#index" do
+    context "authenticates" do
+      let(:action) { get :index, format: :json }
+      it_should_behave_like "an authenticated API call"
+    end
+
     context "basic" do
       before(:each) { get :index, format: :json }
       it { should respond_with(:success) }
@@ -39,9 +142,9 @@ describe Bigbluebutton::Api::RoomsController do
     end
 
     context "filtering" do
-      before { room.update_attributes(name: "La Lo", param: "lalo-1") }
-      let!(:room2) { FactoryGirl.create(:bigbluebutton_room, name: "La Le", param: "lale-2") }
-      let!(:room3) { FactoryGirl.create(:bigbluebutton_room, name: "Li Lo", param: "lilo") }
+      before { room.update_attributes(name: "La Lo", slug: "lalo-1") }
+      let!(:room2) { FactoryGirl.create(:bigbluebutton_room, name: "La Le", slug: "lale-2") }
+      let!(:room3) { FactoryGirl.create(:bigbluebutton_room, name: "Li Lo", slug: "lilo") }
 
       context "filters by terms" do
         before(:each) { get :index, filter: { terms: 'la' }, format: :json }
@@ -195,6 +298,11 @@ describe Bigbluebutton::Api::RoomsController do
       @api_mock.stub(:is_meeting_running?)
     }
 
+    context "authenticates" do
+      let(:action) { get :running, id: room.to_param, format: :json }
+      it_should_behave_like "an authenticated API call"
+    end
+
     context "basic" do
       before(:each) { get :running, id: room.to_param, format: :json }
       it { should respond_with(:success) }
@@ -223,11 +331,11 @@ describe Bigbluebutton::Api::RoomsController do
       it { JSON.parse(response.body)['errors'][0]['status'].should eql('404') }
       it {
         title = JSON.parse(response.body)['errors'][0]['title']
-        title.should eql(I18n.t('bigbluebutton_rails.api.rooms.room_not_found.title'))
+        title.should eql(I18n.t('bigbluebutton_rails.api.errors.room_not_found.title'))
       }
       it {
         detail = JSON.parse(response.body)['errors'][0]['detail']
-        detail.should eql(I18n.t('bigbluebutton_rails.api.rooms.room_not_found.msg'))
+        detail.should eql(I18n.t('bigbluebutton_rails.api.errors.room_not_found.msg'))
       }
     end
   end
@@ -239,6 +347,11 @@ describe Bigbluebutton::Api::RoomsController do
       @api_mock.stub(:is_meeting_running?).and_return(true)
       @api_mock.stub(:join_meeting_url).and_return(expected_url)
     }
+
+    context "authenticates" do
+      let(:action) { post :join, id: room.to_param, format: :json, name: 'User 1' }
+      it_should_behave_like "an authenticated API call"
+    end
 
     context "basic" do
       before { room.update_attributes(private: false) }
@@ -302,11 +415,11 @@ describe Bigbluebutton::Api::RoomsController do
       it { JSON.parse(response.body)['errors'][0]['status'].should eql('404') }
       it {
         title = JSON.parse(response.body)['errors'][0]['title']
-        title.should eql(I18n.t('bigbluebutton_rails.api.rooms.room_not_found.title'))
+        title.should eql(I18n.t('bigbluebutton_rails.api.errors.room_not_found.title'))
       }
       it {
         detail = JSON.parse(response.body)['errors'][0]['detail']
-        detail.should eql(I18n.t('bigbluebutton_rails.api.rooms.room_not_found.msg'))
+        detail.should eql(I18n.t('bigbluebutton_rails.api.errors.room_not_found.msg'))
       }
     end
 
@@ -316,11 +429,11 @@ describe Bigbluebutton::Api::RoomsController do
       it { JSON.parse(response.body)['errors'][0]['status'].should eql('400') }
       it {
         title = JSON.parse(response.body)['errors'][0]['title']
-        title.should eql(I18n.t('bigbluebutton_rails.api.rooms.room_not_running.title'))
+        title.should eql(I18n.t('bigbluebutton_rails.api.errors.room_not_running.title'))
       }
       it {
         detail = JSON.parse(response.body)['errors'][0]['detail']
-        detail.should eql(I18n.t('bigbluebutton_rails.api.rooms.room_not_running.msg'))
+        detail.should eql(I18n.t('bigbluebutton_rails.api.errors.room_not_running.msg'))
       }
     end
 
@@ -329,11 +442,11 @@ describe Bigbluebutton::Api::RoomsController do
       it { JSON.parse(response.body)['errors'][0]['status'].should eql('400') }
       it {
         title = JSON.parse(response.body)['errors'][0]['title']
-        title.should eql(I18n.t('bigbluebutton_rails.api.rooms.missing_params.title'))
+        title.should eql(I18n.t('bigbluebutton_rails.api.errors.missing_params.title'))
       }
       it {
         detail = JSON.parse(response.body)['errors'][0]['detail']
-        detail.should eql(I18n.t('bigbluebutton_rails.api.rooms.missing_params.msg'))
+        detail.should eql(I18n.t('bigbluebutton_rails.api.errors.missing_params.msg'))
       }
     end
 
@@ -343,11 +456,11 @@ describe Bigbluebutton::Api::RoomsController do
       it { JSON.parse(response.body)['errors'][0]['status'].should eql('400') }
       it {
         title = JSON.parse(response.body)['errors'][0]['title']
-        title.should eql(I18n.t('bigbluebutton_rails.api.rooms.missing_params.title'))
+        title.should eql(I18n.t('bigbluebutton_rails.api.errors.missing_params.title'))
       }
       it {
         detail = JSON.parse(response.body)['errors'][0]['detail']
-        detail.should eql(I18n.t('bigbluebutton_rails.api.rooms.missing_params.msg'))
+        detail.should eql(I18n.t('bigbluebutton_rails.api.errors.missing_params.msg'))
       }
     end
 
@@ -357,11 +470,11 @@ describe Bigbluebutton::Api::RoomsController do
       it { JSON.parse(response.body)['errors'][0]['status'].should eql('403') }
       it {
         title = JSON.parse(response.body)['errors'][0]['title']
-        title.should eql(I18n.t('bigbluebutton_rails.api.rooms.invalid_key.title'))
+        title.should eql(I18n.t('bigbluebutton_rails.api.errors.invalid_key.title'))
       }
       it {
         detail = JSON.parse(response.body)['errors'][0]['detail']
-        detail.should eql(I18n.t('bigbluebutton_rails.api.rooms.invalid_key.msg'))
+        detail.should eql(I18n.t('bigbluebutton_rails.api.errors.invalid_key.msg'))
       }
     end
 

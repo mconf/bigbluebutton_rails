@@ -1,9 +1,9 @@
 require 'spec_helper'
 
-describe BigbluebuttonRecordingsForRoom do
+describe BigbluebuttonRecordingsForRoomWorker do
 
   it "uses the queue :bigbluebutton_rails" do
-    BigbluebuttonRecordingsForRoom.instance_variable_get(:@queue).should eql(:bigbluebutton_rails)
+    BigbluebuttonRecordingsForRoomWorker.instance_variable_get(:@queue).should eql(:bigbluebutton_rails)
   end
 
   describe "#perform" do
@@ -14,7 +14,7 @@ describe BigbluebuttonRecordingsForRoom do
         BigbluebuttonRoom.stub(:find).and_return(room)
         expect(room).to receive(:fetch_recordings).once
       }
-      it { BigbluebuttonRecordingsForRoom.perform(room.id) }
+      it { BigbluebuttonRecordingsForRoomWorker.perform(room.id) }
     end
 
     context "if there are still tries left" do
@@ -22,10 +22,10 @@ describe BigbluebuttonRecordingsForRoom do
         BigbluebuttonRoom.stub(:find).and_return(room)
         room.stub(:fetch_recordings)
         expect(Resque).to receive(:enqueue_in)
-                           .with(5.minutes, ::BigbluebuttonRecordingsForRoom, room.id, 0)
+                           .with(5.minutes, ::BigbluebuttonRecordingsForRoomWorker, room.id, 0)
                            .once
       }
-      it { BigbluebuttonRecordingsForRoom.perform(room.id, 1) }
+      it { BigbluebuttonRecordingsForRoomWorker.perform(room.id, 1) }
     end
 
     context "if there are no more tries left" do
@@ -34,7 +34,7 @@ describe BigbluebuttonRecordingsForRoom do
         room.stub(:fetch_recordings)
         expect(Resque).not_to receive(:enqueue_in)
       }
-      it { BigbluebuttonRecordingsForRoom.perform(room.id, 0) }
+      it { BigbluebuttonRecordingsForRoomWorker.perform(room.id, 0) }
     end
 
     context "if the room id is not found" do
@@ -43,7 +43,7 @@ describe BigbluebuttonRecordingsForRoom do
         expect(room).not_to receive(:fetch_recordings)
         expect(Resque).not_to receive(:enqueue_in)
       }
-      it { BigbluebuttonRecordingsForRoom.perform(room.id) }
+      it { BigbluebuttonRecordingsForRoomWorker.perform(room.id) }
     end
   end
 end

@@ -39,8 +39,7 @@ namespace :rails_app do
   desc 'Setup the db in the rails app used in tests.'
   task :db do
     cd File.join(File.dirname(__FILE__), "spec", "rails_app")
-    sh "bundle exec rake db:drop db:create db:migrate db:seed RAILS_ENV=development"
-    sh "bundle exec rake db:drop db:create db:migrate db:seed RAILS_ENV=test"
+    sh "bundle exec rake db:drop db:create db:migrate db:seed"
     cd File.dirname(__FILE__)
   end
 
@@ -88,6 +87,7 @@ namespace :spec do
     sh "bundle exec rails generate bigbluebutton_rails:install 2.0.0 --migration-only --force"
     sh "bundle exec rails generate bigbluebutton_rails:install 2.1.0 --migration-only --force"
     sh "bundle exec rails generate bigbluebutton_rails:install 2.2.0 --migration-only --force"
+    sh "bundle exec rails generate bigbluebutton_rails:install 2.3.0 --migration-only --force"
 
     sh "bundle exec rake db:drop RAILS_ENV=test"
     sh "bundle exec rake db:create RAILS_ENV=test"
@@ -99,6 +99,7 @@ namespace :spec do
     # Rake::Task["cucumber"].invoke
 
     cd "spec/rails_app/"
+    sh "bundle exec rails destroy bigbluebutton_rails:install 2.3.0 --migration-only"
     sh "bundle exec rails destroy bigbluebutton_rails:install 2.2.0 --migration-only"
     sh "bundle exec rails destroy bigbluebutton_rails:install 2.1.0 --migration-only"
     sh "bundle exec rails destroy bigbluebutton_rails:install 2.0.0 --migration-only"

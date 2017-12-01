@@ -1,12 +1,12 @@
 # A resque worker to get the server configs from time to time (information such
 # as available layouts are updated).
-class BigbluebuttonUpdateServerConfigs
+class BigbluebuttonUpdateServerConfigsWorker
   @queue = :bigbluebutton_rails
 
   def self.perform
-    Rails.logger.info "BigbluebuttonUpdateServerConfigs worker running"
+    Rails.logger.info "BigbluebuttonUpdateServerConfigsWorker worker running"
     BigbluebuttonServer.find_each do |server|
-      Rails.logger.info "BigbluebuttonUpdateServerConfigs updating configs for #{server.inspect}"
+      Rails.logger.info "BigbluebuttonUpdateServerConfigsWorker updating configs for #{server.inspect}"
 
       # update configs
       server.update_config
