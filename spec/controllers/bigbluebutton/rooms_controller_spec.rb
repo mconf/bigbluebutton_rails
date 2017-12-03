@@ -974,23 +974,17 @@ describe Bigbluebutton::RoomsController do
     }
 
     context "when the user has permission to create the meeting" do
-
-      context "in the standard case" do
-        before {
-          room.should_receive(:fetch_is_running?).at_least(:once).and_return(false)
-          controller.stub(:bigbluebutton_can_create?).with(room, :attendee)
-            .and_return(true)
-          controller.stub(:bigbluebutton_create_options).with(room)
-            .and_return({ custom: true })
-          room.should_receive(:create_meeting)
-            .with(user, controller.request, { custom: true }).and_return(true)
-          room.should_receive(:fetch_new_token).and_return(nil)
-          room.should_receive(:join_url).and_return("http://test.com/join/url/")
-        }
-        before(:each) { get :join, :id => room.to_param }
-        it { should respond_with(:redirect) }
-        it { should redirect_to("http://test.com/join/url/") }
-      end
+      before {
+        room.should_receive(:fetch_is_running?).at_least(:once).and_return(false)
+        controller.stub(:bigbluebutton_can_create?).with(room, :attendee).and_return(true)
+        room.should_receive(:create_meeting)
+          .with(user, controller.request).and_return(true)
+        room.should_receive(:fetch_new_token).and_return(nil)
+        room.should_receive(:join_url).and_return("http://test.com/join/url/")
+      }
+      before(:each) { get :join, :id => room.to_param }
+      it { should respond_with(:redirect) }
+      it { should redirect_to("http://test.com/join/url/") }
     end
 
     context "when the user doesn't have permission to create the meeting" do
@@ -1194,7 +1188,6 @@ describe Bigbluebutton::RoomsController do
     context "doesn't break if a guest user has permission to create a meeting" do
       before {
         room.stub(:fetch_is_running?).and_return(false)
-        controller.stub(:bigbluebutton_create_options).and_return({ custom: true })
         controller.stub(:bigbluebutton_can_create?).and_return(true)
         room.stub(:create_meeting).and_return(true)
         controller.stub(:bigbluebutton_user).and_return(nil)

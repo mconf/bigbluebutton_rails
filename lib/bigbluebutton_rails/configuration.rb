@@ -17,7 +17,8 @@ module BigbluebuttonRails
     attr_accessor :select_server
     attr_accessor :match_room_recording
     attr_accessor :get_invitation_url
-    attr_accessor :get_dynamic_metadata
+    attr_accessor :get_create_options
+    attr_accessor :get_join_options
 
     def initialize
       @controllers = {
@@ -51,9 +52,13 @@ module BigbluebuttonRails
       # returns nil (disable the feature).
       @get_invitation_url = Proc.new{ |room| nil }
 
-      # Default method to get the dynamic metadata to use when creating a
-      # conference in a room.
-      @get_dynamic_metadata = Proc.new{ |room| nil }
+      # Define this method to return extra parameters to be passed to a `create` call.
+      # `user` is the user creating the meeting, if any.
+      @get_create_options = Proc.new{ |room, user| nil }
+
+      # Define this method to return extra parameters to be passed to a `join` call.
+      # `user` is the user joining the meeting, if any.
+      @get_join_options = Proc.new{ |room, user| nil }
 
       # Selects a server to be used by `room` whenever it needs to make API calls.
       # By default, if no servers are available an exception is raised.
