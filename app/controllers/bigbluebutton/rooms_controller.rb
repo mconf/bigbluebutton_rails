@@ -336,8 +336,7 @@ class Bigbluebutton::RoomsController < ApplicationController
       # first check if we have to create the room and if the user can do it
       unless @room.fetch_is_running?
         if bigbluebutton_can_create?(@room, role)
-          user_opts = bigbluebutton_create_options(@room)
-          if @room.create_meeting(bigbluebutton_user, request, user_opts)
+          if @room.create_meeting(bigbluebutton_user, request)
             logger.info "Meeting created: id: #{@room.meetingid}, name: #{@room.name}, created_by: #{username}, time: #{Time.now.iso8601}"
           end
         else
@@ -347,16 +346,9 @@ class Bigbluebutton::RoomsController < ApplicationController
         end
       end
 
-      # gets the token with the configurations for this user/room
-      token = @room.fetch_new_token
-      options = if token.nil? then {} else { :configToken => token } end
-
-      # set the create time and the user id, if they exist
-      options.merge!({ createTime: @room.create_time }) unless @room.create_time.blank?
-      options.merge!({ userID: id }) unless id.blank?
-
       # room created and running, try to join it
-      url = @room.join_url(username, role, nil, options)
+      url = @room.parameterized_join_url(username, role, id, {}, bigbluebutton_user)
+
       unless url.nil?
 
         # change the protocol to join with a mobile device

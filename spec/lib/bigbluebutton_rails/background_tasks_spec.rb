@@ -4,6 +4,7 @@ describe BigbluebuttonRails::BackgroundTasks do
 
   describe ".finish_meetings" do
     let!(:api) { double(BigBlueButton::BigBlueButtonApi) }
+    let!(:server) { FactoryGirl.create(:bigbluebutton_server) }
 
     context "set meetings that ended as not running and ended" do
       let(:room) { FactoryGirl.create(:bigbluebutton_room) }

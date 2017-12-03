@@ -8,6 +8,7 @@ describe BigbluebuttonMeetingUpdater do
 
   describe "#perform" do
     let!(:api) { double(BigBlueButton::BigBlueButtonApi) }
+    let!(:server) { FactoryGirl.create(:bigbluebutton_server) }
 
     it "waits the amount of time specified before starting"
 
