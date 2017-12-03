@@ -106,37 +106,6 @@ module BigbluebuttonRails
           role == :moderator
         end
 
-        # Method called right before a meeting is created to get options that should receive
-        # priority over the options saved in the database when sending the <tt>create</tt>
-        # API call.
-        # The parameter 'room' is the BigbluebuttonRoom where the meeting is about
-        # to be created.
-        #
-        # By default, all options sent in a 'create' API call are taken from the
-        # options saved in the database for the target room. This includes, for example,
-        # the meeting's name, dial number, welcome message, if it should be recorded or not.
-        # This method can return a hash of options to force some of these options to be
-        # different from what is stored in the database. For example, if a room should *not* be
-        # recorded in case unprivileged users create it, this method can return <tt>{ record: false }</tt>
-        # to force the <tt>record</tt> flag to be false.
-        # The keys used in this hash should correspond to the attributes sent in the <tt>CREATE</tt>
-        # API call, not the the attributes stored in the database! See the method
-        # <tt>create_meeting</tt> in the gem <tt>bigbluebutton-api-ruby</tt> for examples.
-        # (https://github.com/mconf/bigbluebutton-api-ruby/blob/master/lib/bigbluebutton_api.rb#L156)
-        #
-        # You may want to override this in your ApplicationController to implement your own
-        # own logic, if needed. For example:
-        #
-        #   def bigbluebutton_create_options(room)
-        #     can_record = room.record && bigbluebutton_user.can_record?
-        #     { record: can_record }
-        #     end
-        #   end
-        #
-        def bigbluebutton_create_options(room)
-          {}
-        end
-
       end
     end
 

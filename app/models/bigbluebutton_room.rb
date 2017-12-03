@@ -203,11 +203,15 @@ class BigbluebuttonRoom < ActiveRecord::Base
   # * <tt>moderator_api_password</tt>
   #
   # Triggers API call: <tt>create</tt>.
-  def send_create(user=nil, user_opts={})
+  def send_create(user=nil)
     self.meetingid = unique_meetingid() if self.meetingid.blank?
     self.moderator_api_password = internal_password() if self.moderator_api_password.blank?
     self.attendee_api_password = internal_password() if self.attendee_api_password.blank?
     self.save unless self.new_record?
+
+    # Get the user options to use when creating the meeting
+    user_opts = BigbluebuttonRails.configuration.get_create_options.call(self, user)
+    user_opts = {} if user_opts.blank?
 
     server, response = internal_create_meeting(user, user_opts)
     unless response.nil?
@@ -220,7 +224,7 @@ class BigbluebuttonRoom < ActiveRecord::Base
         self.save
 
         # creates the meeting object since the create was successful
-        create_meeting_record(response, server, user_opts)
+        create_meeting_record(response, server, user, user_opts)
 
         # enqueue an update in the meeting with a small delay we assume to be
         # enough for the user to fully join the meeting
@@ -260,7 +264,7 @@ class BigbluebuttonRoom < ActiveRecord::Base
     r
   end
 
-  def parameterized_join_url(username, role, id, options={})
+  def parameterized_join_url(username, role, id, options={}, user=nil)
     opts = options.clone
 
     # gets the token with the configurations for this user/room
@@ -270,9 +274,11 @@ class BigbluebuttonRoom < ActiveRecord::Base
     # set the create time and the user id, if they exist
     opts.merge!({ createTime: self.create_time }) unless self.create_time.blank?
     opts.merge!({ userID: id }) unless id.blank?
-    opts.merge!({ record: User.find_by(id: id).can_record })
 
-    opts.merge!(self.get_metadata_for_join(User.find_by(id: id)))
+    # Get options passed by the application, if any
+    user_opts = BigbluebuttonRails.configuration.get_join_options.call(self, user)
+    user_opts = {} if user_opts.blank?
+    opts.merge!(user_opts)
 
     self.join_url(username, role, nil, opts)
   end
@@ -322,7 +328,7 @@ class BigbluebuttonRoom < ActiveRecord::Base
   # The create logic.
   # Will create the meeting in this room unless it is already running.
   # Returns true if the meeting was created.
-  def create_meeting(user=nil, request=nil, user_opts={})
+  def create_meeting(user=nil, request=nil)
     fetch_is_running?
     unless is_running?
 
@@ -330,7 +336,7 @@ class BigbluebuttonRoom < ActiveRecord::Base
       suppress(BigBlueButton::BigBlueButtonException) { send_end }
 
       add_domain_to_logout_url(request.protocol, request.host_with_port) unless request.nil?
-      send_create(user, user_opts)
+      send_create(user)
       true
     else
       false
@@ -394,7 +400,7 @@ class BigbluebuttonRoom < ActiveRecord::Base
     end
   end
 
-  def create_meeting_record(response, server, user_opts={})
+  def create_meeting_record(response, server, user, user_opts)
     unless get_current_meeting.present?
       if self.create_time.present?
 
@@ -413,15 +419,6 @@ class BigbluebuttonRoom < ActiveRecord::Base
           running: self.running,
           ended: false,
         }
-        # the parameters the user might have overwritten in the create call
-        # note: recorded is not in the API response, so we can't just get these
-        # attributes from there
-        attrs_user = {
-          meetingid: user_opts[:meetingID],
-          name: user_opts[:name],
-          recorded: user_opts[:record]
-        }.delete_if { |k, v| v.nil? }
-        attrs.merge!(attrs_user)
 
         metadata = response[:metadata]
         unless metadata.nil?
@@ -433,6 +430,19 @@ class BigbluebuttonRoom < ActiveRecord::Base
             attrs[:creator_name] = nil
           end
         end
+
+        # the parameters the user might have overwritten in the create call
+        # need to be mapped to the name of the attrs in BigbluebuttMeeting
+        # note: recorded is not in the API response, so we can't just get these
+        # attributes from there
+        attrs_user = {
+          meetingid: user_opts[:meetingID],
+          name: user_opts[:name],
+          recorded: user_opts[:record],
+          creator_id: user_opts[:creator_id],
+          creator_name: user_opts[:creator_name]
+        }.delete_if { |k, v| v.nil? }
+        attrs.merge!(attrs_user)
 
         BigbluebuttonMeeting.create(attrs)
 
@@ -596,15 +606,13 @@ class BigbluebuttonRoom < ActiveRecord::Base
       moderatorOnlyMessage: self.moderator_only_message,
       autoStartRecording: self.auto_start_recording,
       allowStartStopRecording: self.allow_start_stop_recording
-    }.merge(user_opts)
+    }
 
     # Set the voice bridge only if the gem is configured to do so and the voice bridge
     # is not blank.
     if BigbluebuttonRails.configuration.use_local_voice_bridges && !self.voice_bridge.blank?
       opts.merge!({ :voiceBridge => self.voice_bridge })
     end
-
-    opts.merge!(self.get_metadata_for_create(user))
 
     # Add information about the user that is creating the meeting (if any)
     unless user.nil?
@@ -619,6 +627,13 @@ class BigbluebuttonRoom < ActiveRecord::Base
     unless url.nil?
       opts.merge!({ "meta_#{BigbluebuttonRails.configuration.metadata_invitation_url}" => url })
     end
+
+    # Merge the metadata configured in the db
+    meta = get_metadata_for_create
+    opts.merge!(meta)
+
+    # Merge the user options, if any
+    opts.merge!(user_opts)
 
     server = BigbluebuttonRails.configuration.select_server.call(self, :create)
     server.api.request_headers = @request_headers # we need the client's IP
@@ -656,34 +671,10 @@ class BigbluebuttonRoom < ActiveRecord::Base
     end
   end
 
-  def get_metadata_for_create(user)
-    metadata = self.metadata.inject({}) { |result, meta|
+  def get_metadata_for_create
+    self.metadata.inject({}) { |result, meta|
       result["meta_#{meta.name}"] = meta.content; result
     }
-
-    dynamic_metadata = BigbluebuttonRails.configuration.get_dynamic_metadata.call(self, user)
-    unless dynamic_metadata.blank?
-      metadata = dynamic_metadata.inject(metadata) { |result, meta|
-        result["meta_#{meta[0]}"] = meta[1]; result
-      }
-    end
-
-    metadata
-  end
-
-  def get_metadata_for_join(user)
-    metadata = self.metadata.inject({}) { |result, meta|
-      result["meta_#{meta.name}"] = meta.content; result
-    }
-
-    dynamic_metadata = BigbluebuttonRails.configuration.get_dynamic_metadata_join.call(self, user)
-    unless dynamic_metadata.blank?
-      metadata = dynamic_metadata.inject(metadata) { |result, meta|
-        result["meta_#{meta[0]}"] = meta[1]; result
-      }
-    end
-
-    metadata
   end
 
   private
