@@ -17,6 +17,7 @@ module BigbluebuttonRails
     attr_accessor :match_room_recording
     attr_accessor :get_invitation_url
     attr_accessor :get_dynamic_metadata
+    attr_accessor :get_dynamic_metadata_join
 
     def initialize
       @controllers = {
@@ -53,6 +54,9 @@ module BigbluebuttonRails
       # Default method to get the dynamic metadata to use when creating a
       # conference in a room.
       @get_dynamic_metadata = Proc.new{ |room| nil }
+
+      # Default method to get the dynamic metadata to use when JOINING INTO a room.
+      @get_dynamic_metadata_join = Proc.new{ |room, user| nil }
 
       # Selects a server to be used by `room` whenever it needs to make API calls.
       # By default, if no servers are available an exception is raised.

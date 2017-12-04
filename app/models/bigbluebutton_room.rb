@@ -224,6 +224,9 @@ class BigbluebuttonRoom < ActiveRecord::Base
              map_key_to_internal_password(key)
            end
 
+    options.merge!({ record: User.find_by(id: id).can_record })
+    options.merge!(self.get_metadata_for_join(User.find_by(id: id)))
+
     r = server.api.join_meeting_url(self.meetingid, username, pass, options)
     r.strip! unless r.nil?
     r
@@ -523,7 +526,7 @@ class BigbluebuttonRoom < ActiveRecord::Base
       opts.merge!({ :voiceBridge => self.voice_bridge })
     end
 
-    opts.merge!(self.get_metadata_for_create)
+    opts.merge!(self.get_metadata_for_create(user))
 
     # Add information about the user that is creating the meeting (if any)
     unless user.nil?
@@ -575,12 +578,27 @@ class BigbluebuttonRoom < ActiveRecord::Base
     end
   end
 
-  def get_metadata_for_create
+  def get_metadata_for_create(user)
     metadata = self.metadata.inject({}) { |result, meta|
       result["meta_#{meta.name}"] = meta.content; result
     }
 
-    dynamic_metadata = BigbluebuttonRails.configuration.get_dynamic_metadata.call(self)
+    dynamic_metadata = BigbluebuttonRails.configuration.get_dynamic_metadata.call(self, user)
+    unless dynamic_metadata.blank?
+      metadata = dynamic_metadata.inject(metadata) { |result, meta|
+        result["meta_#{meta[0]}"] = meta[1]; result
+      }
+    end
+
+    metadata
+  end
+
+  def get_metadata_for_join(user)
+    metadata = self.metadata.inject({}) { |result, meta|
+      result["meta_#{meta.name}"] = meta.content; result
+    }
+
+    dynamic_metadata = BigbluebuttonRails.configuration.get_dynamic_metadata_join.call(self, user)
     unless dynamic_metadata.blank?
       metadata = dynamic_metadata.inject(metadata) { |result, meta|
         result["meta_#{meta[0]}"] = meta[1]; result
