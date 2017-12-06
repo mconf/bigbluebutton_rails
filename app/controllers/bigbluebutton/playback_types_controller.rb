@@ -2,7 +2,6 @@ class Bigbluebutton::PlaybackTypesController < ApplicationController
   include BigbluebuttonRails::InternalControllerMethods
 
   respond_to :html
-  respond_to :json
   before_filter :find_playback_type, only: [:update]
 
   def update
@@ -12,13 +11,11 @@ class Bigbluebutton::PlaybackTypesController < ApplicationController
           message = t('bigbluebutton_rails.playback_types.notice.update.success')
           redirect_to_using_params request.referer, :notice => message
         }
-        format.json { render :json => true, :status => :ok }
       else
         format.html {
           flash[:error] = @playback_type.errors.full_messages.join(", ")
           redirect_to_using_params request.referer
         }
-        format.json { render :json => @playback_type.errors.full_messages, :status => :unprocessable_entity }
       end
     end
   end

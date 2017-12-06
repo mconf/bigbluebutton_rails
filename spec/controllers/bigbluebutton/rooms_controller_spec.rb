@@ -307,7 +307,7 @@ describe Bigbluebutton::RoomsController do
       it {
         # we just check that the rails method 'permit' is being called on the hash with the
         # correct parameters
-        BigbluebuttonRoom.stub(:find_by_param).and_return(room)
+        BigbluebuttonRoom.stub(:find_by).and_return(room)
         room.stub(:update_attributes).and_return(true)
         attrs.stub(:permit).and_return(attrs)
         controller.stub(:params).and_return(params)
@@ -476,7 +476,7 @@ describe Bigbluebutton::RoomsController do
           context "if params[:id] doesn't exists" do
             let(:message) { I18n.t('bigbluebutton_rails.rooms.errors.join.wrong_params') }
             before(:each) {
-              BigbluebuttonRoom.stub(:find_by_param).and_return(nil)
+              BigbluebuttonRoom.stub(:find_by).and_return(nil)
               send(method, :join, :id => "inexistent-room-id", :user => user_hash)
             }
             it { should assign_to(:room).with(nil) }
@@ -930,7 +930,7 @@ describe Bigbluebutton::RoomsController do
     # uses any action that triggers this before filter
     context "when @room is valid" do
       before {
-        BigbluebuttonRoom.stub(:find_by_param).and_return(room)
+        BigbluebuttonRoom.stub(:find_by).and_return(room)
         room.should_receive(:fetch_is_running?).and_return(false)
       }
       it {
@@ -969,7 +969,7 @@ describe Bigbluebutton::RoomsController do
       request.env["HTTP_REFERER"] = http_referer
       controller.stub(:bigbluebutton_user).and_return(user)
       controller.stub(:bigbluebutton_role).and_return(:attendee)
-      BigbluebuttonRoom.stub(:find_by_param).and_return(room)
+      BigbluebuttonRoom.stub(:find_by).and_return(room)
       controller.send(:find_room)
     }
 

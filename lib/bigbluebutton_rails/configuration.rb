@@ -11,6 +11,7 @@ module BigbluebuttonRails
     attr_accessor :user_attr_name
     attr_accessor :user_attr_id
     attr_accessor :use_local_voice_bridges
+    attr_accessor :api_secret
 
     # methods
     attr_accessor :select_server
@@ -73,6 +74,15 @@ module BigbluebuttonRails
       @select_server = Proc.new do |room, api_method=nil|
         room.select_server(api_method)
       end
+
+      # Secret used to authenticate API calls. API calls received are expected to set
+      # the HTTP header "Authorization" with a value "Bearer 123123123123", where
+      # "123123123123" is the secret set in `api_secret`.
+      # Notice that this header has the secret in clear text in the HTTP request, so
+      # only use it if your application is hosted with HTTPS.
+      # Set it to an empty string to disable authentication. Set it to nil to deny all
+      # requests (disable the API).
+      @api_secret = nil
     end
 
     def set_controllers(options)

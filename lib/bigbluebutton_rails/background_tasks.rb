@@ -17,6 +17,16 @@ module BigbluebuttonRails
       end
     end
 
+    # Gets stats for meetings all meetings in `meetings` or for all meetings in the db
+    # if `meetings==nil`.
+    def self.get_stats(meetings=nil)
+      meetings ||= BigbluebuttonMeeting
+      meetings.find_each do |meeting|
+        Rails.logger.info "BackgroundTasks: Updating status for the meeting: #{meeting.inspect}"
+        meeting.fetch_and_update_stats
+      end
+    end
+
     # Updates the recordings for all servers if `server_id` is nil or or for the
     # server with id `server_id`.
     def self.update_recordings(server_id=nil)

@@ -280,29 +280,36 @@ The list of meetings is also periodically synchronized using Resque-scheduler
 ### Associating rooms and servers
 
 Rooms must be associated with a server to function. When a meeting is created,
-it is created in the server that's associated with the room. The association
-is done using the `server_id` attribute in `BigbluebuttonRoom`. So
-applications that use this gem can manage all the associations by simply
-setting this attribute.
-
+it is created in the server that's associated with the room.
 By default, this gem automatically selects a server **if one is needed and the
-room has no server yet**. If a room already has a server, the gem will never
-change it.
+room has no server yet**.
 
-To change this behavior, applications can override the method
-`{BigbluebuttonRoom#select_server}[https://github.com/mconf/bigbluebutton_rail
-s/blob/5decf3fa7767002303cf8bda524dcbeca0a9146c/app/models/bigbluebutton_room.
-rb#L413]`. This method is called by all methods that trigger API calls,
+To change this behavior, applications can override the configuration
+`BigbluebuttonRails.configuration.select_server`. This attribute receives a
+function that will be called inside all methods that trigger API calls,
 methods that need a server to work properly. It receives a parameter that
-indicates which API call will be sent to the server.
-
-If the method returns a server, the server will be associated with the room.
-If the method returns `nil`, the room will maintain the server it had
-previously (if any).
+indicates which API call will be sent to the server and expects the function
+to return a `BigbluebuttonServer`.
 
 One common use would be to override this method to always select a new server
 when a meeting is created (when the argument received is `:create`). This
 would allow the implementation of a simple load balancing mechanism.
+
+To configure it, add a code like the one below to one initializer in your
+application:
+
+```ruby
+BigbluebuttonRails.configure do |config|
+  config.select_server = Proc.new do |room, api_method=nil|
+    if room.name == 'special-room'
+      BigbluebuttonServer.find_by(name: 'special-server')
+    else
+      BigbluebuttonServer.first
+    end
+  end
+end
+```
+
 
 ### Example application
 
@@ -317,61 +324,37 @@ working, check out the test application at `spec/rails_app/`!
 
 ## Contributing/Development
 
-Fork this repository, clone your fork and start by installing the
-dependencies:
-
-    bundle install
-
-Note: if you're getting an error installing `capybara-webkit`, most likely you
-need to install QT, see:
-https://github.com/thoughtbot/capybara-webkit/wiki/Installing-Qt-and-compiling
--capybara-webkit
-
-First copy `spec/rails_app/config/database.yml.example` to
+To setup an environment, first copy `spec/rails_app/config/database.yml.example` to
 `spec/rails_app/config/database.yml`. It uses MySQL since this is the database
-recommended for the applications that use this gem. You have to set the
-appropriate password for your MySQL user.
+recommended for the applications that use this gem.
 
-Save `spec/rails_app/features/config.yml.example` as
-`spec/rails_app/features/config.yml` and edit it to set values for an existent
-BigBlueButton server. You will need it to run the integration tests. For more
-information see the page
-[Testing](https://github.com/mconf/bigbluebutton_rails/wiki/Testing) in our
-wiki.
+You can start the example application (from `spec/rails_app`) with:
 
-Prepare the `rails_app` used for tests:
+    docker-compose up dev
 
-    rake rails_app:install
-    rake rails_app:db SERVER=my-server # select a server you defined in 'config.yml'
-    rake rails_app:populate            # to create fake data, optional
+It will probably not work straight away, because you need to setup the application first.
+Do so with:
 
-Run the tests:
+    docker-compose run dev rake rails_app:install
+    docker-compose run dev rake rails_app:db
 
-    rake spec
-    rake cucumber SERVER=my-server
+    # optionally:
+    docker-compose run dev rake rails_app:populate # to create fake data
 
-Or simply:
+Then try the `up dev` command again and it should open up a server. Access `localhost:3000`
+to see it.
 
-    rake SERVER=my-server
+To run the tests the process is exactly the same, just replace the `dev` target with `test`:
+
+    docker-compose up test
 
 If you're adding migrations to the gem, test them with:
 
-    rake spec:migrations
-
-Note: If you don't set the SERVER variable, the first server in `config.yml`
-will be used.
-
-You can also start the test application and navigate to `localhost:3000` to
-check it:
-
-    cd spec/rails_app/
-    rails server
+    docker-compose run test rake spec:migrations
 
 If you need to keep track of meetings, run the resque workers with:
 
-    rake resque:work QUEUE='bigbluebutton_rails'
-
-Develop. :)
+    docker-compose run dev rake resque:work QUEUE='bigbluebutton_rails'
 
 If you want your code to be integrated in this repository, please fork it,
 create a branch with your modifications and submit a pull request.
@@ -383,7 +366,7 @@ create a branch with your modifications and submit a pull request.
 
 Coverage is analyzed by default when you run:
 
-    rake spec
+    docker-compose up test
 
 Run it and look at the file `coverage/index.html`.
 
@@ -394,7 +377,7 @@ the code.
 
 Run:
 
-    rake best_practices
+    docker-compose run dev rake best_practices
 
 And look at the file `rails_best_practices_output.html` to see the tips.
 

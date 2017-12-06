@@ -5,6 +5,7 @@ gemspec
 gem 'mysql2'
 gem "jquery-rails"
 gem "forgery"
+gem 'rabl'
 
 group :development do
   gem "rdoc"

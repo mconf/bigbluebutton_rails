@@ -10,7 +10,13 @@ namespace :resque do
     require 'resque-scheduler'
 
     # you probably already have this somewhere
-    Resque.redis = 'localhost:6379'
+    attrs = {
+      host: ENV['REDIS_HOST'] || 'localhost'
+      port: ENV['REDIS_PORT'] || 6379
+      db: ENV['REDIS_DB'] || 0
+      password: ENV['REDIS_PASSWORD'] || nil
+    }
+    Resque.redis = Redis.new(attrs)
 
     # If you want to be able to dynamically change the schedule,
     # uncomment this line.  A dynamic schedule can be updated via the

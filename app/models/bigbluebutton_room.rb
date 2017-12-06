@@ -14,6 +14,11 @@ class BigbluebuttonRoom < ActiveRecord::Base
            dependent: :destroy,
            inverse_of: :owner
 
+  has_many :meetings,
+           class_name: 'BigbluebuttonMeeting',
+           foreign_key: 'room_id',
+           dependent: :destroy
+
   has_one :room_options,
           class_name: 'BigbluebuttonRoomOptions',
           foreign_key: 'room_id',
@@ -58,8 +63,8 @@ class BigbluebuttonRoom < ActiveRecord::Base
   validates :moderator_key, :presence => true, :if => :private?
 
   # Note: these params need to be fetched from the server before being accessed
-  attr_accessor :running, :participant_count, :moderator_count, :attendees,
-                :has_been_forcibly_ended, :start_time, :end_time
+  attr_accessor :running, :participant_count, :moderator_count, :current_attendees,
+                :has_been_forcibly_ended, :end_time
 
   after_initialize :init
   after_create :create_room_options
@@ -73,6 +78,33 @@ class BigbluebuttonRoom < ActiveRecord::Base
   # in all GET/POST requests to a webconf server.
   # Currently used to send the client's IP to the load balancer.
   attr_accessor :request_headers
+
+  scope :order_by_activity, -> (direction='ASC') {
+    BigbluebuttonRoom.joins(:meetings)
+      .group('bigbluebutton_rooms.id')
+      .order("MAX(bigbluebutton_meetings.create_time) #{direction}")
+  }
+
+  scope :search_by_terms, -> (words) {
+    if words.present?
+      words ||= []
+      words = [words] unless words.is_a?(Array)
+      query_strs = []
+      query_params = []
+      query_orders = []
+
+      words.reject(&:blank?).each do |word|
+        str  = "name LIKE ? OR param LIKE ?"
+        query_strs << str
+        query_params += ["%#{word}%", "%#{word}%"]
+        query_orders += [
+          "CASE WHEN name LIKE '%#{word}%' THEN 1 ELSE 0 END + \
+           CASE WHEN param LIKE '%#{word}%' THEN 1 ELSE 0 END"
+        ]
+      end
+      where(query_strs.join(' OR '), *query_params.flatten).order(query_orders.join(' + ') + " DESC")
+    end
+  }
 
   # In case there's no room_options created yet, build one
   # (happens usually when an old database is migrated).
@@ -90,16 +122,16 @@ class BigbluebuttonRoom < ActiveRecord::Base
   # The response is parsed and stored in the model. You can access it using attributes such as:
   #
   #   room.participant_count
-  #   room.attendees[0].full_name
+  #   room.current_attendees[0].user_name
   #
   # The attributes changed are:
   # * <tt>participant_count</tt>
   # * <tt>moderator_count</tt>
   # * <tt>running</tt>
   # * <tt>has_been_forcibly_ended</tt>
-  # * <tt>start_time</tt>
+  # * <tt>create_time</tt>
   # * <tt>end_time</tt>
-  # * <tt>attendees</tt> (array of <tt>BigbluebuttonAttendee</tt>)
+  # * <tt>current_attendees</tt> (array of <tt>BigbluebuttonAttendee</tt>)
   #
   # Triggers API call: <tt>getMeetingInfo</tt>.
   def fetch_meeting_info
@@ -111,14 +143,13 @@ class BigbluebuttonRoom < ActiveRecord::Base
       @moderator_count = response[:moderatorCount]
       @running = response[:running]
       @has_been_forcibly_ended = response[:hasBeenForciblyEnded]
-      @start_time = response[:startTime]
       @end_time = response[:endTime]
-      @attendees = []
+      @current_attendees = []
       if response[:attendees].present?
         response[:attendees].each do |att|
           attendee = BigbluebuttonAttendee.new
           attendee.from_hash(att)
-          @attendees << attendee
+          @current_attendees << attendee
         end
       end
 
@@ -156,7 +187,7 @@ class BigbluebuttonRoom < ActiveRecord::Base
     response = server.api.end_meeting(self.meetingid, self.moderator_api_password)
 
     # enqueue an update in the meeting to end it faster
-    Resque.enqueue(::BigbluebuttonMeetingUpdater, self.id)
+    Resque.enqueue(::BigbluebuttonMeetingUpdaterWorker, self.id)
 
     response
   end
@@ -197,7 +228,7 @@ class BigbluebuttonRoom < ActiveRecord::Base
 
         # enqueue an update in the meeting with a small delay we assume to be
         # enough for the user to fully join the meeting
-        Resque.enqueue(::BigbluebuttonMeetingUpdater, self.id, 10.seconds)
+        Resque.enqueue(::BigbluebuttonMeetingUpdaterWorker, self.id, 10.seconds)
       end
     end
 
@@ -258,10 +289,12 @@ class BigbluebuttonRoom < ActiveRecord::Base
   # params:: Hash with a key :key
   def user_role(params)
     role = nil
-    if params && params.has_key?(:key)
-      if self.moderator_key == params[:key]
+    key = params.is_a?(String) ? params : (params && params.has_key?(:key) ? params[:key] : nil)
+
+    unless key.blank?
+      if self.moderator_key == key
         role = :moderator
-      elsif self.attendee_key == params[:key]
+      elsif self.attendee_key == key
         role = :attendee
       end
     end
@@ -273,8 +306,8 @@ class BigbluebuttonRoom < ActiveRecord::Base
   # if they are have all equal values.
   # From: http://alicebobandmallory.com/articles/2009/11/02/comparing-instance-variables-in-ruby
   def instance_variables_compare(o)
-    vars = [ :@running, :@participant_count, :@moderator_count, :@attendees,
-             :@has_been_forcibly_ended, :@start_time, :@end_time ]
+    vars = [ :@running, :@participant_count, :@moderator_count, :@current_attendees,
+             :@has_been_forcibly_ended, :@end_time ]
     Hash[*vars.map { |v|
            self.instance_variable_get(v)!=o.instance_variable_get(v) ?
            [v,o.instance_variable_get(v)] : []}.flatten]
@@ -346,7 +379,7 @@ class BigbluebuttonRoom < ActiveRecord::Base
     unless self.create_time.nil?
       attrs = {
         :running => self.running,
-        :start_time => self.start_time.try(:utc)
+        :create_time => self.create_time
       }
       # note: it's important to update the 'ended' attr so the meeting is
       # reopened in case it was mistakenly considered as ended
@@ -384,8 +417,7 @@ class BigbluebuttonRoom < ActiveRecord::Base
           recorded: self.record_meeting,
           create_time: self.create_time,
           running: self.running,
-          ended: false,
-          start_time: self.start_time.try(:utc)
+          ended: false
         }
 
         metadata = response[:metadata]
@@ -423,15 +455,32 @@ class BigbluebuttonRoom < ActiveRecord::Base
 
   # Sets all meetings related to this room as not running
   def finish_meetings
+    to_be_finished = BigbluebuttonMeeting.where(ended: false, room_id: self.id).to_a
+    now = DateTime.now.strftime('%Q').to_i
+
     BigbluebuttonMeeting.where(ended: false)
       .where(room_id: self.id)
-      .update_all(running: false, ended: true)
+      .update_all(running: false, ended: true, finish_time: now)
 
     # in case there are inconsistent meetings marked as running
     # but that already ended
     BigbluebuttonMeeting.where(running: true, ended: true)
       .where(room_id: self.id)
-      .update_all(running: false, ended: true)
+      .update_all(running: false, ended: true, finish_time: now)
+
+    if to_be_finished.count > 0
+      # start trying to get the recording for this room
+      # since we don't have a way to know exactly when a recording is done, we
+      # have to keep polling the server for them
+      # 3 times so it tries at: 4, 9, 14 and 19
+      # no point trying more since there is a global synchronization process
+      Resque.enqueue_in(4.minutes, ::BigbluebuttonRecordingsForRoomWorker, self.id, 3)
+
+      # start trying to get stats for the meeting too
+      to_be_finished.each do |meeting|
+        Resque.enqueue_in(1.minute, ::BigbluebuttonGetStatsForMeetingWorker, meeting.id, 2)
+      end
+    end
   end
 
   # Gets a 'configToken' to use when joining the room.
@@ -518,6 +567,12 @@ class BigbluebuttonRoom < ActiveRecord::Base
     server
   end
 
+  # Short URL for this room. Can be overwritten by applications that want to use a
+  # different route.
+  def short_path
+    Rails.application.routes.url_helpers.join_bigbluebutton_room_path(self)
+  end
+
   protected
 
   def create_room_options
@@ -534,24 +589,23 @@ class BigbluebuttonRoom < ActiveRecord::Base
     @moderator_count = 0
     @running = false
     @has_been_forcibly_ended = false
-    @start_time = nil
     @end_time = nil
-    @attendees = []
+    @current_attendees = []
   end
 
   def internal_create_meeting(user=nil, user_opts={})
     opts = {
-      :record => self.record_meeting,
-      :duration => self.duration,
-      :moderatorPW => self.moderator_api_password,
-      :attendeePW => self.attendee_api_password,
-      :welcome => self.welcome_msg.blank? ? default_welcome_message : self.welcome_msg,
-      :dialNumber => self.dial_number,
-      :logoutURL => self.full_logout_url || self.logout_url,
-      :maxParticipants => self.max_participants,
-      :moderatorOnlyMessage => self.moderator_only_message,
-      :autoStartRecording => self.auto_start_recording,
-      :allowStartStopRecording => self.allow_start_stop_recording
+      record: record_meeting,
+      duration: self.duration,
+      moderatorPW: self.moderator_api_password,
+      attendeePW: self.attendee_api_password,
+      welcome: self.welcome_msg.blank? ? default_welcome_message : self.welcome_msg,
+      dialNumber: self.dial_number,
+      logoutURL: self.full_logout_url || self.logout_url,
+      maxParticipants: self.max_participants,
+      moderatorOnlyMessage: self.moderator_only_message,
+      autoStartRecording: self.auto_start_recording,
+      allowStartStopRecording: self.allow_start_stop_recording
     }
 
     # Set the voice bridge only if the gem is configured to do so and the voice bridge

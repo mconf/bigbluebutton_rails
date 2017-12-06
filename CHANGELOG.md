@@ -1,5 +1,16 @@
 # Change Log
 
+## [2.3.0] - _Unreleased_
+
+* [#136] Improve matching between recordings and meetings and migrate old recordings to
+  always (when possible) have a meeting associated.
+* Add new worker to fetch recordings after meetings are ended to improve the speed with which
+  recordings are found after meetings
+* Fix setting the `recorded` attributes in newly created meetings, it was always using the
+  attributes from model, without considering that it is possible to override these attributes when
+  making a "create" call (which is exactly what Mconf-Web does).
+
+
 ## [2.2.0] - 2017-10-04
 
 * Make only description editable in recordings, since all other attributes are taken from

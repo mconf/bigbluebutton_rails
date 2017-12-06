@@ -57,7 +57,7 @@ class BigbluebuttonServer < ActiveRecord::Base
 
   # Schedules a recording update right after a recording server is added.
   after_create do
-    Resque.enqueue(::BigbluebuttonUpdateRecordings, self.id)
+    Resque.enqueue(::BigbluebuttonUpdateRecordingsWorker, self.id)
   end
 
   # In case there's no config created yet, build one.

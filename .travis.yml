@@ -13,6 +13,4 @@ before_script:
 cache: bundler
 script: "bundle exec rake rails_app:install rails_app:db spec"
 rvm:
-  - 2.1.2
-  - 2.2.0
-  - 1.9.3
+  - 2.2
