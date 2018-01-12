@@ -27,6 +27,13 @@ class BigbluebuttonRecording < ActiveRecord::Base
     self.recordid
   end
 
+  def get_token(user, ip)
+    server = BigbluebuttonServer.default
+    auth_token = server.api.send_api_request(:getRecordingToken, { authUser: user.full_name, authAddr: ip, meetingID: self.recordid })
+    #auth_url = CREATE THE URL THAT JOINS ADDS THE TOKEN PARAM AT THE END
+    #auth_url
+  end
+
   def default_playback_format
     playback_formats.joins(:playback_type)
       .where("bigbluebutton_playback_types.default = ?", true).first

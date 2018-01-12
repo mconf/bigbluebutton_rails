@@ -64,7 +64,12 @@ class Bigbluebutton::RecordingsController < ApplicationController
     respond_with do |format|
       format.html {
         if @playback
-          redirect_to @playback.url
+          if BigbluebuttonRails.configuration.playback_url_authentication
+            puts "why then?"
+            @recording.get_token(bigbluebutton_user, request.remote_ip)
+          else
+            redirect_to @playback.url
+          end
         else
           flash[:error] = t('bigbluebutton_rails.recordings.errors.play.no_format')
           redirect_to_using_params bigbluebutton_recording_url(@recording)
