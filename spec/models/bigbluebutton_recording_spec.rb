@@ -48,6 +48,19 @@ describe BigbluebuttonRecording do
     }
   end
 
+  describe "#get_token" do
+    it { should respond_to(:get_token) }
+
+    let!(:recording) { FactoryGirl.create(:bigbluebutton_recording) }
+    let!(:type_default) { FactoryGirl.create(:bigbluebutton_playback_type, default: true) }
+
+    before do
+      recording.stub(:get_token).and_return(File.join(Rails.root, "spec", "fixtures", "files", "playback_token_auth.xml"))
+    end
+
+    it  { recording.get_token should_eql("RECORDING_TOKEN") }
+  end
+
   describe "#default_playback_format" do
     let!(:recording) { FactoryGirl.create(:bigbluebutton_recording) }
     let!(:type_default) { FactoryGirl.create(:bigbluebutton_playback_type, default: true) }
