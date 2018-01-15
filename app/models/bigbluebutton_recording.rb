@@ -27,10 +27,10 @@ class BigbluebuttonRecording < ActiveRecord::Base
     self.recordid
   end
 
-  def get_token(user, ip)
+  def token_url(user, ip, playback)
     server = BigbluebuttonServer.default
-    auth_token = server.api.send_api_request(:getRecordingToken, { authUser: user.full_name, authAddr: ip, meetingID: self.recordid })
-    #auth_url = CREATE THE URL THAT JOINS ADDS THE TOKEN PARAM AT THE END
+    auth_token = server.api.send_api_request(:getRecordingToken, { authUser: user.username, authAddr: ip, meetingID: self.recordid })
+    #auth_url = PARSE SAFE URL WITH RUBY METHODS HERE
     #auth_url
   end
 

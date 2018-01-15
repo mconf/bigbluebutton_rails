@@ -65,7 +65,7 @@ class Bigbluebutton::RecordingsController < ApplicationController
       format.html {
         if @playback
           if BigbluebuttonRails.configuration.playback_url_authentication
-            @recording.get_token(bigbluebutton_user, request.remote_ip)
+            @recording.token_url(bigbluebutton_user, request.remote_ip, @playback)
           else
             redirect_to @playback.url
           end
