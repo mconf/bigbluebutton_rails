@@ -30,8 +30,13 @@ class BigbluebuttonRecording < ActiveRecord::Base
   def token_url(user, ip, playback)
     server = BigbluebuttonServer.default
     auth_token = server.api.send_api_request(:getRecordingToken, { authUser: user.username, authAddr: ip, meetingID: self.recordid })
-    #auth_url = PARSE SAFE URL WITH RUBY METHODS HERE
-    #auth_url
+    if auth_token.present?
+      token = (XmlSimple.xml_in auth_token)["token"].first
+      uri = "http://test.com/path/outro"
+      uri += URI.parse(uri).query.blank? ? "?" : "&"
+      uri += "token=#{token}"
+      uri
+    end
   end
 
   def default_playback_format
