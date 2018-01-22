@@ -1041,6 +1041,15 @@ describe BigbluebuttonRoom do
           }
           it { room.parameterized_join_url(username, role, nil) }
         end
+
+        context "not when a token is passed in the options" do
+          before {
+            room.create_time = nil
+            room.should_not_receive(:fetch_new_token)
+            room.should_receive(:join_url).with(username, role, nil, { configToken: "any" })
+          }
+          it { room.parameterized_join_url(username, role, nil, { configToken: "any" }) }
+        end
       end
 
       context "sets a create time" do
@@ -1093,14 +1102,13 @@ describe BigbluebuttonRoom do
           it { room.parameterized_join_url(username, role, nil, options) }
         end
 
-        context "doesn't override the options set internally by the method" do
-          let(:options) { { option1: 'value1', configToken: 'invalid', createTime: 'invalid', userID: 'invalid' } }
-          let(:expected_options) { { option1: 'value1', configToken: 'valid', createTime: room.create_time, userID: 'valid' } }
+        context "overrides the options set internally by the method" do
+          let(:options) { { option1: 'value1', configToken: 'opts-token', createTime: 123, userID: 'opts-userid' } }
           before {
             room.stub(:fetch_new_token).and_return('valid')
-            room.should_receive(:join_url).with(username, role, nil, expected_options)
+            room.should_receive(:join_url).with(username, role, nil, options)
           }
-          it { room.parameterized_join_url(username, role, 'valid', options) }
+          it { room.parameterized_join_url(username, role, 'opts-userid', options) }
         end
       end
 
@@ -1220,8 +1228,25 @@ describe BigbluebuttonRoom do
         }
         it("returns nil") { room.fetch_new_token.should be_nil }
       end
-    end
 
+      context "when used with a block" do
+        before {
+          room.room_options.should_receive(:is_modified?)
+            .and_return(true)
+          mocked_api.should_receive(:get_default_config_xml).and_return(config_xml)
+          room.room_options.should_not_receive(:set_on_config_xml)
+          mocked_server.should_receive(:update_config).with('fake-xml-from-block')
+          mocked_api.should_receive(:set_config_xml)
+            .with(room.meetingid, 'fake-xml-from-block')
+        }
+        it("uses the xml returned by the block") {
+          room.fetch_new_token do |xml|
+            xml.should eql(config_xml)
+            'fake-xml-from-block'
+          end
+        }
+      end
+    end
   end
 
   context "#available_layouts" do
