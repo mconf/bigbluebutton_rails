@@ -499,7 +499,7 @@ class BigbluebuttonRoom < ActiveRecord::Base
   # Triggers API call: <tt>getDefaultConfigXML</tt>.
   # Triggers API call: <tt>setConfigXML</tt>.
   def fetch_new_token
-    if self.room_options.is_modified?
+    if self.room_options.is_modified? || block_given?
       server = BigbluebuttonRails.configuration.select_server.call(self, :set_config_xml)
 
       # get the default XML we will use to create a new one
