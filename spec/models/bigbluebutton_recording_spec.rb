@@ -66,6 +66,26 @@ describe BigbluebuttonRecording do
     end
   end
 
+  describe "#delete_from_server" do
+    let!(:recording) { FactoryGirl.create(:bigbluebutton_recording) }
+
+    context "when there's a server associated" do
+      let!(:server) { FactoryGirl.create(:bigbluebutton_server) }
+      before {
+        recording.update_attributes(server: server)
+        server.should_receive(:send_delete_recordings).with(recording.recordid).and_return('response')
+      }
+      it { recording.delete_from_server!.should eql('response') }
+    end
+
+    context "when there's no server associated" do
+      before {
+        recording.update_attributes(server: nil)
+      }
+      it { recording.delete_from_server!.should be(false) }
+    end
+  end
+
   describe ".overall_average_length" do
     context "when there's no recording" do
       it { BigbluebuttonRecording.overall_average_length.should eql(0) }

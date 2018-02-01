@@ -32,6 +32,15 @@ class BigbluebuttonRecording < ActiveRecord::Base
       .where("bigbluebutton_playback_types.default = ?", true).first
   end
 
+  # Remove this recording from the server
+  def delete_from_server!
+    if self.server.present?
+      self.server.send_delete_recordings(self.recordid)
+    else
+      false
+    end
+  end
+
   # Returns the overall (i.e. for all recordings) average length of recordings in seconds
   # Uses the length of the default playback format
   def self.overall_average_length
