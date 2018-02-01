@@ -329,6 +329,7 @@ describe BigbluebuttonRecording do
         :end_time => attrs[:end_time],
         :size => attrs[:size],
         :metadata => { :any => "any" },
+        :recordingUsers => { :user => [{ :externalUserID => 1 }, { :externalUserID => 2 }] },
         :playback => { :format => [ { :type => "any1" }, { :type => "any2" } ] }
       }
     }
@@ -350,6 +351,7 @@ describe BigbluebuttonRecording do
       it { recording.size.should == attrs[:size] }
       it { recording.server.should == new_server }
       it { recording.room.should == @room }
+      it { recording.recording_users.should eql([1, 2]) }
     end
 
     context "works if the recording returned has no :size attribute" do
@@ -359,6 +361,14 @@ describe BigbluebuttonRecording do
         BigbluebuttonRecording.send(:update_recording, new_server, recording, data)
       }
       it { recording.size.should == 0 }
+    end
+
+    context "works if the recording returned has no :recordingUsers attribute" do
+      before {
+        data.delete(:recordingUsers)
+        BigbluebuttonRecording.send(:update_recording, new_server, recording, data)
+      }
+      it { recording.recording_users.should == [] }
     end
   end
 
@@ -375,6 +385,7 @@ describe BigbluebuttonRecording do
         :start_time => meeting_create_time,
         :end_time => attrs[:end_time],
         :metadata => { :any => "any" },
+        :recordingUsers => { :user => [{ :externalUserID => 3 }, { :externalUserID => 4 }] },
         :playback => { :format => [ { :type => "any1" }, { :type => "any2" } ] }
       }
     }
@@ -402,6 +413,8 @@ describe BigbluebuttonRecording do
       time = Time.at(data[:start_time]).utc.to_formatted_s(:long)
       @recording.description.should == I18n.t('bigbluebutton_rails.recordings.default.description', :time => time)
     }
+    it("sets recording_users") { @recording.recording_users.should eql([3, 4]) }
+
     context "schedules a BigbluebuttonGetStatsForMeetingWorker" do
       subject {
         # the second job scheduled
@@ -434,6 +447,30 @@ describe BigbluebuttonRecording do
     }
     subject { BigbluebuttonRecording.send(:adapt_recording_hash, before) }
     it { should eq(after) }
+  end
+
+  describe ".adapt_recording_users" do
+    context "with one user" do
+      let(:original) {
+        { :user => { :externalUserID => 1 } }
+      }
+      let(:expected) { [1] }
+      it { BigbluebuttonRecording.send(:adapt_recording_users, original).should eql(expected) }
+    end
+
+    context "with several users" do
+      let(:original) {
+        { :user => [{ :externalUserID => 2 }, { :externalUserID => 1 }, { :externalUserID => 15 }] }
+      }
+      let(:expected) { [2, 1, 15] }
+      it { BigbluebuttonRecording.send(:adapt_recording_users, original).should eql(expected) }
+    end
+
+    [nil, []].each do |arg|
+      context "returns nil if the argument is #{arg.inspect}" do
+        it { BigbluebuttonRecording.send(:adapt_recording_users, arg).should be_nil }
+      end
+    end
   end
 
   describe ".sync_additional_data" do

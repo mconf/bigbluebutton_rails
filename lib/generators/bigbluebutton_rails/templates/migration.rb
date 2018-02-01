@@ -61,6 +61,7 @@ class CreateBigbluebuttonRails < ActiveRecord::Migration
       t.boolean :available, :default => true
       t.string :description
       t.integer :size, limit: 8, default: 0
+      t.text :recording_users
       t.timestamps
     end
     add_index :bigbluebutton_recordings, :room_id
