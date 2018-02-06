@@ -30,7 +30,7 @@ class BigbluebuttonRecording < ActiveRecord::Base
   def get_token(user, ip, playback)
     server = BigbluebuttonServer.default
     xml_token = server.api.send_api_request(:getRecordingToken, { authUser: user.username, authAddr: ip, meetingID: self.recordid })
-    token = (XmlSimple.xml_in xml_token)["token"].first
+    token = (xml_token)["token"]
     token
   end
 
