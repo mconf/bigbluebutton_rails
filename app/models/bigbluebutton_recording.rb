@@ -27,17 +27,17 @@ class BigbluebuttonRecording < ActiveRecord::Base
     self.recordid
   end
 
-  def get_token(user, ip, playback)
+  def get_token(user, ip)
     server = BigbluebuttonServer.default
-    xml_token = server.api.send_api_request(:getRecordingToken, { authUser: user.username, authAddr: ip, meetingID: self.recordid })
-    token = (xml_token)["token"]
-    token
+    api_token = server.api.send_api_request(:getRecordingToken, { authUser: user.username, authAddr: ip, meetingID: self.recordid })
+    str_token = api_token[:token]
+    str_token
   end
 
   def token_url(user, ip, playback)
-    auth_token = get_token(user, ip, playback)
+    auth_token = get_token(user, ip)
     if auth_token.present?
-      uri = "http://test.com/path/outro"
+      uri = playback.url
       uri += URI.parse(uri).query.blank? ? "?" : "&"
       uri += "token=#{auth_token}"
       uri

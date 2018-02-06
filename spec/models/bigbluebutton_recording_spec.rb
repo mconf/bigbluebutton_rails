@@ -56,15 +56,14 @@ describe BigbluebuttonRecording do
     let!(:server) { FactoryGirl.create(:bigbluebutton_server) }
     let(:user) { FactoryGirl.build(:user) }
     let(:user_ip) { "10.0.0.1" }
-    let!(:format) { FactoryGirl.create(:bigbluebutton_playback_format, recording: recording, playback_type: type_default) }
     let(:api) { double(BigBlueButton::BigBlueButtonApi) }
 
     before do
       BigbluebuttonServer.any_instance.stub(:api).and_return(api)
-      api.stub(:send_api_request).and_return(File.read(File.join(Rails.root, "fixtures", "files", "playback_token_auth.xml")))
+      api.stub(:send_api_request).and_return({:returncode=>true, :token=>"RECORDING_TOKEN", :messageKey=>"", :message=>""})
     end
 
-    it  { recording.get_token(user, user_ip, format).should include("RECORDING_TOKEN") }
+    it  { recording.get_token(user, user_ip).should include("RECORDING_TOKEN") }
   end
 
   describe "#token_url" do
@@ -80,7 +79,7 @@ describe BigbluebuttonRecording do
 
     before do
       BigbluebuttonServer.any_instance.stub(:api).and_return(api)
-      api.stub(:send_api_request).and_return(File.read(File.join(Rails.root, "fixtures", "files", "playback_token_auth.xml")))
+      api.stub(:send_api_request).and_return({:returncode=>true, :token=>"RECORDING_TOKEN", :messageKey=>"", :message=>""})
     end
 
     it  { recording.token_url(user, user_ip, format).should include("?token=RECORDING_TOKEN") }
