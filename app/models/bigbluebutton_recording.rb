@@ -29,11 +29,14 @@ class BigbluebuttonRecording < ActiveRecord::Base
 
   def get_token(user, ip)
     server = BigbluebuttonServer.default
-    api_token = server.api.send_api_request(:getRecordingToken, { authUser: user.username, authAddr: ip, meetingID: self.recordid })
+    user.present? ? authName = user.username : authName = "anonymous"
+    api_token = server.api.send_api_request(:getRecordingToken, { authUser: authName, authAddr: ip, meetingID: self.recordid })
     str_token = api_token[:token]
     str_token
   end
 
+  # Passing it on the url
+  #
   def token_url(user, ip, playback)
     auth_token = get_token(user, ip)
     if auth_token.present?
