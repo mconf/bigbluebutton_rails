@@ -19,6 +19,7 @@ module BigbluebuttonRails
     attr_accessor :get_invitation_url
     attr_accessor :get_create_options
     attr_accessor :get_join_options
+    attr_accessor :playback_url_authentication
 
     def initialize
       @controllers = {
@@ -41,6 +42,8 @@ module BigbluebuttonRails
       @user_attr_id   = :'id'
       @use_local_voice_bridges = false
       @guest_support = false
+      # Flag to use authentication on playback url
+      @playback_url_authentication = false
 
       # How to find the room of a recording using the `data` returned by
       # a `getRecordings`.
