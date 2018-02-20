@@ -23,6 +23,8 @@ class BigbluebuttonRecording < ActiveRecord::Base
 
   scope :published, -> { where(:published => true) }
 
+  serialize :recording_users, Array
+
   def to_param
     self.recordid
   end
@@ -50,6 +52,15 @@ class BigbluebuttonRecording < ActiveRecord::Base
   def default_playback_format
     playback_formats.joins(:playback_type)
       .where("bigbluebutton_playback_types.default = ?", true).first
+  end
+
+  # Remove this recording from the server
+  def delete_from_server!
+    if self.server.present?
+      self.server.send_delete_recordings(self.recordid)
+    else
+      false
+    end
   end
 
   # Returns the overall (i.e. for all recordings) average length of recordings in seconds
@@ -127,6 +138,22 @@ class BigbluebuttonRecording < ActiveRecord::Base
     new_hash
   end
 
+  def self.adapt_recording_users(original)
+    if original.present? && original.size > 0
+      users = original[:user]
+      users = [users] unless users.is_a?(Array)
+      users = users.map{ |u|
+        id = u[:externalUserID]
+        begin
+          id = Integer(id)
+        rescue
+        end
+        id
+      }
+      return users
+    end
+  end
+
   # Updates the BigbluebuttonRecording 'recording' with the data in the hash 'data'.
   # The format expected for 'data' follows the format returned by
   # BigBlueButtonApi#get_recordings but with the keys already converted to our format.
@@ -135,6 +162,7 @@ class BigbluebuttonRecording < ActiveRecord::Base
     recording.room = BigbluebuttonRails.configuration.match_room_recording.call(data)
     recording.attributes = data.slice(:meetingid, :name, :published, :start_time, :end_time, :size)
     recording.available = true
+    recording.recording_users = adapt_recording_users(data[:recordingUsers])
     recording.save!
 
     sync_additional_data(recording, data)
@@ -151,6 +179,7 @@ class BigbluebuttonRecording < ActiveRecord::Base
     recording.server = server
     recording.description = I18n.t('bigbluebutton_rails.recordings.default.description', :time => Time.at(recording.start_time).utc.to_formatted_s(:long))
     recording.meeting = BigbluebuttonRecording.find_matching_meeting(recording)
+    recording.recording_users = adapt_recording_users(data[:recordingUsers])
     recording.save!
 
     sync_additional_data(recording, data)

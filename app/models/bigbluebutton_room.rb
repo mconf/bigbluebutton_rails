@@ -268,12 +268,14 @@ class BigbluebuttonRoom < ActiveRecord::Base
     opts = options.clone
 
     # gets the token with the configurations for this user/room
-    token = self.fetch_new_token
-    opts.merge!({ configToken: token }) unless token.blank?
+    if opts[:configToken].blank?
+      token = self.fetch_new_token
+      opts.merge!({ configToken: token }) unless token.blank?
+    end
 
     # set the create time and the user id, if they exist
-    opts.merge!({ createTime: self.create_time }) unless self.create_time.blank?
-    opts.merge!({ userID: id }) unless id.blank?
+    opts.merge!({ createTime: self.create_time }) unless self.create_time.blank? || options[:createTime].present?
+    opts.merge!({ userID: id }) unless id.blank? || options[:userID].present?
 
     # Get options passed by the application, if any
     user_opts = BigbluebuttonRails.configuration.get_join_options.call(self, user)
@@ -417,7 +419,7 @@ class BigbluebuttonRoom < ActiveRecord::Base
           recorded: self.record_meeting,
           create_time: self.create_time,
           running: self.running,
-          ended: false,
+          ended: false
         }
 
         metadata = response[:metadata]
@@ -497,15 +499,20 @@ class BigbluebuttonRoom < ActiveRecord::Base
   # Triggers API call: <tt>getDefaultConfigXML</tt>.
   # Triggers API call: <tt>setConfigXML</tt>.
   def fetch_new_token
-    if self.room_options.is_modified?
+    if self.room_options.is_modified? || block_given?
       server = BigbluebuttonRails.configuration.select_server.call(self, :set_config_xml)
 
       # get the default XML we will use to create a new one
       config_xml = server.api.get_default_config_xml
 
-      # set the options on the XML
-      # returns true if something was changed
-      config_xml = self.room_options.set_on_config_xml(config_xml)
+      if block_given?
+        config_xml = yield(config_xml)
+      else
+        # set the options on the XML
+        # returns true if something was changed
+        config_xml = self.room_options.set_on_config_xml(config_xml)
+      end
+
       if config_xml
         server.update_config(config_xml)
         # get the new token for the room, and return it
