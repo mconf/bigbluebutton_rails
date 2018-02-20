@@ -29,6 +29,26 @@ class BigbluebuttonRecording < ActiveRecord::Base
     self.recordid
   end
 
+  def get_token(user, ip)
+    server = BigbluebuttonServer.default
+    user.present? ? authName = user.username : authName = "anonymous"
+    api_token = server.api.send_api_request(:getRecordingToken, { authUser: authName, authAddr: ip, meetingID: self.recordid })
+    str_token = api_token[:token]
+    str_token
+  end
+
+  # Passing it on the url
+  #
+  def token_url(user, ip, playback)
+    auth_token = get_token(user, ip)
+    if auth_token.present?
+      uri = playback.url
+      uri += URI.parse(uri).query.blank? ? "?" : "&"
+      uri += "token=#{auth_token}"
+      uri
+    end
+  end
+
   def default_playback_format
     playback_formats.joins(:playback_type)
       .where("bigbluebutton_playback_types.default = ?", true).first
