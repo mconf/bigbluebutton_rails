@@ -48,6 +48,43 @@ describe BigbluebuttonRecording do
     }
   end
 
+  describe "#get_token" do
+    it { should respond_to(:get_token) }
+
+    let!(:recording) { FactoryGirl.create(:bigbluebutton_recording) }
+    let!(:type_default) { FactoryGirl.create(:bigbluebutton_playback_type, default: true) }
+    let!(:server) { FactoryGirl.create(:bigbluebutton_server) }
+    let(:user) { FactoryGirl.build(:user) }
+    let(:user_ip) { "10.0.0.1" }
+    let(:api) { double(BigBlueButton::BigBlueButtonApi) }
+
+    before do
+      BigbluebuttonServer.any_instance.stub(:api).and_return(api)
+      api.stub(:send_api_request).and_return({:returncode=>true, :token=>"RECORDING_TOKEN", :messageKey=>"", :message=>""})
+    end
+
+    it  { recording.get_token(user, user_ip).should include("RECORDING_TOKEN") }
+  end
+
+  describe "#token_url" do
+    it { should respond_to(:token_url) }
+
+    let!(:recording) { FactoryGirl.create(:bigbluebutton_recording) }
+    let!(:type_default) { FactoryGirl.create(:bigbluebutton_playback_type, default: true) }
+    let!(:server) { FactoryGirl.create(:bigbluebutton_server) }
+    let(:user) { FactoryGirl.build(:user) }
+    let(:user_ip) { "10.0.0.1" }
+    let!(:format) { FactoryGirl.create(:bigbluebutton_playback_format, recording: recording, playback_type: type_default) }
+    let(:api) { double(BigBlueButton::BigBlueButtonApi) }
+
+    before do
+      BigbluebuttonServer.any_instance.stub(:api).and_return(api)
+      api.stub(:send_api_request).and_return({:returncode=>true, :token=>"RECORDING_TOKEN", :messageKey=>"", :message=>""})
+    end
+
+    it  { recording.token_url(user, user_ip, format).should include("?token=RECORDING_TOKEN") }
+  end
+
   describe "#default_playback_format" do
     let!(:recording) { FactoryGirl.create(:bigbluebutton_recording) }
     let!(:type_default) { FactoryGirl.create(:bigbluebutton_playback_type, default: true) }
