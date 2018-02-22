@@ -87,6 +87,7 @@ class CreateBigbluebuttonRails < ActiveRecord::Migration
       t.string :identifier
       t.boolean :visible, :default => false
       t.boolean :default, :default => false
+      t.boolean :downloadable, :default => false
       t.timestamps
     end
 

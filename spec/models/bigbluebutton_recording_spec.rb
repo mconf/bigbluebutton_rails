@@ -623,14 +623,29 @@ describe BigbluebuttonRecording do
       }
 
       context "and it's not in the database yet" do
-        before {
-          BigbluebuttonRecording.send(:sync_playback_formats, recording, data)
-        }
-        it { BigbluebuttonPlaybackFormat.count.should == 1 }
-        it { BigbluebuttonPlaybackFormat.where(:recording_id => recording.id).count.should == 1 }
-        it { BigbluebuttonPlaybackFormat.where(:recording_id => recording.id).last.url.should == "url1" }
-        it { BigbluebuttonPlaybackFormat.where(:recording_id => recording.id).last.length.should == 1 }
-        it { BigbluebuttonPlaybackFormat.where(:recording_id => recording.id).last.visible.should be(true) }
+        context "if it is not a downloadable format" do
+          before {
+            BigbluebuttonRecording.send(:sync_playback_formats, recording, data)
+          }
+          it { BigbluebuttonPlaybackFormat.count.should == 1 }
+          it { BigbluebuttonPlaybackFormat.where(:recording_id => recording.id).count.should == 1 }
+          it { BigbluebuttonPlaybackFormat.where(:recording_id => recording.id).last.url.should == "url1" }
+          it { BigbluebuttonPlaybackFormat.where(:recording_id => recording.id).last.length.should == 1 }
+          it { BigbluebuttonPlaybackFormat.where(:recording_id => recording.id).last.visible.should be(true) }
+        end
+
+        context "if it is a downloadable format" do
+          after {
+            @previous = BigbluebuttonRails.configuration.downloadable_playback_types
+          }
+          before {
+            BigbluebuttonRails.configuration.downloadable_playback_types = ['any1']
+            BigbluebuttonRecording.send(:sync_playback_formats, recording, data)
+            BigbluebuttonRails.configuration.downloadable_playback_types = @previous
+          }
+          it { BigbluebuttonPlaybackFormat.count.should == 1 }
+          it { BigbluebuttonPlaybackFormat.where(:recording_id => recording.id).last.downloadable.should be(true) }
+        end
       end
 
       context "and it's already in the database" do

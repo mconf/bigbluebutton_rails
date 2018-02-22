@@ -273,6 +273,90 @@ describe Bigbluebutton::RecordingsController do
       before(:each) { get :play, :id => recording.to_param, :type => format.format_type }
       it { should assign_to(:recording).with(other_recording) }
     end
+
+    context "authenticates" do
+      let!(:format) { FactoryGirl.create(:bigbluebutton_playback_format, :recording => recording) }
+
+      before { @previous = BigbluebuttonRails.configuration.playback_url_authentication }
+      after { BigbluebuttonRails.configuration.playback_url_authentication = @previous }
+
+      context "if authentication is enabled" do
+        before {
+          BigbluebuttonRails.configuration.playback_url_authentication = true
+          controller.should_receive(:bigbluebutton_user).and_return('fake-user')
+          BigbluebuttonRecording.any_instance.should_receive(:token_url)
+            .with('fake-user', request.remote_ip, format)
+            .and_return('tokenized-url')
+        }
+        before(:each) { get :play, :id => recording.to_param, :type => format.format_type }
+        it { should respond_with(:redirect) }
+        it { should redirect_to 'tokenized-url' }
+        it { should assign_to(:playback_url).with('tokenized-url') }
+      end
+
+      context "if authentication is not enabled" do
+        before {
+          BigbluebuttonRails.configuration.playback_url_authentication = false
+          BigbluebuttonRecording.any_instance.should_not_receive(:token_url)
+        }
+        before(:each) { get :play, :id => recording.to_param, :type => format.format_type }
+        it { should respond_with(:redirect) }
+        it { should redirect_to format.url }
+        it { should assign_to(:playback_url).with(format.url) }
+      end
+    end
+
+    context "uses an iframe" do
+      let!(:format) { FactoryGirl.create(:bigbluebutton_playback_format, :recording => recording) }
+
+      before { @previous = BigbluebuttonRails.configuration.playback_iframe }
+      after { BigbluebuttonRails.configuration.playback_iframe = @previous }
+
+      context "if the iframe option is on" do
+        before { BigbluebuttonRails.configuration.playback_iframe = true }
+
+        context "and it is downloadable" do
+          before {
+            format.playback_type.update_attributes(downloadable: true)
+            get :play, :id => recording.to_param, :type => format.format_type
+          }
+          it { should respond_with(:redirect) }
+          it { should redirect_to format.url }
+        end
+
+        context "and it is not downloadable" do
+          before {
+            format.playback_type.update_attributes(downloadable: false)
+            get :play, :id => recording.to_param, :type => format.format_type
+          }
+          it { should respond_with(:success) }
+          it { should render_template(:play) }
+          it { should_not render_with_layout }
+        end
+      end
+
+      context "if the iframe option is off" do
+        before { BigbluebuttonRails.configuration.playback_iframe = false }
+
+        context "and it is downloadable" do
+          before {
+            format.playback_type.update_attributes(downloadable: true)
+            get :play, :id => recording.to_param, :type => format.format_type
+          }
+          it { should respond_with(:redirect) }
+          it { should redirect_to format.url }
+        end
+
+        context "and it is not downloadable" do
+          before {
+            format.playback_type.update_attributes(downloadable: false)
+            get :play, :id => recording.to_param, :type => format.format_type
+          }
+          it { should respond_with(:redirect) }
+          it { should redirect_to format.url }
+        end
+      end
+    end
   end
 
   # these actions are essentially the same
