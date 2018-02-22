@@ -9,6 +9,7 @@ describe BigbluebuttonPlaybackType do
     it { should have_db_column(:default).of_type(:boolean) }
     it { should have_db_column(:created_at).of_type(:datetime) }
     it { should have_db_column(:updated_at).of_type(:datetime) }
+    it { should have_db_column(:downloadable).of_type(:boolean) }
   end
 
 end

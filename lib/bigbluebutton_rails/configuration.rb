@@ -12,6 +12,9 @@ module BigbluebuttonRails
     attr_accessor :user_attr_id
     attr_accessor :use_local_voice_bridges
     attr_accessor :api_secret
+    attr_accessor :playback_url_authentication
+    attr_accessor :playback_iframe
+    attr_accessor :downloadable_playback_types
 
     # methods
     attr_accessor :select_server
@@ -19,7 +22,6 @@ module BigbluebuttonRails
     attr_accessor :get_invitation_url
     attr_accessor :get_create_options
     attr_accessor :get_join_options
-    attr_accessor :playback_url_authentication
 
     def initialize
       @controllers = {
@@ -42,8 +44,17 @@ module BigbluebuttonRails
       @user_attr_id   = :'id'
       @use_local_voice_bridges = false
       @guest_support = false
+
       # Flag to use authentication on playback url
       @playback_url_authentication = false
+
+      # If true, show all non downloadable playbacks inside an iframe instead of
+      # redirecting to their URL
+      @playback_iframe = false
+
+      # Name of the playback formats that can be downloaded. They are treated differently
+      # from those that play in a web page, for example.
+      @downloadable_playback_types = ['presentation_video', 'presentation_html']
 
       # How to find the room of a recording using the `data` returned by
       # a `getRecordings`.

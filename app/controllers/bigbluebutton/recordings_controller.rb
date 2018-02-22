@@ -6,6 +6,17 @@ class Bigbluebutton::RecordingsController < ApplicationController
   before_filter :check_for_server, :only => [:publish, :unpublish]
   before_filter :find_playback, :only => [:play]
 
+  layout :determine_layout
+
+  def determine_layout
+    case params[:action].to_sym
+    when :play
+      false
+    else
+      'application'
+    end
+  end
+
   def index
     @recordings ||= BigbluebuttonRecording.all
     respond_with(@recordings)
@@ -61,20 +72,20 @@ class Bigbluebutton::RecordingsController < ApplicationController
   end
 
   def play
-    respond_with do |format|
-      format.html {
-        if @playback
-          if BigbluebuttonRails.configuration.playback_url_authentication
-            uri = @recording.token_url(bigbluebutton_user, request.remote_ip, @playback)
-            redirect_to uri
-          else
-            redirect_to @playback.url
-          end
-        else
-          flash[:error] = t('bigbluebutton_rails.recordings.errors.play.no_format')
-          redirect_to_using_params bigbluebutton_recording_url(@recording)
-        end
-      }
+    if @playback
+      if BigbluebuttonRails.configuration.playback_url_authentication
+        uri = @recording.token_url(bigbluebutton_user, request.remote_ip, @playback)
+        @playback_url = uri
+      else
+        @playback_url = @playback.url
+      end
+      if @playback.downloadable? || !BigbluebuttonRails.configuration.playback_iframe
+        redirect_to @playback_url
+      end
+      # else will render the default 'play' view
+    else
+      flash[:error] = t('bigbluebutton_rails.recordings.errors.play.no_format')
+      redirect_to_using_params bigbluebutton_recording_url(@recording)
     end
   end
 

@@ -264,7 +264,12 @@ class BigbluebuttonRecording < ActiveRecord::Base
       unless format[:type].blank?
         playback_type = BigbluebuttonPlaybackType.find_by_identifier(format[:type])
         if playback_type.nil?
-          attrs = { identifier: format[:type], visible: true }
+          downloadable = BigbluebuttonRails.configuration.downloadable_playback_types.include?(format[:type])
+          attrs = {
+            identifier: format[:type],
+            visible: true,
+            downloadable: downloadable
+          }
           playback_type = BigbluebuttonPlaybackType.create!(attrs)
         end
 
