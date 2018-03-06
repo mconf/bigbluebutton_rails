@@ -130,6 +130,13 @@ class Bigbluebutton::ServersController < ApplicationController
         flash[error ? :error : :notice] = message
         redirect_to bigbluebutton_server_path(@server)
       }
+      format.json {
+        if error
+          render :json => { :message => message }, :status => :error
+        else
+          render :json => true, :status => :ok
+        end
+      }
     end
   end
 
