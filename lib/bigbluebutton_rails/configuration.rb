@@ -54,7 +54,7 @@ module BigbluebuttonRails
 
       # Name of the playback formats that can be downloaded. They are treated differently
       # from those that play in a web page, for example.
-      @downloadable_playback_types = ['presentation_video', 'presentation_html']
+      @downloadable_playback_types = ['presentation_video', 'presentation_export']
 
       # How to find the room of a recording using the `data` returned by
       # a `getRecordings`.
