@@ -4,6 +4,11 @@ class BigbluebuttonRailsTo230 < ActiveRecord::Migration
     rename_column :bigbluebutton_servers, :param, :slug
     add_column :bigbluebutton_recordings, :recording_users, :text
     add_column :bigbluebutton_playback_types, :downloadable, :boolean, default: false
+
+    BigbluebuttonPlaybackType.find_each do |type|
+      downloadable = BigbluebuttonRails.configuration.downloadable_playback_types.include?(type.identifier)
+      type.update_attributes(downloadable: downloadable)
+    end
   end
 
   def self.down

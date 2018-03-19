@@ -469,6 +469,15 @@ describe Bigbluebutton::ServersController do
       it { should set_the_flash.to(I18n.t('bigbluebutton_rails.servers.notice.fetch_recordings.success')) }
     end
 
+    context "responds to :json" do
+      before(:each) {
+        server.should_receive(:fetch_recordings).with({})
+        post :fetch_recordings, :id => server.to_param, :format => :json
+      }
+      it { should respond_with(:success) }
+      it { should respond_with_content_type('application/json') }
+    end
+
     context "on failure" do
       let(:bbb_error_msg) { SecureRandom.hex(250) }
       let(:bbb_error) { BigBlueButton::BigBlueButtonException.new(bbb_error_msg) }

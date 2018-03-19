@@ -188,6 +188,13 @@ class Bigbluebutton::RoomsController < ApplicationController
         flash[error ? :error : :notice] = message
         redirect_to_using_params bigbluebutton_room_path(@room)
       }
+      format.json {
+        if error
+          render :json => { :message => message }, :status => :error
+        else
+          render :json => true, :status => :ok
+        end
+      }
     end
   end
 

@@ -801,6 +801,15 @@ describe Bigbluebutton::RoomsController do
       it { should set_the_flash.to(I18n.t('bigbluebutton_rails.rooms.notice.fetch_recordings.success')) }
     end
 
+    context "responds to :json" do
+      before(:each) {
+        mocked_server.should_receive(:fetch_recordings).with(filter)
+        post :fetch_recordings, :id => room.to_param, :format => :json
+      }
+      it { should respond_with(:success) }
+      it { should respond_with_content_type('application/json') }
+    end
+
     context "on BigBlueButtonException" do
       let(:bbb_error_msg) { SecureRandom.hex(250) }
       let(:bbb_error) { BigBlueButton::BigBlueButtonException.new(bbb_error_msg) }
