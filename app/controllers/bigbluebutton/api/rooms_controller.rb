@@ -49,7 +49,7 @@ class Bigbluebutton::Api::RoomsController < ApplicationController
   end
 
   def join
-    error_room_not_running unless check_is_running
+    return error_room_not_running unless check_is_running
 
     # map "meta[_-]" to "userdata-"
     options = params.select{ |k,v| k.match(/^meta[-_]/) }
