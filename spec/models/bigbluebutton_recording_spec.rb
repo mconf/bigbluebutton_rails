@@ -446,7 +446,6 @@ describe BigbluebuttonRecording do
     it("sets server") { @recording.server.should == new_server }
     it("sets room") { @recording.room.should == @room }
     it("sets meeting") { @recording.meeting.should == @meeting }
-    }
     it("sets recording_users") { @recording.recording_users.should eql([3, 4]) }
 
     context "schedules a BigbluebuttonGetStatsForMeetingWorker" do
