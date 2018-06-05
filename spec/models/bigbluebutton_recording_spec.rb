@@ -446,10 +446,6 @@ describe BigbluebuttonRecording do
     it("sets server") { @recording.server.should == new_server }
     it("sets room") { @recording.room.should == @room }
     it("sets meeting") { @recording.meeting.should == @meeting }
-    it("sets description") {
-      time = Time.at(data[:start_time]).utc.to_formatted_s(:long)
-      @recording.description.should == I18n.t('bigbluebutton_rails.recordings.default.description', :time => time)
-    }
     it("sets recording_users") { @recording.recording_users.should eql([3, 4]) }
 
     context "schedules a BigbluebuttonGetStatsForMeetingWorker" do
