@@ -69,6 +69,10 @@ pt-br:
       bigbluebutton_server_config: "Configurações do Servidor de Webconferência"
   bigbluebutton_rails:
     bigbluebutton: BigBlueButton
+    meetings:
+      notice:
+        destroy:
+           success_with_bbb_error: "A reunião foi destruída com sucesso mas não foi removida do servidor de webconferência (\"%{error}\")"
     metadata:
       errors:
         name_format: "pode utilizar apenas letras, números e os símbolos \"-\" ou \"_\", mas apenas letras no início"

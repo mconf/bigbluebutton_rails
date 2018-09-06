@@ -89,6 +89,10 @@ en:
           msg: "There's no meeting currently running in this room"
           title: "Meeting not running"
     bigbluebutton: BigBlueButton
+    meetings:
+      notice:
+        destroy:
+          success_with_bbb_error: "The meeting was successfully destroyed but it wasn't deleted from the webconference server (\"%{error}\")"
     metadata:
       errors:
         name_format: "can only use letters, numbers and the symbols \"-\" or \"_\", but only letters at the beginning"

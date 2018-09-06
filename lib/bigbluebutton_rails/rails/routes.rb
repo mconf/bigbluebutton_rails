@@ -99,7 +99,7 @@ module ActionDispatch::Routing
       options = params.extract_options!
       options_scope = options.has_key?(:scope) ? options[:scope] : BigbluebuttonRails.configuration.routing_scope
       options_as = options.has_key?(:as) ? options[:as] : options_scope
-      options_only = options.has_key?(:only) ? options[:only] : ["servers", "rooms", "recordings", "playback_types"]
+      options_only = options.has_key?(:only) ? options[:only] : ["servers", "rooms", "recordings", "playback_types", "meetings"]
       BigbluebuttonRails.configuration.set_controllers(options[:controllers])
 
       scope options_scope, :as => options_as do
@@ -107,6 +107,7 @@ module ActionDispatch::Routing
         add_routes_for_rooms if options_only.include?("rooms")
         add_routes_for_recordings if options_only.include?("recordings")
         add_routes_for_playback_types if options_only.include?("playback_types")
+        add_routes_for_meetings if options_only.include?("meetings")
       end
     end
 
@@ -158,6 +159,10 @@ module ActionDispatch::Routing
     def add_routes_for_playback_types #:nodoc:
       resources :playback_types, :only => [:update],
                                  :controller => BigbluebuttonRails.configuration.controllers[:playback_types]
+    end
+
+    def add_routes_for_meetings #:nodoc:
+      resources :meetings, :controller => 'bigbluebutton/meetings', :only => [:destroy]
     end
   end
 end
