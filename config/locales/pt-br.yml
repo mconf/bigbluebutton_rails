@@ -72,10 +72,10 @@ pt-br:
     meetings:
       notice:
         destroy:
-          success_with_bbb_error: "A reunião foi destruída com sucesso mas não foi removida do servidor de webconferência (\"%{error}\")"
-          error_destroy: "Não foi possível deletar esta reunião."
+          success_with_bbb_error: "O registro foi destruído com sucesso mas não foi removido do servidor de videoconferência (\"%{error}\")"
+          error_destroy: "Não foi possível deletar este registro."
           running:
-            not_ended: "Esta reunião não pode ser deletada porque ainda está acontecendo."
+            not_ended: "Este registro não pode ser deletado porque ainda está acontecendo."
     metadata:
       errors:
         name_format: "pode utilizar apenas letras, números e os símbolos \"-\" ou \"_\", mas apenas letras no início"
