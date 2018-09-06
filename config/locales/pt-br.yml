@@ -69,6 +69,13 @@ pt-br:
       bigbluebutton_server_config: "Configurações do Servidor de Webconferência"
   bigbluebutton_rails:
     bigbluebutton: BigBlueButton
+    meetings:
+      notice:
+        destroy:
+          success_with_bbb_error: "O registro foi destruído com sucesso mas não foi removido do servidor de videoconferência (\"%{error}\")"
+          error_destroy: "Não foi possível deletar este registro."
+          running:
+            not_ended: "Este registro não pode ser deletado porque ainda está acontecendo."
     metadata:
       errors:
         name_format: "pode utilizar apenas letras, números e os símbolos \"-\" ou \"_\", mas apenas letras no início"
