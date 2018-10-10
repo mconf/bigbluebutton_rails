@@ -2,6 +2,8 @@
 pt-br:
   activerecord:
     attributes:
+      bigbluebutton_meeting:
+        title: Título
       bigbluebutton_metadata:
         content: Conteúdo
         name: Nome
