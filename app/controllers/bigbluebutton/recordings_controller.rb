@@ -151,7 +151,7 @@ class Bigbluebutton::RecordingsController < ApplicationController
   end
 
   def recording_allowed_params
-    [ :description ]
+    []
   end
 
   protected
