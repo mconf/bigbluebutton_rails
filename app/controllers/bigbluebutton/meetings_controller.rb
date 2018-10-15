@@ -53,7 +53,7 @@ class Bigbluebutton::MeetingsController < ApplicationController
     respond_with @meeting do |format|
       if @meeting.update_attributes(meeting_params)
         format.html {
-          message = t('bigbluebutton_rails.recordings.notice.update.success')
+          message = t('bigbluebutton_rails.meeting.notice.update.success')
           redirect_to_using_params @meeting, :notice => message
         }
       else
