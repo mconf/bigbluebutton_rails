@@ -7,6 +7,7 @@ FactoryGirl.define do
     m.running false
     m.ended false
     m.create_time { Time.now.to_i + rand(999999) }
+    m.title { Forgery(:lorem_ipsum).words(1) }
     # m.creator_id
     # m.creator_name
   end
