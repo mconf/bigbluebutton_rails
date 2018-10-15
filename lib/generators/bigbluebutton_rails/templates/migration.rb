@@ -59,7 +59,6 @@ class CreateBigbluebuttonRails < ActiveRecord::Migration
       t.decimal :start_time, precision: 14, scale: 0
       t.decimal :end_time, precision: 14, scale: 0
       t.boolean :available, :default => true
-      t.string :description
       t.integer :size, limit: 8, default: 0
       t.text :recording_users
       t.timestamps
@@ -105,6 +104,7 @@ class CreateBigbluebuttonRails < ActiveRecord::Migration
       t.string :creator_name
       t.boolean :ended, :default => false
       t.string :got_stats
+      t.string :title, limit: 80
       t.timestamps
     end
     add_index :bigbluebutton_meetings, [:meetingid, :create_time], :unique => true
