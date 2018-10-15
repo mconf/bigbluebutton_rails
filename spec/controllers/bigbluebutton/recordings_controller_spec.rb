@@ -92,7 +92,7 @@ describe Bigbluebutton::RecordingsController do
       let(:attrs) { FactoryGirl.attributes_for(:bigbluebutton_recording) }
       let(:params) { { :bigbluebutton_recording => attrs } }
       let(:allowed_params) {
-        [ :description ]
+        []
       }
       it {
         # we just check that the rails method 'permit' is being called on the hash with the
