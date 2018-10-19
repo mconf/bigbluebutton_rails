@@ -36,4 +36,34 @@ class Bigbluebutton::MeetingsController < ApplicationController
   def find_meeting
     @meeting ||= BigbluebuttonMeeting.find_by(id: params[:id])
   end
+
+  def edit
+    respond_with(@meeting)
+  end
+
+  def meeting_params
+    unless params[:bigbluebutton_meeting].nil?
+      params[:bigbluebutton_meeting].permit(*meeting_allowed_params)
+    else
+      {}
+    end
+  end
+
+  def update
+    respond_with @meeting do |format|
+      if @meeting.update_attributes(meeting_params)
+        format.html {
+          message = t('bigbluebutton_rails.meeting.notice.update.success')
+          redirect_to_using_params @meeting, :notice => message
+        }
+      else
+        format.html { redirect_to_params_or_render :edit }
+      end
+    end
+  end
+
+  def meeting_allowed_params
+    [ :title ]
+  end
+
 end

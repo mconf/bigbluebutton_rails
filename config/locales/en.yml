@@ -2,6 +2,8 @@
 en:
   activerecord:
     attributes:
+      bigbluebutton_meeting:
+        title: Title
       bigbluebutton_metadata:
         content: Content
         name: Name
@@ -93,6 +95,8 @@ en:
       delete:
         success: "The register was successfully deleted."
       notice:
+        update:
+          success: "Your meeting was successfully updated."
         destroy:
           success_with_bbb_error: "The register was successfully destroyed but it wasn't deleted from the videoconference server (\"%{error}\")"
           error_destroy: "This register could not be deleted"

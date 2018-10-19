@@ -16,6 +16,8 @@ describe BigbluebuttonMeeting do
     it { should have_db_column(:ended).of_type(:boolean) }
     it { should have_db_column(:server_url).of_type(:string) }
     it { should have_db_column(:server_secret).of_type(:string) }
+    it { should have_db_column(:title).of_type(:string) }
+
     it "default values" do
       room = BigbluebuttonMeeting.new
       room.running.should be(false)

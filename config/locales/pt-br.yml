@@ -2,6 +2,8 @@
 pt-br:
   activerecord:
     attributes:
+      bigbluebutton_meeting:
+        title: Título
       bigbluebutton_metadata:
         content: Conteúdo
         name: Nome
@@ -71,6 +73,8 @@ pt-br:
     bigbluebutton: BigBlueButton
     meetings:
       notice:
+        update:
+          success: "Sua reunião foi atualizada com sucesso."
         destroy:
           success_with_bbb_error: "O registro foi destruído com sucesso mas não foi removido do servidor de videoconferência (\"%{error}\")"
           error_destroy: "Não foi possível deletar este registro."
