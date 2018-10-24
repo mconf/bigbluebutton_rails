@@ -92,6 +92,9 @@ en:
           title: "Meeting not running"
     bigbluebutton: BigBlueButton
     meetings:
+      notice:
+        update:
+          success: "The register was successfully updated."
       delete:
         success: "The register was successfully deleted."
       notice:
