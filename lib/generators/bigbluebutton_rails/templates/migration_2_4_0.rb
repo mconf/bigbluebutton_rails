@@ -3,7 +3,7 @@ class BigbluebuttonRailsTo240 < ActiveRecord::Migration
     add_column :bigbluebutton_meetings, :title, :string, limit: 80
 
     BigbluebuttonMeeting.find_each do |meeting|
-      if meeting.recorded?
+      if meeting.recording.present?
         meeting.update_attributes(title: meeting.recording.description)
       end
     end
