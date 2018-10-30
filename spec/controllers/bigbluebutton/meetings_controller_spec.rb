@@ -91,7 +91,7 @@ describe Bigbluebutton::MeetingsController do
         ignored = new_meeting.attributes.keys - ['title'] # only description is editable
         saved.should have_same_attributes_as(new_meeting, ignored)
       }
-      it { should set_the_flash.to(I18n.t('bigbluebutton_rails.meeting.notice.update.success')) }
+      it { should set_the_flash.to(I18n.t('bigbluebutton_rails.meetings.notice.update.success')) }
     end
 
     context "on failure" do

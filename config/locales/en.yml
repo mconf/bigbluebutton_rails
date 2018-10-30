@@ -63,12 +63,12 @@ en:
       bigbluebutton_server_config:
         available_layouts: "Available layouts"
     models:
-      bigbluebutton_metadata: "Web Conference Recording Metadata"
-      bigbluebutton_playback_format: "Web Conference Recording Playback Format"
-      bigbluebutton_recording: "Web Conference Recording"
-      bigbluebutton_room: "Web Conference Room"
-      bigbluebutton_server: "Web Conference Server"
-      bigbluebutton_server_config: "Web Conference Server Configurations"
+      bigbluebutton_metadata: "Videoconference Recording Metadata"
+      bigbluebutton_playback_format: "Videoconference Recording Playback Format"
+      bigbluebutton_recording: "Videoconference Recording"
+      bigbluebutton_room: "Videoconference Room"
+      bigbluebutton_server: "Videoconference Server"
+      bigbluebutton_server_config: "Videoconference Server Configurations"
   bigbluebutton_rails:
     api:
       errors:
@@ -92,19 +92,16 @@ en:
           title: "Meeting not running"
     bigbluebutton: BigBlueButton
     meetings:
-      notice:
-        update:
-          success: "The register was successfully updated."
       delete:
-        success: "The register was successfully deleted."
+        success: "The record was successfully deleted."
       notice:
         update:
-          success: "Your meeting was successfully updated."
+          success: "The record was successfully updated."
         destroy:
-          success_with_bbb_error: "The register was successfully destroyed but it wasn't deleted from the videoconference server (\"%{error}\")"
-          error_destroy: "This register could not be deleted"
+          success_with_bbb_error: "The record was successfully destroyed but it wasn't deleted from the videoconference server (\"%{error}\")"
+          error_destroy: "This record could not be deleted"
           running:
-            not_ended: "This register can not be deleted because it is still running"
+            not_ended: "This record can not be deleted because the meeting is still running"
     metadata:
       errors:
         name_format: "can only use letters, numbers and the symbols \"-\" or \"_\", but only letters at the beginning"
@@ -131,14 +128,14 @@ en:
           no_format: "There's no playback url specified for this recording."
       notice:
         destroy:
-          success: "Your recording was successfully destroyed."
-          success_with_bbb_error: "The recording was successfully destroyed but it wasn't deleted from the webconference server (\"%{error}\")"
+          success: "Recording destroyed!"
+          success_with_bbb_error: "The recording was successfully destroyed but it wasn't deleted from the videoconference server (\"%{error}\")"
         publish:
-          success: "Your recording was successfully published."
+          success: "Recording published!"
         unpublish:
-          success: "Your recording was successfully unpublished."
+          success: "Recording unpublished!"
         update:
-          success: "Your recording was successfully updated."
+          success: "Recording updated!"
     rooms:
       default_welcome_msg: "Welcome to <b>%%CONFNAME%%</b>!<br><br>To join the audio bridge click the headset icon (upper-left hand corner). Use a headset to avoid causing background noise for others.<br>"
       default_welcome_msg_dial_number: "<br>You can call into this conference with a regular phone using the number \"%%DIALNUM%%\".<br>"
@@ -157,11 +154,11 @@ en:
         slug_format: "can only use letters, numbers and the symbols \"-\" or \"_\" (not at the begin or end)"
       notice:
         create:
-          failure: "Your room could not be created."
-          success: "Your room was successfully created."
+          failure: "Room could not be created."
+          success: "Room created!"
         destroy:
-          success: "The room was successfully destroyed."
-          success_with_bbb_error: "The room was successfully destroyed but the meeting wasn't ended in the webconference server (\"%{error}\")"
+          success: "Room destroyed."
+          success_with_bbb_error: "The room was successfully destroyed but the meeting wasn't ended in the videoconference server (\"%{error}\")"
         end:
           not_running: "The meeting could not be ended because it is not running."
           success: "The meeting was successfully ended."
@@ -170,8 +167,8 @@ en:
         generate_dial_number:
           success: "A unique dial number was generated and saved."
         update:
-          failure: "Your room could not be updated."
-          success: "Your room was successfully updated."
+          failure: "Room not updated!"
+          success: "Room updated!"
     servers:
       errors:
         slug_format: "you can only use letters, numbers and the symbols \"-\" or \"_\" (not at the begin or end)"
