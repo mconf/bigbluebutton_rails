@@ -1139,7 +1139,7 @@ describe BigbluebuttonRoom do
             let(:user) { 'any user' }
             before {
               proc = double(Proc)
-              proc.should_receive(:call).with(room, user)
+              proc.should_receive(:call).with(room, user, {username: username, role: role} )
               BigbluebuttonRails.configuration.should_receive(:get_join_options).and_return(proc)
               room.stub(:fetch_new_token).and_return(nil)
               room.stub(:join_url)
@@ -1150,7 +1150,7 @@ describe BigbluebuttonRoom do
           context "if the user is not passed in the arguments" do
             before {
               proc = double(Proc)
-              proc.should_receive(:call).with(room, nil)
+              proc.should_receive(:call).with(room, nil, {username: username, role: role} )
               BigbluebuttonRails.configuration.should_receive(:get_join_options).and_return(proc)
               room.stub(:fetch_new_token).and_return(nil)
               room.stub(:join_url)

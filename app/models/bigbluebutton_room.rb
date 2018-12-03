@@ -278,7 +278,7 @@ class BigbluebuttonRoom < ActiveRecord::Base
     opts.merge!({ userID: id }) unless id.blank? || options[:userID].present?
 
     # Get options passed by the application, if any
-    user_opts = BigbluebuttonRails.configuration.get_join_options.call(self, user)
+    user_opts = BigbluebuttonRails.configuration.get_join_options.call(self, user, { username: username, role: role })
     user_opts = {} if user_opts.blank?
     opts.merge!(user_opts)
 
