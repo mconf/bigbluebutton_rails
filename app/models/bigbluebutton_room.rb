@@ -545,14 +545,23 @@ class BigbluebuttonRoom < ActiveRecord::Base
   # Will always generate a unique number. Tries several times if the number already
   # exists and returns `nil` in case it wasn't possible to generate a unique value.
   def generate_dial_number!(pattern=nil)
-    pattern ||= 'xxxx-xxxx'
-    20.times do
-      dn = BigbluebuttonRails::DialNumber.randomize(pattern)
-      if BigbluebuttonRoom.where(dial_number: dn).empty?
-        return self.update_attributes(dial_number: dn)
-      end
+    unless pattern.nil?
+      dn = self.class.generate_dial_number(pattern)
+      return self.update_attributes(dial_number: dn)
+    else
+      nil
     end
-    nil
+  end
+
+  def self.generate_dial_number(pattern=nil)
+    unless pattern.nil?
+      unless BigbluebuttonRoom.maximum(:dial_number).nil?
+        return BigbluebuttonRoom.maximum(:dial_number).next
+      else
+        return pattern.gsub('x', '0')
+      end
+      nil
+    end
   end
 
   def fetch_recordings(filter={})
