@@ -37,10 +37,12 @@ describe Bigbluebutton::RoomsController do
     end
 
     describe "#running" do
-      before { mocked_api.should_receive(:is_meeting_running?) { raise bbb_error } }
+      before {
+        mocked_api.should_receive(:is_meeting_running?) { raise bbb_error }
+      }
       before(:each) { get :running, :id => room.to_param }
       it { should respond_with(:success) }
-      it { response.body.should == build_running_json(false, bbb_error_msg[0..200]) }
+      it { response.body.should == build_running_json(false,{}, bbb_error_msg[0..200]) }
       it { should set_the_flash.to(bbb_error_msg[0..200]) }
     end
 

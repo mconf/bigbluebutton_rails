@@ -408,18 +408,24 @@ describe Bigbluebutton::RoomsController do
     }
 
     context "room is running" do
-      before { @api_mock.should_receive(:is_meeting_running?).and_return(true) }
+      before {
+        @api_mock.should_receive(:is_meeting_running?).and_return(true)
+        @api_mock.should_receive(:get_meeting_info).and_return({running: true, participantCount: 12})
+      }
       before(:each) { get :running, :id => room.to_param }
       it { should respond_with(:success) }
       it { should respond_with_content_type('application/json') }
       it { should assign_to(:room).with(room) }
-      it { response.body.should == build_running_json(true) }
+      it { response.body.should == build_running_json(true,{running: true, participantCount: 12}) }
     end
 
     context "room is not running" do
-      before { mocked_api.should_receive(:is_meeting_running?).and_return(false) }
+      before { 
+        mocked_api.should_receive(:is_meeting_running?).and_return(false)
+        @api_mock.should_receive(:get_meeting_info).and_return({running: false})
+      }
       before(:each) { get :running, :id => room.to_param }
-      it { response.body.should == build_running_json(false) }
+      it { response.body.should == build_running_json(false,{running: false}) }
     end
 
     context "on failure" do
