@@ -7,7 +7,7 @@ class BigbluebuttonMeeting < ActiveRecord::Base
   has_one :recording,
           :class_name => 'BigbluebuttonRecording',
           :foreign_key => 'meeting_id',
-          :dependent => :nullify
+          :dependent => :destroy
 
   has_many :attendees,
            :class_name => 'BigbluebuttonAttendee',
