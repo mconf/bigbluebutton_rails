@@ -8,34 +8,65 @@ describe Bigbluebutton::MeetingsController do
   render_views
   let!(:server) { FactoryGirl.create(:bigbluebutton_server) }
   let!(:meeting) { FactoryGirl.create(:bigbluebutton_meeting) }
+  let!(:rec){ FactoryGirl.create(:bigbluebutton_recording, :published => false, :meeting => meeting) }
 
   describe '#destroy' do
     context "when meeting_ended == true" do
-      let!(:meeting) { FactoryGirl.create(:bigbluebutton_meeting, ended: true) }
+      context "when meeting has no recordings" do
+        let!(:meeting) { FactoryGirl.create(:bigbluebutton_meeting, ended: true) }
 
-      context "when meeting.destroy == true" do
-        before {
-          request.env["HTTP_REFERER"] = '/any'
-          expect {
-            delete :destroy, :id => meeting.to_param
-          }.to change{ BigbluebuttonMeeting.count }.by(-1)
-        }
-        it("should decrease meetings count by -1") { }
-        it { should redirect_to '/any' }
-        it { should set_the_flash.to(I18n.t('bigbluebutton_rails.meetings.delete.success')) }
+        context "when meeting.destroy == true" do
+          before {
+            request.env["HTTP_REFERER"] = '/any'
+            expect {
+              delete :destroy, :id => meeting.to_param
+            }.to change{ BigbluebuttonMeeting.count }.by(-1)
+          }
+          it("should decrease meetings count by -1") { }
+          it { should redirect_to '/any' }
+          it { should set_the_flash.to(I18n.t('bigbluebutton_rails.meetings.delete.success')) }
+        end
+
+        context "when meeting.destroy == false" do
+          before {
+            request.env["HTTP_REFERER"] = '/any'
+            BigbluebuttonMeeting.any_instance.stub(:destroy).and_return(false)
+            expect {
+              delete :destroy, :id => meeting.to_param
+            }.to change{ BigbluebuttonMeeting.count }.by(0)
+          }
+          it("should not decrease meetings count") { }
+          it { should redirect_to '/any' }
+          it { should set_the_flash.to(I18n.t('bigbluebutton_rails.meetings.notice.destroy.error_destroy')) }
+        end
       end
+      context "when meeting has recordings" do
+        let!(:meeting) { FactoryGirl.create(:bigbluebutton_meeting, ended: true) }
 
-      context "when meeting.destroy == false" do
-        before {
-          request.env["HTTP_REFERER"] = '/any'
-          BigbluebuttonMeeting.any_instance.stub(:destroy).and_return(false)
-          expect {
-            delete :destroy, :id => meeting.to_param
-          }.to change{ BigbluebuttonMeeting.count }.by(0)
-        }
-        it("should not decrease meetings count") { }
-        it { should redirect_to '/any' }
-        it { should set_the_flash.to(I18n.t('bigbluebutton_rails.meetings.notice.destroy.error_destroy')) }
+        context "when meeting.destroy == true" do
+          before {
+            request.env["HTTP_REFERER"] = '/any'
+            expect {
+              delete :destroy, :id => meeting.to_param
+            }.to change{ BigbluebuttonRecording.count }.by(-1)
+          }
+          it("should decrease recordings count by -1") { }
+          it { should redirect_to '/any' }
+          it { should set_the_flash.to(I18n.t('bigbluebutton_rails.meetings.delete.success')) }
+        end
+
+        context "when meeting.destroy == false" do
+          before {
+            request.env["HTTP_REFERER"] = '/any'
+            BigbluebuttonMeeting.any_instance.stub(:destroy).and_return(false)
+            expect {
+              delete :destroy, :id => meeting.to_param
+            }.to change{ BigbluebuttonRecording.count }.by(0)
+          }
+          it("should not decrease Recordings count") { }
+          it { should redirect_to '/any' }
+          it { should set_the_flash.to(I18n.t('bigbluebutton_rails.meetings.notice.destroy.error_destroy')) }
+        end
       end
     end
 
