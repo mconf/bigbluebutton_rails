@@ -11,7 +11,7 @@ describe BigbluebuttonMeeting do
   it { should belong_to(:room) }
   it { should validate_presence_of(:room) }
 
-  it { should have_one(:recording).dependent(:nullify) }
+  it { should have_one(:recording).dependent(:destroy) }
 
   it { should validate_presence_of(:meetingid) }
   it { should ensure_length_of(:meetingid).is_at_least(1).is_at_most(100) }
