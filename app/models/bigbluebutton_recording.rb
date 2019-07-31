@@ -25,8 +25,19 @@ class BigbluebuttonRecording < ActiveRecord::Base
 
   serialize :recording_users, Array
 
+  STATES = {
+    processing: 'processing',
+    processed: 'processed',
+    published: 'published',
+    unpublished: 'unpublished'
+  }
+
   def to_param
     self.recordid
+  end
+
+  def is_published?
+    self.state.eql?(BigbluebuttonRecording::STATES[:published]) || self.state.eql?(BigbluebuttonRecording::STATES[:unpublished])
   end
 
   def get_token(user, ip)
@@ -160,7 +171,7 @@ class BigbluebuttonRecording < ActiveRecord::Base
   def self.update_recording(server, recording, data)
     recording.server = server
     recording.room = BigbluebuttonRails.configuration.match_room_recording.call(data)
-    recording.attributes = data.slice(:meetingid, :name, :published, :start_time, :end_time, :size)
+    recording.attributes = data.slice(:meetingid, :name, :published, :start_time, :end_time, :size, :state)
     recording.available = true
     recording.recording_users = adapt_recording_users(data[:recordingUsers])
     recording.save!
@@ -172,7 +183,7 @@ class BigbluebuttonRecording < ActiveRecord::Base
   # The format expected for 'data' follows the format returned by
   # BigBlueButtonApi#get_recordings but with the keys already converted to our format.
   def self.create_recording(server, data)
-    filtered = data.slice(:recordid, :meetingid, :name, :published, :start_time, :end_time, :size)
+    filtered = data.slice(:recordid, :meetingid, :name, :published, :start_time, :end_time, :size, :state)
     recording = BigbluebuttonRecording.create(filtered)
     recording.available = true
     recording.room = BigbluebuttonRails.configuration.match_room_recording.call(data)
