@@ -5,6 +5,8 @@ class BigbluebuttonRecording < ActiveRecord::Base
   belongs_to :room, class_name: 'BigbluebuttonRoom'
   belongs_to :meeting, class_name: 'BigbluebuttonMeeting'
 
+  before_destroy :delete_from_server!
+
   validates :server, :presence => true
 
   validates :recordid,
