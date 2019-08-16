@@ -61,7 +61,7 @@ class BigbluebuttonRecording < ActiveRecord::Base
     if self.server.present?
       self.server.send_delete_recordings(self.recordid)
     else
-      false
+      true
     end
   end
 
