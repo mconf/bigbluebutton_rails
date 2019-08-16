@@ -18,6 +18,7 @@ describe Bigbluebutton::MeetingsController do
         context "when meeting.destroy == true" do
           before {
             request.env["HTTP_REFERER"] = '/any'
+            BigbluebuttonServer.any_instance.stub(:send_delete_recordings).and_return(true)
             expect {
               delete :destroy, :id => meeting.to_param
             }.to change{ BigbluebuttonMeeting.count }.by(-1)
@@ -45,6 +46,7 @@ describe Bigbluebutton::MeetingsController do
 
         context "when meeting.destroy == true" do
           before {
+            BigbluebuttonServer.any_instance.stub(:send_delete_recordings).and_return(true)
             request.env["HTTP_REFERER"] = '/any'
             expect {
               delete :destroy, :id => meeting.to_param

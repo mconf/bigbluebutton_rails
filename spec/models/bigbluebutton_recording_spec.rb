@@ -119,7 +119,7 @@ describe BigbluebuttonRecording do
       before {
         recording.update_attributes(server: nil)
       }
-      it { recording.delete_from_server!.should be(false) }
+      it { recording.delete_from_server!.should be(true) }
     end
   end
 

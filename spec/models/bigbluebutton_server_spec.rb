@@ -40,6 +40,8 @@ describe BigbluebuttonServer do
     let!(:rec2) { FactoryGirl.create(:bigbluebutton_recording, server: server) }
     let!(:rec3) { FactoryGirl.create(:bigbluebutton_recording) }
 
+    before { BigbluebuttonServer.any_instance.stub(:send_delete_recordings).and_return(true) }
+
     it {
       server.recordings.count.should eql(2)
       server.destroy
