@@ -416,6 +416,7 @@ class BigbluebuttonRoom < ActiveRecord::Base
           server_secret: server.secret,
           meetingid: self.meetingid,
           name: self.name,
+          title: self.name,
           recorded: self.record_meeting,
           create_time: self.create_time,
           running: self.running,
