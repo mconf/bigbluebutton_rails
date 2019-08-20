@@ -165,7 +165,7 @@ describe Bigbluebutton::RecordingsController do
       before(:each) {
         expect {
           delete :destroy, :id => recording.to_param
-        }.to change{ BigbluebuttonRecording.count }.by(-1)
+        }.to change{ BigbluebuttonRecording.count }.by(0)
       }
       it { should respond_with(:redirect) }
       it { should redirect_to bigbluebutton_recordings_url }
@@ -202,7 +202,7 @@ describe Bigbluebutton::RecordingsController do
         mocked_server.should_not_receive(:send_delete_recordings)
         expect {
           delete :destroy, :id => recording.to_param
-        }.to change{ BigbluebuttonRecording.count }.by(-1)
+        }.to change{ BigbluebuttonRecording.count }.by(0)
       }
       it { should respond_with(:redirect) }
       it { should redirect_to bigbluebutton_recordings_url }
