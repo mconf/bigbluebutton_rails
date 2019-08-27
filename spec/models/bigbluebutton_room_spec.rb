@@ -1479,8 +1479,8 @@ describe BigbluebuttonRoom do
   end
 
   describe "#select_server" do
-    let(:server) { FactoryGirl.create(:bigbluebutton_server) }
-    let(:room) { FactoryGirl.create(:bigbluebutton_room) }
+    let!(:server) { FactoryGirl.create(:bigbluebutton_server) }
+    let!(:room) { FactoryGirl.create(:bigbluebutton_room) }
 
     it { room.respond_to?(:select_server, true).should be(true) }
 
