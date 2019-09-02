@@ -38,7 +38,7 @@ describe BigbluebuttonRoom do
   it { should ensure_length_of(:meetingid).is_at_least(1).is_at_most(100) }
 
   it { should validate_presence_of(:name) }
-  it { should ensure_length_of(:name).is_at_least(1).is_at_most(150) }
+  it { should ensure_length_of(:name).is_at_least(1).is_at_most(250) }
 
   it { should validate_presence_of(:param) }
   it { should validate_uniqueness_of(:param) }
@@ -1479,8 +1479,8 @@ describe BigbluebuttonRoom do
   end
 
   describe "#select_server" do
-    let(:server) { FactoryGirl.create(:bigbluebutton_server) }
-    let(:room) { FactoryGirl.create(:bigbluebutton_room) }
+    let!(:server) { FactoryGirl.create(:bigbluebutton_server) }
+    let!(:room) { FactoryGirl.create(:bigbluebutton_room) }
 
     it { room.respond_to?(:select_server, true).should be(true) }
 
