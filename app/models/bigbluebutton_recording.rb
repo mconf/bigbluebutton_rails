@@ -88,6 +88,8 @@ class BigbluebuttonRecording < ActiveRecord::Base
   #
   # TODO: catch exceptions on creating/updating recordings
   def self.sync(server, recordings, full_sync=false)
+    load_playback_types_cache
+
     recordings.each do |rec|
       rec_obj = BigbluebuttonRecording.find_by_recordid(rec[:recordID])
       rec_data = adapt_recording_hash(rec)
@@ -103,6 +105,8 @@ class BigbluebuttonRecording < ActiveRecord::Base
         end
       end
     end
+    cleanup_playback_types
+    clean_playback_types_cache
 
     # set as unavailable the recordings that are not in 'recordings', but
     # only in a full synchronization process, which means that the recordings
@@ -123,6 +127,14 @@ class BigbluebuttonRecording < ActiveRecord::Base
   end
 
   protected
+
+  def self.load_playback_types_cache
+    @playback_types = BigbluebuttonPlaybackType.all
+  end
+
+  def self.clean_playback_types_cache
+    @playback_types = nil
+  end
 
   # Adapt keys in 'hash' from bigbluebutton-api-ruby's (the way they are returned by
   # BigBlueButton's API) format to ours (more rails-like).
@@ -208,61 +220,48 @@ class BigbluebuttonRecording < ActiveRecord::Base
     # keys are stored as strings in the db
     received_metadata = metadata.clone.stringify_keys
 
-    query = { :owner_id => recording.id, :owner_type => recording.class.to_s }
-    BigbluebuttonMetadata.where(query).each do |meta_db|
+    # get all metadata for this recording
+    # note: it's a little slower than removing all metadata and adding again,
+    # but it's cleaner to just update it and the loss of performance is small
+    query = { owner_id: recording.id, owner_type: recording.class.to_s }
+    metas = BigbluebuttonMetadata.where(query).all
 
-      # the metadata in the db is also in the received data, update it in the db
-      if received_metadata.has_key?(meta_db.name)
-        meta_db.update_attributes({ :content => received_metadata[meta_db.name] })
-        received_metadata.delete(meta_db.name)
-
-      # the metadata is not in the received data, remove from the db
-      else
-        meta_db.destroy
-      end
-    end
-
-    # for metadata that are not in the db yet
+    # batch insert all metadata
+    columns = [ :id, :name, :content, :owner_id, :owner_type ]
+    values = []
     received_metadata.each do |name, content|
-      attrs = {
-        :name => name,
-        :content => content,
-      }
-      meta = BigbluebuttonMetadata.create(attrs)
-      meta.owner = recording
-      meta.save!
+      id = metas.select{ |m| m.name == name }.first.try(:id)
+      values << [ id, name, content, recording.id, recording.class.to_s ]
     end
+    BigbluebuttonMetadata.import! columns, values, validate: true,
+                                  on_duplicate_key_update: [:name, :content]
+
+    # delete all that doesn't exist anymore
+    BigbluebuttonMetadata.where(query).where.not(name: received_metadata.keys).delete_all
   end
 
   # Syncs the playback formats objects of 'recording' with the data in 'formats'.
   # The format expected for 'formats' follows the format returned by
   # BigBlueButtonApi#get_recordings but with the keys already converted to our format.
   def self.sync_playback_formats(recording, formats)
+    # clone and make it an array if it's a hash with a single format
     formats_copy = formats.clone
-
-    # make it an array if it's a hash with a single format
     formats_copy = [formats_copy] if formats_copy.is_a?(Hash)
 
-    BigbluebuttonPlaybackFormat.where(recording_id: recording.id).each do |format_db|
-      format = formats_copy.select do |d|
-        !d[:type].blank? && d[:type] == format_db.format_type
-      end.first
+    load_playback_types_cache if @playback_types.nil?
 
-      # the format exists in the hash, update it in the db
-      if format
-        format_db.update_attributes({ url: format[:url], length: format[:length] })
-        formats_copy.delete(format)
+    # remove all formats for this recording
+    # note: easier than updating the formats because they don't have a clear key
+    # to match by
+    BigbluebuttonPlaybackFormat.where(recording_id: recording.id).delete_all
 
-      # the format is not in the hash, remove from the db
-      else
-        format_db.destroy
-      end
-    end
-
-    # create the formats that are not in the db yet
+    # batch insert all playback formats
+    columns = [ :recording_id, :url, :length , :playback_type_id ]
+    values = []
     formats_copy.each do |format|
       unless format[:type].blank?
-        playback_type = BigbluebuttonPlaybackType.find_by_identifier(format[:type])
+        playback_type = @playback_types.select{ |t| t.identifier == format[:type] }.first
+        puts playback_type.inspect
         if playback_type.nil?
           downloadable = BigbluebuttonRails.configuration.downloadable_playback_types.include?(format[:type])
           attrs = {
@@ -273,13 +272,10 @@ class BigbluebuttonRecording < ActiveRecord::Base
           playback_type = BigbluebuttonPlaybackType.create!(attrs)
         end
 
-        attrs = { recording_id: recording.id, url: format[:url],
-                  length: format[:length].to_i, playback_type_id: playback_type.id }
-        BigbluebuttonPlaybackFormat.create!(attrs)
+        values << [ recording.id, format[:url], format[:length].to_i, playback_type.id ]
       end
     end
-
-    cleanup_playback_types
+    BigbluebuttonPlaybackFormat.import! columns, values, validate: true
   end
 
   # Remove the unused playback types from the list.

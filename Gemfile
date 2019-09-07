@@ -6,6 +6,7 @@ gem 'mysql2'
 gem "jquery-rails"
 gem "forgery"
 gem 'rabl'
+gem 'activerecord-import'
 
 group :development do
   gem "rdoc"
