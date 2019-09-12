@@ -88,8 +88,6 @@ class BigbluebuttonRecording < ActiveRecord::Base
   #
   # TODO: catch exceptions on creating/updating recordings
   def self.sync(server, recordings, full_sync=false)
-    load_playback_types_cache
-
     recordings.each do |rec|
       rec_obj = BigbluebuttonRecording.find_by_recordid(rec[:recordID])
       rec_data = adapt_recording_hash(rec)
@@ -106,7 +104,6 @@ class BigbluebuttonRecording < ActiveRecord::Base
       end
     end
     cleanup_playback_types
-    clean_playback_types_cache
 
     # set as unavailable the recordings that are not in 'recordings', but
     # only in a full synchronization process, which means that the recordings
@@ -127,14 +124,6 @@ class BigbluebuttonRecording < ActiveRecord::Base
   end
 
   protected
-
-  def self.load_playback_types_cache
-    @playback_types = BigbluebuttonPlaybackType.all
-  end
-
-  def self.clean_playback_types_cache
-    @playback_types = nil
-  end
 
   # Adapt keys in 'hash' from bigbluebutton-api-ruby's (the way they are returned by
   # BigBlueButton's API) format to ours (more rails-like).
@@ -244,11 +233,10 @@ class BigbluebuttonRecording < ActiveRecord::Base
   # The format expected for 'formats' follows the format returned by
   # BigBlueButtonApi#get_recordings but with the keys already converted to our format.
   def self.sync_playback_formats(recording, formats)
+
     # clone and make it an array if it's a hash with a single format
     formats_copy = formats.clone
     formats_copy = [formats_copy] if formats_copy.is_a?(Hash)
-
-    load_playback_types_cache if @playback_types.nil?
 
     # remove all formats for this recording
     # note: easier than updating the formats because they don't have a clear key
@@ -260,8 +248,7 @@ class BigbluebuttonRecording < ActiveRecord::Base
     values = []
     formats_copy.each do |format|
       unless format[:type].blank?
-        playback_type = @playback_types.select{ |t| t.identifier == format[:type] }.first
-        puts playback_type.inspect
+        playback_type = BigbluebuttonPlaybackType.find_by(identifier: format[:type])
         if playback_type.nil?
           downloadable = BigbluebuttonRails.configuration.downloadable_playback_types.include?(format[:type])
           attrs = {

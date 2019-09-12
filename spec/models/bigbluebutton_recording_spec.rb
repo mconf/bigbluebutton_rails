@@ -350,6 +350,17 @@ describe BigbluebuttonRecording do
       it { BigbluebuttonMetadata.count.should == 3 }
       it { BigbluebuttonPlaybackFormat.count.should == 2 }
     end
+
+    context "when there are unused playback types on the database" do
+      before {
+        FactoryGirl.create(:bigbluebutton_playback_type, :identifier => "to-be-removed")
+        FactoryGirl.create(:bigbluebutton_playback_type, :identifier => "another")
+        BigbluebuttonRecording.sync(new_server, data)
+      }
+      it { BigbluebuttonPlaybackType.count.should == 2 }
+      it { BigbluebuttonPlaybackType.find_by(identifier: "slides").should_not be_nil }
+      it { BigbluebuttonPlaybackType.find_by(identifier: "presentation").should_not be_nil }
+    end
   end
 
   describe ".update_recording" do
@@ -702,17 +713,31 @@ describe BigbluebuttonRecording do
 
         BigbluebuttonRecording.send(:sync_playback_formats, recording, data)
       }
-      it { BigbluebuttonPlaybackType.count.should == 3 }
       it { BigbluebuttonPlaybackFormat.count.should == 3 }
-      it { BigbluebuttonPlaybackFormat.where(:recording_id => recording.id).count.should == 3 }
-      it { BigbluebuttonPlaybackFormat.where(:recording_id => recording.id, :playback_type_id => playback_type.id).first.url.should == "url1" }
-      it { BigbluebuttonPlaybackFormat.where(:recording_id => recording.id, :playback_type_id => playback_type.id).first.length.should == 1 }
-      it { BigbluebuttonPlaybackFormat.where(:recording_id => recording.id, :playback_type_id => playback_type.id).first.visible.should be(true) }
-      it { BigbluebuttonPlaybackFormat.where(:recording_id => recording.id, :playback_type_id => playback_type_hidden.id).first.url.should == "url2" }
-      it { BigbluebuttonPlaybackFormat.where(:recording_id => recording.id, :playback_type_id => playback_type_hidden.id).first.length.should == 2 }
-      it { BigbluebuttonPlaybackFormat.where(:recording_id => recording.id, :playback_type_id => playback_type_hidden.id).first.visible.should be(false) }
-      it { BigbluebuttonPlaybackFormat.where(:recording_id => recording.id, :playback_type_id => BigbluebuttonPlaybackType.last.id).first.url.should == "url3" }
-      it { BigbluebuttonPlaybackFormat.where(:recording_id => recording.id, :playback_type_id => BigbluebuttonPlaybackType.last.id).first.length.should == 3 }
+      it { BigbluebuttonPlaybackFormat.where(recording_id: recording.id).count.should == 3 }
+      it {
+        q = BigbluebuttonPlaybackFormat.where(recording_id: recording.id, playback_type_id: playback_type.id, url: "url1")
+        q.size.should == 1
+        f = q.first
+        f.should_not be_nil
+        f.length.should == 1
+        f.visible.should be(true)
+      }
+      it {
+        q = BigbluebuttonPlaybackFormat.where(recording_id: recording.id, playback_type_id: playback_type_hidden.id, url: "url2")
+        q.size.should == 1
+        f = q.first
+        f.should_not be_nil
+        f.length.should == 2
+        f.visible.should be(false)
+      }
+      it {
+        q = BigbluebuttonPlaybackFormat.where(recording_id: recording.id, playback_type_id: BigbluebuttonPlaybackType.last.id, url: "url3")
+        q.size.should == 1
+        f = q.first
+        f.should_not be_nil
+        f.length.should == 3
+      }
     end
 
     context "ignores formats with blank type" do
@@ -754,16 +779,6 @@ describe BigbluebuttonRecording do
         it { BigbluebuttonPlaybackType.count.should == 1 }
         it { BigbluebuttonPlaybackType.last.identifier.should == "any1" }
         it { BigbluebuttonPlaybackType.last.playback_formats.should include(BigbluebuttonPlaybackFormat.last) }
-      end
-
-      context "when there are unused playback types on the database" do
-        before {
-          FactoryGirl.create(:bigbluebutton_playback_type, :identifier => "any2")
-          FactoryGirl.create(:bigbluebutton_playback_type, :identifier => "any3")
-          BigbluebuttonRecording.send(:sync_playback_formats, recording, data)
-        }
-        it { BigbluebuttonPlaybackType.count.should == 1 }
-        it { BigbluebuttonPlaybackType.last.identifier.should == "any1" }
       end
     end
   end
@@ -836,9 +851,7 @@ describe BigbluebuttonRecording do
           @meeting = FactoryGirl.create(:bigbluebutton_meeting, :room => recording.room, :create_time => meeting_create_time, :meetingid => "#{meetingid_rand}-#{meeting_create_time}")
         }
         subject { BigbluebuttonRecording.send(:find_matching_meeting, recording) }
-        it { puts recording.inspect
-             puts @meeting.inspect
-          subject.should eq(@meeting) }
+        it { subject.should eq(@meeting) }
       end
     end
 
