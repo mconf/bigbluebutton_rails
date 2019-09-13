@@ -32,6 +32,7 @@ group :test do
   gem "capybara-webkit" # best option found for js
   gem "launchy"
   gem "webmock"
+  gem "timecop"
 
   # to use redis in-memory and clean it in-between tests, used for resque
   gem "fakeredis", :require => "fakeredis/rspec"

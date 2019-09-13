@@ -155,36 +155,221 @@ describe BigbluebuttonRecording do
     end
   end
 
+  describe ".recording_changed?" do
+    let!(:data) {
+      {
+        recordid: "recording-1",
+        meetingid: "meetingid-1",
+        name: "Evening Class1",
+        published: true,
+        start_time: DateTime.now,
+        end_time: DateTime.now + 2.hours,
+        size: "100",
+        metadata: {
+          course: "Fundamentals of JAVA",
+          description: "List of recordings",
+          activity: "Evening Class1"
+        },
+        playback: { format:
+          [
+           { type: "slides",
+             url: "http://test-install.blindsidenetworks.com/playback/slides/playback.html?meetingId=125468758b24fa27551e7a065849dda3ce65dd32-1329872486268",
+             length: 64
+           },
+           { type: "presentation",
+             url: "http://test-install.blindsidenetworks.com/presentation/slides/playback.html?meetingId=125468758b24fa27551e7a065849dda3ce65dd32-1329872486268",
+             length: 64
+           }
+          ]
+        }
+      }
+    }
+    let!(:recording) {
+      attrs = {
+        recordid: data[:recordid],
+        meetingid: data[:meetingid],
+        name: data[:name],
+        published: data[:published],
+        start_time: data[:start_time],
+        end_time: data[:end_time],
+        size: data[:size]
+      }
+      r = FactoryGirl.create(:bigbluebutton_recording, attrs)
+      data[:metadata].each do |k, v|
+        BigbluebuttonMetadata.create(owner: r, name: k, content: v)
+      end
+      data[:playback][:format].each do |format|
+        type = BigbluebuttonPlaybackType.create(visible: true, identifier: format[:type])
+        BigbluebuttonPlaybackFormat.create(recording: r, url: format[:url], length: format[:length], playback_type: type)
+      end
+      r
+    }
+
+    it "returns false when they didn't changed" do
+      BigbluebuttonRecording.recording_changed?(recording, data).should be(false)
+    end
+
+    context "returns true when an attribute changed" do
+      it "in the data" do
+        data[:published] = !data[:published]
+        BigbluebuttonRecording.recording_changed?(recording, data).should be(true)
+      end
+
+      it "in the database" do
+        recording.update(published: !recording.published)
+        BigbluebuttonRecording.recording_changed?(recording, data).should be(true)
+      end
+    end
+
+    context "returns true when a metadata" do
+      context "changed" do
+        it "in the data" do
+          data[:metadata][:course] = data[:metadata][:course] + "-changed"
+          BigbluebuttonRecording.recording_changed?(recording, data).should be(true)
+        end
+
+        it "in the database" do
+          recording.metadata.first.update(content: recording.metadata.first.content + "-changed")
+          BigbluebuttonRecording.recording_changed?(recording, data).should be(true)
+        end
+      end
+
+      context "was added" do
+        it "in the data" do
+          data[:metadata][:new_one] = "anything"
+          BigbluebuttonRecording.recording_changed?(recording, data).should be(true)
+        end
+
+        it "in the database" do
+          BigbluebuttonMetadata.create(owner: recording, name: "new", content: "anything")
+          BigbluebuttonRecording.recording_changed?(recording, data).should be(true)
+        end
+      end
+
+      context "was removed" do
+        it "in the data" do
+          data[:metadata].delete(:course)
+          BigbluebuttonRecording.recording_changed?(recording, data).should be(true)
+        end
+
+        it "in the database" do
+          recording.metadata.first.destroy
+          BigbluebuttonRecording.recording_changed?(recording, data).should be(true)
+        end
+      end
+    end
+
+    context "returns true when a playback format" do
+      context "changed" do
+        it "in the data" do
+          data[:playback][:format][0][:url] = data[:playback][:format][0][:url] + "/changed"
+          BigbluebuttonRecording.recording_changed?(recording, data).should be(true)
+        end
+
+        it "in the database" do
+          recording.playback_formats.first.update(url: recording.playback_formats.first.url + "/changed")
+          BigbluebuttonRecording.recording_changed?(recording, data).should be(true)
+        end
+      end
+
+      context "was added" do
+        it "in the data" do
+          data[:playback][:format] << {
+            type: "new-format",
+            url: "http://anything.here",
+            length: 64
+          }
+          BigbluebuttonRecording.recording_changed?(recording, data).should be(true)
+        end
+
+        it "in the database" do
+          type = BigbluebuttonPlaybackType.create(visible: true, identifier: "new-format-db")
+          BigbluebuttonPlaybackFormat.create(recording: recording, url: "anything", length: 12, playback_type: type)
+          BigbluebuttonRecording.recording_changed?(recording, data).should be(true)
+        end
+      end
+
+      context "was removed" do
+        it "in the data" do
+          data[:playback][:format] = data[:playback][:format].drop(1)
+          BigbluebuttonRecording.recording_changed?(recording, data).should be(true)
+        end
+
+        it "in the database" do
+          recording.playback_formats.first.destroy
+          BigbluebuttonRecording.recording_changed?(recording, data).should be(true)
+        end
+      end
+    end
+
+    context "ignores ignored keys" do
+      it "in the data" do
+        data[:random] = "anything"
+        BigbluebuttonRecording.recording_changed?(recording, data).should be(false)
+      end
+
+      it "in the database" do
+        recording.available = !recording.available
+        BigbluebuttonRecording.recording_changed?(recording, data).should be(false)
+      end
+    end
+
+    it "ignores the ordering of the elements in the inputs" do
+      data[:playback][:format] = data[:playback][:format].reverse
+      BigbluebuttonRecording.recording_changed?(recording, data).should be(false)
+    end
+
+    context "works when there are no formats" do
+      it "in the data" do
+        data[:playback].delete(:format)
+        BigbluebuttonRecording.recording_changed?(recording, data).should be(true)
+      end
+
+      it "in the database" do
+        BigbluebuttonPlaybackFormat.delete_all
+        BigbluebuttonRecording.recording_changed?(recording, data).should be(true)
+      end
+    end
+
+    context "works when there is no metadata" do
+      it "in the data" do
+        data.delete(:metadata)
+        BigbluebuttonRecording.recording_changed?(recording, data).should be(true)
+      end
+
+      it "in the database" do
+        BigbluebuttonMetadata.delete_all
+        BigbluebuttonRecording.recording_changed?(recording, data).should be(true)
+      end
+    end
+  end
+
   describe ".sync" do
     let(:data) {
-      [
-       {
-         :recordID => "recording-1",
-         :meetingID => "meetingid-1",
-         :name => "Evening Class1",
-         :published => true,
-         :startTime => DateTime.now,
-         :endTime => DateTime.now + 2.hours,
-         :size => 100,
-         :metadata => {
-           :course => "Fundamentals of JAVA",
-           :description => "List of recordings",
-           :activity => "Evening Class1"
-         },
-         :playback => { :format =>
-           [
-            { :type => "slides",
-              :url => "http://test-install.blindsidenetworks.com/playback/slides/playback.html?meetingId=125468758b24fa27551e7a065849dda3ce65dd32-1329872486268",
-              :length => 64
-            },
-            { :type => "presentation",
-              :url => "http://test-install.blindsidenetworks.com/presentation/slides/playback.html?meetingId=125468758b24fa27551e7a065849dda3ce65dd32-1329872486268",
-              :length => 64
-            }
-           ]
-         }
-       }
-      ]
+      [{
+        recordID: "recording-1",
+        meetingID: "meetingid-1",
+        name: "Evening Class1",
+        published: true,
+        startTime: DateTime.now,
+        endTime: DateTime.now + 2.hours,
+        size: 100,
+        metadata: {
+          course: "Fundamentals of JAVA",
+          description: "List of recordings",
+          activity: "Evening Class1"
+        },
+        playback: { format:
+         [{ type: "slides",
+            url: "http://test-install.blindsidenetworks.com/playback/slides/playback.html?meetingId=125468758b24fa27551e7a065849dda3ce65dd32-1329872486268",
+            length: 64
+          },
+          { type: "presentation",
+            url: "http://test-install.blindsidenetworks.com/presentation/slides/playback.html?meetingId=125468758b24fa27551e7a065849dda3ce65dd32-1329872486268",
+            length: 64
+          }]
+        }
+      }]
     }
     let(:new_server) { FactoryGirl.create(:bigbluebutton_server) }
     before {
@@ -360,6 +545,29 @@ describe BigbluebuttonRecording do
       it { BigbluebuttonPlaybackType.count.should == 2 }
       it { BigbluebuttonPlaybackType.find_by(identifier: "slides").should_not be_nil }
       it { BigbluebuttonPlaybackType.find_by(identifier: "presentation").should_not be_nil }
+    end
+
+    it "doesn't update if the recording didn't change" do
+      # once to create the recording
+      now = DateTime.now
+      expected = now - 1.month
+      Timecop.freeze(expected)
+      rec_data = data.clone
+
+      BigbluebuttonRecording.sync(new_server, rec_data)
+
+      # set an expected updated_at
+      rec = BigbluebuttonRecording.first
+      puts "before #{rec.updated_at} (#{DateTime.now})"
+      # rec.send(:write_attribute, :updated_at, expected)
+
+      # shouldn't change it
+      Timecop.freeze(now)
+      BigbluebuttonRecording.sync(new_server, rec_data)
+      puts "after #{rec.reload.updated_at} (#{DateTime.now})"
+      rec.reload.updated_at.to_i.should eql(expected.to_i)
+
+      Timecop.return
     end
   end
 

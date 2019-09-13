@@ -1,6 +1,8 @@
 class BigbluebuttonRecording < ActiveRecord::Base
   include ActiveModel::ForbiddenAttributesProtection
 
+  # NOTE: when adding new attributes to recordings, add them to `recording_changed?`
+
   belongs_to :server, class_name: 'BigbluebuttonServer'
   belongs_to :room, class_name: 'BigbluebuttonRoom'
   belongs_to :meeting, class_name: 'BigbluebuttonMeeting'
@@ -78,6 +80,48 @@ class BigbluebuttonRecording < ActiveRecord::Base
     avg.nil? ? 0 : avg
   end
 
+  # Compares a recording from the db with data from a getRecordings call.
+  # If anything changed in the recording, returns true.
+  # We select only the attributes that are saved and turn it all into sorted arrays
+  # to compare. If new attributes are stored in recordings, they should be added here.
+  #
+  # This was created to speed up the full sync of recordings.
+  # In the worst case the comparison is wrong and we're updating them all (same as
+  # not using this method at all, which is ok).
+  def self.recording_changed?(recording, data)
+    # the attributes that are considered in the comparison
+    keys = [:end_time, :meetingid,  :metadata, :playback, :published, :recordid, :size, :start_time] # rawSize is not stored at the moment
+    keys_formats = [:length, :type, :url] # :size, :processingTime are not stored at the moment
+
+    # the data from getRecordings
+    data_clone = data.deep_dup
+    data_clone[:size] = data_clone[:size].to_s if data_clone.key?(:size)
+    data_clone[:metadata] = data_clone[:metadata].sort if data_clone.key?(:metadata)
+    if data_clone.key?(:playback) && data_clone[:playback].key?(:format)
+      data_clone[:playback] = data_clone[:playback][:format].map{ |f| f.slice(*keys_formats).sort }.sort
+    else
+      data_clone[:playback] = []
+    end
+    data_clone[:end_time] = data_clone[:end_time].to_i if data_clone.key?(:end_time)
+    data_clone[:start_time] = data_clone[:start_time].to_i if data_clone.key?(:start_time)
+    data_clone = data_clone.slice(*keys)
+    data_sorted = data_clone.sort
+
+    # the data from the recording in the db
+    attrs = recording.attributes.symbolize_keys.slice(*keys)
+    attrs[:size] = attrs[:size].to_s if attrs.key?(:size)
+    attrs[:metadata] = recording.metadata.pluck(:name, :content).map{ |i| [i[0].to_sym, i[1]] }.sort
+    attrs[:playback] = recording.playback_formats.map{ |f|
+      r = f.attributes.symbolize_keys.slice(*keys_formats)
+      r[:type] = f.format_type
+      r.sort
+    }.sort
+    attrs = attrs.sort
+
+    # compare
+    data_sorted.to_s != attrs.to_s
+  end
+
   # Syncs the recordings in the db with the array of recordings in 'recordings',
   # as received from BigBlueButtonApi#get_recordings.
   # Will add new recordings that are not in the db yet and update the ones that
@@ -91,15 +135,20 @@ class BigbluebuttonRecording < ActiveRecord::Base
     recordings.each do |rec|
       rec_obj = BigbluebuttonRecording.find_by_recordid(rec[:recordID])
       rec_data = adapt_recording_hash(rec)
-      BigbluebuttonRecording.transaction do
-        if rec_obj
-          logger.info "Sync recordings: updating recording #{rec_obj.inspect}"
-          logger.debug "Sync recordings: recording data #{rec_data.inspect}"
-          self.update_recording(server, rec_obj, rec_data)
-        else
-          logger.info "Sync recordings: creating recording"
-          logger.debug "Sync recordings: recording data #{rec_data.inspect}"
-          self.create_recording(server, rec_data)
+      changed = !rec_obj.present? ||
+                self.recording_changed?(rec_obj, rec_data)
+
+      if changed
+        BigbluebuttonRecording.transaction do
+          if rec_obj
+            logger.info "Sync recordings: updating recording #{rec_obj.inspect}"
+            logger.debug "Sync recordings: recording data #{rec_data.inspect}"
+            self.update_recording(server, rec_obj, rec_data)
+          else
+            logger.info "Sync recordings: creating recording"
+            logger.debug "Sync recordings: recording data #{rec_data.inspect}"
+            self.create_recording(server, rec_data)
+          end
         end
       end
     end

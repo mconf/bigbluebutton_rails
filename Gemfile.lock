@@ -254,6 +254,7 @@ GEM
     thread_safe (0.3.4)
     thread_safe (0.3.4-java)
     tilt (1.4.1)
+    timecop (0.9.1)
     treetop (1.4.15)
       polyglot
       polyglot (>= 0.3.1)
@@ -306,5 +307,6 @@ DEPENDENCIES
   shoulda-matchers (~> 2.6.1)
   simplecov (>= 0.4.0)
   therubyracer (~> 0.12.0)
+  timecop
   uglifier (>= 1.0.3)
   webmock
