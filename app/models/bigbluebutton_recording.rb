@@ -98,7 +98,10 @@ class BigbluebuttonRecording < ActiveRecord::Base
     data_clone[:size] = data_clone[:size].to_s if data_clone.key?(:size)
     data_clone[:metadata] = data_clone[:metadata].sort if data_clone.key?(:metadata)
     if data_clone.key?(:playback) && data_clone[:playback].key?(:format)
-      data_clone[:playback] = data_clone[:playback][:format].map{ |f| f.slice(*keys_formats).sort }.sort
+      data_clone[:playback][:format] = [data_clone[:playback][:format]] unless data_clone[:playback][:format].is_a?(Array)
+      data_clone[:playback] = data_clone[:playback][:format].map{ |f|
+        f.slice(*keys_formats).sort
+      }.sort
     else
       data_clone[:playback] = []
     end
