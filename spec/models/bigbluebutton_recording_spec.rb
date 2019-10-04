@@ -670,16 +670,6 @@ describe BigbluebuttonRecording do
       @recording.description.should == I18n.t('bigbluebutton_rails.recordings.default.description', :time => time)
     }
     it("sets recording_users") { @recording.recording_users.should eql([3, 4]) }
-
-    context "schedules a BigbluebuttonGetStatsForMeetingWorker" do
-      subject {
-        # the second job scheduled
-        Resque.peek(:bigbluebutton_rails, 1, 1)
-      }
-      it("should have a job scheduled") { subject.should_not be_nil }
-      it("the job should be the right one") { subject['class'].should eq('BigbluebuttonGetStatsForMeetingWorker') }
-      it("the job should have the correct parameters") { subject['args'].should eq([@meeting.id, 2]) }
-    end
   end
 
   describe ".adapt_recording_hash" do

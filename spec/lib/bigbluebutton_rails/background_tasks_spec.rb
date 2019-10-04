@@ -2,40 +2,6 @@ require 'spec_helper'
 
 describe BigbluebuttonRails::BackgroundTasks do
 
-  describe ".get_stats" do
-    before { mock_server_and_api }
-
-    context "calls #fetch_and_update_stats for all meetings" do
-      let(:meeting1) { FactoryGirl.create(:bigbluebutton_meeting) }
-      let(:meeting2) { FactoryGirl.create(:bigbluebutton_meeting) }
-      let(:meeting3) { FactoryGirl.create(:bigbluebutton_meeting) }
-      before {
-        BigbluebuttonMeeting.stub(:find_each)
-          .and_yield(meeting1)
-          .and_yield(meeting2)
-          .and_yield(meeting3)
-        meeting1.should_receive(:fetch_and_update_stats)
-        meeting2.should_receive(:fetch_and_update_stats)
-        meeting3.should_receive(:fetch_and_update_stats)
-      }
-      it { BigbluebuttonRails::BackgroundTasks.get_stats }
-    end
-
-    context "calls get stats only for the target meetings" do
-      let(:meeting1) { FactoryGirl.create(:bigbluebutton_meeting) }
-      let(:meeting2) { FactoryGirl.create(:bigbluebutton_meeting) }
-      let(:meeting3) { FactoryGirl.create(:bigbluebutton_meeting) }
-      before {
-        @filter = BigbluebuttonMeeting.where(meetingid: meeting1.meetingid)
-        @filter.stub(:find_each).and_yield(meeting1)
-        meeting1.should_receive(:fetch_and_update_stats)
-        meeting2.should_not_receive(:fetch_and_update_stats)
-        meeting3.should_not_receive(:fetch_and_update_stats)
-      }
-      it { BigbluebuttonRails::BackgroundTasks.get_stats(@filter) }
-    end
-  end
-
   describe ".finish_meetings" do
     let!(:api) { double(BigBlueButton::BigBlueButtonApi) }
     let!(:server) { FactoryGirl.create(:bigbluebutton_server) }
