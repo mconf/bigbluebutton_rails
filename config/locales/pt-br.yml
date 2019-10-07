@@ -89,6 +89,7 @@ pt-br:
       default:
         description: "Reunião realizada em %{time} (UTC)"
       errors:
+        destroyed: "Esta gravação não existe mais."
         check_for_server:
           no_server: "Não há um servidor associado a esta gravação"
         play:
