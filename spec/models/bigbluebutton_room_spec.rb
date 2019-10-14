@@ -38,7 +38,7 @@ describe BigbluebuttonRoom do
   it { should ensure_length_of(:meetingid).is_at_least(1).is_at_most(100) }
 
   it { should validate_presence_of(:name) }
-  it { should ensure_length_of(:name).is_at_least(1).is_at_most(150) }
+  it { should ensure_length_of(:name).is_at_least(1).is_at_most(250) }
 
   it { should validate_presence_of(:slug) }
   it { should validate_uniqueness_of(:slug) }
@@ -1322,48 +1322,38 @@ describe BigbluebuttonRoom do
 
     context "generates the dial number and saves in the room" do
       before {
-        BigbluebuttonRails::DialNumber.stub(:randomize).and_return("(99) 1234-5678")
+        BigbluebuttonRoom.stub(:generate_dial_number).and_return("(99) 1234-5678")
+        room.generate_dial_number!('x')
       }
-      it { room.generate_dial_number!.should be(true) }
-      it {
-        room.generate_dial_number!
-        room.reload.dial_number.should eql("(99) 1234-5678")
-      }
+      it { room.reload.dial_number.should eql("(99) 1234-5678") }
+      it { room.generate_dial_number!('x').should be(true) }
     end
 
     context "uses the pattern informed" do
       before {
-        BigbluebuttonRails::DialNumber.should_receive(:randomize).with("(99) 12xx-xxxx")
+        BigbluebuttonRoom.should_receive(:generate_dial_number).with("(99) 12xx-xxxx")
       }
       it { room.generate_dial_number!("(99) 12xx-xxxx").should be(true) }
     end
 
-    # tries several times
+    context "returns nil if no pattern is given" do
+      it { BigbluebuttonRoom.last.generate_dial_number!.should be(nil) }
+    end
+  end
 
-    context "tries to generate a unique number multiple times" do
-      let!(:another_room) { FactoryGirl.create(:bigbluebutton_room, dial_number: "(99) 1234-5678") }
-      before {
-        expect(BigbluebuttonRails::DialNumber).to receive(:randomize).exactly(19).times.and_return("(99) 1234-5678")
-        expect(BigbluebuttonRails::DialNumber).to receive(:randomize).and_return("(99) 1234-5679") # unique
-      }
-      it { room.generate_dial_number!.should be(true) }
-      it {
-        room.generate_dial_number!
-        room.reload.dial_number.should eql("(99) 1234-5679")
-      }
+  context "#generate_dial_number" do
+    context "uses the last room creatd to set dial number" do
+      before { BigbluebuttonRoom.last.update_attributes(dial_number: '1234-5678') }
+      it { BigbluebuttonRoom.generate_dial_number('x').should eql('1234-5679') }
     end
 
-    context "returns nil if can't generate a unique number" do
-      before { @previous_dn = room.dial_number }
-      let!(:another_room) { FactoryGirl.create(:bigbluebutton_room, dial_number: "(99) 1234-5678") }
-      before {
-        expect(BigbluebuttonRails::DialNumber).to receive(:randomize).exactly(20).times.and_return("(99) 1234-5678")
-      }
-      it { room.generate_dial_number!.should be_nil }
-      it {
-        room.generate_dial_number!
-        room.reload.dial_number.should eql(@previous_dn)
-      }
+    context "when the firt room is created" do
+      before { BigbluebuttonRoom.first.delete }
+      it { BigbluebuttonRoom.generate_dial_number('1234-xxxx').should eql('1234-0000') }
+    end
+
+    context "returns nil if no pattern is given" do
+      it { BigbluebuttonRoom.generate_dial_number.should be(nil) }
     end
   end
 
