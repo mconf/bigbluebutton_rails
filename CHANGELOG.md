@@ -1,6 +1,6 @@
 # Change Log
 
-## [2.3.0] - _Unreleased_
+## [2.3.0] - 2019-11-14
 
 * [#136] Improve matching between recordings and meetings and migrate old recordings to
   always (when possible) have a meeting associated.
@@ -9,6 +9,27 @@
 * Fix setting the `recorded` attributes in newly created meetings, it was always using the
   attributes from model, without considering that it is possible to override these attributes when
   making a "create" call (which is exactly what Mconf-Web does).
+* First version of a JSON API that applications can use to list and join meetings created
+  by this gem. All calls are authenticated by a secret configure in
+  `BigbluebuttonRails.configuration.api_secret`.
+* Remove old unnecessary json responses. Most routes had it but most were not used.
+* Add docker configs to run the gem in development and to run tests.
+* Set the `finish_time` on meetings when setting them as ended.
+* Add options to set dynamic options when creating and joining conferences. See
+  `get_create_options` and `get_join_options`.
+* Make it easier for apps to customize the config.xml in a join call.
+* Add support for `<recordingUsers>` returned by getRecordings.
+* Add option to run on/off the authentication in playback URLs. When on, it will call
+  `getRecordingToken` on the server holding the recording and use the proper parameters
+  when redirecting the user to the playback URL.
+  See `BigbluebuttonRails.configuration.playback_url_authentication`.
+* Add option to show recording playback pages inside an iframe. Optional and off by default.
+  If turned on all playback formats that are *not* downloadable will be shown inside an
+  iframe. See `BigbluebuttonRails.configuration.playback_iframe`.
+* Increase the limit in the name of rooms from 150 to 250 chars.
+* Speed up recording sync by using batch imports (`activerecord-import`) and preventing
+  unchanged recordings from being updated when syncing.
+* Fix errors when trying to playback a recording that doesn't exist.
 
 
 ## [2.2.0] - 2017-10-04
@@ -298,6 +319,8 @@ https://github.com/mconf/bigbluebutton_rails/wiki/Migrate-to-1.3.0
 * Controller to access servers and rooms
 * rooms_controller interacts with a BBB server using bigbluebutton-api-ruby
 
+[2.2.0]: https://github.com/mconf/bigbluebutton_rails/compare/v2.2.0...v2.3.0
+[2.3.0]: https://github.com/mconf/bigbluebutton_rails/compare/v2.1.0...v2.2.0
 [2.1.0]: https://github.com/mconf/bigbluebutton_rails/compare/v2.0.0...v2.1.0
 [2.0.0]: https://github.com/mconf/bigbluebutton_rails/compare/v1.4.0...v2.0.0
 [1.4.0]: https://github.com/mconf/bigbluebutton_rails/compare/v1.3.0...v1.4.0
