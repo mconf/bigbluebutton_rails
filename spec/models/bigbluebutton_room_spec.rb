@@ -1758,7 +1758,7 @@ describe BigbluebuttonRoom do
         let!(:meeting1) { FactoryGirl.create(:bigbluebutton_meeting, room: room, ended: false, running: true) }
         let!(:meeting2) { FactoryGirl.create(:bigbluebutton_meeting, room: room, ended: false, running: true) }
         before {
-          expect(Resque).to receive(:enqueue_in).with(4.minutes, ::BigbluebuttonRecordingsForRoomWorker, room.id, 3)
+          expect(Resque).to receive(:enqueue_in).with(1.minute, ::BigbluebuttonRecordingsForRoomWorker, room.id, 10)
         }
         it { room.finish_meetings }
       end
