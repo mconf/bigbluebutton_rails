@@ -478,11 +478,6 @@ class BigbluebuttonRoom < ActiveRecord::Base
       # 3 times so it tries at: 4, 9, 14 and 19
       # no point trying more since there is a global synchronization process
       Resque.enqueue_in(1.minutes, ::BigbluebuttonRecordingsForRoomWorker, self.id, 10)
-
-      # start trying to get stats for the meeting too
-      to_be_finished.each do |meeting|
-        Resque.enqueue_in(1.minute, ::BigbluebuttonGetStatsForMeetingWorker, meeting.id, 2)
-      end
     end
   end
 

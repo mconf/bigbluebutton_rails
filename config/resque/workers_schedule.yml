@@ -4,12 +4,6 @@ finish_meetings:
   class: BigbluebuttonFinishMeetingsWorker
   description: "Checks for meetings that finished and mark as finished. Same as 'rake bigbluebutton_rails:meetings:finish'."
 
-get_stats:
-  every:
-    - "12h"
-  class: BigbluebuttonGetStatsForRecentWorker
-  description: "Gets stats for recent meetings that have no stats yet. Same as 'rake bigbluebutton_rails:meetings:get_stats' but for only a subset of meetings."
-
 update_recordings:
   every:
     - "30m"

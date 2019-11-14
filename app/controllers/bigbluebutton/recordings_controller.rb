@@ -66,20 +66,25 @@ class Bigbluebutton::RecordingsController < ApplicationController
   end
 
   def play
-    if @playback
-      if BigbluebuttonRails.configuration.playback_url_authentication
-        uri = @recording.token_url(bigbluebutton_user, request.remote_ip, @playback)
-        @playback_url = uri
+    if @recording.present?
+      if @playback
+        if BigbluebuttonRails.configuration.playback_url_authentication
+          uri = @recording.token_url(bigbluebutton_user, request.remote_ip, @playback)
+          @playback_url = uri
+        else
+          @playback_url = @playback.url
+        end
+        if @playback.downloadable? || !BigbluebuttonRails.configuration.playback_iframe
+          redirect_to @playback_url
+        end
+        # else will render the default 'play' view
       else
-        @playback_url = @playback.url
+        flash[:error] = t('bigbluebutton_rails.recordings.errors.play.no_format')
+        redirect_to_using_params bigbluebutton_recording_url(@recording)
       end
-      if @playback.downloadable? || !BigbluebuttonRails.configuration.playback_iframe
-        redirect_to @playback_url
-      end
-      # else will render the default 'play' view
     else
-      flash[:error] = t('bigbluebutton_rails.recordings.errors.play.no_format')
-      redirect_to_using_params bigbluebutton_recording_url(@recording)
+      flash[:error] = t('bigbluebutton_rails.recordings.errors.destroyed')
+      redirect_to my_home_path
     end
   end
 
@@ -151,11 +156,17 @@ class Bigbluebutton::RecordingsController < ApplicationController
   protected
 
   def find_playback
-    if params[:type]
-      @playback = @recording.playback_formats.where(:playback_type_id => BigbluebuttonPlaybackType.find_by_identifier(params[:type])).first
+    if @recording.present?
+      if params[:type]
+        @playback = @recording.playback_formats.where(:playback_type_id => BigbluebuttonPlaybackType.find_by_identifier(params[:type])).first
+      else
+        @playback = @recording.default_playback_format || @recording.playback_formats.first
+      end
     else
-      @playback = @recording.default_playback_format || @recording.playback_formats.first
+      flash[:error] = t('bigbluebutton_rails.recordings.errors.destroyed')
+      redirect_to my_home_path
     end
+
   end
 
 end

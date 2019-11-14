@@ -122,6 +122,7 @@ en:
       default:
         description: "Meeting held on %{time} (UTC)"
       errors:
+        destroyed: "This recording no longer exist."
         check_for_server:
           no_server: "There's no server associated with this recording."
         play:

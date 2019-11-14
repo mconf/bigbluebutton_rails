@@ -1753,14 +1753,12 @@ describe BigbluebuttonRoom do
       it { meeting.reload.finish_time.should be(now.strftime("%Q").to_i) }
     end
 
-    context "enqueues workers to fetch recordings and get stats" do
+    context "enqueues workers to fetch recordings" do
       context "if at least one meeting was ended" do
         let!(:meeting1) { FactoryGirl.create(:bigbluebutton_meeting, room: room, ended: false, running: true) }
         let!(:meeting2) { FactoryGirl.create(:bigbluebutton_meeting, room: room, ended: false, running: true) }
         before {
           expect(Resque).to receive(:enqueue_in).with(4.minutes, ::BigbluebuttonRecordingsForRoomWorker, room.id, 3)
-          expect(Resque).to receive(:enqueue_in).with(1.minute, ::BigbluebuttonGetStatsForMeetingWorker, meeting1.id, 2)
-          expect(Resque).to receive(:enqueue_in).with(1.minute, ::BigbluebuttonGetStatsForMeetingWorker, meeting2.id, 2)
         }
         it { room.finish_meetings }
       end
