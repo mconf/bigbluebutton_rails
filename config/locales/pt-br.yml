@@ -72,6 +72,8 @@ pt-br:
   bigbluebutton_rails:
     bigbluebutton: BigBlueButton
     meetings:
+      delete:
+        success: "Seu registro foi removido com sucesso."
       notice:
         update:
           success: "Seu registro foi atualizado com sucesso."
