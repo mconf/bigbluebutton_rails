@@ -1,5 +1,22 @@
 # Change Log
 
+## [3.0.0] - 2019-11-18
+
+* Rename Room's and Server's #param to #slug.
+* New route and logic to remove meeting objects.
+* Remove `description` from meetings, move contents to `title`.
+* Add option for users to edit the title of meetings.
+* Send participant count in the ajax response when the meeting is running.
+* Use incremental numbers when generating dial numbers, not random ones.
+* Remove recordings when a meeting is removed.
+* Add state to recordings, following new developments in BigBlueButton's API.
+* Run the worker to fetch recordings after a meeting ends a little faster
+  than before. Now that we track the state of recordings they will appear
+  faster in a `getRecordings` call.
+* Set the default title of new meetings to the name of the room.
+* Add option to turn on debug on API calls.
+
+
 ## [2.3.0] - 2019-11-14
 
 * [#136] Improve matching between recordings and meetings and migrate old recordings to
@@ -319,8 +336,9 @@ https://github.com/mconf/bigbluebutton_rails/wiki/Migrate-to-1.3.0
 * Controller to access servers and rooms
 * rooms_controller interacts with a BBB server using bigbluebutton-api-ruby
 
-[2.2.0]: https://github.com/mconf/bigbluebutton_rails/compare/v2.2.0...v2.3.0
-[2.3.0]: https://github.com/mconf/bigbluebutton_rails/compare/v2.1.0...v2.2.0
+[3.0.0]: https://github.com/mconf/bigbluebutton_rails/compare/v2.3.0...v3.0.0
+[2.3.0]: https://github.com/mconf/bigbluebutton_rails/compare/v2.2.0...v2.3.0
+[2.2.0]: https://github.com/mconf/bigbluebutton_rails/compare/v2.1.0...v2.2.0
 [2.1.0]: https://github.com/mconf/bigbluebutton_rails/compare/v2.0.0...v2.1.0
 [2.0.0]: https://github.com/mconf/bigbluebutton_rails/compare/v1.4.0...v2.0.0
 [1.4.0]: https://github.com/mconf/bigbluebutton_rails/compare/v1.3.0...v1.4.0
