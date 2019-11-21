@@ -83,13 +83,6 @@ describe Bigbluebutton::RoomsController do
           mocked_api.should_receive(:is_meeting_running?) { raise bbb_error }
         end
 
-        it "catches exception on create_meeting" do
-          mocked_api.should_receive(:"request_headers=").once
-          mocked_api.should_receive(:is_meeting_running?).exactly(3).times.and_return(false)
-          mocked_api.should_receive(:end_meeting)
-          mocked_api.should_receive(:create_meeting) { raise bbb_error }
-        end
-
         it "catches exception on join_meeting_url" do
           mocked_api.should_receive(:is_meeting_running?).twice.and_return(true)
           mocked_api.should_receive(:join_meeting_url) { raise bbb_error }

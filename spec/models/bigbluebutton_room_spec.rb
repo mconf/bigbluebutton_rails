@@ -1422,7 +1422,17 @@ describe BigbluebuttonRoom do
       before {
         room.should_receive(:is_running?).and_return(false)
         room.should_receive(:send_create).with(user)
-        room.should_receive(:send_end)
+      }
+      subject { room.create_meeting(user) }
+      it { should be(true) }
+    end
+
+    # use to call end before creating a meeting in previous versions
+    context "when the conference is not running doesn't call end" do
+      before {
+        room.should_receive(:is_running?).and_return(false)
+        room.should_receive(:send_create).with(user)
+        room.should_not_receive(:send_end)
       }
       subject { room.create_meeting(user) }
       it { should be(true) }
@@ -1436,23 +1446,9 @@ describe BigbluebuttonRoom do
         room.should_receive(:add_domain_to_logout_url).with("HTTP://", "test.com:80")
         room.should_receive(:is_running?).and_return(false)
         room.should_receive(:send_create)
-        room.should_receive(:send_end)
       }
       subject { room.create_meeting(user, request) }
       it { should be(true) }
-    end
-
-    context "ignores exceptions raised by send_end (for when there's no meeting created)" do
-      before {
-        room.should_receive(:is_running?).and_return(false)
-        room.should_receive(:send_create).with(user)
-        room.should_receive(:send_end) { raise BigBlueButton::BigBlueButtonException.new('test') }
-      }
-      it {
-        expect {
-          room.create_meeting(user)
-        }.not_to raise_error
-      }
     end
   end
 
