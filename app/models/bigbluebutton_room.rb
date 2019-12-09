@@ -444,8 +444,6 @@ class BigbluebuttonRoom < ActiveRecord::Base
         attrs.merge!(attrs_user)
 
         BigbluebuttonMeeting.create(attrs)
-
-        Rails.logger.error "Did not create a current meeting because there was no create_time on room #{self.meetingid}"
       else
         Rails.logger.error "Did not create a current meeting because there was no create_time on room #{self.meetingid}"
       end
