@@ -125,7 +125,7 @@ class Bigbluebutton::RoomsController < ApplicationController
       render :json => { :running => "false", :error => "#{e.to_s[0..200]}" }
     else
       info = @room.fetch_meeting_info
-      render :json => { :running => "#{@room.is_running?}", :participants_qty => info}
+      render :json => { :running => "#{@room.is_running?}", :meeting_info => info}
     end
   end
 
