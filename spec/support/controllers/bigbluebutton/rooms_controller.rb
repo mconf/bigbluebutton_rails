@@ -1,6 +1,6 @@
 def build_running_json(value, qty, error=nil)
   if error.nil?
-    hash = { :running => "#{value}", :participants_qty => qty }
+    hash = { :running => "#{value}", :meeting_info => qty }
   else
     hash = { :running => "#{value}"}
   end
