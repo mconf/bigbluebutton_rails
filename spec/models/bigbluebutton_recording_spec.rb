@@ -490,6 +490,21 @@ describe BigbluebuttonRecording do
       end
     end
 
+    context "sets recording that are in the parameters as available in a full sync" do
+      before {
+        BigbluebuttonRecording.delete_all
+        @r = FactoryGirl.create(:bigbluebutton_recording, :available => false, :server => new_server, :recordid => data[0][:recordID])
+        # so it creates the recording the first time
+        BigbluebuttonRecording.sync(new_server, data, true)
+
+        BigbluebuttonRecording.find_by(recordid: data[0][:recordID])
+          .update_attributes(available: false)
+
+        BigbluebuttonRecording.sync(new_server, data, true)
+      }
+      it { @r.reload.available.should be(true) }
+    end
+
     context "doesn't set recordings that are not in the parameters as unavailable if not in a full sync" do
       before {
         BigbluebuttonRecording.delete_all
