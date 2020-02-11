@@ -104,8 +104,13 @@ class BigbluebuttonRecording < ActiveRecord::Base
   def self.recording_changed?(recording, data)
     begin
       # the attributes that are considered in the comparison
-      keys = [:end_time, :meetingid,  :metadata, :playback, :published, :recordid, :size, :start_time] # rawSize is not stored at the moment
-      keys_formats = [:length, :type, :url] # :size, :processingTime are not stored at the moment
+      keys = [ # rawSize is not stored at the moment
+        :end_time, :meetingid,  :metadata, :playback, :published,
+        :recordid, :size, :start_time
+      ]
+      keys_formats = [ # :size, :processingTime are not stored at the moment
+        :length, :type, :url
+      ]
 
       # the data from getRecordings
       data_clone = data.deep_dup
@@ -189,6 +194,10 @@ class BigbluebuttonRecording < ActiveRecord::Base
           where(available: true, server: server).
           where.not(recordid: recordIDs).
           update_all(available: false)
+        BigbluebuttonRecording.
+          where(available: false, server: server).
+          where(recordid: recordIDs).
+          update_all(available: true)
       end
     end
   end
