@@ -10,7 +10,8 @@ module BigbluebuttonRails
         # in the params. It's useful to have this option so that the application can
         # define to where some methods should redirect after finishing.
         def redirect_to_using_params(options={}, response_status={})
-          unless params[:redir_url].blank?
+          is_relative = !!(params[:redir_url] =~ /^\/[^\/\\]/)
+          if !params[:redir_url].blank? && is_relative
             redirect_to params[:redir_url], response_status
           else
             redirect_to options, response_status
@@ -20,16 +21,18 @@ module BigbluebuttonRails
         # Will redirect to a url defined in `params`, if any. Otherwise, renders the
         # view `action`.
         def redirect_to_params_or_render(action=nil, response_status={})
-          unless params[:redir_url].blank?
+          is_relative = params[:redir_url] =~ /^\/[^\/\\]/
+          if !params[:redir_url].blank? && is_relative
             redirect_to params[:redir_url], response_status
           else
-            render action, response_status
+            render(action, response_status)
           end
         end
 
         # Redirects to `:back` if the referer is set, otherwise redirects to `options`.
         def redirect_to_back(options={}, response_status={})
-          if !request.env["HTTP_REFERER"].blank? and request.env["HTTP_REFERER"] != request.env["REQUEST_URI"]
+          if !request.env["HTTP_REFERER"].blank? &&
+             request.env["HTTP_REFERER"] != request.env["REQUEST_URI"]
             redirect_to :back, response_status
           else
             redirect_to options, response_status
