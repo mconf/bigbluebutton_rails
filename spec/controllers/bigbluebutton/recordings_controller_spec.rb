@@ -281,17 +281,35 @@ describe Bigbluebutton::RecordingsController do
       after { BigbluebuttonRails.configuration.playback_url_authentication = @previous }
 
       context "if authentication is enabled" do
-        before {
-          BigbluebuttonRails.configuration.playback_url_authentication = true
-          controller.should_receive(:bigbluebutton_user).and_return('fake-user')
-          BigbluebuttonRecording.any_instance.should_receive(:token_url)
-            .with('fake-user', request.remote_ip, format)
-            .and_return('tokenized-url')
-        }
-        before(:each) { get :play, :id => recording.to_param, :type => format.format_type }
-        it { should respond_with(:redirect) }
-        it { should redirect_to 'tokenized-url' }
-        it { should assign_to(:playback_url).with('tokenized-url') }
+        context "and the token can be fetched" do
+          before {
+            BigbluebuttonRails.configuration.playback_url_authentication = true
+            controller.should_receive(:bigbluebutton_user).and_return('fake-user')
+            BigbluebuttonRecording.any_instance.should_receive(:token_url)
+              .with('fake-user', request.remote_ip, format)
+              .and_return('tokenized-url')
+          }
+          before(:each) { get :play, :id => recording.to_param, :type => format.format_type }
+          it { should respond_with(:redirect) }
+          it { should redirect_to 'tokenized-url' }
+          it { should assign_to(:playback_url).with('tokenized-url') }
+        end
+
+        context "shows an error if the token cannot be fetched" do
+          before {
+            request.env["HTTP_REFERER"] = '/back'
+            BigbluebuttonRails.configuration.playback_url_authentication = true
+            controller.should_receive(:bigbluebutton_user).and_return('fake-user')
+            BigbluebuttonRecording.any_instance.should_receive(:token_url)
+              .with('fake-user', request.remote_ip, format) {
+              raise BigBlueButton::BigBlueButtonException.new('test exception')
+            }
+          }
+          before(:each) { get :play, :id => recording.to_param, :type => format.format_type }
+          it { should respond_with(:redirect) }
+          it { should redirect_to '/back' }
+          it { should set_the_flash.to(I18n.t('bigbluebutton_rails.recordings.errors.play.no_token')) }
+        end
       end
 
       context "if authentication is not enabled" do

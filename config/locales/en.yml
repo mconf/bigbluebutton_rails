@@ -114,6 +114,7 @@ en:
           no_server: "There's no server associated with this recording."
         play:
           no_format: "There's no playback url specified for this recording."
+          no_token: "It wasn't possible to obtain an authentication token for this recording"
       notice:
         destroy:
           success: "Your recording was successfully destroyed."
