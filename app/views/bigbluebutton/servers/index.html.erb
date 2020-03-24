@@ -16,7 +16,7 @@
       <div><label><%= BigbluebuttonServer.human_attribute_name(:version) %></label> <%= server.version %></div>
       <div><label><%= BigbluebuttonServer.human_attribute_name(:slug) %></label> <%= server.slug %></div>
       <div><label>Access</label>
-        <%= link_to 'Show', server %> |
+        <%= link_to 'Show', bigbluebutton_server_path(server) %> |
         <%= link_to 'View rooms', rooms_bigbluebutton_server_path(server) %> |
         <%= link_to 'Activity monitor', activity_bigbluebutton_server_path(server) %> |
         <%= link_to 'Edit', edit_bigbluebutton_server_path(server) %> |

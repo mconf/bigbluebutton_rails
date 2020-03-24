@@ -4,18 +4,18 @@ require 'bigbluebutton_api'
 class Bigbluebutton::Api::RoomsController < ApplicationController
   include BigbluebuttonRails::APIControllerMethods
 
-  skip_before_filter :verify_authenticity_token
-  before_filter :authenticate_api
+  skip_before_action :verify_authenticity_token
+  before_action :authenticate_api
 
-  before_filter :validate_pagination, only: :index
+  before_action :validate_pagination, only: :index
 
-  before_filter :find_room, only: [:running, :join]
+  before_action :find_room, only: [:running, :join]
 
-  before_filter :join_user_params, only: :join
+  before_action :join_user_params, only: :join
 
   # only for the ones that trigger API calls
-  before_filter :set_request_headers, only: [:join, :running]
-  before_filter :set_content_type
+  before_action :set_request_headers, only: [:join, :running]
+  before_action :set_content_type
 
   respond_to :json
 

@@ -30,7 +30,7 @@ module BigbluebuttonRails
         # Redirects to `:back` if the referer is set, otherwise redirects to `options`.
         def redirect_to_back(options={}, response_status={})
           if !request.env["HTTP_REFERER"].blank? and request.env["HTTP_REFERER"] != request.env["REQUEST_URI"]
-            redirect_to :back, response_status
+            redirect_back(fallback_location: root_path)
           else
             redirect_to options, response_status
           end

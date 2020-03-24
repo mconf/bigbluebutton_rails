@@ -1,7 +1,7 @@
 class BigbluebuttonRoom < ActiveRecord::Base
   include ActiveModel::ForbiddenAttributesProtection
 
-  belongs_to :owner, polymorphic: true
+  belongs_to :owner, polymorphic: true, optional: :true
 
   has_many :recordings,
            class_name: 'BigbluebuttonRecording',
@@ -111,7 +111,8 @@ class BigbluebuttonRoom < ActiveRecord::Base
   def room_options_with_initialize
     room_options_without_initialize || build_room_options
   end
-  alias_method_chain :room_options, :initialize
+  alias_method :room_options_without_initialize, :room_options
+  alias_method :room_options, :room_options_with_initialize
 
   # Convenience method to access the attribute <tt>running</tt>
   def is_running?
@@ -617,7 +618,11 @@ class BigbluebuttonRoom < ActiveRecord::Base
       maxParticipants: self.max_participants,
       moderatorOnlyMessage: self.moderator_only_message,
       autoStartRecording: self.auto_start_recording,
-      allowStartStopRecording: self.allow_start_stop_recording
+      allowStartStopRecording: self.allow_start_stop_recording,
+      logo: "https://www.alphaeducation.fr/assets/logo-dee8d6c16aeb9284a41013f85c4f333655c76a688f8b40156cb44ed658254f86.png",
+      bannerText: "AlphaEducation",
+      copyright: "2020 Alpha",
+      webcamsOnlyForModerator: true
     }
 
     # Set the voice bridge only if the gem is configured to do so and the voice bridge

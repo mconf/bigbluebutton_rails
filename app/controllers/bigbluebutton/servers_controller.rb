@@ -2,7 +2,7 @@ class Bigbluebutton::ServersController < ApplicationController
   include BigbluebuttonRails::InternalControllerMethods
 
   respond_to :html
-  before_filter :find_server, :except => [:index, :new, :create]
+  before_action :find_server, :except => [:index, :new, :create]
 
   def index
     @servers ||= BigbluebuttonServer.all
@@ -20,6 +20,11 @@ class Bigbluebutton::ServersController < ApplicationController
 
   def edit
     respond_with(@server)
+  end
+
+  def rooms
+    @rooms ||= BigbluebuttonRoom.all
+    respond_with(@rooms)
   end
 
   def activity

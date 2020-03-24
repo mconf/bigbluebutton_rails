@@ -88,18 +88,6 @@
     <%= f.label :allow_start_stop_recording %><br />
     <%= f.check_box :allow_start_stop_recording %><br />
   </div>
-  <div class="field">
-    <b>Metadata</b> (by default we have 10 metadata in this view, but it's not limited to it)<br />
-    <%= f.fields_for :metadata do |metadata_form| %>
-      <%= metadata_form.label :name %>
-      <%= metadata_form.text_field :name %>
-      <%= metadata_form.label :content %>
-      <%= metadata_form.text_field :content %>
-      <%= metadata_form.check_box :_destroy %>
-      <%= metadata_form.label :_destroy, "Remove Metadata" %>
-      <br/>
-    <% end %>
-  </div>
 
   <div class="actions">
     <%= f.submit %>

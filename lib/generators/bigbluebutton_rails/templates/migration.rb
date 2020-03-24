@@ -1,4 +1,4 @@
-class CreateBigbluebuttonRails < ActiveRecord::Migration
+class CreateBigbluebuttonRails < ActiveRecord::Migration[5.1]
 
   def self.up
     create_table :bigbluebutton_servers do |t|

@@ -4,15 +4,15 @@ require 'bigbluebutton_api'
 class Bigbluebutton::RoomsController < ApplicationController
   include BigbluebuttonRails::InternalControllerMethods
 
-  before_filter :find_room, :except => [:index, :create, :new, :join]
+  before_action :find_room, :except => [:index, :create, :new, :join]
 
   # set headers only in actions that might trigger api calls
-  before_filter :set_request_headers, :only => [:join_mobile, :end, :running, :join, :destroy]
+  before_action :set_request_headers, :only => [:join_mobile, :end, :running, :join, :destroy]
 
-  before_filter :join_check_room, :only => :join
-  before_filter :join_user_params, :only => :join
-  before_filter :join_check_can_create, :only => :join
-  before_filter :join_check_redirect_to_mobile, :only => :join
+  before_action :join_check_room, :only => :join
+  before_action :join_user_params, :only => :join
+  before_action :join_check_can_create, :only => :join
+  before_action :join_check_redirect_to_mobile, :only => :join
 
   respond_to :html, except: :running
   respond_to :json, only: :running
@@ -237,8 +237,8 @@ class Bigbluebutton::RoomsController < ApplicationController
   def join_check_room
     @room ||= BigbluebuttonRoom.find_by(slug: params[:id]) unless params[:id].blank?
     if @room.nil?
-      message = t('bigbluebutton_rails.rooms.errors.join.wrong_params')
-      redirect_to :back, :notice => message
+      flash[:notice] = t('bigbluebutton_rails.rooms.errors.join.wrong_params')
+      redirect_back(fallback_location: root_path)
     end
   end
 
