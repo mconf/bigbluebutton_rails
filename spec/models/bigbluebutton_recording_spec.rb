@@ -394,8 +394,8 @@ describe BigbluebuttonRecording do
       it { @recording.size.should == 100 }
       it { @recording.metadata.count.should == 3 }
       3.times do |i|
-        it { @recording.metadata[i].name.should == data[0][:metadata].keys[i].to_s }
-        it { @recording.metadata[i].content.should == data[0][:metadata].values[i] }
+        it { @recording.metadata.order(:name)[i].name.should == data[0][:metadata].keys.sort[i].to_s }
+        it { @recording.metadata.order(:content)[i].content.should == data[0][:metadata].values.sort[i] }
       end
       it { @recording.playback_formats.count.should == 2 }
       2.times do |i|
@@ -426,8 +426,8 @@ describe BigbluebuttonRecording do
       it { @recording.size.should == 100 }
       it { @recording.metadata.count.should == 3 }
       3.times do |i|
-        it { @recording.metadata[i].name.should == data[0][:metadata].keys[i].to_s }
-        it { @recording.metadata[i].content.should == data[0][:metadata].values[i] }
+        it { @recording.metadata.order(:name)[i].name.should == data[0][:metadata].keys.sort[i].to_s }
+        it { @recording.metadata.order(:content)[i].content.should == data[0][:metadata].values.sort[i] }
       end
       it { @recording.playback_formats.count.should == 2 }
       2.times do |i|
