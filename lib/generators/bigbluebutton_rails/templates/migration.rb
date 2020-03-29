@@ -36,7 +36,7 @@ class CreateBigbluebuttonRails < ActiveRecord::Migration
       t.timestamps
     end
     add_index :bigbluebutton_rooms, :meetingid, :unique => true
-    add_index :bigbluebutton_rooms, [:param]
+    add_index :bigbluebutton_rooms, [:slug], using: 'btree'
 
     create_table :bigbluebutton_room_options do |t|
       t.integer :room_id
