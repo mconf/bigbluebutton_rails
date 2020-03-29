@@ -17,6 +17,15 @@
 * Add option to turn on debug on API calls.
 
 
+## [2.3.1] - 2020-03-28
+
+* [#168] No need to call end before a create anymore.
+* [#171] Fix synchronization of unavailable recordings, would never mark them as available
+  again if no other attribute changed.
+* Prevent crashes if getRecordingToken fails.
+* Add database indexes to speed up some queries.
+
+
 ## [2.3.0] - 2019-11-14
 
 * [#136] Improve matching between recordings and meetings and migrate old recordings to
@@ -336,7 +345,7 @@ https://github.com/mconf/bigbluebutton_rails/wiki/Migrate-to-1.3.0
 * Controller to access servers and rooms
 * rooms_controller interacts with a BBB server using bigbluebutton-api-ruby
 
-[3.0.0]: https://github.com/mconf/bigbluebutton_rails/compare/v2.3.0...v3.0.0
+[2.3.1]: https://github.com/mconf/bigbluebutton_rails/compare/v2.3.0...v2.3.1
 [2.3.0]: https://github.com/mconf/bigbluebutton_rails/compare/v2.2.0...v2.3.0
 [2.2.0]: https://github.com/mconf/bigbluebutton_rails/compare/v2.1.0...v2.2.0
 [2.1.0]: https://github.com/mconf/bigbluebutton_rails/compare/v2.0.0...v2.1.0

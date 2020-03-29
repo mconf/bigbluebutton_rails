@@ -36,6 +36,7 @@ class CreateBigbluebuttonRails < ActiveRecord::Migration
       t.timestamps
     end
     add_index :bigbluebutton_rooms, :meetingid, :unique => true
+    add_index :bigbluebutton_rooms, [:param]
 
     create_table :bigbluebutton_room_options do |t|
       t.integer :room_id
@@ -73,6 +74,7 @@ class CreateBigbluebuttonRails < ActiveRecord::Migration
       t.text :content
       t.timestamps
     end
+    add_index :bigbluebutton_metadata, [:owner_id, :owner_type, :name], using: 'btree'
 
     create_table :bigbluebutton_playback_formats do |t|
       t.integer :recording_id
@@ -108,6 +110,7 @@ class CreateBigbluebuttonRails < ActiveRecord::Migration
       t.timestamps
     end
     add_index :bigbluebutton_meetings, [:meetingid, :create_time], :unique => true
+    add_index :bigbluebutton_meetings, [:room_id, :create_time], using: 'btree'
 
     create_table :bigbluebutton_server_configs do |t|
       t.integer :server_id

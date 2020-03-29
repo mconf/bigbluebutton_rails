@@ -107,6 +107,7 @@ pt-br:
           no_server: "Não há um servidor associado a esta gravação"
         play:
           no_format: "Não há URL de playback para esta gravação"
+          no_token: "Não foi possível obter um token de autenticação para esta gravação"
       notice:
         destroy:
           success: "Gravação destruida!"

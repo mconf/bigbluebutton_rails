@@ -291,7 +291,7 @@ DEPENDENCIES
   cucumber-rails
   database_cleaner
   factory_girl
-  fakeredis
+  fakeredis (= 0.5.0)
   forgery
   generator_spec
   jquery-rails
@@ -301,6 +301,8 @@ DEPENDENCIES
   rabl
   rails_best_practices
   rdoc
+  redis (~> 3.1.0)
+  redis-namespace (~> 1.6.0)
   rspec-activemodel-mocks
   rspec-rails (~> 2.99.0)
   sass-rails (~> 4.0.0)

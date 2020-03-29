@@ -68,16 +68,22 @@ class Bigbluebutton::RecordingsController < ApplicationController
   def play
     if @recording.present?
       if @playback
-        if BigbluebuttonRails.configuration.playback_url_authentication
-          uri = @recording.token_url(bigbluebutton_user, request.remote_ip, @playback)
-          @playback_url = uri
-        else
-          @playback_url = @playback.url
+        begin
+          if BigbluebuttonRails.configuration.playback_url_authentication
+            uri = @recording.token_url(bigbluebutton_user, request.remote_ip, @playback)
+            @playback_url = uri
+          else
+            @playback_url = @playback.url
+          end
+          if @playback.downloadable? || !BigbluebuttonRails.configuration.playback_iframe
+            redirect_to @playback_url
+          end
+        rescue BigBlueButton::BigBlueButtonException => e
+          flash[:error] = t('bigbluebutton_rails.recordings.errors.play.no_token')
+          redirect_to :back
         end
-        if @playback.downloadable? || !BigbluebuttonRails.configuration.playback_iframe
-          redirect_to @playback_url
-        end
-        # else will render the default 'play' view
+
+      # else will render the default 'play' view
       else
         flash[:error] = t('bigbluebutton_rails.recordings.errors.play.no_format')
         redirect_to_using_params bigbluebutton_recording_url(@recording)
