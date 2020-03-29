@@ -35,7 +35,9 @@ group :test do
   gem "timecop"
 
   # to use redis in-memory and clean it in-between tests, used for resque
-  gem "fakeredis", :require => "fakeredis/rspec"
+  gem 'fakeredis', '0.5.0', :require => "fakeredis/rspec"
+  gem 'redis', '~> 3.1.0'
+  gem 'redis-namespace', '~> 1.6.0'
 end
 
 # Gems used by the test application
