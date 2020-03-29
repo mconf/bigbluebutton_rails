@@ -1,5 +1,11 @@
 # Change Log
 
+## [3.0.1] - 2020-03-29
+
+* Applied changes from 2.3.1.
+* [#173] Don't redirect to external URLs when `params[:redir_url]` is set.
+
+
 ## [3.0.0] - 2019-11-18
 
 * Rename Room's and Server's #param to #slug.
@@ -345,6 +351,8 @@ https://github.com/mconf/bigbluebutton_rails/wiki/Migrate-to-1.3.0
 * Controller to access servers and rooms
 * rooms_controller interacts with a BBB server using bigbluebutton-api-ruby
 
+[3.0.1]: https://github.com/mconf/bigbluebutton_rails/compare/v3.0.0...v3.0.1
+[3.0.0]: https://github.com/mconf/bigbluebutton_rails/compare/v2.3.1...v3.0.0
 [2.3.1]: https://github.com/mconf/bigbluebutton_rails/compare/v2.3.0...v2.3.1
 [2.3.0]: https://github.com/mconf/bigbluebutton_rails/compare/v2.2.0...v2.3.0
 [2.2.0]: https://github.com/mconf/bigbluebutton_rails/compare/v2.1.0...v2.2.0
