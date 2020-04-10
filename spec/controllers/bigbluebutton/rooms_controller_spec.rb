@@ -207,8 +207,7 @@ describe Bigbluebutton::RoomsController do
       let(:allowed_params) {
         [ :name, :meetingid, :attendee_key, :moderator_key, :welcome_msg,
           :private, :logout_url, :dial_number, :voice_bridge, :max_participants, :owner_id,
-          :owner_type, :external, :slug, :record_meeting, :duration, :default_layout, :presenter_share_only,
-          :auto_start_video, :auto_start_audio, :background,
+          :owner_type, :external, :slug, :record_meeting, :duration,
           :moderator_only_message, :auto_start_recording, :allow_start_stop_recording,
           :metadata_attributes => [ :id, :name, :content, :_destroy, :owner_id ] ]
       }
@@ -299,8 +298,7 @@ describe Bigbluebutton::RoomsController do
       let(:allowed_params) {
         [ :name, :meetingid, :attendee_key, :moderator_key, :welcome_msg,
           :private, :logout_url, :dial_number, :voice_bridge, :max_participants, :owner_id,
-          :owner_type, :external, :slug, :record_meeting, :duration, :default_layout, :presenter_share_only,
-          :auto_start_video, :auto_start_audio, :background,
+          :owner_type, :external, :slug, :record_meeting, :duration,
           :moderator_only_message, :auto_start_recording, :allow_start_stop_recording,
           :metadata_attributes => [ :id, :name, :content, :_destroy, :owner_id ] ]
       }
@@ -994,7 +992,6 @@ describe Bigbluebutton::RoomsController do
         controller.stub(:bigbluebutton_can_create?).with(room, :attendee).and_return(true)
         room.should_receive(:create_meeting)
           .with(user, controller.request).and_return(true)
-        room.should_receive(:fetch_new_token).and_return(nil)
         room.should_receive(:join_url).and_return("http://test.com/join/url/")
       }
       before(:each) { get :join, :id => room.to_param }
@@ -1019,7 +1016,6 @@ describe Bigbluebutton::RoomsController do
       before {
         room.should_receive(:fetch_is_running?).at_least(:once).and_return(true)
         room.should_not_receive(:create_meeting)
-        room.should_receive(:fetch_new_token).and_return(nil)
         room.should_receive(:join_url)
           .with(user.name, :attendee, anything, anything)
           .and_return("http://test.com/join/url")
@@ -1029,33 +1025,6 @@ describe Bigbluebutton::RoomsController do
         before(:each) { get :join, :id => room.to_param }
         it { should respond_with(:redirect) }
         it { should redirect_to("http://test.com/join/url") }
-      end
-    end
-
-    context "gets a new config token before joining" do
-      before {
-        room.should_receive(:fetch_is_running?).at_least(:once).and_return(true)
-        room.should_not_receive(:create_meeting)
-      }
-
-      context "if the token is not nil" do
-        before(:each) {
-          room.should_receive(:fetch_new_token).and_return('fake-token')
-          room.should_receive(:join_url)
-            .with(user.name, :attendee, nil, hash_including(:configToken  => 'fake-token'))
-            .and_return("http://test.com/join/url/")
-        }
-        it("uses the token") { get :join, :id => room.to_param }
-      end
-
-      context "if the token is nil" do
-        before(:each) {
-          room.should_receive(:fetch_new_token).and_return(nil)
-          room.should_receive(:join_url)
-            .with(user.name, :attendee, nil, hash_not_including(:configToken))
-            .and_return("http://test.com/join/url/")
-        }
-        it("does not use the token") { get :join, :id => room.to_param }
       end
     end
 
@@ -1069,7 +1038,6 @@ describe Bigbluebutton::RoomsController do
       context "if the createTime is not blank" do
         before(:each) {
           room.stub(:create_time).and_return(time)
-          room.should_receive(:fetch_new_token).and_return(anything)
           room.should_receive(:join_url)
             .with(user.name, :attendee, nil, hash_including(:createTime => time))
         }
@@ -1079,7 +1047,6 @@ describe Bigbluebutton::RoomsController do
       context "if the createTime is blank" do
         before(:each) {
           room.stub(:create_time).and_return("")
-          room.should_receive(:fetch_new_token).and_return(anything)
           room.should_receive(:join_url)
             .with(user.name, :attendee, nil, hash_not_including(:createTime))
         }
@@ -1089,7 +1056,6 @@ describe Bigbluebutton::RoomsController do
       context "if the createTime is nil" do
         before(:each) {
           room.stub(:create_time).and_return(nil)
-          room.should_receive(:fetch_new_token).and_return(anything)
           room.should_receive(:join_url)
             .with(user.name, :attendee, nil, hash_not_including(:createTime))
         }
@@ -1106,7 +1072,6 @@ describe Bigbluebutton::RoomsController do
       context "userID is nil" do
         before(:each) {
           user.id = nil
-          room.should_receive(:fetch_new_token).and_return(anything)
           room.should_receive(:join_url)
             .with(user.name, :attendee, nil, hash_not_including(:userID))
         }
@@ -1116,7 +1081,6 @@ describe Bigbluebutton::RoomsController do
       context "userID is blank" do
         before(:each) {
           user.id = ""
-          room.should_receive(:fetch_new_token).and_return(anything)
           room.should_receive(:join_url)
             .with(user.name, :attendee, nil, hash_not_including(:userID))
         }
@@ -1125,7 +1089,6 @@ describe Bigbluebutton::RoomsController do
 
       context "userID is not blank" do
         before(:each) {
-          room.should_receive(:fetch_new_token).and_return(anything)
           room.should_receive(:join_url)
             .with(user.name, :attendee, nil, hash_including(:userID => user.id))
         }
@@ -1137,7 +1100,6 @@ describe Bigbluebutton::RoomsController do
       before {
         room.should_receive(:fetch_is_running?).at_least(:once).and_return(true)
         room.should_not_receive(:create_meeting)
-        room.should_receive(:fetch_new_token).and_return(nil)
         room.should_receive(:join_url)
           .with(user.name, :attendee, anything, anything)
           .and_return(nil)
@@ -1152,7 +1114,6 @@ describe Bigbluebutton::RoomsController do
       before {
         room.should_receive(:fetch_is_running?).at_least(:once).and_return(true)
         room.should_not_receive(:create_meeting)
-        room.should_receive(:fetch_new_token).and_return(nil)
         BigbluebuttonRails.stub(:use_mobile_client?).and_return(true)
       }
 

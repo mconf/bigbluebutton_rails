@@ -60,11 +60,6 @@
 </p>
 
 <p>
-  <b><%= BigbluebuttonServerConfig.human_attribute_name(:available_layouts) %></b>
-  <%= @server.config.available_layouts %>
-</p>
-
-<p>
   <span>Access:</span>
   <%= link_to 'Edit', edit_bigbluebutton_server_path(@server) %> |
   <%= link_to 'View rooms', rooms_bigbluebutton_server_path(@server) %> |

@@ -16,6 +16,7 @@ module BigbluebuttonRails
     attr_accessor :playback_iframe
     attr_accessor :downloadable_playback_types
     attr_accessor :debug
+    attr_accessor :api_timeout
 
     # methods
     attr_accessor :select_server
@@ -34,6 +35,7 @@ module BigbluebuttonRails
       @routing_scope = 'bigbluebutton'
 
       @debug = false
+      @api_timeout = 10  # default timeout for API requests (seconds)
 
       @metadata_room_id        = :'bbbrails-room-id'
       @metadata_user_id        = :'bbbrails-user-id'

@@ -32,11 +32,7 @@ pt-br:
         allow_start_stop_recording: "Permitir ao usuário iniciar/parar a gravação"
         attendee_api_password: "Chave interna da API para participantes"
         attendee_key: "Chave para participantes"
-        auto_start_video: "Auto iniciar vídeo"
-        auto_start_audio: "Auto iniciar áudio"
         auto_start_recording: "Auto iniciar gravação"
-        background: "Imagem de fundo"
-        default_layout: "Layout Padrão"
         dial_number: "Número de discagem"
         duration: Duração
         external: "Criada externamente"
@@ -49,7 +45,6 @@ pt-br:
         moderator_only_message: "Mensagem mostrada somente aos moderadores"
         name: Nome
         private: Privada
-        presenter_share_only: "Somente apresentador compartilha áudio e vídeo"
         record: Gravar
         slug: Identificador
         voice_bridge: "Voice Bridge"
@@ -60,15 +55,12 @@ pt-br:
         slug: Identificador
         url: URL
         version: Versão
-      bigbluebutton_server_config:
-        available_layouts: "Layouts disponíveis"
     models:
       bigbluebutton_metadata: "Metadado de Gravação da Videoconferência"
       bigbluebutton_playback_format: "Formato de Reprodução de Videoconferência"
       bigbluebutton_recording: "Gravação de Videoconferência"
       bigbluebutton_room: "Sala de Videoconferência"
       bigbluebutton_server: "Servidor de Videoconferência"
-      bigbluebutton_server_config: "Configurações do Servidor de Videoconferência"
   bigbluebutton_rails:
     bigbluebutton: BigBlueButton
     meetings:
@@ -166,11 +158,3 @@ pt-br:
           success: "Suas gravações foram ocultadas com sucesso."
         update:
           success: "Seu servidor foi atualizado."
-    server_configs:
-      layouts:
-        defaultlayout: "Layout Padrão"
-        lecture: "Aula"
-        lectureassistant: "Assistente de aula"
-        presentfocus: "Webinar"
-        videochat: "Vídeo Chat"
-        webcamsfocus: "Reunião"

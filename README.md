@@ -61,7 +61,8 @@ Tested in rubies:
 
 Requires ruby >= 1.9.3.
 
-* ruby-2.2 **recommended**
+* ruby-2.3 **recommended**
+* ruby-2.2
 * ruby-2.1
 * ruby-1.9.3 (last tested with p484)
 

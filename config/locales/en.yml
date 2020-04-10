@@ -32,11 +32,7 @@ en:
         allow_start_stop_recording: "Allow users to start/stop recording"
         attendee_api_password: "Internal API key for attendees"
         attendee_key: "Key for attendees"
-        auto_start_video: "Auto start video"
-        auto_start_audio: "Auto start audio"
         auto_start_recording: "Auto start recording"
-        background: "Background image"
-        default_layout: "Default Layout"
         dial_number: "Dial Number"
         duration: Duration
         external: "Externally Created"
@@ -49,9 +45,7 @@ en:
         moderator_only_message: "Message to be shown to moderators only"
         name: Name
         private: Private
-        presenter_share_only: "Only presenter shares audio and video"
         record: Record
-        slug: "String ID"
         voice_bridge: "Voice Bridge"
         welcome_msg: "Welcome Message"
       bigbluebutton_server:
@@ -60,15 +54,12 @@ en:
         slug: "String ID"
         url: URL
         version: Version
-      bigbluebutton_server_config:
-        available_layouts: "Available layouts"
     models:
       bigbluebutton_metadata: "Videoconference Recording Metadata"
       bigbluebutton_playback_format: "Videoconference Recording Playback Format"
       bigbluebutton_recording: "Videoconference Recording"
       bigbluebutton_room: "Videoconference Room"
       bigbluebutton_server: "Videoconference Server"
-      bigbluebutton_server_config: "Videoconference Server Configurations"
   bigbluebutton_rails:
     api:
       errors:
@@ -186,11 +177,3 @@ en:
           success: "Your recordings were successfully unpublished."
         update:
           success: "Your server was successfully updated."
-    server_configs:
-      layouts:
-        defaultlayout: "Default Layout"
-        lecture: "Lecture"
-        lectureassistant: "Lecture Assistant"
-        presentfocus: "Webinar"
-        videochat: "Video Chat"
-        webcamsfocus: "Meeting"
