@@ -58,15 +58,12 @@ en:
         secret: "Shared Secret"
         url: URL
         version: Version
-      bigbluebutton_server_config:
-        available_layouts: "Available layouts"
     models:
       bigbluebutton_metadata: "Web Conference Recording Metadata"
       bigbluebutton_playback_format: "Web Conference Recording Playback Format"
       bigbluebutton_recording: "Web Conference Recording"
       bigbluebutton_room: "Web Conference Room"
       bigbluebutton_server: "Web Conference Server"
-      bigbluebutton_server_config: "Web Conference Server Configurations"
   bigbluebutton_rails:
     api:
       errors:
@@ -173,11 +170,3 @@ en:
           success: "Your recordings were successfully unpublished."
         update:
           success: "Your server was successfully updated."
-    server_configs:
-      layouts:
-        defaultlayout: "Default Layout"
-        lecture: "Lecture"
-        lectureassistant: "Lecture Assistant"
-        presentfocus: "Webinar"
-        videochat: "Video Chat"
-        webcamsfocus: "Meeting"

@@ -8,16 +8,6 @@ class BigbluebuttonServer < ActiveRecord::Base
            foreign_key: 'server_id',
            dependent: :destroy
 
-  has_one :config,
-          class_name: 'BigbluebuttonServerConfig',
-          foreign_key: 'server_id',
-          dependent: :destroy
-
-  delegate :update_config, to: :config
-  delegate :available_layouts, to: :config
-  delegate :available_layouts_names, to: :config
-  delegate :available_layouts_for_select, to: :config
-
   validates :name,
             :presence => true,
             :length => { :minimum => 1, :maximum => 500 }
@@ -49,22 +39,12 @@ class BigbluebuttonServer < ActiveRecord::Base
   after_initialize :init
   before_validation :set_param
 
-  after_create :create_config
-  after_create :update_config
-
   before_save :check_for_version_update
-  after_update :check_for_config_update
 
   # Schedules a recording update right after a recording server is added.
   after_create do
     Resque.enqueue(::BigbluebuttonUpdateRecordingsWorker, self.id)
   end
-
-  # In case there's no config created yet, build one.
-  def config_with_initialize
-    config_without_initialize || build_config(server: self)
-  end
-  alias_method_chain :config, :initialize
 
   # Helper to get the default server
   def self.default
@@ -200,10 +180,6 @@ class BigbluebuttonServer < ActiveRecord::Base
     end
   end
 
-  def create_config
-    BigbluebuttonServerConfig.create(server: self)
-  end
-
   # Checks if we have to update the server version or not and do it if needed.
   # If the user only changes the version, we assume he's trying to force an API version.
   # If the user changes url/secret and the version, we also assume that he wants
@@ -213,11 +189,4 @@ class BigbluebuttonServer < ActiveRecord::Base
       self.set_api_version_from_server
     end
   end
-
-  def check_for_config_update
-    if [:url, :secret, :version].any?{ |k| self.changes.key?(k) }
-      self.update_config
-    end
-  end
-
 end

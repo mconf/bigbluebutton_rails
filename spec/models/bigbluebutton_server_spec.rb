@@ -8,13 +8,6 @@ describe BigbluebuttonServer do
 
   it { should have_many(:recordings).dependent(:destroy) }
 
-  it { should have_one(:config).dependent(:destroy) }
-  it { should delegate(:update_config).to(:config) }
-
-  it { should delegate(:available_layouts).to(:config) }
-  it { should delegate(:available_layouts_names).to(:config) }
-  it { should delegate(:available_layouts_for_select).to(:config) }
-
   it { should validate_presence_of(:name) }
   it { should validate_presence_of(:url) }
   it { should validate_presence_of(:secret) }
@@ -139,9 +132,10 @@ describe BigbluebuttonServer do
 
     context "returns the cached API object, if any" do
       it {
-        BigBlueButton::BigBlueButtonApi.should_receive(:new).once.and_return("fake api")
-        server.api
-        server.api
+        api = double(BigBlueButton::BigBlueButtonApi)
+        api.stub(:timeout=)
+        BigBlueButton::BigBlueButtonApi.should_receive(:new).once.and_return(api)
+        server.api.should eql(api)
       }
     end
 
@@ -318,69 +312,6 @@ describe BigbluebuttonServer do
     end
   end
 
-  describe "#config" do
-    it "is created when the server is created" do
-      server = FactoryGirl.create(:bigbluebutton_server)
-      server.config.should_not be_nil
-      server.config.should be_an_instance_of(BigbluebuttonServerConfig)
-      server.config.server.should eql(server)
-    end
-
-    context "if it was not created, is built when accessed" do
-      before(:each) {
-        @server = FactoryGirl.create(:bigbluebutton_server)
-        @server.config.destroy
-        @server.reload
-        @server.config # access it so the new obj is created
-      }
-      it { @server.config.should_not be_nil }
-      it { @server.config.server.should eql(@server) }
-      it("is not promptly saved") {
-        @server.config.new_record?.should be(true)
-      }
-      it("is saved when the server is saved") {
-        @server.save!
-        @server.reload
-        @server.config.new_record?.should be(false)
-      }
-    end
-  end
-
-  describe "triggers #update_config" do
-
-    context "on after create" do
-      it {
-        BigbluebuttonServerConfig.any_instance.should_receive(:update_config).once
-        FactoryGirl.create(:bigbluebutton_server)
-      }
-    end
-
-    context "on after save" do
-      let(:server) { FactoryGirl.create(:bigbluebutton_server, version: "0.8") }
-      before { server.stub(:set_api_version_from_server) }
-
-      context "if #url changed" do
-        before { server.should_receive(:update_config).once }
-        it { server.update_attributes(url: server.url + "-2") }
-      end
-
-      context "if #secret changed" do
-        before { server.should_receive(:update_config).once }
-        it { server.update_attributes(secret: server.secret + "-2") }
-      end
-
-      context "if #version changed" do
-        before { server.should_receive(:update_config).once }
-        it { server.update_attributes(version: "0.9") }
-      end
-
-      context "not if any other attribute changed" do
-        before { server.should_not_receive(:update_config) }
-        it { server.update_attributes(name: server.name + "-2") }
-      end
-    end
-  end
-
   describe "triggers #set_api_version_from_server" do
 
     context "on after save" do
@@ -426,8 +357,6 @@ describe BigbluebuttonServer do
           before {
             api_mock = double(BigBlueButton::BigBlueButtonApi)
             api_mock.stub(:version).and_return(version_from_api)
-            api_mock.stub(:get_default_config_xml)
-            api_mock.stub(:get_available_layouts)
             BigBlueButton::BigBlueButtonApi.stub(:new).and_return(api_mock)
           }
           it {

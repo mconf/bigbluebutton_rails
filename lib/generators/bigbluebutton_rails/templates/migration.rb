@@ -112,12 +112,6 @@ class CreateBigbluebuttonRails < ActiveRecord::Migration
     add_index :bigbluebutton_meetings, [:meetingid, :create_time], :unique => true
     add_index :bigbluebutton_meetings, [:room_id, :create_time], using: 'btree'
 
-    create_table :bigbluebutton_server_configs do |t|
-      t.integer :server_id
-      t.text :available_layouts
-      t.timestamps
-    end
-
     create_table :bigbluebutton_attendees do |t|
       t.string :user_id
       t.string :external_user_id
@@ -139,7 +133,5 @@ class CreateBigbluebuttonRails < ActiveRecord::Migration
     drop_table :bigbluebutton_rooms
     drop_table :bigbluebutton_rooms_options
     drop_table :bigbluebutton_servers
-    drop_table :bigbluebutton_server_configs
   end
-
 end

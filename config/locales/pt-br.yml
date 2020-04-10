@@ -58,15 +58,12 @@ pt-br:
         secret: "Chave de segurança"
         url: URL
         version: Versão
-      bigbluebutton_server_config:
-        available_layouts: "Layouts disponíveis"
     models:
       bigbluebutton_metadata: "Metadado de Gravação da Webconferência"
       bigbluebutton_playback_format: "Formato de Reprodução de Webconferência"
       bigbluebutton_recording: "Gravação de Webconferência"
       bigbluebutton_room: "Sala de Webconferência"
       bigbluebutton_server: "Servidor de Webconferência"
-      bigbluebutton_server_config: "Configurações do Servidor de Webconferência"
   bigbluebutton_rails:
     bigbluebutton: BigBlueButton
     metadata:
@@ -153,11 +150,3 @@ pt-br:
           success: "Suas gravações foram ocultadas com sucesso."
         update:
           success: "Seu servidor foi atualizado."
-    server_configs:
-      layouts:
-        defaultlayout: "Layout Padrão"
-        lecture: "Aula"
-        lectureassistant: "Assistente de aula"
-        presentfocus: "Webinar"
-        videochat: "Vídeo Chat"
-        webcamsfocus: "Reunião"

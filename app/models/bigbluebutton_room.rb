@@ -516,21 +516,6 @@ class BigbluebuttonRoom < ActiveRecord::Base
     end
   end
 
-  def available_layouts
-    server = BigbluebuttonRails.configuration.select_server.call(self)
-    server.present? ? server.available_layouts : []
-  end
-
-  def available_layouts_names
-    server = BigbluebuttonRails.configuration.select_server.call(self)
-    server.present? ? server.available_layouts_names : []
-  end
-
-  def available_layouts_for_select
-    server = BigbluebuttonRails.configuration.select_server.call(self)
-    server.present? ? server.available_layouts_for_select : []
-  end
-
   # Generates a new dial number following `pattern` and saves it in the room, returning
   # the results of `update_attributes`.
   # Will always generate a unique number. Tries several times if the number already
