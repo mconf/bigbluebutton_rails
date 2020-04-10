@@ -17,7 +17,7 @@ services:
       - RAILS_ENV=development
     volumes:
       - $PWD:/usr/src/app
-    command: bash -c "cd spec/rails_app && rake db:create db:migrate && rails s -p3000"
+    command: bash -c "cd spec/rails_app && bundle exec rake db:create db:migrate && rails s -p3000"
   dev_db:
     image: mysql:5.6
     expose:
@@ -49,7 +49,7 @@ services:
       - RAILS_ENV=test
     volumes:
       - $PWD:/usr/src/app
-    command: rake rails_app:install rails_app:db spec
+    command: bundle exec rake rails_app:install rails_app:db spec
   test_db:
     image: mysql:5.6
     expose:
