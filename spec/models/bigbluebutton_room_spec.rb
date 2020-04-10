@@ -16,23 +16,6 @@ describe BigbluebuttonRoom do
 
   it { should have_many(:metadata).dependent(:destroy) }
 
-  it { should have_one(:room_options).dependent(:destroy) }
-
-  it { should delegate(:default_layout).to(:room_options) }
-  it { should delegate(:"default_layout=").to(:room_options) }
-
-  it { should delegate(:presenter_share_only).to(:room_options) }
-  it { should delegate(:"presenter_share_only=").to(:room_options) }
-
-  it { should delegate(:auto_start_video).to(:room_options) }
-  it { should delegate(:"auto_start_video=").to(:room_options) }
-
-  it { should delegate(:auto_start_audio).to(:room_options) }
-  it { should delegate(:"auto_start_audio=").to(:room_options) }
-
-  it { should delegate(:background).to(:room_options) }
-  it { should delegate(:"background=").to(:room_options) }
-
   it { should validate_presence_of(:meetingid) }
   it { should validate_uniqueness_of(:meetingid) }
   it { should ensure_length_of(:meetingid).is_at_least(1).is_at_most(100) }
@@ -246,33 +229,6 @@ describe BigbluebuttonRoom do
       it {
         b = BigbluebuttonRoom.new(:meetingid => "user defined")
         b.meetingid.should == "user defined"
-      }
-    end
-  end
-
-  describe "#room_options" do
-    it "is created when the room is created" do
-      room = FactoryGirl.create(:bigbluebutton_room)
-      room.room_options.should_not be_nil
-      room.room_options.should be_an_instance_of(BigbluebuttonRoomOptions)
-      room.room_options.room.should eql(room)
-    end
-
-    context "if it was not created, is built when accessed" do
-      before(:each) {
-        @room = FactoryGirl.create(:bigbluebutton_room)
-        @room.room_options.destroy
-        @room.reload
-        @room.room_options # access it so the new obj is created
-      }
-      it { @room.room_options.should_not be_nil }
-      it("is not promptly saved") {
-        @room.room_options.new_record?.should be(true)
-      }
-      it("is saved when the room is saved") {
-        @room.save!
-        @room.reload
-        @room.room_options.new_record?.should be(false)
       }
     end
   end
@@ -591,7 +547,6 @@ describe BigbluebuttonRoom do
 
       context "sets the room's create_time" do
         before do
-          # BigbluebuttonRails.configuration.should_receive(:get_create_options).and_return(Proc.new{ expected_params })
           mocked_api.should_receive(:create_meeting)
             .with(room.name, room.meetingid, expected_params)
             .and_return(hash_create)
@@ -605,7 +560,6 @@ describe BigbluebuttonRoom do
       context "sends create_meeting" do
         context "for a stored room" do
           before do
-            #BigbluebuttonRails.configuration.should_receive(:get_create_options).and_return(Proc.new{ expected_params })
             mocked_api.should_receive(:create_meeting)
               .with(room.name, room.meetingid, expected_params)
               .and_return(hash_create)
@@ -622,7 +576,6 @@ describe BigbluebuttonRoom do
           let(:new_room) { FactoryGirl.build(:bigbluebutton_room) }
           before do
             params = get_create_params(new_room)
-            # BigbluebuttonRails.configuration.should_receive(:get_create_options).and_return(Proc.new{ params })
             mocked_api.should_receive(:create_meeting)
               .with(new_room.name, new_room.meetingid, params)
               .and_return(hash_create)
@@ -1023,39 +976,9 @@ describe BigbluebuttonRoom do
       let(:role) { :attendee }
       let(:id) { 'fake-user-id' }
 
-      context "sets a config token" do
-        context "when it exists" do
-          before {
-            room.create_time = nil
-            room.should_receive(:fetch_new_token).and_return('fake-token')
-            room.should_receive(:join_url).with(username, role, nil, { configToken: 'fake-token' })
-          }
-          it { room.parameterized_join_url(username, role, nil) }
-        end
-
-        context "not when it doesn't exist" do
-          before {
-            room.create_time = nil
-            room.should_receive(:fetch_new_token).and_return(nil)
-            room.should_receive(:join_url).with(username, role, nil, { })
-          }
-          it { room.parameterized_join_url(username, role, nil) }
-        end
-
-        context "not when a token is passed in the options" do
-          before {
-            room.create_time = nil
-            room.should_not_receive(:fetch_new_token)
-            room.should_receive(:join_url).with(username, role, nil, { configToken: "any" })
-          }
-          it { room.parameterized_join_url(username, role, nil, { configToken: "any" }) }
-        end
-      end
-
       context "sets a create time" do
         context "when it exists" do
           before {
-            room.stub(:fetch_new_token).and_return(nil)
             room.should_receive(:join_url).with(username, role, nil, { createTime: room.create_time })
           }
           it { room.parameterized_join_url(username, role, nil) }
@@ -1064,7 +987,6 @@ describe BigbluebuttonRoom do
         context "when it doesn't exist" do
           before {
             room.create_time = nil
-            room.stub(:fetch_new_token).and_return(nil)
             room.should_receive(:join_url).with(username, role, nil, { })
           }
           it { room.parameterized_join_url(username, role, nil) }
@@ -1075,7 +997,6 @@ describe BigbluebuttonRoom do
         context "when it exists" do
           before {
             room.create_time = nil
-            room.stub(:fetch_new_token).and_return(nil)
             room.should_receive(:join_url).with(username, role, nil, { userID: 'fake-user-id' })
           }
           it { room.parameterized_join_url(username, role, 'fake-user-id') }
@@ -1084,7 +1005,6 @@ describe BigbluebuttonRoom do
         context "when it doesn't exist" do
           before {
             room.create_time = nil
-            room.stub(:fetch_new_token).and_return(nil)
             room.should_receive(:join_url).with(username, role, nil, { })
           }
           it { room.parameterized_join_url(username, role, nil) }
@@ -1096,16 +1016,14 @@ describe BigbluebuttonRoom do
           let(:options) { { option1: 'value1' } }
           before {
             room.create_time = nil
-            room.stub(:fetch_new_token).and_return(nil)
             room.should_receive(:join_url).with(username, role, nil, options)
           }
           it { room.parameterized_join_url(username, role, nil, options) }
         end
 
         context "overrides the options set internally by the method" do
-          let(:options) { { option1: 'value1', configToken: 'opts-token', createTime: 123, userID: 'opts-userid' } }
+          let(:options) { { option1: 'value1', createTime: 123, userID: 'opts-userid' } }
           before {
-            room.stub(:fetch_new_token).and_return('valid')
             room.should_receive(:join_url).with(username, role, nil, options)
           }
           it { room.parameterized_join_url(username, role, 'opts-userid', options) }
@@ -1118,18 +1036,16 @@ describe BigbluebuttonRoom do
           before {
             BigbluebuttonRails.configuration.stub(:get_join_options).and_return(Proc.new{ options })
             room.create_time = nil
-            room.stub(:fetch_new_token).and_return(nil)
             room.should_receive(:join_url).with(username, role, nil, options)
           }
           it { room.parameterized_join_url(username, role, nil, {}) }
         end
 
         context "overrides the options set internally by the method" do
-          let(:options) { { option1: 'value1', configToken: 'valid', createTime: 'valid', userID: 'valid' } }
-          let(:expected_options) { { option1: 'value1', configToken: 'valid', createTime: 'valid', userID: 'valid' } }
+          let(:options) { { option1: 'value1', createTime: 'valid', userID: 'valid' } }
+          let(:expected_options) { { option1: 'value1', createTime: 'valid', userID: 'valid' } }
           before {
             BigbluebuttonRails.configuration.stub(:get_join_options).and_return(Proc.new{ options })
-            room.stub(:fetch_new_token).and_return('invalid')
             room.should_receive(:join_url).with(username, role, nil, expected_options)
           }
           it { room.parameterized_join_url(username, role, 'invalid', {}) }
@@ -1142,7 +1058,6 @@ describe BigbluebuttonRoom do
               proc = double(Proc)
               proc.should_receive(:call).with(room, user)
               BigbluebuttonRails.configuration.should_receive(:get_join_options).and_return(proc)
-              room.stub(:fetch_new_token).and_return(nil)
               room.stub(:join_url)
             }
             it { room.parameterized_join_url(username, role, nil, {}, user) }
@@ -1153,7 +1068,6 @@ describe BigbluebuttonRoom do
               proc = double(Proc)
               proc.should_receive(:call).with(room, nil)
               BigbluebuttonRails.configuration.should_receive(:get_join_options).and_return(proc)
-              room.stub(:fetch_new_token).and_return(nil)
               room.stub(:join_url)
             }
             it { room.parameterized_join_url(username, role, nil, {}, nil) }
@@ -1164,86 +1078,15 @@ describe BigbluebuttonRoom do
       context "returns #join_url" do
         let(:expected_url) { 'https://fake-return-url.no/join?here=1' }
         before {
-          room.stub(:fetch_new_token).and_return('fake-token')
           room.should_receive(:join_url)
-            .with(username, role, nil, {
-                    userID: 'fake-user-id', configToken: 'fake-token', createTime: room.create_time
-                  }).and_return(expected_url)
+            .with(
+              username, role, nil, {
+                userID: 'fake-user-id', createTime: room.create_time
+              }
+            ).and_return(expected_url)
         }
         it {
           room.parameterized_join_url(username, role, 'fake-user-id').should eql(expected_url)
-        }
-      end
-    end
-
-    describe "#fetch_new_token" do
-      let(:config_xml) {
-        '<config>
-           <localeversion suppressWarning="false">0.9.0</localeversion>
-           <version>264</version>
-           <layout showLogButton="false" showVideoLayout="false" showResetLayout="false" defaultLayout="Webinar" showToolbar="true" showFooter="true" showMeetingName="true" showHelpButton="true" showLogoutWindow="true" showLayoutTools="true" showNetworkMonitor="true" confirmLogout="true"/>
-           <modules>
-             <module name="LayoutModule" url="http://server.test/client/LayoutModule.swf?v=15" uri="rtmp://server.test/bigbluebutton" layoutConfig="http://server.test/client/conf/layout.xml" enableEdit="true"/>
-           </modules>
-         </config>'
-      }
-
-      context "if room options is modified" do
-        before {
-          room.room_options.should_receive(:is_modified?)
-            .and_return(true)
-          mocked_api.should_receive(:get_default_config_xml).and_return(config_xml)
-        }
-
-        context "and the xml generated is not equal the default one" do
-          before {
-            room.should_receive(:select_server).and_return(mocked_server)
-            room.room_options.should_receive(:set_on_config_xml)
-              .with(config_xml).and_return('fake-config-xml')
-            mocked_api.should_receive(:set_config_xml)
-              .with(room.meetingid, 'fake-config-xml')
-              .and_return('fake-token')
-            mocked_server.should_receive(:update_config).with('fake-config-xml')
-          }
-          it("returns the token generated") { room.fetch_new_token.should eql('fake-token') }
-        end
-
-        context "and the xml generated is equal the default one" do
-          before {
-            room.should_receive(:select_server).and_return(mocked_server)
-            room.room_options.should_receive(:set_on_config_xml)
-              .with(config_xml).and_return(false)
-            mocked_api.should_not_receive(:set_config_xml)
-          }
-          it("returns nil") { room.fetch_new_token.should be_nil }
-        end
-      end
-
-      context "if room options is not modified" do
-        before {
-          room.room_options.should_receive(:is_modified?)
-            .and_return(false)
-          mocked_api.should_not_receive(:get_default_config_xml)
-          mocked_api.should_not_receive(:set_config_xml)
-        }
-        it("returns nil") { room.fetch_new_token.should be_nil }
-      end
-
-      context "when used with a block" do
-        before {
-          room.room_options.should_receive(:is_modified?)
-            .and_return(true)
-          mocked_api.should_receive(:get_default_config_xml).and_return(config_xml)
-          room.room_options.should_not_receive(:set_on_config_xml)
-          mocked_server.should_receive(:update_config).with('fake-xml-from-block')
-          mocked_api.should_receive(:set_config_xml)
-            .with(room.meetingid, 'fake-xml-from-block')
-        }
-        it("uses the xml returned by the block") {
-          room.fetch_new_token do |xml|
-            xml.should eql(config_xml)
-            'fake-xml-from-block'
-          end
         }
       end
     end

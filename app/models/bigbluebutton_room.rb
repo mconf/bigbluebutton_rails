@@ -19,18 +19,6 @@ class BigbluebuttonRoom < ActiveRecord::Base
            foreign_key: 'room_id',
            dependent: :destroy
 
-  has_one :room_options,
-          class_name: 'BigbluebuttonRoomOptions',
-          foreign_key: 'room_id',
-          autosave: true,
-          dependent: :destroy
-
-  delegate :default_layout, :default_layout=, :to => :room_options
-  delegate :presenter_share_only, :presenter_share_only=, :to => :room_options
-  delegate :auto_start_video, :auto_start_video=, :to => :room_options
-  delegate :auto_start_audio, :auto_start_audio=, :to => :room_options
-  delegate :background, :background=, :to => :room_options
-
   accepts_nested_attributes_for :metadata,
     :allow_destroy => true,
     :reject_if => :all_blank
@@ -67,7 +55,6 @@ class BigbluebuttonRoom < ActiveRecord::Base
                 :has_been_forcibly_ended, :end_time
 
   after_initialize :init
-  after_create :create_room_options
   before_validation :set_param
   before_validation :set_keys
 
@@ -105,13 +92,6 @@ class BigbluebuttonRoom < ActiveRecord::Base
       where(query_strs.join(' OR '), *query_params.flatten).order(query_orders.join(' + ') + " DESC")
     end
   }
-
-  # In case there's no room_options created yet, build one
-  # (happens usually when an old database is migrated).
-  def room_options_with_initialize
-    room_options_without_initialize || build_room_options
-  end
-  alias_method_chain :room_options, :initialize
 
   # Convenience method to access the attribute <tt>running</tt>
   def is_running?
@@ -267,14 +247,10 @@ class BigbluebuttonRoom < ActiveRecord::Base
   def parameterized_join_url(username, role, id, options={}, user=nil)
     opts = options.clone
 
-    # gets the token with the configurations for this user/room
-    if opts[:configToken].blank?
-      token = self.fetch_new_token
-      opts.merge!({ configToken: token }) unless token.blank?
-    end
-
     # set the create time and the user id, if they exist
-    opts.merge!({ createTime: self.create_time }) unless self.create_time.blank? || options[:createTime].present?
+    if self.create_time.present? && options[:createTime].blank?
+      opts.merge!({ createTime: self.create_time })
+    end
     opts.merge!({ userID: id }) unless id.blank? || options[:userID].present?
 
     # Get options passed by the application, if any
@@ -476,46 +452,6 @@ class BigbluebuttonRoom < ActiveRecord::Base
     end
   end
 
-  # Gets a 'configToken' to use when joining the room.
-  # Returns a string with the token generated or nil if there's no need
-  # for a token (the options set in the room are the default options or there
-  # are no options set in the room) or if an error occurred.
-  #
-  # The entire process consists in these steps:
-  # * Go to the server get the default config.xml;
-  # * Modify the config.xml based on the room options set in the room;
-  # * Go to the server set the new config.xml;
-  # * Get the token identifier and return it.
-  #
-  # Triggers API call: <tt>getDefaultConfigXML</tt>.
-  # Triggers API call: <tt>setConfigXML</tt>.
-  def fetch_new_token
-    if self.room_options.is_modified? || block_given?
-      server = BigbluebuttonRails.configuration.select_server.call(self, :set_config_xml)
-
-      # get the default XML we will use to create a new one
-      config_xml = server.api.get_default_config_xml
-
-      if block_given?
-        config_xml = yield(config_xml)
-      else
-        # set the options on the XML
-        # returns true if something was changed
-        config_xml = self.room_options.set_on_config_xml(config_xml)
-      end
-
-      if config_xml
-        server.update_config(config_xml)
-        # get the new token for the room, and return it
-        server.api.set_config_xml(self.meetingid, config_xml)
-      else
-        nil
-      end
-    else
-      nil
-    end
-  end
-
   # Generates a new dial number following `pattern` and saves it in the room, returning
   # the results of `update_attributes`.
   # Will always generate a unique number. Tries several times if the number already
@@ -557,10 +493,6 @@ class BigbluebuttonRoom < ActiveRecord::Base
   end
 
   protected
-
-  def create_room_options
-    BigbluebuttonRoomOptions.create(:room => self)
-  end
 
   def init
     self[:meetingid] ||= unique_meetingid

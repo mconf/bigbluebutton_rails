@@ -30,11 +30,7 @@ en:
         allow_start_stop_recording: "Allow users to start/stop recording"
         attendee_api_password: "Internal API key for attendees"
         attendee_key: "Key for attendees"
-        auto_start_video: "Auto start video"
-        auto_start_audio: "Auto start audio"
         auto_start_recording: "Auto start recording"
-        background: "Background image"
-        default_layout: "Default Layout"
         dial_number: "Dial Number"
         duration: Duration
         external: "Externally Created"
@@ -48,7 +44,6 @@ en:
         name: Name
         param: "String ID"
         private: Private
-        presenter_share_only: "Only presenter shares audio and video"
         record: Record
         voice_bridge: "Voice Bridge"
         welcome_msg: "Welcome Message"
