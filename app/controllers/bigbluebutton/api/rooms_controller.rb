@@ -57,7 +57,7 @@ class Bigbluebutton::Api::RoomsController < ApplicationController
       options = options.map{ |k,v| { k.gsub(/^meta[-_]/, 'userdata-') => v } }.reduce(:merge)
     end
 
-    @url = @room.parameterized_join_url(@user_name, @user_role, nil, options)
+    @url = @room.parameterized_join_url(@user_name, @user_role, nil, options, request)
   end
 
   protected

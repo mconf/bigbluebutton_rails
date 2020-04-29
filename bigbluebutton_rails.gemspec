@@ -21,6 +21,6 @@ Gem::Specification.new do |s|
   s.add_dependency("bigbluebutton-api-ruby", "~> 1.6")
   s.add_dependency("resque", "~> 1.25.1")
   s.add_dependency("resque-scheduler", "~> 3.0")
-  s.add_dependency("browser", "~> 0.8.0")
+  s.add_dependency("browser", "~> 2.0.0")
   s.add_dependency("activerecord-import", "~> 1.0")
 end
