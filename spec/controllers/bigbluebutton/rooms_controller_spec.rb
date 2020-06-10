@@ -649,7 +649,7 @@ describe Bigbluebutton::RoomsController do
               BigbluebuttonRails.should_receive(:use_mobile_client?).with('my-browser').and_return(true)
 
               # here's the real verification
-              controller.should_receive(:join_internal).with(user.name, :moderator, user.id)
+              controller.should_receive(:join_internal).with(user.name, :moderator, user.id, nil)
             }
             it { send(method, :join, :id => room.to_param, :auto_join => true) }
           end
@@ -662,7 +662,7 @@ describe Bigbluebutton::RoomsController do
               BigbluebuttonRails.should_receive(:use_mobile_client?).with('my-browser').and_return(true)
 
               # here's the real verification
-              controller.should_receive(:join_internal).with(user.name, :moderator, user.id)
+              controller.should_receive(:join_internal).with(user.name, :moderator, user.id, nil)
             }
             it { send(method, :join, :id => room.to_param, :desktop => true) }
           end
@@ -677,7 +677,7 @@ describe Bigbluebutton::RoomsController do
 
             # here's the validation
             controller.should_receive(:join_internal)
-              .with(user.name, :moderator, user.id)
+              .with(user.name, :moderator, user.id, nil)
           }
           it { send(method, :join, :id => room.to_param) }
         end

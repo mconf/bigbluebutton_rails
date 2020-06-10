@@ -29,7 +29,7 @@ namespace :db do
         :url => "http://bigbluebutton#{n1}.test.com/bigbluebutton/api",
         :secret => Forgery(:basic).password(:at_least => 30, :at_most => 40),
         :version => '0.9',
-        :param => "server-#{n1}"
+        :slug => "server-#{n1}"
       }
       puts "- Creating server #{params[:name]}"
       server = BigbluebuttonServer.create!(params)
@@ -44,7 +44,7 @@ namespace :db do
           :moderator_key => Forgery(:basic).password(:at_least => 10, :at_most => 16),
           :welcome_msg => Forgery(:lorem_ipsum).sentences(2),
           :private => false,
-          :param => "meeting-#{n1}-#{n2}",
+          :slug => "meeting-#{n1}-#{n2}",
           :external => false,
           :record_meeting => false,
           :duration => 0
