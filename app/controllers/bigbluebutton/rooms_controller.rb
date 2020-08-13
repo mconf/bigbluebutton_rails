@@ -3,6 +3,7 @@ require 'bigbluebutton_api'
 
 class Bigbluebutton::RoomsController < ApplicationController
   include BigbluebuttonRails::InternalControllerMethods
+  include BigbluebuttonRailsHelper
 
   before_filter :find_room, :except => [:index, :create, :new, :join]
 
@@ -83,7 +84,7 @@ class Bigbluebutton::RoomsController < ApplicationController
       message = t('bigbluebutton_rails.rooms.notice.destroy.success')
     rescue BigBlueButton::BigBlueButtonException => e
       error = true
-      message = t('bigbluebutton_rails.rooms.notice.destroy.success_with_bbb_error', :error => e.to_s[0..200])
+      message = t('bigbluebutton_rails.rooms.notice.destroy.success_with_bbb_error')
     end
 
     # TODO: what if it fails?
@@ -121,8 +122,8 @@ class Bigbluebutton::RoomsController < ApplicationController
     begin
       @room.fetch_is_running?
     rescue BigBlueButton::BigBlueButtonException => e
-      flash[:error] = e.to_s[0..200]
-      render :json => { :running => "false", :error => "#{e.to_s[0..200]}" }
+      flash[:error] = api_error_msg(e)
+      render :json => { :running => "false", :error => "#{api_error_msg(e)}" }
     else
       render :json => { :running => "#{@room.is_running?}" }
     end
@@ -141,7 +142,7 @@ class Bigbluebutton::RoomsController < ApplicationController
       end
     rescue BigBlueButton::BigBlueButtonException => e
       error = true
-      message = e.to_s[0..200]
+      message = api_error_msg(e)
     end
 
     if error
@@ -180,7 +181,7 @@ class Bigbluebutton::RoomsController < ApplicationController
       end
     rescue BigBlueButton::BigBlueButtonException => e
       error = true
-      message = e.to_s[0..200]
+      message = api_error_msg(e)
     end
 
     respond_with do |format|
@@ -279,7 +280,7 @@ class Bigbluebutton::RoomsController < ApplicationController
       end
     end
   rescue BigBlueButton::BigBlueButtonException => e
-    flash[:error] = e.to_s[0..200]
+    flash[:error] = api_error_msg(e)
     redirect_to_on_join_error
   end
 
@@ -347,7 +348,7 @@ class Bigbluebutton::RoomsController < ApplicationController
       end
 
     rescue BigBlueButton::BigBlueButtonException => e
-      flash[:error] = e.to_s[0..200]
+      flash[:error] = api_error_msg(e)
       redirect_to_on_join_error
     end
   end

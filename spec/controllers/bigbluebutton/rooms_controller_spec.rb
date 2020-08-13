@@ -1,5 +1,6 @@
 require 'spec_helper'
 require 'bigbluebutton_api'
+include BigbluebuttonRailsHelper
 
 # Some tests mock the server and its API object
 # We don't want to trigger real API calls here (this is done in the integration tests)
@@ -426,7 +427,7 @@ describe Bigbluebutton::RoomsController do
       before { mocked_api.should_receive(:is_meeting_running?)  { raise bbb_error } }
       before(:each) { get :running, :id => room.to_param }
       it { should respond_with(:success) }
-      it { should set_the_flash.to(bbb_error_msg[0..200]) }
+      it { should set_the_flash.to(api_error_msg(bbb_error)) }
     end
 
     context "doesn't override @room" do
@@ -724,7 +725,7 @@ describe Bigbluebutton::RoomsController do
       before { mocked_api.should_receive(:is_meeting_running?) { raise bbb_error } }
       before(:each) { get :end, :id => room.to_param }
       it { should respond_with(:redirect) }
-      it { should set_the_flash.to(bbb_error_msg[0..200]) }
+      it { should set_the_flash.to(api_error_msg(bbb_error)) }
     end
 
     context "doesn't override @room" do
@@ -817,7 +818,7 @@ describe Bigbluebutton::RoomsController do
       }
       it { should respond_with(:redirect) }
       it { should redirect_to(bigbluebutton_room_path(room)) }
-      it { should set_the_flash.to(bbb_error_msg[0..200]) }
+      it { should set_the_flash.to(api_error_msg(bbb_error)) }
     end
 
     context "if the room has no server associated" do
@@ -1152,7 +1153,7 @@ describe Bigbluebutton::RoomsController do
       before(:each) { get :join, :id => room.to_param }
       it { should respond_with(:redirect) }
       it { should redirect_to(http_referer) }
-      it { should set_the_flash.to(bbb_error_msg[0..200]) }
+      it { should set_the_flash.to(api_error_msg(bbb_error)) }
     end
 
     context "doesn't break if a guest user has permission to create a meeting" do
