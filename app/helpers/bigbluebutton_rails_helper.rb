@@ -15,6 +15,10 @@ module BigbluebuttonRailsHelper
     msgs.html_safe
   end
 
+  def api_error_msg(exception)
+    exception.key ? I18n.t('bigbluebutton_rails.api.errors.default', :key => exception.key) : I18n.t('bigbluebutton_rails.api.errors.else')
+  end
+
   # Setup a BigbluebuttonRoom to show in the forms
   def setup_bigbluebutton_room(room)
     (room.metadata.count..10).each { room.metadata.build }

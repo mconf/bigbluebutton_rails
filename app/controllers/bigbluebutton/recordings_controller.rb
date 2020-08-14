@@ -1,5 +1,6 @@
 class Bigbluebutton::RecordingsController < ApplicationController
   include BigbluebuttonRails::InternalControllerMethods
+  include BigbluebuttonRailsHelper
 
   respond_to :html
   before_filter :find_recording, :except => [:index]
@@ -50,7 +51,7 @@ class Bigbluebutton::RecordingsController < ApplicationController
       message = t('bigbluebutton_rails.recordings.notice.destroy.success')
     rescue BigBlueButton::BigBlueButtonException => e
       error = true
-      message = t('bigbluebutton_rails.recordings.notice.destroy.success_with_bbb_error', :error => e.to_s[0..200])
+      message = t('bigbluebutton_rails.recordings.notice.destroy.success_with_bbb_error')
     end
 
     respond_with do |format|
@@ -140,7 +141,7 @@ class Bigbluebutton::RecordingsController < ApplicationController
     rescue BigBlueButton::BigBlueButtonException => e
       respond_with do |format|
         format.html {
-          flash[:error] = e.to_s[0..200]
+          flash[:error] = api_error_msg(e)
           redirect_to_using_params bigbluebutton_recording_path(@recording)
         }
       end
