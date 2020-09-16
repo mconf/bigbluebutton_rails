@@ -1,4 +1,5 @@
 require 'spec_helper'
+include BigbluebuttonRailsHelper
 
 describe Bigbluebutton::RoomsController do
   render_views
@@ -31,7 +32,7 @@ describe Bigbluebutton::RoomsController do
         should respond_with(:redirect)
         should redirect_to bigbluebutton_rooms_url
 
-        msg = I18n.t('bigbluebutton_rails.rooms.notice.destroy.success_with_bbb_error', :error => bbb_error_msg[0..200])
+        msg = I18n.t('bigbluebutton_rails.rooms.notice.destroy.success_with_bbb_error')
         should set_the_flash.to(msg)
       end
     end
@@ -42,8 +43,8 @@ describe Bigbluebutton::RoomsController do
       }
       before(:each) { get :running, :id => room.to_param }
       it { should respond_with(:success) }
-      it { response.body.should == build_running_json(false,{}, bbb_error_msg[0..200]) }
-      it { should set_the_flash.to(bbb_error_msg[0..200]) }
+      it { response.body.should == build_running_json(false,{}, api_error_msg(bbb_error)) }
+      it { should set_the_flash.to(api_error_msg(bbb_error)) }
     end
 
     describe "#end" do
@@ -60,7 +61,7 @@ describe Bigbluebutton::RoomsController do
         get :end, :id => room.to_param
         should respond_with(:redirect)
         should redirect_to(http_referer)
-        should set_the_flash.to(bbb_error_msg[0..200])
+        should set_the_flash.to(api_error_msg(bbb_error))
       end
     end
 
@@ -92,7 +93,7 @@ describe Bigbluebutton::RoomsController do
           get :join, :id => room.to_param
           should respond_with(:redirect)
           should redirect_to(http_referer)
-          should set_the_flash.to(bbb_error_msg[0..200])
+          should set_the_flash.to(api_error_msg(bbb_error))
         end
 
       end
@@ -118,7 +119,7 @@ describe Bigbluebutton::RoomsController do
           get :join, :id => room.to_param
           should respond_with(:redirect)
           should redirect_to(http_referer)
-          should set_the_flash.to(bbb_error_msg[0..200])
+          should set_the_flash.to(api_error_msg(bbb_error))
         end
       end
 
