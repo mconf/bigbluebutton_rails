@@ -80,6 +80,8 @@ en:
         room_not_running:
           msg: "There's no meeting currently running in this room"
           title: "Meeting not running"
+        default: "Oops, something unexpected happened. Please try again later. (\"%{key}\")"
+        else: "Oops, something unexpected happened. Please try again later."
     bigbluebutton: BigBlueButton
     metadata:
       errors:
@@ -110,7 +112,7 @@ en:
       notice:
         destroy:
           success: "Your recording was successfully destroyed."
-          success_with_bbb_error: "The recording was successfully destroyed but it wasn't deleted from the webconference server (\"%{error}\")"
+          success_with_bbb_error: "The recording was successfully destroyed but it wasn't deleted from the webconference server."
         publish:
           success: "Your recording was successfully published."
         unpublish:
@@ -139,7 +141,7 @@ en:
           success: "Your room was successfully created."
         destroy:
           success: "The room was successfully destroyed."
-          success_with_bbb_error: "The room was successfully destroyed but the meeting wasn't ended in the webconference server (\"%{error}\")"
+          success_with_bbb_error: "The room was successfully destroyed but the meeting wasn't ended in the webconference server."
         end:
           not_running: "The meeting could not be ended because it is not running."
           success: "The meeting was successfully ended."
