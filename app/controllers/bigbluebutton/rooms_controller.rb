@@ -121,11 +121,10 @@ class Bigbluebutton::RoomsController < ApplicationController
   def running
     begin
       @room.fetch_is_running?
+      info = @room.fetch_meeting_info
     rescue BigBlueButton::BigBlueButtonException => e
-      flash[:error] = api_error_msg(e)
       render :json => { :running => "false", :error => "#{api_error_msg(e)}" }
     else
-      info = @room.fetch_meeting_info
       render :json => { :running => "#{@room.is_running?}", :meeting_info => info}
     end
   end

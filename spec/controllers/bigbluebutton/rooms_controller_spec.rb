@@ -421,7 +421,7 @@ describe Bigbluebutton::RoomsController do
     end
 
     context "room is not running" do
-      before { 
+      before {
         mocked_api.should_receive(:is_meeting_running?).and_return(false)
         @api_mock.should_receive(:get_meeting_info).and_return({running: false})
       }
@@ -435,7 +435,7 @@ describe Bigbluebutton::RoomsController do
       before { mocked_api.should_receive(:is_meeting_running?)  { raise bbb_error } }
       before(:each) { get :running, :id => room.to_param }
       it { should respond_with(:success) }
-      it { should set_the_flash.to(api_error_msg(bbb_error)) }
+      it { should_not set_the_flash }
     end
 
     context "doesn't override @room" do

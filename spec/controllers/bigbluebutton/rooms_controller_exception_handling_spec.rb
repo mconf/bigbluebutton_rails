@@ -44,7 +44,7 @@ describe Bigbluebutton::RoomsController do
       before(:each) { get :running, :id => room.to_param }
       it { should respond_with(:success) }
       it { response.body.should == build_running_json(false,{}, api_error_msg(bbb_error)) }
-      it { should set_the_flash.to(api_error_msg(bbb_error)) }
+      it { should_not set_the_flash }
     end
 
     describe "#end" do
