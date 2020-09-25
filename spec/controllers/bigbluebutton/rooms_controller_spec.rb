@@ -1,5 +1,6 @@
 require 'spec_helper'
 require 'bigbluebutton_api'
+include BigbluebuttonRailsHelper
 
 # Some tests mock the server and its API object
 # We don't want to trigger real API calls here (this is done in the integration tests)
@@ -368,7 +369,7 @@ describe Bigbluebutton::RoomsController do
       it { should respond_with(:redirect) }
       it { should redirect_to bigbluebutton_rooms_url }
       it {
-        msg = I18n.t('bigbluebutton_rails.rooms.notice.destroy.success_with_bbb_error', :error => bbb_error_msg[0..200])
+        msg = I18n.t('bigbluebutton_rails.rooms.notice.destroy.success_with_bbb_error')
         should set_the_flash.to(msg)
       }
     end
@@ -418,7 +419,7 @@ describe Bigbluebutton::RoomsController do
     end
 
     context "room is not running" do
-      before { 
+      before {
         mocked_api.should_receive(:is_meeting_running?).and_return(false)
         @api_mock.should_receive(:get_meeting_info).and_return({running: false})
       }
@@ -432,7 +433,7 @@ describe Bigbluebutton::RoomsController do
       before { mocked_api.should_receive(:is_meeting_running?)  { raise bbb_error } }
       before(:each) { get :running, :id => room.to_param }
       it { should respond_with(:success) }
-      it { should set_the_flash.to(bbb_error_msg[0..200]) }
+      it { should_not set_the_flash }
     end
 
     context "doesn't override @room" do
@@ -730,7 +731,7 @@ describe Bigbluebutton::RoomsController do
       before { mocked_api.should_receive(:is_meeting_running?) { raise bbb_error } }
       before(:each) { get :end, :id => room.to_param }
       it { should respond_with(:redirect) }
-      it { should set_the_flash.to(bbb_error_msg[0..200]) }
+      it { should set_the_flash.to(api_error_msg(bbb_error)) }
     end
 
     context "doesn't override @room" do
@@ -823,7 +824,7 @@ describe Bigbluebutton::RoomsController do
       }
       it { should respond_with(:redirect) }
       it { should redirect_to(bigbluebutton_room_path(room)) }
-      it { should set_the_flash.to(bbb_error_msg[0..200]) }
+      it { should set_the_flash.to(api_error_msg(bbb_error)) }
     end
 
     context "if the room has no server associated" do
@@ -1158,7 +1159,7 @@ describe Bigbluebutton::RoomsController do
       before(:each) { get :join, :id => room.to_param }
       it { should respond_with(:redirect) }
       it { should redirect_to(http_referer) }
-      it { should set_the_flash.to(bbb_error_msg[0..200]) }
+      it { should set_the_flash.to(api_error_msg(bbb_error)) }
     end
 
     context "doesn't break if a guest user has permission to create a meeting" do

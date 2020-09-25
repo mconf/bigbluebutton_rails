@@ -62,6 +62,10 @@ pt-br:
       bigbluebutton_room: "Sala de Videoconferência"
       bigbluebutton_server: "Servidor de Videoconferência"
   bigbluebutton_rails:
+    api:
+      errors:
+        default: "Ops, parece que algo inesperado aconteceu. Tente novamente mais tarde. (\"%{key}\")"
+        else: "Ops, parece que algo inesperado aconteceu. Tente novamente mais tarde."
     bigbluebutton: BigBlueButton
     meetings:
       delete:
@@ -103,7 +107,7 @@ pt-br:
       notice:
         destroy:
           success: "Gravação destruida!"
-          success_with_bbb_error: "A gravação foi destruída com sucesso mas não foi removida do servidor de videoconferência (\"%{error}\")"
+          success_with_bbb_error: "A gravação foi destruída com sucesso mas não foi removida do servidor de webconferência."
         publish:
           success: "Gravação publicada!"
         unpublish:
@@ -132,7 +136,7 @@ pt-br:
           success: "Sala criada!"
         destroy:
           success: "Reunião destruída!"
-          success_with_bbb_error: "A sala foi destruída com sucesso mas a reunião não foi finalizada no servidor de videoconferência (\"%{error}\")"
+          success_with_bbb_error: "A sala foi destruída com sucesso mas a reunião não foi finalizada no servidor de webconferência."
         end:
           not_running: "A reunião não pôde ser finalizada pois não está em andamento."
           success: "A reunião foi finalizada com sucesso."

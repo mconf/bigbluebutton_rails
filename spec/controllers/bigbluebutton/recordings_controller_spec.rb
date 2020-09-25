@@ -1,4 +1,5 @@
 require 'spec_helper'
+include BigbluebuttonRailsHelper
 
 describe Bigbluebutton::RecordingsController do
   render_views
@@ -170,7 +171,7 @@ describe Bigbluebutton::RecordingsController do
       it { should respond_with(:redirect) }
       it { should redirect_to bigbluebutton_recordings_url }
       it {
-        msg = I18n.t('bigbluebutton_rails.recordings.notice.destroy.success_with_bbb_error', :error => bbb_error_msg[0..200])
+        msg = I18n.t('bigbluebutton_rails.recordings.notice.destroy.success_with_bbb_error')
         should set_the_flash.to(msg)
       }
     end
@@ -403,7 +404,7 @@ describe Bigbluebutton::RecordingsController do
         before(:each) { post action, :id => recording.to_param }
         it { should respond_with(:redirect) }
         it { should redirect_to(bigbluebutton_recording_path(recording)) }
-        it { should set_the_flash.to(bbb_error_msg[0..200]) }
+        it { should set_the_flash.to(api_error_msg(bbb_error)) }
       end
 
       context "returns error if there's no server associated" do

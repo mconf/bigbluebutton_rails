@@ -1,4 +1,5 @@
 require 'spec_helper'
+include BigbluebuttonRailsHelper
 
 describe Bigbluebutton::ServersController do
   render_views
@@ -309,7 +310,7 @@ describe Bigbluebutton::ServersController do
       context "at fetch_meetings" do
         before { server.should_receive(:fetch_meetings) { raise bbb_error } }
         before(:each) { get :activity, :id => server.to_param }
-        it { should set_the_flash.to(bbb_error_msg[0..200]) }
+        it { should set_the_flash.to(api_error_msg(bbb_error)) }
       end
 
       context "at fetch_meeting_info" do
@@ -319,7 +320,7 @@ describe Bigbluebutton::ServersController do
           room1.should_receive(:fetch_meeting_info) { raise bbb_error }
         end
         before(:each) { get :activity, :id => server.to_param }
-        it { should set_the_flash.to(bbb_error_msg[0..200]) }
+        it { should set_the_flash.to(api_error_msg(bbb_error)) }
       end
     end
 
@@ -361,7 +362,7 @@ describe Bigbluebutton::ServersController do
       before(:each) { post :publish_recordings, :id => server.to_param, :recordings => recording_ids }
       it { should respond_with(:redirect) }
       it { should redirect_to(recordings_bigbluebutton_server_path(server)) }
-      it { should set_the_flash.to(bbb_error_msg[0..200]) }
+      it { should set_the_flash.to(api_error_msg(bbb_error)) }
     end
 
     context "with :redir_url" do
@@ -420,7 +421,7 @@ describe Bigbluebutton::ServersController do
       }
       it { should respond_with(:redirect) }
       it { should redirect_to(recordings_bigbluebutton_server_path(server)) }
-      it { should set_the_flash.to(bbb_error_msg[0..200]) }
+      it { should set_the_flash.to(api_error_msg(bbb_error)) }
     end
 
     context "with :redir_url" do
@@ -487,7 +488,7 @@ describe Bigbluebutton::ServersController do
       }
       it { should respond_with(:redirect) }
       it { should redirect_to(bigbluebutton_server_path(server)) }
-      it { should set_the_flash.to(bbb_error_msg[0..200]) }
+      it { should set_the_flash.to(api_error_msg(bbb_error)) }
     end
 
     context "when filtering by meetingID" do
