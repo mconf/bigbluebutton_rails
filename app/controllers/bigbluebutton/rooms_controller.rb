@@ -331,7 +331,8 @@ class Bigbluebutton::RoomsController < ApplicationController
       end
 
       # room created and running, try to join it
-      url = @room.parameterized_join_url(username, role, id, {}, bigbluebutton_user)
+      options = @avatar_url ? { avatarURL: @avatar_url } : {}
+      url = @room.parameterized_join_url(username, role, id, options, bigbluebutton_user)
 
       unless url.nil?
 
