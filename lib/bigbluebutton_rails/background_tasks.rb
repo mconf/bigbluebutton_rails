@@ -27,7 +27,7 @@ module BigbluebuttonRails
             server.fetch_recordings(nil, true)
             Rails.logger.info "BackgroundTasks: List of recordings from #{server.url} updated successfully"
           end
-        rescue StandardException => e
+        rescue StandardError => e
           Rails.logger.info "BackgroundTasks: Failure fetching recordings from #{server.inspect}"
           Rails.logger.info "BackgroundTasks: #{e.inspect}"
           Rails.logger.info "BackgroundTasks: #{e.backtrace.join("\n")}"
