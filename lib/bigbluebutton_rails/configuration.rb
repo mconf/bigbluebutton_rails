@@ -17,6 +17,7 @@ module BigbluebuttonRails
     attr_accessor :downloadable_playback_types
     attr_accessor :debug
     attr_accessor :api_timeout
+    attr_accessor :use_webhooks
 
     # methods
     attr_accessor :select_server
@@ -30,7 +31,8 @@ module BigbluebuttonRails
         servers: 'bigbluebutton/servers',
         rooms: 'bigbluebutton/rooms',
         recordings: 'bigbluebutton/recordings',
-        playback_types: 'bigbluebutton/playback_types'
+        playback_types: 'bigbluebutton/playback_types',
+        webhooks: 'bigbluebutton/webhooks'
       }
       @routing_scope = 'bigbluebutton'
 
@@ -102,11 +104,19 @@ module BigbluebuttonRails
       # Set it to an empty string to disable authentication. Set it to nil to deny all
       # requests (disable the API).
       @api_secret = nil
+
+      # If true, will register an endpoint to receive webhooks and update meetings and
+      # recordings. The workers that synchronize meetings and recordings will either
+      # not run anymore or will run very sporadically, just to sync up in case some
+      # event was lost.
+      @use_webhooks = true
     end
 
     def set_controllers(options)
       unless options.nil? || options.empty?
-        @controllers.merge!(options).slice!(:servers, :rooms, :recordings, :playback_types)
+        @controllers.merge!(
+          options.slice!(:servers, :rooms, :recordings, :playback_types, :webhooks)
+        )
       end
     end
 

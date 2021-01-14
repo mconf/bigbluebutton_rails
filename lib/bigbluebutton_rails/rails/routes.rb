@@ -97,9 +97,17 @@ module ActionDispatch::Routing
 
     def bigbluebutton_routes_default(*params) #:nodoc:
       options = params.extract_options!
-      options_scope = options.has_key?(:scope) ? options[:scope] : BigbluebuttonRails.configuration.routing_scope
+      options_scope = if options.has_key?(:scope)
+                        options[:scope]
+                      else
+                        BigbluebuttonRails.configuration.routing_scope
+                      end
       options_as = options.has_key?(:as) ? options[:as] : options_scope
-      options_only = options.has_key?(:only) ? options[:only] : ["servers", "rooms", "recordings", "playback_types"]
+      options_only = if options.has_key?(:only)
+                       options[:only]
+                     else
+                       ["servers", "rooms", "recordings", "playback_types", "webhooks"]
+                     end
       BigbluebuttonRails.configuration.set_controllers(options[:controllers])
 
       scope options_scope, :as => options_as do
@@ -107,6 +115,9 @@ module ActionDispatch::Routing
         add_routes_for_rooms if options_only.include?("rooms")
         add_routes_for_recordings if options_only.include?("recordings")
         add_routes_for_playback_types if options_only.include?("playback_types")
+        if BigbluebuttonRails.configuration.use_webhooks
+          add_routes_for_webhooks if options_only.include?("webhooks")
+        end
       end
     end
 
@@ -146,7 +157,7 @@ module ActionDispatch::Routing
 
     def add_routes_for_recordings #:nodoc:
       resources :recordings, :except => [:new, :create],
-                             :controller => BigbluebuttonRails.configuration.controllers[:recordings] do
+                :controller => BigbluebuttonRails.configuration.controllers[:recordings] do
         member do
           get :play
           post :publish
@@ -157,7 +168,12 @@ module ActionDispatch::Routing
 
     def add_routes_for_playback_types #:nodoc:
       resources :playback_types, :only => [:update],
-                                 :controller => BigbluebuttonRails.configuration.controllers[:playback_types]
+                :controller => BigbluebuttonRails.configuration.controllers[:playback_types]
+    end
+
+    def add_routes_for_webhooks #:nodoc:
+      ctrl = BigbluebuttonRails.configuration.controllers[:webhooks]
+      post '/webhooks', to: "#{ctrl}#index"
     end
   end
 end

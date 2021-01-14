@@ -13,6 +13,7 @@ require 'bigbluebutton_rails/background_tasks'
 require 'bigbluebutton_rails/rails/routes'
 require 'bigbluebutton_rails/exceptions'
 require 'bigbluebutton_rails/dial_number'
+require 'bigbluebutton_rails/webhooks'
 
 module BigbluebuttonRails
   class << self
