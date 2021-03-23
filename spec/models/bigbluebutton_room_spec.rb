@@ -189,6 +189,11 @@ describe BigbluebuttonRoom do
     it { room.user_role({ :not_key => "any" }).should == nil }
     it { room.user_role({ }).should == nil }
     it { room.user_role(nil).should == nil }
+
+    context "when guest support is true" do
+      before { BigbluebuttonRails.configuration.guest_support = true }
+      it { room.user_role({ :key => room.attendee_key }).should == :guest }
+    end
   end
 
   describe "#instance_variables_compare" do

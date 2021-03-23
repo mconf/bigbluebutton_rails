@@ -297,7 +297,11 @@ class BigbluebuttonRoom < ActiveRecord::Base
       if self.moderator_key == key
         role = :moderator
       elsif self.attendee_key == key
-        role = :attendee
+        if BigbluebuttonRails.configuration.guest_support
+          role = :guest
+        else
+          role = :attendee
+        end
       end
     end
     role
