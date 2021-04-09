@@ -55,22 +55,6 @@ class BigbluebuttonRailsTo310 < ActiveRecord::Migration
   end
 
   def down
-    create_table :bigbluebutton_server_configs do |t|
-      t.integer :server_id
-      t.text :available_layouts
-      t.timestamps
-    end
-
-    create_table :bigbluebutton_room_options do |t|
-      t.integer :room_id
-      t.string :default_layout
-      t.boolean :presenter_share_only
-      t.boolean :auto_start_video
-      t.boolean :auto_start_audio
-      t.string :background
-      t.timestamps
-    end
-    
     raise ActiveRecord::IrreversibleMigration, "Can't undo due to loss of values during migration"
   end
 end
