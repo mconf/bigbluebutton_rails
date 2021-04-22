@@ -1,5 +1,14 @@
 # Change Log
 
+## [3.1.0] - 2020-04-09
+
+* [#183] Add guest support to private rooms.
+* [#185] Fix recordings without meetings. When creating a recording, if a meeting
+  is not found for it, a new one is created and associated to that recording.
+  That same procedure was applied to every recording without a meeting on the
+  upgrade gem migration.
+
+
 ## [3.0.1] - 2020-03-29
 
 * Applied changes from 2.3.1.
@@ -351,6 +360,7 @@ https://github.com/mconf/bigbluebutton_rails/wiki/Migrate-to-1.3.0
 * Controller to access servers and rooms
 * rooms_controller interacts with a BBB server using bigbluebutton-api-ruby
 
+[3.1.0]: https://github.com/mconf/bigbluebutton_rails/compare/v3.0.1...v3.1.0
 [3.0.1]: https://github.com/mconf/bigbluebutton_rails/compare/v3.0.0...v3.0.1
 [3.0.0]: https://github.com/mconf/bigbluebutton_rails/compare/v2.3.1...v3.0.0
 [2.3.1]: https://github.com/mconf/bigbluebutton_rails/compare/v2.3.0...v2.3.1
