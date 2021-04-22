@@ -155,7 +155,7 @@ class BigbluebuttonServer < ActiveRecord::Base
     rescue BigBlueButton::BigBlueButtonException
       # we just ignore errors in case the server is not responding
       # in these cases, the version will be fetched later on
-      Rails.logger.error "Could not fetch the API version from the server #{self.id}. The URL probably incorrect."
+      Rails.logger.error "Could not fetch the API version from the server #{self.url}. The URL is probably incorrect."
       self.version = nil
     end
     self.version
