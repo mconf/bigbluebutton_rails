@@ -724,7 +724,6 @@ describe BigbluebuttonRoom do
               room.should_receive(:internal_create_meeting) do
                 ['my-server', response]
               end
-              room.should_receive(:create_meeting_record).with(response, 'my-server', 'my-user', user_opts)
             end
             it { room.send_create('my-user') }
           end
@@ -1366,119 +1365,6 @@ describe BigbluebuttonRoom do
         it("sets running") { subject.running.should eq(room.running) }
         it("sets create_time") { subject.create_time.should eq(room.create_time.to_i) }
         it("sets ended") { subject.ended.should be(false) }
-      end
-    end
-  end
-
-  describe "#create_meeting_record" do
-    let(:server) { FactoryGirl.create(:bigbluebutton_server) }
-    let(:room) { FactoryGirl.create(:bigbluebutton_room) }
-
-    context "if there is already a current meeting" do
-      let!(:meeting) { FactoryGirl.create(:bigbluebutton_meeting, room: room, ended: false, running: true, create_time: room.create_time) }
-      subject {
-        expect {
-          room.create_meeting_record({}, server, nil, {})
-        }.not_to change{ BigbluebuttonMeeting.count }
-      }
-      it { BigbluebuttonMeeting.where(room: room).count.should be(1) }
-      it { meeting.reload.running.should be(true) }
-      it { meeting.reload.ended.should be(false) }
-    end
-
-    context "if #create_time is not set in the room" do
-      before { room.update_attributes(create_time: nil) }
-      subject { room.create_meeting_record({}, server, nil, {}) }
-      it("doesn't create a meeting") {
-        BigbluebuttonMeeting.find_by(room_id: room.id).should be_nil
-      }
-    end
-
-    context "if #create_time is set" do
-      let(:user) { FactoryGirl.build(:user) }
-      let(:metadata) {
-        m = {}
-        m[BigbluebuttonRails.configuration.metadata_user_id] = user.id
-        m[BigbluebuttonRails.configuration.metadata_user_name] = user.name
-        m
-      }
-      before {
-        room.create_time = Time.now.utc
-        room.running = !room.running # to change its default value
-        room.record_meeting = !room.record_meeting # to change its default value
-        room.create_time = Time.at(Time.now.to_i - 123)  # to change its default value
-      }
-
-      context "if there's no meeting associated yet creates one" do
-        context "and there's no metadata in the response" do
-          before(:each) {
-            expect {
-              room.create_meeting_record({}, server, nil, {})
-            }.to change{ BigbluebuttonMeeting.count }.by(1)
-          }
-          subject { BigbluebuttonMeeting.last }
-          it("sets server_url") { subject.server_url.should eq(server.url) }
-          it("sets server_secret") { subject.server_secret.should eq(server.secret) }
-          it("sets room") { subject.room.should eq(room) }
-          it("sets meetingid") { subject.meetingid.should eq(room.meetingid) }
-          it("sets name") { subject.name.should eq(room.name) }
-          it("sets recorded") { subject.recorded.should eq(room.record_meeting) }
-          it("sets running") { subject.running.should eq(room.running) }
-          it("sets create_time") { subject.create_time.should eq(room.create_time.to_i) }
-          it("doesn't set creator_id") { subject.creator_id.should be_nil }
-          it("doesn't set creator_name") { subject.creator_name.should be_nil }
-        end
-
-        context "and there's metadata in the response" do
-          before(:each) {
-            expect {
-              room.create_meeting_record({ metadata: metadata }, server, nil, {})
-            }.to change{ BigbluebuttonMeeting.count }.by(1)
-          }
-          subject { BigbluebuttonMeeting.last }
-          it("sets creator_id") { subject.creator_id.should eq(user.id) }
-          it("sets creator_name") { subject.creator_name.should eq(user.name) }
-        end
-
-        context "and there are user attributes" do
-          let(:user_attrs) {
-            {
-              meetingID: room.meetingid + "-2",
-              name: room.name + "-2",
-              record: false, # important to be false here
-              creator_name: "can override the creator name",
-              creator_id: -10
-            }
-          }
-          before {
-            room.record_meeting = true
-            expect {
-              room.create_meeting_record({}, server, nil, user_attrs)
-            }.to change{ BigbluebuttonMeeting.count }.by(1)
-          }
-          subject { BigbluebuttonMeeting.last }
-          it("sets meetingid") { subject.meetingid.should eql(room.meetingid + '-2') }
-          it("sets name") { subject.name.should eql(room.name + '-2') }
-          it("sets recorded") { subject.recorded.should be(false) }
-          it("sets creator name") { subject.creator_name.should eql("can override the creator name") }
-          it("sets creator id") { subject.creator_id.should eql(-10) }
-        end
-      end
-
-      context "if there were already old meetings associated with the room, finishes them" do
-        let!(:meeting1) { FactoryGirl.create(:bigbluebutton_meeting, room: room, ended: false, running: true) }
-        let!(:meeting2) { FactoryGirl.create(:bigbluebutton_meeting, room: room, ended: false, running: false) }
-
-        before(:each) {
-          BigbluebuttonMeeting.where(room: room, ended: false).count.should be(2)
-          expect {
-            room.create_meeting_record({ metadata: metadata }, server, nil, {})
-          }.to change{ BigbluebuttonMeeting.count }.by(1)
-        }
-        it { BigbluebuttonMeeting.where(room: room).count.should be(3) }
-        it { BigbluebuttonMeeting.where(room: room, ended: false).count.should be(1) }
-        it { BigbluebuttonMeeting.where(room: room, ended: true).count.should be(2) }
-        it { BigbluebuttonMeeting.where(room: room, ended: true, running: false).count.should be(2) }
       end
     end
   end

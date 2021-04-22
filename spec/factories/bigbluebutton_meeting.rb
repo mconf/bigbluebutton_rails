@@ -8,6 +8,7 @@ FactoryGirl.define do
     m.ended false
     m.create_time { Time.now.to_i + rand(999999) }
     m.title { Forgery(:lorem_ipsum).words(1) }
+    m.sequence(:internal_meeting_id) { |n| "rec#{n}-#{SecureRandom.uuid}-#{DateTime.now.to_i}" }
     # m.creator_id
     # m.creator_name
   end

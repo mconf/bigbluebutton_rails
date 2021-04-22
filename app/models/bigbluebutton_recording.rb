@@ -270,27 +270,9 @@ class BigbluebuttonRecording < ActiveRecord::Base
   # BigBlueButtonApi#get_recordings but with the keys already converted to our format.
   def self.sync_additional_data(recording, data)
     sync_metadata(recording, data[:metadata]) if data[:metadata]
-    update_meeting_creator(recording)
+    BigbluebuttonMeeting.update_meeting_creator(recording)
     if data[:playback] and data[:playback][:format]
       sync_playback_formats(recording, data[:playback][:format])
-    end
-  end
-
-  # Updates the creator_id and creator_name on the recording's meeting.
-  # Uses the recordings metadata.
-  def self.update_meeting_creator(recording)
-    if recording.metadata.present?
-      if recording.meeting.present?
-        attrs = {}
-        begin
-          attrs[:creator_id] = recording.metadata.find_by(name: 'bbbrails-user-id').content.to_i
-          attrs[:creator_name] = recording.metadata.find_by(name: 'bbbrails-user-name').content
-        rescue
-          attrs[:creator_id] = nil
-          attrs[:creator_name] = nil
-        end
-        recording.meeting.update_attributes(attrs)
-      end
     end
   end
 
@@ -381,36 +363,11 @@ class BigbluebuttonRecording < ActiveRecord::Base
             meeting = BigbluebuttonMeeting.where("meetingid = ? AND create_time DIV 10 = ?", recording.meetingid, div_start_time).last
           end
           if meeting.nil?
-            meeting = build_meeting(recording)
+            meeting = BigbluebuttonMeeting.create_meeting_record_from_recording(recording)
           end
-        logger.info "Recording: meeting found for the recording #{recording.inspect}: #{meeting.inspect}"
+        logger.info "Recording: meeting found/created for the recording #{recording.inspect}: #{meeting.inspect}"
       end
     end
-
-    meeting
-  end
-
-  # Builds a meeting for a given recording. Currently it's being saved on self.create_recording
-  # by Active Record Autosave Association.
-  def self.build_meeting(recording)
-    attrs = {
-      server_id: recording.server.id,
-      room_id: recording.room_id,
-      meetingid: recording.meetingid,
-      name: recording.name,
-      running: false,
-      recorded: true,
-      creator_id: nil,
-      creator_name: nil,
-      server_url: recording.server.url,
-      server_secret: recording.server.secret,
-      create_time: recording.start_time * 1000,
-      ended: true,
-      finish_time: recording.end_time,
-      title: recording.name
-    }
-
-    meeting = BigbluebuttonMeeting.new(attrs)
 
     meeting
   end
