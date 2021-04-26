@@ -145,6 +145,7 @@ class BigbluebuttonRecording < ActiveRecord::Base
   #
   # TODO: catch exceptions on creating/updating recordings
   def self.sync(server, recordings, full_sync=false)
+    recordings = [recordings] unless recordings.is_a? Array
     recordings.each do |rec|
       rec_obj = BigbluebuttonRecording.find_by_recordid(rec[:recordID])
       rec_data = adapt_recording_hash(rec)
@@ -258,9 +259,9 @@ class BigbluebuttonRecording < ActiveRecord::Base
   # BigBlueButtonApi#get_recordings but with the keys already converted to our format.
   def self.sync_additional_data(recording, data)
     sync_metadata(recording, data[:metadata]) if data[:metadata]
-    if data[:playback] and data[:playback][:format]
-      sync_playback_formats(recording, data[:playback][:format])
-    end
+    return if data.dig(:playback, :format).nil?
+
+    sync_playback_formats(recording, data[:playback][:format])
   end
 
   # Syncs the metadata objects of 'recording' with the data in 'metadata'.

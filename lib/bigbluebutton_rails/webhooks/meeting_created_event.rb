@@ -1,6 +1,6 @@
 module BigbluebuttonRails
   module Webhooks
-    class MeetingCreatedEvent
+    module MeetingCreatedEvent
 
       def self.parse(event)
         # puts "Received the event meeting-created: #{event.inspect}"

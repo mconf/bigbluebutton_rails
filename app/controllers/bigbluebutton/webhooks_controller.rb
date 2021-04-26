@@ -3,10 +3,12 @@ class Bigbluebutton::WebhooksController < ApplicationController
 
   respond_to :json
   before_action :verify_webhooks_enabled
-  before_action :validate_caller, if: -> { !Rails.env.development? }
+  before_action :validate_caller
 
   def index
-    head BigbluebuttonRails::Webhooks.parse(params['event'])
+    extra_args = {}
+    extra_args[:server_id] = @server.id unless @server.nil?
+    head BigbluebuttonRails::Webhooks.parse(params['event'], extra_args)
   end
 
   private
@@ -25,11 +27,11 @@ class Bigbluebutton::WebhooksController < ApplicationController
 
     # check if there's a server in the db with this secret
     secret = secret.gsub('Bearer ', '')
-    server = BigbluebuttonServer.find_by(secret: secret)
-    return head :forbidden if server.nil? # 403
+    @server = BigbluebuttonServer.find_by(secret: secret)
+    return head :forbidden if @server.nil? # 403
 
     # check if the domain matches the server with the matched secret
     domain = params['domain']
-    head :forbidden if server.url != URI.parse(server.url).host # 403
+    head :forbidden if domain != URI.parse(@server.url).host # 403
   end
 end
