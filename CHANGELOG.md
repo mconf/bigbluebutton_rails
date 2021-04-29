@@ -1,5 +1,17 @@
 # Change Log
 
+## [3.1.1] - 2020-04-09
+
+* [#186] Refactoring to unify meeting creation on `bigbluebuttonMeeting` model. 
+  Meeting creation methods that were dispersed on `BigbluebuttonRoom` and
+  `BigbluebuttonRecording` models are now unified.
+* [#186] Migration to:
+    - Add `internal_meeting_id` column on meetings, a GUID created internally by BBB.
+    This id can be used to match recordings with their respective meetings.
+    - Drop `bigbluebutton_server_configs` and `bigbluebutton_room_options` tables,
+    as they are not used anymore.
+
+
 ## [3.1.0] - 2020-04-09
 
 * [#183] Add guest support to private rooms.
