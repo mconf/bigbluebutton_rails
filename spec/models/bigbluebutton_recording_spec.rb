@@ -1037,13 +1037,13 @@ describe BigbluebuttonRecording do
       it { subject.should be_nil }
     end
 
-    context "if can't find the start time in recordid" do
-      let(:recording) { FactoryGirl.create(:bigbluebutton_recording, :recordid => "without-timestamp") }
+    context "if the recording has no start_time" do
+      let(:recording) { FactoryGirl.create(:bigbluebutton_recording, start_time: nil) }
       subject { BigbluebuttonRecording.send(:find_matching_meeting, recording) }
       it { subject.should be_nil }
     end
 
-    context "if found a start time in recordid" do
+    context "if the recording has start_time" do
       let(:meeting_create_time) { DateTime.now.to_i }
       let(:meetingid_rand) { SecureRandom.uuid }
       let(:recording) {
@@ -1051,8 +1051,11 @@ describe BigbluebuttonRecording do
       }
 
       context "when there's no associated meeting" do
+        before {
+          @meeting = BigbluebuttonMeeting.create_meeting_record_from_recording(recording)
+        }
         subject { BigbluebuttonRecording.send(:find_matching_meeting, recording) }
-        it { subject.should be_nil }
+        it("creates a meeting for the recording") { subject.should eq(@meeting) }
       end
 
       context "when there's one associated meeting" do
