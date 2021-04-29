@@ -55,6 +55,5 @@ class BigbluebuttonRailsTo310 < ActiveRecord::Migration
   end
 
   def down
-    raise ActiveRecord::IrreversibleMigration, "Can't undo due to loss of values during migration"
   end
 end
