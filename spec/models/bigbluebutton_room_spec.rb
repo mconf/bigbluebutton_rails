@@ -716,7 +716,7 @@ describe BigbluebuttonRoom do
             it { subject.ended.should eql(false) }
           end
 
-          context "calls create_meeting_record with the correct arguments" do
+          context "calls create_meeting_record_from_room with the correct arguments" do
             let(:user_opts) { { opt1: 1, opt2: 'two' } }
             let(:response) { { response: 1 } }
             before do
@@ -724,6 +724,7 @@ describe BigbluebuttonRoom do
               room.should_receive(:internal_create_meeting) do
                 ['my-server', response]
               end
+              BigbluebuttonMeeting.should_receive(:create_meeting_record_from_room).with(room, response, 'my-server', 'my-user', user_opts)
             end
             it { room.send_create('my-user') }
           end

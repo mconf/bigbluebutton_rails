@@ -91,7 +91,7 @@ describe BigbluebuttonMeeting do
         context "and there's no metadata in the response" do
           before(:each) {
             expect {
-              BigbluebuttonMeeting.create_meeting_record_from_room(room, {}, server, nil, {})
+              BigbluebuttonMeeting.create_meeting_record_from_room(room, {internalMeetingID: 'fake-id'}, server, nil, {})
             }.to change{ BigbluebuttonMeeting.count }.by(1)
           }
           subject { BigbluebuttonMeeting.last }
@@ -105,6 +105,7 @@ describe BigbluebuttonMeeting do
           it("sets create_time") { subject.create_time.should eq(room.create_time.to_i) }
           it("doesn't set creator_id") { subject.creator_id.should be_nil }
           it("doesn't set creator_name") { subject.creator_name.should be_nil }
+          it("sets internal_meeting_id") { subject.internal_meeting_id.should eq('fake-id') }
         end
 
         context "and there's metadata in the response" do
@@ -131,7 +132,7 @@ describe BigbluebuttonMeeting do
           before {
             room.record_meeting = true
             expect {
-              BigbluebuttonMeeting.create_meeting_record_from_room(room, {}, server, nil, user_attrs)
+              BigbluebuttonMeeting.create_meeting_record_from_room(room, {internal_meeting_id: 'fake-id'}, server, nil, user_attrs)
             }.to change{ BigbluebuttonMeeting.count }.by(1)
           }
           subject { BigbluebuttonMeeting.last }
@@ -192,6 +193,7 @@ describe BigbluebuttonMeeting do
 
     context "when there isn't a room_id on the recording" do
       it("doesn't create a meeting") {
+        BigbluebuttonMeeting.create_meeting_record_from_recording(recording2)
         BigbluebuttonMeeting.find_by(name: "no_room").should be_nil
       }
     end

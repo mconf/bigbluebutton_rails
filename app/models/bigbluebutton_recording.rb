@@ -364,8 +364,10 @@ class BigbluebuttonRecording < ActiveRecord::Base
           end
           if meeting.nil?
             meeting = BigbluebuttonMeeting.create_meeting_record_from_recording(recording)
+            logger.info "Recording: meeting created for the recording #{recording.inspect}: #{meeting.inspect}"
+          else
+            logger.info "Recording: meeting found for the recording #{recording.inspect}: #{meeting.inspect}"
           end
-        logger.info "Recording: meeting found/created for the recording #{recording.inspect}: #{meeting.inspect}"
       end
     end
 
