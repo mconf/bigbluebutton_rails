@@ -90,6 +90,7 @@ en:
       notice:
         update:
           success: "The record was successfully updated."
+          failure: "The record not updated!"
         destroy:
           success_with_bbb_error: "The record was successfully destroyed but it wasn't deleted from the videoconference server (\"%{error}\")"
           error_destroy: "This record could not be deleted"
