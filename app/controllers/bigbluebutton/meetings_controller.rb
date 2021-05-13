@@ -57,7 +57,11 @@ class Bigbluebutton::MeetingsController < ApplicationController
           redirect_to_using_params @meeting, :notice => message
         }
       else
-        format.html { redirect_to_params_or_render :edit }
+        format.html {
+          message = t('bigbluebutton_rails.meetings.notice.update.failure')
+          flash[:error] = message
+          redirect_to_params_or_render :edit
+        }
       end
     end
   end
