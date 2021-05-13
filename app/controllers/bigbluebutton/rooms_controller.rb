@@ -101,7 +101,7 @@ class Bigbluebutton::RoomsController < ApplicationController
   # Used to join users into a meeting. Most of the work is done in before filters.
   # Can be called via GET or POST and accepts parameters both in the POST data and URL.
   def join
-    join_internal(@user_name, @user_role, @user_id)
+    join_internal(@user_name, @user_role, @user_id, @user_email)
   end
 
   # Used to join private rooms or to invite anonymous users (not logged)
@@ -243,12 +243,13 @@ class Bigbluebutton::RoomsController < ApplicationController
   end
 
   # Checks the parameters received when calling `join` and sets them in variables to
-  # be accessed by other methods. Sets the user's name, id and role. Gives priority to
+  # be accessed by other methods. Sets the user's name, email, id and role. Gives priority to
   # a logged user over the information provided in the params.
   def join_user_params
     # gets the user information, given priority to a possible logged user
     if bigbluebutton_user.nil?
       @user_name = params[:user].blank? ? nil : params[:user][:name]
+      @user_email = params[:user].blank? ? nil : params[:user][:email]
       @user_id = nil
     else
       @user_name = bigbluebutton_user.name
@@ -315,7 +316,7 @@ class Bigbluebutton::RoomsController < ApplicationController
   end
 
   # The internal process to join a meeting.
-  def join_internal(username, role, id)
+  def join_internal(username, role, id, email)
     begin
       # first check if we have to create the room and if the user can do it
       unless @room.fetch_is_running?
@@ -331,7 +332,7 @@ class Bigbluebutton::RoomsController < ApplicationController
       end
 
       # room created and running, try to join it
-      url = @room.parameterized_join_url(username, role, id, {}, bigbluebutton_user)
+      url = @room.parameterized_join_url(username, role, id, { 'userdata-email': email }, bigbluebutton_user)
 
       unless url.nil?
 
