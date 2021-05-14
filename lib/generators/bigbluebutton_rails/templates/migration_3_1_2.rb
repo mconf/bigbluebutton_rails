@@ -1,6 +1,6 @@
 class BigbluebuttonRailsTo312 < ActiveRecord::Migration
   def self.up
-    change_column :bigbluebutton_meetings, :title, :text, limit: 255
+    change_column :bigbluebutton_meetings, :title, :string, limit: 255
   end
 
   def self.down
