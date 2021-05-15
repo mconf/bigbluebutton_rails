@@ -95,7 +95,8 @@ class CreateBigbluebuttonRails < ActiveRecord::Migration
       t.string :creator_name
       t.boolean :ended, :default => false
       t.string :got_stats
-      t.string :title, limit: 80
+      t.string :title, limit: 255
+      t.string :internal_meeting_id
       t.timestamps
     end
     add_index :bigbluebutton_meetings, [:meetingid, :create_time], :unique => true
