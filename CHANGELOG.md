@@ -1,6 +1,13 @@
 # Change Log
 
-## [3.1.1] - 2020-04-09
+## [3.1.2] - 2021-05-15
+
+* [#190] Increase the size of `BigbluebuttonMeeting#title` from 80 to 255 characters. It was a column
+  migrated from `BigbluebuttonRecording#description` that originally was a `text`. We saw instances of
+  applications that were already using more than 80 characters.
+
+
+## [3.1.1] - 2021-04-29
 
 * [#186] Refactoring to unify meeting creation on `bigbluebuttonMeeting` model. 
   Meeting creation methods that were dispersed on `BigbluebuttonRoom` and
@@ -12,7 +19,7 @@
     as they are not used anymore.
 
 
-## [3.1.0] - 2020-04-09
+## [3.1.0] - 2021-04-22
 
 * [#183] Add guest support to private rooms.
 * [#185] Fix recordings without meetings. When creating a recording, if a meeting
@@ -372,6 +379,7 @@ https://github.com/mconf/bigbluebutton_rails/wiki/Migrate-to-1.3.0
 * Controller to access servers and rooms
 * rooms_controller interacts with a BBB server using bigbluebutton-api-ruby
 
+[3.1.2]: https://github.com/mconf/bigbluebutton_rails/compare/v3.1.1...v3.1.2
 [3.1.1]: https://github.com/mconf/bigbluebutton_rails/compare/v3.1.0...v3.1.1
 [3.1.0]: https://github.com/mconf/bigbluebutton_rails/compare/v3.0.1...v3.1.0
 [3.0.1]: https://github.com/mconf/bigbluebutton_rails/compare/v3.0.0...v3.0.1
