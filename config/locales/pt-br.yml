@@ -72,7 +72,8 @@ pt-br:
         success: "Seu registro foi removido com sucesso."
       notice:
         update:
-          success: "Seu registro foi atualizado com sucesso."
+          success: "Seu registro de reunião foi atualizado."
+          failure: "Não foi possível atualizar seu registro de reunião."
         destroy:
           success_with_bbb_error: "O registro foi destruído com sucesso mas não foi removido do servidor de videoconferência (\"%{error}\")"
           error_destroy: "Não foi possível deletar este registro."

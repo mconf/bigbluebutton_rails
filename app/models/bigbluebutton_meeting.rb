@@ -20,6 +20,8 @@ class BigbluebuttonMeeting < ActiveRecord::Base
   validates :create_time, :presence => true
   validates :create_time, :uniqueness => { :scope => :room_id }
 
+  validates :title, :length => { :maximum => 255 }
+
   # Whether the meeting was created by the `user` or not.
   def created_by?(user)
     unless user.nil?
