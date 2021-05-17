@@ -226,13 +226,10 @@ class BigbluebuttonRecording < ActiveRecord::Base
   # The format expected for 'data' follows the format returned by
   # BigBlueButtonApi#get_recordings but with the keys already converted to our format.
   def self.update_recording(server, recording, data)
-    recording.server = server
-    recording.room = BigbluebuttonRails.configuration.match_room_recording.call(data)
+    return unless prepare_recording(recording, server, data)
     recording.attributes = data.slice(:meetingid, :name, :published, :start_time, :end_time, :size)
-    recording.available = true
-    recording.recording_users = adapt_recording_users(data[:recordingUsers])
-    recording.save!
 
+    recording.save!
     sync_additional_data(recording, data)
   end
 
@@ -242,15 +239,28 @@ class BigbluebuttonRecording < ActiveRecord::Base
   def self.create_recording(server, data)
     filtered = data.slice(:recordid, :meetingid, :name, :published, :start_time, :end_time, :size)
     recording = BigbluebuttonRecording.create(filtered)
-    recording.available = true
-    recording.room = BigbluebuttonRails.configuration.match_room_recording.call(data)
-    recording.server = server
-    recording.description = I18n.t('bigbluebutton_rails.recordings.default.description', :time => Time.at(recording.start_time).utc.to_formatted_s(:long))
-    recording.meeting = BigbluebuttonRecording.find_matching_meeting(recording)
-    recording.recording_users = adapt_recording_users(data[:recordingUsers])
-    recording.save!
+    return unless prepare_recording(recording, server, data)
 
+    recording.description = I18n.t('bigbluebutton_rails.recordings.default.description',
+                                   time: Time.at(recording.start_time).utc.to_formatted_s(:long))
+    recording.meeting = BigbluebuttonRecording.find_matching_meeting(recording)
+
+    recording.save!
     sync_additional_data(recording, data)
+  end
+
+  def self.prepare_recording(recording, server, data)
+    room = BigbluebuttonRails.configuration.match_room_recording.call(data)
+    if room.blank?
+      Rails.logger.warn("Couldn't found a room when creating recording #{data[:recordid]}")
+      return false
+    end
+
+    recording.available = true
+    recording.recording_users = adapt_recording_users(data[:recordingUsers])
+    recording.room = room
+    recording.server = server
+    true
   end
 
   # Syncs data that's not directly stored in the recording itself but in
