@@ -43,7 +43,9 @@ class BigbluebuttonServer < ActiveRecord::Base
 
   # Schedules a recording update right after a recording server is added.
   after_create do
-    Resque.enqueue(::BigbluebuttonUpdateRecordingsWorker, self.id)
+    unless BigbluebuttonRails.configuration.use_webhooks
+      Resque.enqueue(::BigbluebuttonUpdateRecordingsWorker, id)
+    end
   end
 
   # Helper to get the default server

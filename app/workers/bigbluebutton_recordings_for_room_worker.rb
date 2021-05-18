@@ -12,6 +12,8 @@ class BigbluebuttonRecordingsForRoomWorker
   @queue = :bigbluebutton_rails
 
   def self.perform(room_id, tries_left=0)
+    return if BigbluebuttonRails.configuration.use_webhooks
+
     Rails.logger.info "BigbluebuttonRecordingsForRoomWorker worker running"
 
     room = BigbluebuttonRoom.find(room_id)

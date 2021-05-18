@@ -440,13 +440,13 @@ class BigbluebuttonRoom < ActiveRecord::Base
       .where(room_id: self.id)
       .update_all(running: false, ended: true, finish_time: now)
 
-    if to_be_finished.count > 0
+    if to_be_finished.count > 0 && !BigbluebuttonRails.configuration.use_webhooks
       # start trying to get the recording for this room
       # since we don't have a way to know exactly when a recording is done, we
       # have to keep polling the server for them
       # 3 times so it tries at: 4, 9, 14 and 19
       # no point trying more since there is a global synchronization process
-      Resque.enqueue_in(4.minutes, ::BigbluebuttonRecordingsForRoomWorker, self.id, 3)
+      Resque.enqueue_in(4.minutes, ::BigbluebuttonRecordingsForRoomWorker, id, 3)
     end
   end
 

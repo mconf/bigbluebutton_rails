@@ -1535,21 +1535,49 @@ describe BigbluebuttonRoom do
     end
 
     context "enqueues workers to fetch recordings" do
-      context "if at least one meeting was ended" do
-        let!(:meeting1) { FactoryGirl.create(:bigbluebutton_meeting, room: room, ended: false, running: true) }
-        let!(:meeting2) { FactoryGirl.create(:bigbluebutton_meeting, room: room, ended: false, running: true) }
-        before {
-          expect(Resque).to receive(:enqueue_in).with(4.minutes, ::BigbluebuttonRecordingsForRoomWorker, room.id, 3)
-        }
-        it { room.finish_meetings }
-      end
+      context "when not using webhooks" do
+        before do
+          allow(BigbluebuttonRails.configuration)
+            .to receive(:use_webhooks).and_return(false)
+        end
+        context "if at least one meeting was ended" do
+          let!(:meeting1) { FactoryGirl.create(:bigbluebutton_meeting, room: room, ended: false, running: true) }
+          let!(:meeting2) { FactoryGirl.create(:bigbluebutton_meeting, room: room, ended: false, running: true) }
+          before {
+            expect(Resque).to receive(:enqueue_in).with(4.minutes, ::BigbluebuttonRecordingsForRoomWorker, room.id, 3)
+          }
+          it { room.finish_meetings }
+        end
 
-      context "not if no meeting was ended" do
-        let!(:meeting1) { FactoryGirl.create(:bigbluebutton_meeting, room: room, ended: true, running: true) }
-        before {
-          expect(Resque).not_to receive(:enqueue_in)
-        }
-        it { room.finish_meetings }
+        context "not if no meeting was ended" do
+          let!(:meeting1) { FactoryGirl.create(:bigbluebutton_meeting, room: room, ended: true, running: true) }
+          before {
+            expect(Resque).not_to receive(:enqueue_in)
+          }
+          it { room.finish_meetings }
+        end
+      end
+      context 'when using webhooks' do
+        before do
+          allow(BigbluebuttonRails.configuration)
+            .to receive(:use_webhooks).and_return(true)
+        end
+        context "if at least one meeting was ended" do
+          let!(:meeting1) { FactoryGirl.create(:bigbluebutton_meeting, room: room, ended: false, running: true) }
+          let!(:meeting2) { FactoryGirl.create(:bigbluebutton_meeting, room: room, ended: false, running: true) }
+          before {
+            expect(Resque).not_to receive(:enqueue_in).with(4.minutes, ::BigbluebuttonRecordingsForRoomWorker, room.id, 3)
+          }
+          it { room.finish_meetings }
+        end
+
+        context "not if no meeting was ended" do
+          let!(:meeting1) { FactoryGirl.create(:bigbluebutton_meeting, room: room, ended: true, running: true) }
+          before {
+            expect(Resque).not_to receive(:enqueue_in)
+          }
+          it { room.finish_meetings }
+        end
       end
     end
   end
