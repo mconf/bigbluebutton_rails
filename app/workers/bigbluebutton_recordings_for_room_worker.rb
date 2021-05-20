@@ -12,16 +12,25 @@ class BigbluebuttonRecordingsForRoomWorker
   @queue = :bigbluebutton_rails
 
   def self.perform(room_id, tries_left=0)
-    Rails.logger.info "BigbluebuttonRecordingsForRoomWorker worker running"
+    return if tries_left <= 0
+
+    Rails.logger.info "BigbluebuttonRecordingsForRoomWorker worker running " \
+                      "room_id=#{room_id} tries_left=#{tries_left}"
 
     room = BigbluebuttonRoom.find(room_id)
     if room.present?
-      Rails.logger.info "BigbluebuttonRecordingsForRoomWorker getting recordings for #{room.inspect}"
-      room.fetch_recordings( state: BigbluebuttonRecording::STATES.values)
+      Rails.logger.info "BigbluebuttonRecordingsForRoomWorker getting recordings for meetingid=#{room.meetingid}"
 
-      if tries_left > 0
-        Resque.enqueue_in(5.minutes, ::BigbluebuttonRecordingsForRoomWorker, room_id, tries_left - 1)
-      end
+      room.fetch_recordings(state: BigbluebuttonRecording::STATES.values)
+
+      intervals = BigbluebuttonRails.configuration.recording_sync_for_room_intervals
+      idx = intervals.length - tries_left
+      wait = intervals[intervals.length - 1] if wait.nil?
+
+      Resque.enqueue_in(wait, ::BigbluebuttonRecordingsForRoomWorker, room_id, tries_left - 1)
     end
+
+    Rails.logger.info "BigbluebuttonRecordingsForRoomWorker worker ended " \
+                      "room_id=#{room_id} tries_left=#{tries_left}"
   end
 end

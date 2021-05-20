@@ -395,11 +395,9 @@ class BigbluebuttonRoom < ActiveRecord::Base
 
     if to_be_finished.count > 0
       # start trying to get the recording for this room
-      # since we don't have a way to know exactly when a recording is done, we
-      # have to keep polling the server for them
-      # 3 times so it tries at: 4, 9, 14 and 19
-      # no point trying more since there is a global synchronization process
-      Resque.enqueue_in(1.minutes, ::BigbluebuttonRecordingsForRoomWorker, self.id, 10)
+      intervals  = BigbluebuttonRails.configuration.recording_sync_for_room_intervals
+      tries = intervals.length - 1
+      Resque.enqueue_in(intervals[0], ::BigbluebuttonRecordingsForRoomWorker, self.id, tries)
     end
   end
 
