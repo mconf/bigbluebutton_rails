@@ -165,6 +165,7 @@ describe BigbluebuttonRecording do
         start_time: DateTime.now,
         end_time: DateTime.now + 2.hours,
         size: "100",
+        state: "processing",
         metadata: {
           course: "Fundamentals of JAVA",
           description: "List of recordings",
@@ -192,7 +193,8 @@ describe BigbluebuttonRecording do
         published: data[:published],
         start_time: data[:start_time],
         end_time: data[:end_time],
-        size: data[:size]
+        size: data[:size],
+        state: data[:state],
       }
       r = FactoryGirl.create(:bigbluebutton_recording, attrs)
       data[:metadata].each do |k, v|
@@ -209,15 +211,41 @@ describe BigbluebuttonRecording do
       BigbluebuttonRecording.recording_changed?(recording, data).should be(false)
     end
 
-    context "returns true when an attribute changed" do
-      it "in the data" do
-        data[:published] = !data[:published]
-        BigbluebuttonRecording.recording_changed?(recording, data).should be(true)
-      end
+    tracked_attrs = [
+      [ :end_time, :time ],
+      [ :start_time, :time ],
+      [ :meetingid, :string ],
+      [ :recordid, :string ],
+      [ :name, :string ],
+      [ :state, :string ],
+      [ :published, :boolean ],
+      [ :size, :string ]
+    ]
+    tracked_attrs.each do |attr|
+      context "returns true when the attribute #{attr[0]} changed" do
+        it "in the data" do
+          data[attr[0]] = case attr[1]
+                          when :time
+                            data[attr[0]] + 1.day
+                          when :string
+                            data[attr[0]] + "1"
+                          when :boolean
+                            !data[attr[0]]
+                          end
+          BigbluebuttonRecording.recording_changed?(recording, data).should be(true)
+        end
 
-      it "in the database" do
-        recording.update(published: !recording.published)
-        BigbluebuttonRecording.recording_changed?(recording, data).should be(true)
+        it "in the database" do
+          case attr[1]
+          when :time
+            recording.update_attribute(attr[0], data[attr[0]] + 1.day)
+          when :string
+            recording.update_attribute(attr[0], data[attr[0]] + "1")
+          when :boolean
+            recording.update_attribute(attr[0], !data[attr[0]])
+          end
+          BigbluebuttonRecording.recording_changed?(recording, data).should be(true)
+        end
       end
     end
 
@@ -354,6 +382,7 @@ describe BigbluebuttonRecording do
         startTime: DateTime.now,
         endTime: DateTime.now + 2.hours,
         size: 100,
+        state: 'processing',
         metadata: {
           course: "Fundamentals of JAVA",
           description: "List of recordings",
@@ -565,21 +594,17 @@ describe BigbluebuttonRecording do
     it "doesn't update if the recording didn't change" do
       # once to create the recording
       now = DateTime.now
-      expected = now - 1.month
+      expected = now - 1.day
       Timecop.freeze(expected)
       rec_data = data.clone
-
       BigbluebuttonRecording.sync(new_server, rec_data)
 
-      # set an expected updated_at
+      # bug to the current timestamp
       rec = BigbluebuttonRecording.first
-      puts "before #{rec.updated_at} (#{DateTime.now})"
-      # rec.send(:write_attribute, :updated_at, expected)
+      Timecop.freeze(now)
 
       # shouldn't change it
-      Timecop.freeze(now)
       BigbluebuttonRecording.sync(new_server, rec_data)
-      puts "after #{rec.reload.updated_at} (#{DateTime.now})"
       rec.reload.updated_at.to_i.should eql(expected.to_i)
 
       Timecop.return

@@ -106,7 +106,7 @@ class BigbluebuttonRecording < ActiveRecord::Base
       # the attributes that are considered in the comparison
       keys = [ # rawSize is not stored at the moment
         :end_time, :meetingid,  :metadata, :playback, :published,
-        :recordid, :size, :start_time
+        :recordid, :size, :start_time, :state, :name
       ]
       keys_formats = [ # :size, :processingTime are not stored at the moment
         :length, :type, :url
