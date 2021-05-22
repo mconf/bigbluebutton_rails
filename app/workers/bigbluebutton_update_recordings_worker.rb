@@ -7,5 +7,6 @@ class BigbluebuttonUpdateRecordingsWorker
   def self.perform(server_id=nil)
     Rails.logger.info "BigbluebuttonUpdateRecordingsWorker worker running"
     BigbluebuttonRails::BackgroundTasks.update_recordings(server_id)
+    Rails.logger.info "BigbluebuttonUpdateRecordingsWorker worker ended"
   end
 end

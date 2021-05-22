@@ -158,21 +158,23 @@ class BigbluebuttonRecording < ActiveRecord::Base
   #
   # TODO: catch exceptions on creating/updating recordings
   def self.sync(server, recordings, full_sync=false)
+
+    logger.info "Sync recordings: starting a sync for server=#{server.url};#{server.secret} full_sync=#{full_sync}"
     recordings.each do |rec|
       rec_obj = BigbluebuttonRecording.find_by_recordid(rec[:recordID])
       rec_data = adapt_recording_hash(rec)
-      changed = !rec_obj.present? ||
-                self.recording_changed?(rec_obj, rec_data)
+      changed = !rec_obj.present? || self.recording_changed?(rec_obj, rec_data)
 
       if changed
+        logger.info "Sync recordings: detected that the recording changed #{rec[:recordID]}"
         BigbluebuttonRecording.transaction do
           if rec_obj
-            logger.info "Sync recordings: updating recording #{rec_obj.inspect}"
-            logger.debug "Sync recordings: recording data #{rec_data.inspect}"
+            logger.info "Sync recordings: updating recording #{rec[:recordID]}"
+            logger.debug "Sync recordings: updating recording with data #{rec_data.inspect}"
             self.update_recording(server, rec_obj, rec_data)
           else
-            logger.info "Sync recordings: creating recording"
-            logger.debug "Sync recordings: recording data #{rec_data.inspect}"
+            logger.info "Sync recordings: creating recording #{rec[:recordID]}"
+            logger.debug "Sync recordings: creating recording with data #{rec_data.inspect}"
             self.create_recording(server, rec_data)
           end
         end
@@ -200,6 +202,8 @@ class BigbluebuttonRecording < ActiveRecord::Base
           update_all(available: true)
       end
     end
+
+    logger.info "Sync recordings: finished a sync for server=#{server.url};#{server.secret} full_sync=#{full_sync}"
   end
 
   protected
