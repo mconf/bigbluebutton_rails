@@ -137,9 +137,12 @@ class BigbluebuttonServer < ActiveRecord::Base
   def fetch_recordings(filter=nil, full_sync=false)
     filter ||= {}
     logger.info "Fetching recordings for the server #{self.inspect} with filter: #{filter.inspect}"
+    if full_sync
+      get_rec_to_sync_started_at = Time.new
+    end
     recordings = self.api.get_recordings(filter)
     if recordings and recordings[:recordings]
-      BigbluebuttonRecording.sync(self, recordings[:recordings], full_sync)
+      BigbluebuttonRecording.sync(self, recordings[:recordings], full_sync, get_rec_to_sync_started_at)
     end
   end
 

@@ -155,9 +155,10 @@ class BigbluebuttonRecording < ActiveRecord::Base
   # if they are not in the array but instead mark them as unavailable.
   # 'server' is the BigbluebuttonServer object from which the recordings
   # were fetched.
+  # full_sync_started_at:: Date var to ensure consistency by execution
   #
   # TODO: catch exceptions on creating/updating recordings
-  def self.sync(server, recordings, full_sync=false)
+  def self.sync(server, recordings, full_sync=false, full_sync_started_at=nil)
     recordings.each do |rec|
       rec_obj = BigbluebuttonRecording.find_by_recordid(rec[:recordID])
       rec_data = adapt_recording_hash(rec)
@@ -193,6 +194,7 @@ class BigbluebuttonRecording < ActiveRecord::Base
         BigbluebuttonRecording.
           where(available: true, server: server).
           where.not(recordid: recordIDs).
+          where.not("end_time > ?", full_sync_started_at.to_i).
           update_all(available: false)
         BigbluebuttonRecording.
           where(available: false, server: server).
