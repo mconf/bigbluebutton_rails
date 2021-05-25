@@ -25,6 +25,7 @@ module BigbluebuttonRails
     attr_accessor :get_invitation_url
     attr_accessor :get_create_options
     attr_accessor :get_join_options
+    attr_accessor :rooms_for_full_recording_sync
 
     def initialize
       @controllers = {
@@ -116,6 +117,18 @@ module BigbluebuttonRails
         2.hours, 2.hours,
         3.hours, 3.hours, 3.hours, 3.hours, 3.hours, 3.hours
       ]
+
+      # Return a query that selects the rooms that should be iterated over when updating all
+      # recordings in a full sync. This is used so users can program a logic to select only
+      # a subset of rooms in case there are too many rooms to iterate over every time.
+      # Return `nil` to iterate over all rooms.
+      @rooms_for_full_recording_sync = Proc.new do
+        # Get only the rooms that had at least one meeting in the previous 7 days
+        since = (DateTime.now - 7.days).to_i * 1000 # create_time is a 13-digit timestamp
+        room_ids = BigbluebuttonMeeting.where("create_time >= ? ", since)
+                     .select(:room_id).distinct.pluck(:room_id)
+        BigbluebuttonRoom.where(id: room_ids)
+      end
     end
 
     def set_controllers(options)

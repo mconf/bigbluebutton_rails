@@ -7,8 +7,8 @@ class BigbluebuttonUpdateRecordingsWorker
   def self.perform(server_id=nil)
     Rails.logger.info "BigbluebuttonUpdateRecordingsWorker worker running"
 
-    # TODO: configurable filter of rooms
-    BigbluebuttonRails::BackgroundTasks.update_recordings_by_room
+    query = BigbluebuttonRails.configuration.rooms_for_full_recording_sync.call
+    BigbluebuttonRails::BackgroundTasks.update_recordings_by_room(query)
 
     Rails.logger.info "BigbluebuttonUpdateRecordingsWorker worker ended"
   end
