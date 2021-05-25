@@ -476,8 +476,7 @@ describe BigbluebuttonRecording do
       it { BigbluebuttonRecording.count.should == 2 }
     end
 
-    context "sets recording that are not in the parameters as unavailable in a full sync" do
-
+    context "sets recording that are not in the parameters as unavailable" do
       context "for recordings in multiple servers" do
         before {
           BigbluebuttonRecording.delete_all
@@ -532,6 +531,26 @@ describe BigbluebuttonRecording do
         it ("recording from the target server") { @r2.reload.available.should == false }
         it ("recording from another server") { @r3.reload.available.should == true }
         it ("recording from another server") { @r4.reload.available.should == true }
+      end
+
+      context "only changes 'available' for recordings created before the sync started" do
+        before {
+          sync_started_at = DateTime.now
+
+          BigbluebuttonRecording.delete_all
+          @r1 = FactoryGirl.create(:bigbluebutton_recording, :available => true, :server => new_server, created_at: sync_started_at + 1.hour)
+          @r2 = FactoryGirl.create(:bigbluebutton_recording, :available => true, :server => new_server, created_at: sync_started_at + 1.second)
+          @r3 = FactoryGirl.create(:bigbluebutton_recording, :available => true, :server => new_server, created_at: sync_started_at)
+          @r4 = FactoryGirl.create(:bigbluebutton_recording, :available => true, :server => new_server, created_at: sync_started_at - 1.second)
+
+          scope = BigbluebuttonRecording.where(server: new_server)
+          BigbluebuttonRecording.sync(new_server, data, scope, sync_started_at)
+        }
+        it { BigbluebuttonRecording.count.should == 5 }
+        it ("recording created after the sync started") { @r1.reload.available.should == true }
+        it ("recording created after the sync started") { @r2.reload.available.should == true }
+        it ("recording created before the sync started") { @r3.reload.available.should == false }
+        it ("recording created before the sync started") { @r4.reload.available.should == false }
       end
     end
 

@@ -153,15 +153,23 @@ class BigbluebuttonRecording < ActiveRecord::Base
   # Will add new recordings that are not in the db yet and update the ones that
   # already are (matching by 'recordid'). Will NOT delete recordings from the db
   # if they are not in the array but instead mark them as unavailable.
-  # 'server' is the BigbluebuttonServer object from which the recordings
-  # were fetched.
+  #
+  # server:: The BigbluebuttonServer from which the recordings were fetched.
+  # recordings:: The response from getRecordings.
+  # sync_scope:: The scope to which these recordings are part of. If we fetched all recordings
+  #   in a server, the scope is all recordings in the server; if we fetched only recordings
+  #   for a room, the scope is the recordings of this room. This is used to set `available`
+  #   in the recordings that might not be in the server anymore.
+  # sync_started_at:: Moment when the getRecordings call that returned the `recordings`
+  #   was made. Used so we don't set `available` on recordings created during the
+  #   synchronization process.
   #
   # TODO: catch exceptions on creating/updating recordings
-  def self.sync(server, recordings, sync_scope=nil)
+  def self.sync(server, recordings, sync_scope=nil, sync_started_at=nil)
     logger.info "Sync recordings: starting a sync for server=#{server.url};#{server.secret} sync_scope=\"#{sync_scope&.to_sql}\""
 
     recordings.each do |rec|
-      rec_obj = BigbluebuttonRecording.find_by_recordid(rec[:recordID])
+      rec_obj = BigbluebuttonRecording.find_by(recordid: rec[:recordID])
       rec_data = adapt_recording_hash(rec)
       changed = !rec_obj.present? || self.recording_changed?(rec_obj, rec_data)
 
@@ -186,20 +194,25 @@ class BigbluebuttonRecording < ActiveRecord::Base
     # only if there is a scope set, otherwise we don't know how the call to getRecordings was filtered.
     # Uses the scope passed to figure out which recordings should be marked as unavailable.
     if sync_scope.present?
+      sync_started_at = DateTime.now if sync_started_at.nil?
+
       recordIDs = recordings.map{ |rec| rec[:recordID] }
       if recordIDs.length <= 0
         # empty response, all recordings in the scope are unavailable
         sync_scope.
           where(available: true).
+          where("created_at <= ?", sync_started_at).
           update_all(available: false)
       else
         # non empty response, mark as unavailable all recordings in the scope that
         # were not returned by getRecording
         sync_scope.
           where(available: true).where.not(recordid: recordIDs).
+          where("created_at <= ?", sync_started_at).
           update_all(available: false)
         sync_scope.
           where(available: false, recordid: recordIDs).
+          where("created_at <= ?", sync_started_at).
           update_all(available: true)
       end
     end

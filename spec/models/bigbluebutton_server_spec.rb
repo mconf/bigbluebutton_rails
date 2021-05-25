@@ -253,6 +253,8 @@ describe BigbluebuttonServer do
     let(:server) { FactoryGirl.create(:bigbluebutton_server) }
     let(:filter) { { :meetingID => "id1,id2,id3" } }
     let(:response) { { :recordings => [1, 2] } }
+    let!(:sync_started_at) { DateTime.now }
+
     before do
       @api_mock = double(BigBlueButton::BigBlueButtonApi)
       server.stub(:api).and_return(@api_mock)
@@ -263,16 +265,18 @@ describe BigbluebuttonServer do
     context "calls get_recordings and sync" do
       let(:expected_scope) { BigbluebuttonRecording.where(server: server) }
       before do
+        DateTime.should_receive(:now).once.and_return(sync_started_at)
         @api_mock.should_receive(:get_recordings).with({}).and_return(response)
-        BigbluebuttonRecording.should_receive(:sync).with(server, response[:recordings], expected_scope)
+        BigbluebuttonRecording.should_receive(:sync).with(server, response[:recordings], expected_scope, sync_started_at)
       end
       it { server.fetch_recordings }
     end
 
     context "when only a filter is informed, calls get_recordings with the filter received" do
       before do
+        DateTime.should_receive(:now).once.and_return(sync_started_at)
         @api_mock.should_receive(:get_recordings).with(filter).and_return(response)
-        BigbluebuttonRecording.should_receive(:sync).with(server, response[:recordings], nil)
+        BigbluebuttonRecording.should_receive(:sync).with(server, response[:recordings], nil, sync_started_at)
       end
       it { server.fetch_recordings(filter) }
     end
@@ -280,8 +284,9 @@ describe BigbluebuttonServer do
     context "when only a scope is informed, calls sync with the scope received" do
       let(:scope) { BigbluebuttonRecording.where(id: 1) }
       before do
+        DateTime.should_receive(:now).once.and_return(sync_started_at)
         @api_mock.should_receive(:get_recordings).with({}).and_return(response)
-        BigbluebuttonRecording.should_receive(:sync).with(server, response[:recordings], scope)
+        BigbluebuttonRecording.should_receive(:sync).with(server, response[:recordings], scope, sync_started_at)
       end
       it { server.fetch_recordings(nil, scope) }
     end

@@ -137,14 +137,17 @@ class BigbluebuttonServer < ActiveRecord::Base
   def fetch_recordings(filter=nil, sync_scope=nil)
     filter ||= {}
     logger.info "Fetching recordings on #{self.url} with filter: #{filter.inspect}"
+
+    sync_started_at = DateTime.now
     recordings = self.api.get_recordings(filter)
+
     if recordings and recordings[:recordings]
 
       # if no scope is set and there are no filters, set the scope to all recordings
       # in this server
       sync_scope = BigbluebuttonRecording.where(server: self) if filter.blank? && sync_scope.nil?
 
-      BigbluebuttonRecording.sync(self, recordings[:recordings], sync_scope)
+      BigbluebuttonRecording.sync(self, recordings[:recordings], sync_scope, sync_started_at)
     end
   end
 
