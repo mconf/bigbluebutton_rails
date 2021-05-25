@@ -425,10 +425,14 @@ class BigbluebuttonRoom < ActiveRecord::Base
     end
   end
 
-  def fetch_recordings(filter={})
+  # Synchronizes all the recordings for this room. Will only get recordings with the
+  # default states (won't get recordings with the state 'deleted', for instance).
+  def fetch_recordings
     server = BigbluebuttonRails.configuration.select_server.call(self, :get_recordings)
     if server.present?
-      server.fetch_recordings(filter.merge({ meetingID: self.meetingid }))
+      states = BigbluebuttonRecording::STATES.values
+      scope = BigbluebuttonRecording.where(room: self, state: states)
+      server.fetch_recordings({ meetingID: self.meetingid, state: states }, scope)
       true
     else
       false

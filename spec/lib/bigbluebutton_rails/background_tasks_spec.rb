@@ -136,18 +136,109 @@ describe BigbluebuttonRails::BackgroundTasks do
     end
   end
 
-  describe ".update_recordings" do
-    context "fetches the meetings for all servers" do
-      let!(:server1) { FactoryGirl.create(:bigbluebutton_server) }
-      let!(:server2) { FactoryGirl.create(:bigbluebutton_server) }
+  describe ".update_recordings_by_server" do
+    let!(:server1) { FactoryGirl.create(:bigbluebutton_server) }
+    let!(:server2) { FactoryGirl.create(:bigbluebutton_server) }
+
+    context "fetches the recordings for all servers if none is informed" do
       before {
         BigbluebuttonServer.stub(:find_each).and_yield(server1).and_yield(server2)
-        server1.should_receive(:fetch_recordings).once.with(nil, true)
-        server2.should_receive(:fetch_recordings).once.with(nil, true)
+        server1.should_receive(:fetch_recordings).once.with(no_args)
+        server2.should_receive(:fetch_recordings).once.with(no_args)
       }
-      it { BigbluebuttonRails::BackgroundTasks.update_recordings }
+      it { BigbluebuttonRails::BackgroundTasks.update_recordings_by_server }
     end
 
-    it "doesn't break if exceptions are returned"
+    context "fetches the recordings for the server informed" do
+      before {
+        BigbluebuttonServer.stub(:find_each).and_yield(server1).and_yield(server2)
+        server1.should_receive(:fetch_recordings).once.with(no_args)
+        server2.should_not_receive(:fetch_recordings)
+      }
+      it { BigbluebuttonRails::BackgroundTasks.update_recordings_by_server(server1) }
+    end
+
+    context "doesn't break if exceptions happen in one of the requests" do
+      before {
+        BigbluebuttonServer.stub(:find_each).and_yield(server1).and_yield(server2)
+        server1.should_receive(:fetch_recordings).once.with(no_args) { raise IncorrectUrlError.new }
+        server2.should_receive(:fetch_recordings).once.with(no_args)
+      }
+      it { BigbluebuttonRails::BackgroundTasks.update_recordings_by_server }
+    end
+  end
+
+  describe ".update_recordings_by_room" do
+    let!(:room1) { FactoryGirl.create(:bigbluebutton_room) }
+    let!(:room2) { FactoryGirl.create(:bigbluebutton_room) }
+    let!(:room3) { FactoryGirl.create(:bigbluebutton_room) }
+
+    context "fetches the recordings for all rooms if no query is informed" do
+      before {
+        BigbluebuttonRoom.stub(:find_each).and_yield(room1).and_yield(room2).and_yield(room3)
+        room1.should_receive(:fetch_recordings).once.with(no_args)
+        room2.should_receive(:fetch_recordings).once.with(no_args)
+        room3.should_receive(:fetch_recordings).once.with(no_args)
+      }
+      it { BigbluebuttonRails::BackgroundTasks.update_recordings_by_room }
+    end
+
+    context "fetches the recordings for the rooms using the query informed" do
+      let(:query) { BigbluebuttonRoom.where(id: room2.id) }
+      before {
+        BigbluebuttonRoom.stub(:find_each).and_yield(room1).and_yield(room2).and_yield(room3)
+        query.stub(:find_each).and_yield(room2)
+        room1.should_not_receive(:fetch_recordings)
+        room2.should_receive(:fetch_recordings).once.with(no_args)
+        room3.should_not_receive(:fetch_recordings)
+      }
+      it { BigbluebuttonRails::BackgroundTasks.update_recordings_by_room(query) }
+    end
+
+    context "doesn't break if exceptions happen in one of the requests" do
+      before {
+        BigbluebuttonRoom.stub(:find_each).and_yield(room1).and_yield(room2).and_yield(room3)
+        room1.should_receive(:fetch_recordings).once.with(no_args) { raise IncorrectUrlError.new }
+        room2.should_receive(:fetch_recordings).once.with(no_args)
+        room3.should_receive(:fetch_recordings).once.with(no_args)
+      }
+      it { BigbluebuttonRails::BackgroundTasks.update_recordings_by_room }
+    end
+  end
+
+  describe ".update_recordings_for_server" do
+    let!(:server) { FactoryGirl.create(:bigbluebutton_server) }
+
+    context "fetches the recordings the server passed" do
+      before {
+        server.should_receive(:fetch_recordings).once.with(no_args)
+      }
+      it { BigbluebuttonRails::BackgroundTasks.update_recordings_for_server(server) }
+    end
+
+    context "rescues from exceptions" do
+      before {
+        server.should_receive(:fetch_recordings).once.with(no_args) { raise IncorrectUrlError.new }
+      }
+      it { BigbluebuttonRails::BackgroundTasks.update_recordings_for_server(server) }
+    end
+  end
+
+  describe ".update_recordings_for_room" do
+    let!(:room) { FactoryGirl.create(:bigbluebutton_room) }
+
+    context "fetches the recordings the room passed" do
+      before {
+        room.should_receive(:fetch_recordings).once.with(no_args)
+      }
+      it { BigbluebuttonRails::BackgroundTasks.update_recordings_for_room(room) }
+    end
+
+    context "rescues from exceptions" do
+      before {
+        room.should_receive(:fetch_recordings).once.with(no_args) { raise IncorrectUrlError.new }
+      }
+      it { BigbluebuttonRails::BackgroundTasks.update_recordings_for_room(room) }
+    end
   end
 end

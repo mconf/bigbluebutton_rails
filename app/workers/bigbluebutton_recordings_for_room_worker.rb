@@ -21,7 +21,7 @@ class BigbluebuttonRecordingsForRoomWorker
     if room.present?
       Rails.logger.info "BigbluebuttonRecordingsForRoomWorker getting recordings for meetingid=#{room.meetingid}"
 
-      room.fetch_recordings(state: BigbluebuttonRecording::STATES.values)
+      room.fetch_recordings
 
       intervals = BigbluebuttonRails.configuration.recording_sync_for_room_intervals
       idx = intervals.length - tries_left

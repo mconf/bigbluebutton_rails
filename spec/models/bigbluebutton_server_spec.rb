@@ -251,7 +251,8 @@ describe BigbluebuttonServer do
 
   describe "#fetch_recordings" do
     let(:server) { FactoryGirl.create(:bigbluebutton_server) }
-    let(:params) { { :meetingID => "id1,id2,id3" } }
+    let(:filter) { { :meetingID => "id1,id2,id3" } }
+    let(:response) { { :recordings => [1, 2] } }
     before do
       @api_mock = double(BigBlueButton::BigBlueButtonApi)
       server.stub(:api).and_return(@api_mock)
@@ -259,56 +260,47 @@ describe BigbluebuttonServer do
 
     it { should respond_to(:fetch_recordings) }
 
-    context "calls get_recordings" do
-      let(:response) { { :recordings => [1, 2] } }
-      before do
-        @api_mock.should_receive(:get_recordings).with(params).and_return(response)
-        BigbluebuttonRecording.should_receive(:sync).with(server, response[:recordings], false)
-      end
-      it { server.fetch_recordings(params) }
-    end
-
-    context "calls get_recordings when `full_sync` is set" do
-      let(:response) { { :recordings => [1, 2] } }
-      before do
-        @api_mock.should_receive(:get_recordings).with(params).and_return(response)
-        BigbluebuttonRecording.should_receive(:sync).with(server, response[:recordings], true)
-      end
-      it { server.fetch_recordings(params, true) }
-    end
-
-    context "calls get_recordings when `filters` is not set" do
-      let(:response) { { :recordings => [1, 2] } }
+    context "calls get_recordings and sync" do
+      let(:expected_scope) { BigbluebuttonRecording.where(server: server) }
       before do
         @api_mock.should_receive(:get_recordings).with({}).and_return(response)
-        BigbluebuttonRecording.should_receive(:sync).with(server, response[:recordings], false)
+        BigbluebuttonRecording.should_receive(:sync).with(server, response[:recordings], expected_scope)
       end
       it { server.fetch_recordings }
     end
 
-    context "when the response is empty" do
+    context "when only a filter is informed, calls get_recordings with the filter received" do
+      before do
+        @api_mock.should_receive(:get_recordings).with(filter).and_return(response)
+        BigbluebuttonRecording.should_receive(:sync).with(server, response[:recordings], nil)
+      end
+      it { server.fetch_recordings(filter) }
+    end
+
+    context "when only a scope is informed, calls sync with the scope received" do
+      let(:scope) { BigbluebuttonRecording.where(id: 1) }
+      before do
+        @api_mock.should_receive(:get_recordings).with({}).and_return(response)
+        BigbluebuttonRecording.should_receive(:sync).with(server, response[:recordings], scope)
+      end
+      it { server.fetch_recordings(nil, scope) }
+    end
+
+    context "when the response of get_recordings is empty doesn't call sync" do
       let(:response) { { :recordings => [1, 2] } }
       before do
-        @api_mock.should_receive(:get_recordings).with(params).and_return(nil)
+        @api_mock.should_receive(:get_recordings).with(filter).and_return(nil)
         BigbluebuttonRecording.should_not_receive(:sync)
       end
-      it { server.fetch_recordings(params) }
+      it { server.fetch_recordings(filter) }
     end
 
-    context "when the response has no :recordings element" do
+    context "when the response of get_recordings has no :recordings element doesn't call sync" do
       before do
-        @api_mock.should_receive(:get_recordings).with(params).and_return({})
+        @api_mock.should_receive(:get_recordings).with(filter).and_return({})
         BigbluebuttonRecording.should_not_receive(:sync)
       end
-      it { server.fetch_recordings(params) }
-    end
-
-    context "works without parameters" do
-      before do
-        @api_mock.should_receive(:get_recordings).with({}).and_return(nil)
-        BigbluebuttonRecording.should_not_receive(:sync)
-      end
-      it { server.fetch_recordings }
+      it { server.fetch_recordings(filter) }
     end
   end
 

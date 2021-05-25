@@ -157,9 +157,9 @@ class BigbluebuttonRecording < ActiveRecord::Base
   # were fetched.
   #
   # TODO: catch exceptions on creating/updating recordings
-  def self.sync(server, recordings, full_sync=false)
+  def self.sync(server, recordings, sync_scope=nil)
+    logger.info "Sync recordings: starting a sync for server=#{server.url};#{server.secret} sync_scope=\"#{sync_scope&.to_sql}\""
 
-    logger.info "Sync recordings: starting a sync for server=#{server.url};#{server.secret} full_sync=#{full_sync}"
     recordings.each do |rec|
       rec_obj = BigbluebuttonRecording.find_by_recordid(rec[:recordID])
       rec_data = adapt_recording_hash(rec)
@@ -182,28 +182,29 @@ class BigbluebuttonRecording < ActiveRecord::Base
     end
     cleanup_playback_types
 
-    # set as unavailable the recordings that are not in 'recordings', but
-    # only in a full synchronization process, which means that the recordings
-    # in `recordings` are *all* available in `server`, not a subset.
-    if full_sync
+    # Set as unavailable the recordings that are not in the list returned by getRecordings, but
+    # only if there is a scope set, otherwise we don't know how the call to getRecordings was filtered.
+    # Uses the scope passed to figure out which recordings should be marked as unavailable.
+    if sync_scope.present?
       recordIDs = recordings.map{ |rec| rec[:recordID] }
-      if recordIDs.length <= 0 # empty response
-        BigbluebuttonRecording.
-          where(available: true, server: server).
+      if recordIDs.length <= 0
+        # empty response, all recordings in the scope are unavailable
+        sync_scope.
+          where(available: true).
           update_all(available: false)
       else
-        BigbluebuttonRecording.
-          where(available: true, server: server).
-          where.not(recordid: recordIDs).
+        # non empty response, mark as unavailable all recordings in the scope that
+        # were not returned by getRecording
+        sync_scope.
+          where(available: true).where.not(recordid: recordIDs).
           update_all(available: false)
-        BigbluebuttonRecording.
-          where(available: false, server: server).
-          where(recordid: recordIDs).
+        sync_scope.
+          where(available: false, recordid: recordIDs).
           update_all(available: true)
       end
     end
 
-    logger.info "Sync recordings: finished a sync for server=#{server.url};#{server.secret} full_sync=#{full_sync}"
+    logger.info "Sync recordings: finished a sync for server=#{server.url};#{server.secret} sync_scope=\"#{sync_scope&.to_sql}\""
   end
 
   protected

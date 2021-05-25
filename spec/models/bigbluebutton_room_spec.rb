@@ -1516,6 +1516,33 @@ describe BigbluebuttonRoom do
       it { room.send(:internal_create_meeting, nil, user_opts) }
     end
   end
+
+  describe "#fetch_recordings" do
+    let!(:server) { FactoryGirl.create(:bigbluebutton_server) }
+    let!(:room) { FactoryGirl.create(:bigbluebutton_room) }
+
+    it { should respond_to(:fetch_recordings) }
+
+    context "if no server is found" do
+      before {
+        room.stub(:select_server).and_return(nil)
+        server.should_not_receive(:fetch_recordings)
+      }
+
+      it { room.fetch_recordings.should be(false) }
+    end
+
+    context "if a server is found" do
+      before {
+        room.stub(:select_server).and_return(server)
+        filter = { meetingID: room.meetingid, state: BigbluebuttonRecording::STATES.values }
+        scope = BigbluebuttonRecording.where(room: room, state: BigbluebuttonRecording::STATES.values)
+        server.should_receive(:fetch_recordings).with(filter, scope)
+      }
+
+      it { room.fetch_recordings.should be(true) }
+    end
+  end
 end
 
 def get_create_params(room, user=nil)
