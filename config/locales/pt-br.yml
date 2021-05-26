@@ -2,6 +2,8 @@
 pt-br:
   activerecord:
     attributes:
+      bigbluebutton_meeting:
+        title: Título
       bigbluebutton_metadata:
         content: Conteúdo
         name: Nome
@@ -42,29 +44,41 @@ pt-br:
         moderator_key: "Chave para moderadores"
         moderator_only_message: "Mensagem mostrada somente aos moderadores"
         name: Nome
-        param: Identificador
         private: Privada
         record: Gravar
+        slug: Identificador
         voice_bridge: "Voice Bridge"
         welcome_msg: "Mensagem de boas-vindas"
       bigbluebutton_server:
         name: Nome
-        param: Identificador
         secret: "Chave de segurança"
+        slug: Identificador
         url: URL
         version: Versão
     models:
-      bigbluebutton_metadata: "Metadado de Gravação da Webconferência"
-      bigbluebutton_playback_format: "Formato de Reprodução de Webconferência"
-      bigbluebutton_recording: "Gravação de Webconferência"
-      bigbluebutton_room: "Sala de Webconferência"
-      bigbluebutton_server: "Servidor de Webconferência"
+      bigbluebutton_metadata: "Metadado de Gravação da Videoconferência"
+      bigbluebutton_playback_format: "Formato de Reprodução de Videoconferência"
+      bigbluebutton_recording: "Gravação de Videoconferência"
+      bigbluebutton_room: "Sala de Videoconferência"
+      bigbluebutton_server: "Servidor de Videoconferência"
   bigbluebutton_rails:
     api:
       errors:
         default: "Ops, parece que algo inesperado aconteceu. Tente novamente mais tarde. (\"%{key}\")"
         else: "Ops, parece que algo inesperado aconteceu. Tente novamente mais tarde."
     bigbluebutton: BigBlueButton
+    meetings:
+      delete:
+        success: "Seu registro foi removido com sucesso."
+      notice:
+        update:
+          success: "Seu registro de reunião foi atualizado."
+          failure: "Não foi possível atualizar seu registro de reunião."
+        destroy:
+          success_with_bbb_error: "O registro foi destruído com sucesso mas não foi removido do servidor de videoconferência (\"%{error}\")"
+          error_destroy: "Não foi possível deletar este registro."
+          running:
+            not_ended: "Este registro não pode ser deletado pois a reunião ainda está acontecendo."
     metadata:
       errors:
         name_format: "pode utilizar apenas letras, números e os símbolos \"-\" ou \"_\", mas apenas letras no início"
@@ -74,13 +88,13 @@ pt-br:
           success: "Formato de reprodução atualizado com sucesso."
       presentation:
         name: "Reproduzir"
-        tip: "Reproduz a gravação em uma página HTML5. Não é feito download da gravação para o seu computador, portanto exige internet para a gravação ser reproduzida."
+        tip: "Reproduzir"
       presentation_export:
         name: "Download HTML"
-        tip: "Faz o download de uma página HTML que você pode usar para reproduzir a gravação usando o seu navegador mesmo sem conexão com a internet. Tem todas as características da versão online, mas com a vantagem de não exigir internet. Atualmente só pode ser reproduzida usando o navegador Firefox."
+        tip: "Download"
       presentation_video:
         name: "Download"
-        tip: "Realiza o download da gravação em um arquivo de vídeo (no formato WebM). Você pode usar esse arquivo de vídeo para assistir a gravação offline e/ou compartilhar esta gravação em outros sites."
+        tip: "Download"
     recordings:
       default:
         description: "Reunião realizada em %{time} (UTC)"
@@ -93,14 +107,14 @@ pt-br:
           no_token: "Não foi possível obter um token de autenticação para esta gravação"
       notice:
         destroy:
-          success: "Sua gravação foi destruída com sucesso."
+          success: "Gravação destruida!"
           success_with_bbb_error: "A gravação foi destruída com sucesso mas não foi removida do servidor de webconferência."
         publish:
-          success: "Sua gravação foi publicada com sucesso."
+          success: "Gravação publicada!"
         unpublish:
-          success: "Sua gravação foi ocultada com sucesso."
+          success: "Gravação ocultada!"
         update:
-          success: "Sua gravação foi atualizada com sucesso."
+          success: "Gravação atualizada!"
     rooms:
       default_welcome_msg: "Bem-vindo(a) a <b>%%CONFNAME%%</b>!<br><br>Para compartilhar o seu microfone, clique no botão com um headset (à esquerda da barra superior). Use um headset para ter uma melhor experiência de áudio com menos ruídos.<br>"
       default_welcome_msg_dial_number: "<br>Você pode discar para esta conferência através de um telefone usando o número \"%%DIALNUM%%\".<br>"
@@ -114,15 +128,15 @@ pt-br:
           wrong_params: "Parâmetros errados na sua requisição."
         generate_dial_number:
           not_unique: "Desculpe, mas não foi possível gerar um número de discagem único. Você pode tentar novamente ou então atribuir um número manualmente."
-        param_format: "você pode usar apenas letras, números e os símbolos \"-\" ou \"_\" (não no começo ou fim)"
         server:
           nil: "Sua sala deve ser associada a um servidor para executar esta operação."
+        slug_format: "você pode usar apenas letras, números e os símbolos \"-\" ou \"_\" (não no começo ou fim)"
       notice:
         create:
-          failure: "Sua sala não pôde ser criada."
-          success: "Sua sala foi criada com sucesso."
+          failure: "Sala não foi criada!"
+          success: "Sala criada!"
         destroy:
-          success: "A reunião foi destruída com sucesso."
+          success: "Reunião destruída!"
           success_with_bbb_error: "A sala foi destruída com sucesso mas a reunião não foi finalizada no servidor de webconferência."
         end:
           not_running: "A reunião não pôde ser finalizada pois não está em andamento."
@@ -132,11 +146,11 @@ pt-br:
         generate_dial_number:
           success: "Um número de discagem único foi gerado e gravado."
         update:
-          failure: "Sua sala não pode ser atualizada."
-          success: "Sua sala foi atualizada com sucesso."
+          failure: "Sala não foi atualizada!"
+          success: "Sala atualizada!"
     servers:
       errors:
-        param_format: "você pode usar apenas letras, números e os símbolos \"-\" ou \"_\" (não no começo ou fim)"
+        slug_format: "você pode usar apenas letras, números e os símbolos \"-\" ou \"_\" (não no começo ou fim)"
         url_format: "deve utilizar o padrão http://<servidor>/bigbluebutton/api"
       notice:
         create:

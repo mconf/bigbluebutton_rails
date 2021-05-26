@@ -1,5 +1,56 @@
 # Change Log
 
+## [3.1.2] - 2021-05-15
+
+* [#190] Increase the size of `BigbluebuttonMeeting#title` from 80 to 255 characters. It was a column
+  migrated from `BigbluebuttonRecording#description` that originally was a `text`. We saw instances of
+  applications that were already using more than 80 characters.
+
+
+## [3.1.1] - 2021-04-29
+
+* [#186] Refactoring to unify meeting creation on `bigbluebuttonMeeting` model. 
+  Meeting creation methods that were dispersed on `BigbluebuttonRoom` and
+  `BigbluebuttonRecording` models are now unified.
+* [#186] Migration to:
+    - Add `internal_meeting_id` column on meetings, a GUID created internally by BBB.
+    This id can be used to match recordings with their respective meetings.
+    - Drop `bigbluebutton_server_configs` and `bigbluebutton_room_options` tables,
+    as they are not used anymore.
+
+
+## [3.1.0] - 2021-04-22
+
+* [#183] Add guest support to private rooms.
+* [#185] Fix recordings without meetings. When creating a recording, if a meeting
+  is not found for it, a new one is created and associated to that recording.
+  That same procedure was applied to every recording without a meeting on the
+  upgrade gem migration.
+
+
+## [3.0.1] - 2020-03-29
+
+* Applied changes from 2.3.1.
+* [#173] Don't redirect to external URLs when `params[:redir_url]` is set.
+
+
+## [3.0.0] - 2019-11-18
+
+* Rename Room's and Server's #param to #slug.
+* New route and logic to remove meeting objects.
+* Remove `description` from meetings, move contents to `title`.
+* Add option for users to edit the title of meetings.
+* Send participant count in the ajax response when the meeting is running.
+* Use incremental numbers when generating dial numbers, not random ones.
+* Remove recordings when a meeting is removed.
+* Add state to recordings, following new developments in BigBlueButton's API.
+* Run the worker to fetch recordings after a meeting ends a little faster
+  than before. Now that we track the state of recordings they will appear
+  faster in a `getRecordings` call.
+* Set the default title of new meetings to the name of the room.
+* Add option to turn on debug on API calls.
+
+
 ## [2.3.1] - 2020-03-28
 
 * [#168] No need to call end before a create anymore.
@@ -328,6 +379,11 @@ https://github.com/mconf/bigbluebutton_rails/wiki/Migrate-to-1.3.0
 * Controller to access servers and rooms
 * rooms_controller interacts with a BBB server using bigbluebutton-api-ruby
 
+[3.1.2]: https://github.com/mconf/bigbluebutton_rails/compare/v3.1.1...v3.1.2
+[3.1.1]: https://github.com/mconf/bigbluebutton_rails/compare/v3.1.0...v3.1.1
+[3.1.0]: https://github.com/mconf/bigbluebutton_rails/compare/v3.0.1...v3.1.0
+[3.0.1]: https://github.com/mconf/bigbluebutton_rails/compare/v3.0.0...v3.0.1
+[3.0.0]: https://github.com/mconf/bigbluebutton_rails/compare/v2.3.1...v3.0.0
 [2.3.1]: https://github.com/mconf/bigbluebutton_rails/compare/v2.3.0...v2.3.1
 [2.3.0]: https://github.com/mconf/bigbluebutton_rails/compare/v2.2.0...v2.3.0
 [2.2.0]: https://github.com/mconf/bigbluebutton_rails/compare/v2.1.0...v2.2.0

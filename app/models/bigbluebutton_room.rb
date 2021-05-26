@@ -35,12 +35,12 @@ class BigbluebuttonRoom < ActiveRecord::Base
     :presence => true,
     :numericality => { :only_integer => true, :greater_than_or_equal_to => 0 }
 
-  validates :param,
+  validates :slug,
             :presence => true,
             :uniqueness => true,
             :length => { :minimum => 1 },
             :format => { :with => /\A([a-zA-Z\d_]|[a-zA-Z\d_]+[a-zA-Z\d_-]*[a-zA-Z\d_]+)\z/,
-                         :message => I18n.t('bigbluebutton_rails.rooms.errors.param_format') }
+                         :message => I18n.t('bigbluebutton_rails.rooms.errors.slug_format') }
 
   # Passwords are 16 character strings
   # See http://groups.google.com/group/bigbluebutton-dev/browse_thread/thread/9be5aae1648bcab?pli=1
@@ -55,7 +55,7 @@ class BigbluebuttonRoom < ActiveRecord::Base
                 :has_been_forcibly_ended, :end_time
 
   after_initialize :init
-  before_validation :set_param
+  before_validation :set_slug
   before_validation :set_keys
 
   # the full logout_url used when logout_url is a relative path
@@ -81,12 +81,12 @@ class BigbluebuttonRoom < ActiveRecord::Base
       query_orders = []
 
       words.reject(&:blank?).each do |word|
-        str  = "name LIKE ? OR param LIKE ?"
+        str  = "name LIKE ? OR slug LIKE ?"
         query_strs << str
         query_params += ["%#{word}%", "%#{word}%"]
         query_orders += [
           "CASE WHEN name LIKE '%#{word}%' THEN 1 ELSE 0 END + \
-           CASE WHEN param LIKE '%#{word}%' THEN 1 ELSE 0 END"
+           CASE WHEN slug LIKE '%#{word}%' THEN 1 ELSE 0 END"
         ]
       end
       where(query_strs.join(' OR '), *query_params.flatten).order(query_orders.join(' + ') + " DESC")
@@ -204,7 +204,7 @@ class BigbluebuttonRoom < ActiveRecord::Base
         self.save
 
         # creates the meeting object since the create was successful
-        create_meeting_record(response, server, user, user_opts)
+        BigbluebuttonMeeting.create_meeting_record_from_room(self, response, server, user, user_opts)
 
         # enqueue an update in the meeting with a small delay we assume to be
         # enough for the user to fully join the meeting
@@ -254,7 +254,7 @@ class BigbluebuttonRoom < ActiveRecord::Base
     opts.merge!({ userID: id }) unless id.blank? || options[:userID].present?
 
     # Get options passed by the application, if any
-    user_opts = BigbluebuttonRails.configuration.get_join_options.call(self, user)
+    user_opts = BigbluebuttonRails.configuration.get_join_options.call(self, user, { username: username, role: role })
     user_opts = {} if user_opts.blank?
     opts.merge!(user_opts)
 
@@ -273,7 +273,11 @@ class BigbluebuttonRoom < ActiveRecord::Base
       if self.moderator_key == key
         role = :moderator
       elsif self.attendee_key == key
-        role = :attendee
+        if BigbluebuttonRails.configuration.guest_support
+          role = :guest
+        else
+          role = :attendee
+        end
       end
     end
     role
@@ -300,7 +304,7 @@ class BigbluebuttonRoom < ActiveRecord::Base
   end
 
   def to_param
-    self.param
+    self.slug
   end
 
   # The create logic.
@@ -374,57 +378,6 @@ class BigbluebuttonRoom < ActiveRecord::Base
     end
   end
 
-  def create_meeting_record(response, server, user, user_opts)
-    unless get_current_meeting.present?
-      if self.create_time.present?
-
-        # to make sure there's no other meeting related to this room that
-        # has not yet been set as ended
-        self.finish_meetings
-
-        attrs = {
-          room: self,
-          server_url: server.url,
-          server_secret: server.secret,
-          meetingid: self.meetingid,
-          name: self.name,
-          recorded: self.record_meeting,
-          create_time: self.create_time,
-          running: self.running,
-          ended: false
-        }
-
-        metadata = response[:metadata]
-        unless metadata.nil?
-          begin
-            attrs[:creator_id] = metadata[BigbluebuttonRails.configuration.metadata_user_id].to_i
-            attrs[:creator_name] = metadata[BigbluebuttonRails.configuration.metadata_user_name]
-          rescue
-            attrs[:creator_id] = nil
-            attrs[:creator_name] = nil
-          end
-        end
-
-        # the parameters the user might have overwritten in the create call
-        # need to be mapped to the name of the attrs in BigbluebuttMeeting
-        # note: recorded is not in the API response, so we can't just get these
-        # attributes from there
-        attrs_user = {
-          meetingid: user_opts[:meetingID],
-          name: user_opts[:name],
-          recorded: user_opts[:record],
-          creator_id: user_opts[:creator_id],
-          creator_name: user_opts[:creator_name]
-        }.delete_if { |k, v| v.nil? }
-        attrs.merge!(attrs_user)
-
-        BigbluebuttonMeeting.create(attrs)
-      else
-        Rails.logger.error "Did not create a current meeting because there was no create_time on room #{self.meetingid}"
-      end
-    end
-  end
-
   # Sets all meetings related to this room as not running
   def finish_meetings
     to_be_finished = BigbluebuttonMeeting.where(ended: false, room_id: self.id).to_a
@@ -446,7 +399,7 @@ class BigbluebuttonRoom < ActiveRecord::Base
       # have to keep polling the server for them
       # 3 times so it tries at: 4, 9, 14 and 19
       # no point trying more since there is a global synchronization process
-      Resque.enqueue_in(4.minutes, ::BigbluebuttonRecordingsForRoomWorker, id, 3)
+      Resque.enqueue_in(1.minutes, ::BigbluebuttonRecordingsForRoomWorker, self.id, 10)
     end
   end
 
@@ -455,14 +408,23 @@ class BigbluebuttonRoom < ActiveRecord::Base
   # Will always generate a unique number. Tries several times if the number already
   # exists and returns `nil` in case it wasn't possible to generate a unique value.
   def generate_dial_number!(pattern=nil)
-    pattern ||= 'xxxx-xxxx'
-    20.times do
-      dn = BigbluebuttonRails::DialNumber.randomize(pattern)
-      if BigbluebuttonRoom.where(dial_number: dn).empty?
-        return self.update_attributes(dial_number: dn)
-      end
+    unless pattern.nil?
+      dn = self.class.generate_dial_number(pattern)
+      return self.update_attributes(dial_number: dn)
+    else
+      nil
     end
-    nil
+  end
+
+  def self.generate_dial_number(pattern=nil)
+    unless pattern.nil?
+      unless BigbluebuttonRoom.maximum(:dial_number).nil?
+        return BigbluebuttonRoom.maximum(:dial_number).next
+      else
+        return pattern.gsub('x', '0')
+      end
+      nil
+    end
   end
 
   def fetch_recordings(filter={})
@@ -565,10 +527,10 @@ class BigbluebuttonRoom < ActiveRecord::Base
     end
   end
 
-  # if :param wasn't set, sets it as :name downcase and parameterized
-  def set_param
-    if self.param.blank?
-      self.param = self.name.parameterize.downcase unless self.name.nil?
+  # if :slug wasn't set, sets it as :name downcase and parameterized
+  def set_slug
+    if self.slug.blank?
+      self.slug = self.name.parameterize.downcase unless self.name.nil?
     end
   end
 

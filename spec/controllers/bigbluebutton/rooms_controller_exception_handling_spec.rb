@@ -32,16 +32,18 @@ describe Bigbluebutton::RoomsController do
         should respond_with(:redirect)
         should redirect_to bigbluebutton_rooms_url
 
-        msg = I18n.t('bigbluebutton_rails.rooms.notice.destroy.success_with_bbb_error', :error => bbb_error_msg[0..200])
+        msg = I18n.t('bigbluebutton_rails.rooms.notice.destroy.success_with_bbb_error')
         should set_the_flash.to(msg)
       end
     end
 
     describe "#running" do
-      before { mocked_api.should_receive(:is_meeting_running?) { raise bbb_error } }
+      before {
+        mocked_api.should_receive(:is_meeting_running?) { raise bbb_error }
+      }
       before(:each) { get :running, :id => room.to_param }
       it { should respond_with(:success) }
-      it { response.body.should == build_running_json(false, api_error_msg(bbb_error)) }
+      it { response.body.should == build_running_json(false,{}, api_error_msg(bbb_error)) }
       it { should_not set_the_flash }
     end
 

@@ -2,6 +2,8 @@
 en:
   activerecord:
     attributes:
+      bigbluebutton_meeting:
+        title: Title
       bigbluebutton_metadata:
         content: Content
         name: Name
@@ -42,23 +44,22 @@ en:
         moderator_key: "Key for moderators"
         moderator_only_message: "Message to be shown to moderators only"
         name: Name
-        param: "String ID"
         private: Private
         record: Record
         voice_bridge: "Voice Bridge"
         welcome_msg: "Welcome Message"
       bigbluebutton_server:
         name: Name
-        param: "String ID"
         secret: "Shared Secret"
+        slug: "String ID"
         url: URL
         version: Version
     models:
-      bigbluebutton_metadata: "Web Conference Recording Metadata"
-      bigbluebutton_playback_format: "Web Conference Recording Playback Format"
-      bigbluebutton_recording: "Web Conference Recording"
-      bigbluebutton_room: "Web Conference Room"
-      bigbluebutton_server: "Web Conference Server"
+      bigbluebutton_metadata: "Videoconference Recording Metadata"
+      bigbluebutton_playback_format: "Videoconference Recording Playback Format"
+      bigbluebutton_recording: "Videoconference Recording"
+      bigbluebutton_room: "Videoconference Room"
+      bigbluebutton_server: "Videoconference Server"
   bigbluebutton_rails:
     api:
       errors:
@@ -83,6 +84,18 @@ en:
         default: "Oops, something unexpected happened. Please try again later. (\"%{key}\")"
         else: "Oops, something unexpected happened. Please try again later."
     bigbluebutton: BigBlueButton
+    meetings:
+      delete:
+        success: "The record was successfully deleted."
+      notice:
+        update:
+          success: "Your meeting record was updated."
+          failure: "It was not possible to update your meeting record."
+        destroy:
+          success_with_bbb_error: "The record was successfully destroyed but it wasn't deleted from the videoconference server (\"%{error}\")"
+          error_destroy: "This record could not be deleted"
+          running:
+            not_ended: "This record can not be deleted because the meeting is still running"
     metadata:
       errors:
         name_format: "can only use letters, numbers and the symbols \"-\" or \"_\", but only letters at the beginning"
@@ -92,13 +105,13 @@ en:
           success: "The playback type was successfully updated."
       presentation:
         name: "Play"
-        tip: "Plays the recording in an HTML5 page. The recording is not downloaded to your computer and will require Internet to be reproduced."
+        tip: "Play"
       presentation_export:
         name: "Download HTML"
-        tip: "Downloads an HTML page that you can use to reproduce the recording offline using your browser. Has all the features of the HTML player online plus the advantage of also working offline. Currently can only be reproduced using the Firefox browser."
+        tip: "Download"
       presentation_video:
         name: "Download"
-        tip: "Downloads a vídeo file (uses the WebM format) with the recording. You can use this video file to watch the recording offline and to share this recording in other websites."
+        tip: "Download"
     recordings:
       default:
         description: "Meeting held on %{time} (UTC)"
@@ -111,14 +124,14 @@ en:
           no_token: "It wasn't possible to obtain an authentication token for this recording"
       notice:
         destroy:
-          success: "Your recording was successfully destroyed."
+          success: "Recording destroyed!"
           success_with_bbb_error: "The recording was successfully destroyed but it wasn't deleted from the webconference server."
         publish:
-          success: "Your recording was successfully published."
+          success: "Recording published!"
         unpublish:
-          success: "Your recording was successfully unpublished."
+          success: "Recording unpublished!"
         update:
-          success: "Your recording was successfully updated."
+          success: "Recording updated!"
     rooms:
       default_welcome_msg: "Welcome to <b>%%CONFNAME%%</b>!<br><br>To join the audio bridge click the headset icon (upper-left hand corner). Use a headset to avoid causing background noise for others.<br>"
       default_welcome_msg_dial_number: "<br>You can call into this conference with a regular phone using the number \"%%DIALNUM%%\".<br>"
@@ -132,15 +145,15 @@ en:
           wrong_params: "Wrong params in your request."
         generate_dial_number:
           not_unique: "We're sorry, but it wasn't possible to generate a unique dial number for this room. You can either try again or manually set a dial number."
-        param_format: "can only use letters, numbers and the symbols \"-\" or \"_\" (not at the begin or end)"
         server:
           nil: "Your room must be associated to a server to execute this operation."
+        slug_format: "can only use letters, numbers and the symbols \"-\" or \"_\" (not at the begin or end)"
       notice:
         create:
-          failure: "Your room could not be created."
-          success: "Your room was successfully created."
+          failure: "Room could not be created."
+          success: "Room created!"
         destroy:
-          success: "The room was successfully destroyed."
+          success: "Room destroyed."
           success_with_bbb_error: "The room was successfully destroyed but the meeting wasn't ended in the webconference server."
         end:
           not_running: "The meeting could not be ended because it is not running."
@@ -150,11 +163,11 @@ en:
         generate_dial_number:
           success: "A unique dial number was generated and saved."
         update:
-          failure: "Your room could not be updated."
-          success: "Your room was successfully updated."
+          failure: "Room not updated!"
+          success: "Room updated!"
     servers:
       errors:
-        param_format: "you can only use letters, numbers and the symbols \"-\" or \"_\" (not at the begin or end)"
+        slug_format: "you can only use letters, numbers and the symbols \"-\" or \"_\" (not at the begin or end)"
         url_format: "should use the pattern http://<server>/bigbluebutton/api"
       notice:
         create:

@@ -106,7 +106,8 @@ module ActionDispatch::Routing
       options_only = if options.has_key?(:only)
                        options[:only]
                      else
-                       ["servers", "rooms", "recordings", "playback_types", "webhooks"]
+                       ["meetings", "playback_types", "recordings", "rooms",
+                        "servers", "webhooks"]
                      end
       BigbluebuttonRails.configuration.set_controllers(options[:controllers])
 
@@ -118,6 +119,7 @@ module ActionDispatch::Routing
         if BigbluebuttonRails.configuration.use_webhooks
           add_routes_for_webhooks if options_only.include?("webhooks")
         end
+        add_routes_for_meetings if options_only.include?("meetings")
       end
     end
 
@@ -174,6 +176,10 @@ module ActionDispatch::Routing
     def add_routes_for_webhooks #:nodoc:
       ctrl = BigbluebuttonRails.configuration.controllers[:webhooks]
       post '/webhooks', to: "#{ctrl}#index"
+    end
+
+    def add_routes_for_meetings #:nodoc:
+      resources :meetings, :controller => 'bigbluebutton/meetings', :only => [:destroy, :update, :edit]
     end
   end
 end

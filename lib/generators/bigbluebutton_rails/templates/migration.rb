@@ -6,7 +6,7 @@ class CreateBigbluebuttonRails < ActiveRecord::Migration
       t.string :url
       t.string :secret
       t.string :version
-      t.string :param
+      t.string :slug
       t.timestamps
     end
 
@@ -24,7 +24,7 @@ class CreateBigbluebuttonRails < ActiveRecord::Migration
       t.integer :max_participants
       t.boolean :private, :default => false
       t.boolean :external, :default => false
-      t.string :param
+      t.string :slug
       t.boolean :record_meeting, :default => false
       t.integer :duration, :default => 0
       t.string :attendee_api_password
@@ -36,7 +36,7 @@ class CreateBigbluebuttonRails < ActiveRecord::Migration
       t.timestamps
     end
     add_index :bigbluebutton_rooms, :meetingid, :unique => true
-    add_index :bigbluebutton_rooms, [:param]
+    add_index :bigbluebutton_rooms, [:slug], using: 'btree'
 
     create_table :bigbluebutton_recordings do |t|
       t.integer :server_id
@@ -49,7 +49,6 @@ class CreateBigbluebuttonRails < ActiveRecord::Migration
       t.decimal :start_time, precision: 14, scale: 0
       t.decimal :end_time, precision: 14, scale: 0
       t.boolean :available, :default => true
-      t.string :description
       t.integer :size, limit: 8, default: 0
       t.text :recording_users
       t.timestamps
@@ -96,6 +95,8 @@ class CreateBigbluebuttonRails < ActiveRecord::Migration
       t.string :creator_name
       t.boolean :ended, :default => false
       t.string :got_stats
+      t.string :title, limit: 255
+      t.string :internal_meeting_id
       t.timestamps
     end
     add_index :bigbluebutton_meetings, [:meetingid, :create_time], :unique => true

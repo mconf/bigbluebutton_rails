@@ -19,7 +19,7 @@ class BigbluebuttonRecordingsForRoomWorker
     room = BigbluebuttonRoom.find(room_id)
     if room.present?
       Rails.logger.info "BigbluebuttonRecordingsForRoomWorker getting recordings for #{room.inspect}"
-      room.fetch_recordings
+      room.fetch_recordings( state: BigbluebuttonRecording::STATES.values)
 
       if tries_left > 0
         Resque.enqueue_in(5.minutes, ::BigbluebuttonRecordingsForRoomWorker, room_id, tries_left - 1)

@@ -93,7 +93,7 @@ describe Bigbluebutton::RecordingsController do
       let(:attrs) { FactoryGirl.attributes_for(:bigbluebutton_recording) }
       let(:params) { { :bigbluebutton_recording => attrs } }
       let(:allowed_params) {
-        [ :description ]
+        []
       }
       it {
         # we just check that the rails method 'permit' is being called on the hash with the
@@ -166,12 +166,12 @@ describe Bigbluebutton::RecordingsController do
       before(:each) {
         expect {
           delete :destroy, :id => recording.to_param
-        }.to change{ BigbluebuttonRecording.count }.by(-1)
+        }.to change{ BigbluebuttonRecording.count }.by(0)
       }
       it { should respond_with(:redirect) }
       it { should redirect_to bigbluebutton_recordings_url }
       it {
-        msg = I18n.t('bigbluebutton_rails.recordings.notice.destroy.success_with_bbb_error', :error => bbb_error_msg[0..200])
+        msg = I18n.t('bigbluebutton_rails.recordings.notice.destroy.success_with_bbb_error')
         should set_the_flash.to(msg)
       }
     end
@@ -203,7 +203,7 @@ describe Bigbluebutton::RecordingsController do
         mocked_server.should_not_receive(:send_delete_recordings)
         expect {
           delete :destroy, :id => recording.to_param
-        }.to change{ BigbluebuttonRecording.count }.by(-1)
+        }.to change{ BigbluebuttonRecording.count }.by(0)
       }
       it { should respond_with(:redirect) }
       it { should redirect_to bigbluebutton_recordings_url }

@@ -121,10 +121,11 @@ class Bigbluebutton::RoomsController < ApplicationController
   def running
     begin
       @room.fetch_is_running?
+      info = @room.fetch_meeting_info
     rescue BigBlueButton::BigBlueButtonException => e
       render :json => { :running => "false", :error => "#{api_error_msg(e)}" }
     else
-      render :json => { :running => "#{@room.is_running?}" }
+      render :json => { :running => "#{@room.is_running?}", :meeting_info => info}
     end
   end
 
@@ -224,7 +225,7 @@ class Bigbluebutton::RoomsController < ApplicationController
   protected
 
   def find_room
-    @room ||= BigbluebuttonRoom.find_by(param: params[:id])
+    @room ||= BigbluebuttonRoom.find_by(slug: params[:id])
   end
 
   def set_request_headers
@@ -234,7 +235,7 @@ class Bigbluebutton::RoomsController < ApplicationController
   end
 
   def join_check_room
-    @room ||= BigbluebuttonRoom.find_by_param(params[:id]) unless params[:id].blank?
+    @room ||= BigbluebuttonRoom.find_by(slug: params[:id]) unless params[:id].blank?
     if @room.nil?
       message = t('bigbluebutton_rails.rooms.errors.join.wrong_params')
       redirect_to :back, :notice => message
@@ -363,7 +364,7 @@ class Bigbluebutton::RoomsController < ApplicationController
   def room_allowed_params
     [ :name, :meetingid, :attendee_key, :moderator_key, :welcome_msg,
       :private, :logout_url, :dial_number, :voice_bridge, :max_participants, :owner_id,
-      :owner_type, :external, :param, :record_meeting, :duration,
+      :owner_type, :external, :slug, :record_meeting, :duration,
       :moderator_only_message, :auto_start_recording, :allow_start_stop_recording,
       :metadata_attributes => [ :id, :name, :content, :_destroy, :owner_id ] ]
   end

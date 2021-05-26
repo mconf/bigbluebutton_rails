@@ -1,0 +1,30 @@
+<%= form_for @meeting, :url => bigbluebutton_meeting_path(@meeting) do |f| %>
+  <% if @meeting.errors.any? %>
+    <div id="error_explanation">
+      <h2><%= pluralize(@meeting.errors.count, "error") %>:</h2>
+      <ul>
+      <% @meeting.errors.full_messages.each do |msg| %>
+        <li><%= msg %></li>
+      <% end %>
+      </ul>
+    </div>
+  <% end %>
+
+  <div class="field">
+    <%= f.label :title %><br />
+    <%= f.text_field :title %>
+  </div>
+  <div class="field">
+    <%= f.label :id %><br />
+    <%= @meeting.id %>
+  </div>
+  <div class="field">
+    <%= f.label :meetingid %><br />
+    <%= f.text_field :meetingid, :disabled => true %>
+  </div>
+
+
+  <div class="actions">
+    <%= f.submit %>
+  </div>
+<% end %>

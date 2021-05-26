@@ -89,7 +89,7 @@ describe Bigbluebutton::ServersController do
       let(:attrs) { FactoryGirl.attributes_for(:bigbluebutton_server) }
       let(:params) { { :bigbluebutton_server => attrs } }
       let(:allowed_params) {
-        [ :name, :url, :secret, :param ]
+        [ :name, :url, :secret, :slug ]
       }
 
       it {
@@ -179,13 +179,13 @@ describe Bigbluebutton::ServersController do
       let(:attrs) { FactoryGirl.attributes_for(:bigbluebutton_server) }
       let(:params) { { :bigbluebutton_server => attrs } }
       let(:allowed_params) {
-        [ :name, :url, :secret, :param ]
+        [ :name, :url, :secret, :slug ]
       }
 
       it {
         # we just check that the rails method 'permit' is being called on the hash with the
         # correct parameters
-        BigbluebuttonServer.stub(:find_by_param).and_return(server)
+        BigbluebuttonServer.stub(:find_by).and_return(server)
         server.stub(:update_attributes).and_return(true)
         attrs.stub(:permit).and_return(attrs)
         controller.stub(:params).and_return(params)
@@ -270,7 +270,7 @@ describe Bigbluebutton::ServersController do
     let(:room2) { FactoryGirl.create(:bigbluebutton_room) }
     before do
       # return our mocked server
-      BigbluebuttonServer.stub(:find_by_param).with(server.to_param).
+      BigbluebuttonServer.stub(:find_by).with(slug: server.to_param).
         and_return(server)
     end
 
@@ -339,7 +339,7 @@ describe Bigbluebutton::ServersController do
     let(:recording_ids) { "id1,id2,id3" }
     before do
       # return our mocked server
-      BigbluebuttonServer.stub(:find_by_param).with(server.to_param).and_return(server)
+      BigbluebuttonServer.stub(:find_by).with(slug: server.to_param).and_return(server)
     end
 
     context "on success" do
@@ -399,7 +399,7 @@ describe Bigbluebutton::ServersController do
     let(:recording_ids) { "id1,id2,id3" }
     before do
       # return our mocked server
-      BigbluebuttonServer.stub(:find_by_param).with(server.to_param).and_return(server)
+      BigbluebuttonServer.stub(:find_by).with(slug: server.to_param).and_return(server)
     end
 
     context "on success" do
@@ -457,7 +457,7 @@ describe Bigbluebutton::ServersController do
   describe "#fetch_recordings" do
     before do
       # return our mocked server
-      BigbluebuttonServer.stub(:find_by_param).with(server.to_param).and_return(server)
+      BigbluebuttonServer.stub(:find_by).with(slug: server.to_param).and_return(server)
     end
 
     context "on success" do
@@ -561,7 +561,7 @@ describe Bigbluebutton::ServersController do
   describe "#check" do
     before do
       # return our mocked server
-      BigbluebuttonServer.stub(:find_by_param).with(server.to_param).and_return(server)
+      BigbluebuttonServer.stub(:find_by).with(slug: server.to_param).and_return(server)
     end
 
     context "on success" do

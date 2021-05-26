@@ -47,18 +47,12 @@ class Bigbluebutton::RecordingsController < ApplicationController
   def destroy
     error = false
     begin
-      if @recording.server
-        server = @recording.server
-        server.send_delete_recordings(@recording.recordid)
-      end
+      @recording.destroy
       message = t('bigbluebutton_rails.recordings.notice.destroy.success')
     rescue BigBlueButton::BigBlueButtonException => e
       error = true
       message = t('bigbluebutton_rails.recordings.notice.destroy.success_with_bbb_error')
     end
-
-    # TODO: what if it fails?
-    @recording.destroy
 
     respond_with do |format|
       format.html {
@@ -163,7 +157,7 @@ class Bigbluebutton::RecordingsController < ApplicationController
   end
 
   def recording_allowed_params
-    [ :description ]
+    []
   end
 
   protected

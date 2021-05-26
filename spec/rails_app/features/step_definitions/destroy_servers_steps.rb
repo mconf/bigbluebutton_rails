@@ -10,5 +10,5 @@ When /^the removed server should not be listed$/i do
   doesnt_have_content(@server.name)
   doesnt_have_content(@server.url)
   doesnt_have_content(@server.secret)
-  doesnt_have_content(@server.param)
+  doesnt_have_content(@server.slug)
 end

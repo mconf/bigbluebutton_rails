@@ -208,7 +208,7 @@ describe Bigbluebutton::RoomsController do
       let(:allowed_params) {
         [ :name, :meetingid, :attendee_key, :moderator_key, :welcome_msg,
           :private, :logout_url, :dial_number, :voice_bridge, :max_participants, :owner_id,
-          :owner_type, :external, :param, :record_meeting, :duration,
+          :owner_type, :external, :slug, :record_meeting, :duration,
           :moderator_only_message, :auto_start_recording, :allow_start_stop_recording,
           :metadata_attributes => [ :id, :name, :content, :_destroy, :owner_id ] ]
       }
@@ -299,7 +299,7 @@ describe Bigbluebutton::RoomsController do
       let(:allowed_params) {
         [ :name, :meetingid, :attendee_key, :moderator_key, :welcome_msg,
           :private, :logout_url, :dial_number, :voice_bridge, :max_participants, :owner_id,
-          :owner_type, :external, :param, :record_meeting, :duration,
+          :owner_type, :external, :slug, :record_meeting, :duration,
           :moderator_only_message, :auto_start_recording, :allow_start_stop_recording,
           :metadata_attributes => [ :id, :name, :content, :_destroy, :owner_id ] ]
       }
@@ -369,7 +369,7 @@ describe Bigbluebutton::RoomsController do
       it { should respond_with(:redirect) }
       it { should redirect_to bigbluebutton_rooms_url }
       it {
-        msg = I18n.t('bigbluebutton_rails.rooms.notice.destroy.success_with_bbb_error', :error => bbb_error_msg[0..200])
+        msg = I18n.t('bigbluebutton_rails.rooms.notice.destroy.success_with_bbb_error')
         should set_the_flash.to(msg)
       }
     end
@@ -407,18 +407,24 @@ describe Bigbluebutton::RoomsController do
     }
 
     context "room is running" do
-      before { @api_mock.should_receive(:is_meeting_running?).and_return(true) }
+      before {
+        @api_mock.should_receive(:is_meeting_running?).and_return(true)
+        @api_mock.should_receive(:get_meeting_info).and_return({running: true, participantCount: 12})
+      }
       before(:each) { get :running, :id => room.to_param }
       it { should respond_with(:success) }
       it { should respond_with_content_type('application/json') }
       it { should assign_to(:room).with(room) }
-      it { response.body.should == build_running_json(true) }
+      it { response.body.should == build_running_json(true,{running: true, participantCount: 12}) }
     end
 
     context "room is not running" do
-      before { mocked_api.should_receive(:is_meeting_running?).and_return(false) }
+      before {
+        mocked_api.should_receive(:is_meeting_running?).and_return(false)
+        @api_mock.should_receive(:get_meeting_info).and_return({running: false})
+      }
       before(:each) { get :running, :id => room.to_param }
-      it { response.body.should == build_running_json(false) }
+      it { response.body.should == build_running_json(false,{running: false}) }
     end
 
     context "on failure" do

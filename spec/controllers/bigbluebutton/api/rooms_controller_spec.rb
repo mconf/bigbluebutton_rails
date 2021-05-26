@@ -142,9 +142,9 @@ describe Bigbluebutton::Api::RoomsController do
     end
 
     context "filtering" do
-      before { room.update_attributes(name: "La Lo", param: "lalo-1") }
-      let!(:room2) { FactoryGirl.create(:bigbluebutton_room, name: "La Le", param: "lale-2") }
-      let!(:room3) { FactoryGirl.create(:bigbluebutton_room, name: "Li Lo", param: "lilo") }
+      before { room.update_attributes(name: "La Lo", slug: "lalo-1") }
+      let!(:room2) { FactoryGirl.create(:bigbluebutton_room, name: "La Le", slug: "lale-2") }
+      let!(:room3) { FactoryGirl.create(:bigbluebutton_room, name: "Li Lo", slug: "lilo") }
 
       context "filters by terms" do
         before(:each) { get :index, filter: { terms: 'la' }, format: :json }

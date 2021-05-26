@@ -7,6 +7,8 @@ class BigbluebuttonRecording < ActiveRecord::Base
   belongs_to :room, class_name: 'BigbluebuttonRoom'
   belongs_to :meeting, class_name: 'BigbluebuttonMeeting'
 
+  before_destroy :delete_from_server!
+
   validates :server, :presence => true
 
   validates :recordid,
@@ -27,8 +29,19 @@ class BigbluebuttonRecording < ActiveRecord::Base
 
   serialize :recording_users, Array
 
+  STATES = {
+    processing: 'processing',
+    processed: 'processed',
+    published: 'published',
+    unpublished: 'unpublished'
+  }
+
   def to_param
     self.recordid
+  end
+
+  def is_published?
+    self.state.eql?(BigbluebuttonRecording::STATES[:published]) || self.state.eql?(BigbluebuttonRecording::STATES[:unpublished])
   end
 
   def get_token(user, ip)
@@ -227,7 +240,7 @@ class BigbluebuttonRecording < ActiveRecord::Base
   # BigBlueButtonApi#get_recordings but with the keys already converted to our format.
   def self.update_recording(server, recording, data)
     return unless prepare_recording(recording, server, data)
-    recording.attributes = data.slice(:meetingid, :name, :published, :start_time, :end_time, :size)
+    recording.attributes = data.slice(:meetingid, :name, :published, :start_time, :end_time, :size, :state)
 
     recording.save!
     sync_additional_data(recording, data)
@@ -237,12 +250,10 @@ class BigbluebuttonRecording < ActiveRecord::Base
   # The format expected for 'data' follows the format returned by
   # BigBlueButtonApi#get_recordings but with the keys already converted to our format.
   def self.create_recording(server, data)
-    filtered = data.slice(:recordid, :meetingid, :name, :published, :start_time, :end_time, :size)
+    filtered = data.slice(:recordid, :meetingid, :name, :published, :start_time, :end_time, :size, :state)
     recording = BigbluebuttonRecording.create(filtered)
     return unless prepare_recording(recording, server, data)
 
-    recording.description = I18n.t('bigbluebutton_rails.recordings.default.description',
-                                   time: Time.at(recording.start_time).utc.to_formatted_s(:long))
     recording.meeting = BigbluebuttonRecording.find_matching_meeting(recording)
 
     recording.save!
@@ -264,14 +275,15 @@ class BigbluebuttonRecording < ActiveRecord::Base
   end
 
   # Syncs data that's not directly stored in the recording itself but in
-  # associated models (e.g. metadata and playback formats).
+  # associated models (e.g. metadata, meeting and playback formats).
   # The format expected for 'data' follows the format returned by
   # BigBlueButtonApi#get_recordings but with the keys already converted to our format.
   def self.sync_additional_data(recording, data)
     sync_metadata(recording, data[:metadata]) if data[:metadata]
-    return if data.dig(:playback, :format).nil?
-
-    sync_playback_formats(recording, data[:playback][:format])
+    BigbluebuttonMeeting.update_meeting_creator(recording)
+    if data[:playback] and data[:playback][:format]
+      sync_playback_formats(recording, data[:playback][:format])
+    end
   end
 
   # Syncs the metadata objects of 'recording' with the data in 'metadata'.
@@ -360,11 +372,15 @@ class BigbluebuttonRecording < ActiveRecord::Base
             div_start_time = (start_time/10)
             meeting = BigbluebuttonMeeting.where("meetingid = ? AND create_time DIV 10 = ?", recording.meetingid, div_start_time).last
           end
-        logger.info "Recording: meeting found for the recording #{recording.inspect}: #{meeting.inspect}"
+          if meeting.nil?
+            meeting = BigbluebuttonMeeting.create_meeting_record_from_recording(recording)
+            logger.info "Recording: meeting created for the recording #{recording.inspect}: #{meeting.inspect}"
+          else
+            logger.info "Recording: meeting found for the recording #{recording.inspect}: #{meeting.inspect}"
+          end
       end
     end
 
     meeting
   end
-
 end
