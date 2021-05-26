@@ -28,10 +28,11 @@ module BigbluebuttonRails
 
     def initialize
       @controllers = {
-        servers: 'bigbluebutton/servers',
-        rooms: 'bigbluebutton/rooms',
-        recordings: 'bigbluebutton/recordings',
+        meetings: 'bigbluebutton/meetings',
         playback_types: 'bigbluebutton/playback_types',
+        recordings: 'bigbluebutton/recordings',
+        rooms: 'bigbluebutton/rooms',
+        servers: 'bigbluebutton/servers',
         webhooks: 'bigbluebutton/webhooks'
       }
       @routing_scope = 'bigbluebutton'
@@ -114,9 +115,8 @@ module BigbluebuttonRails
 
     def set_controllers(options)
       unless options.nil? || options.empty?
-        @controllers.merge!(
-          options.slice!(:servers, :rooms, :recordings, :playback_types, :webhooks)
-        )
+        keys = @controllers.keys
+        @controllers.merge!(options).slice!(*keys)
       end
     end
 
