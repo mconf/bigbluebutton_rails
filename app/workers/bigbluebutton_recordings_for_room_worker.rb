@@ -25,6 +25,7 @@ class BigbluebuttonRecordingsForRoomWorker
 
       intervals = BigbluebuttonRails.configuration.recording_sync_for_room_intervals
       idx = intervals.length - tries_left
+      wait = intervals[idx]
       wait = intervals[intervals.length - 1] if wait.nil?
 
       Resque.enqueue_in(wait, ::BigbluebuttonRecordingsForRoomWorker, room_id, tries_left - 1)
