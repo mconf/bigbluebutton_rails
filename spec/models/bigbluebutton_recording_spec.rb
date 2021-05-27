@@ -165,6 +165,7 @@ describe BigbluebuttonRecording do
         start_time: DateTime.now,
         end_time: DateTime.now + 2.hours,
         size: "100",
+        state: "processing",
         metadata: {
           course: "Fundamentals of JAVA",
           description: "List of recordings",
@@ -192,7 +193,8 @@ describe BigbluebuttonRecording do
         published: data[:published],
         start_time: data[:start_time],
         end_time: data[:end_time],
-        size: data[:size]
+        size: data[:size],
+        state: data[:state],
       }
       r = FactoryGirl.create(:bigbluebutton_recording, attrs)
       data[:metadata].each do |k, v|
@@ -209,15 +211,41 @@ describe BigbluebuttonRecording do
       BigbluebuttonRecording.recording_changed?(recording, data).should be(false)
     end
 
-    context "returns true when an attribute changed" do
-      it "in the data" do
-        data[:published] = !data[:published]
-        BigbluebuttonRecording.recording_changed?(recording, data).should be(true)
-      end
+    tracked_attrs = [
+      [ :end_time, :time ],
+      [ :start_time, :time ],
+      [ :meetingid, :string ],
+      [ :recordid, :string ],
+      [ :name, :string ],
+      [ :state, :string ],
+      [ :published, :boolean ],
+      [ :size, :string ]
+    ]
+    tracked_attrs.each do |attr|
+      context "returns true when the attribute #{attr[0]} changed" do
+        it "in the data" do
+          data[attr[0]] = case attr[1]
+                          when :time
+                            data[attr[0]] + 1.day
+                          when :string
+                            data[attr[0]] + "1"
+                          when :boolean
+                            !data[attr[0]]
+                          end
+          BigbluebuttonRecording.recording_changed?(recording, data).should be(true)
+        end
 
-      it "in the database" do
-        recording.update(published: !recording.published)
-        BigbluebuttonRecording.recording_changed?(recording, data).should be(true)
+        it "in the database" do
+          case attr[1]
+          when :time
+            recording.update_attribute(attr[0], data[attr[0]] + 1.day)
+          when :string
+            recording.update_attribute(attr[0], data[attr[0]] + "1")
+          when :boolean
+            recording.update_attribute(attr[0], !data[attr[0]])
+          end
+          BigbluebuttonRecording.recording_changed?(recording, data).should be(true)
+        end
       end
     end
 
@@ -354,6 +382,7 @@ describe BigbluebuttonRecording do
         startTime: DateTime.now,
         endTime: DateTime.now + 2.hours,
         size: 100,
+        state: 'processing',
         metadata: {
           course: "Fundamentals of JAVA",
           description: "List of recordings",
@@ -447,8 +476,7 @@ describe BigbluebuttonRecording do
       it { BigbluebuttonRecording.count.should == 2 }
     end
 
-    context "sets recording that are not in the parameters as unavailable in a full sync" do
-
+    context "sets recording that are not in the parameters as unavailable" do
       context "for recordings in multiple servers" do
         before {
           BigbluebuttonRecording.delete_all
@@ -456,7 +484,7 @@ describe BigbluebuttonRecording do
           @r2 = FactoryGirl.create(:bigbluebutton_recording, :available => true, :server => new_server)
           @r3 = FactoryGirl.create(:bigbluebutton_recording, :available => true, :server => FactoryGirl.create(:bigbluebutton_server))
           @r4 = FactoryGirl.create(:bigbluebutton_recording, :available => true, :server => FactoryGirl.create(:bigbluebutton_server))
-          BigbluebuttonRecording.sync(new_server, data, true)
+          BigbluebuttonRecording.sync(new_server, data, BigbluebuttonRecording.where(server: new_server))
         }
         it { BigbluebuttonRecording.count.should == 5 }
         it ("recording from the target server") { @r1.reload.available.should == false }
@@ -470,7 +498,7 @@ describe BigbluebuttonRecording do
           new_server.recordings.delete_all
           @r1 = FactoryGirl.create(:bigbluebutton_recording, :available => true, :server => FactoryGirl.create(:bigbluebutton_server))
           @r2 = FactoryGirl.create(:bigbluebutton_recording, :available => true, :server => FactoryGirl.create(:bigbluebutton_server))
-          BigbluebuttonRecording.sync(new_server, data, true)
+          BigbluebuttonRecording.sync(new_server, data, BigbluebuttonRecording.where(server: new_server))
         }
         it { new_server.recordings.should be_empty }
         it ("recording from another server") { @r1.reload.available.should == true }
@@ -482,11 +510,47 @@ describe BigbluebuttonRecording do
           BigbluebuttonRecording.delete_all
           @r1 = FactoryGirl.create(:bigbluebutton_recording, :available => true, :server => new_server)
           @r2 = FactoryGirl.create(:bigbluebutton_recording, :available => true, :server => new_server)
-          BigbluebuttonRecording.sync(new_server, data, true)
+          BigbluebuttonRecording.sync(new_server, data, BigbluebuttonRecording.where(server: new_server))
         }
         it { BigbluebuttonRecording.count.should == 3 }
         it ("recording from another server") { @r1.reload.available.should == false }
         it ("recording from another server") { @r2.reload.available.should == false }
+      end
+
+      context "when updating for a single room" do
+        let(:target_room) { FactoryGirl.create(:bigbluebutton_room) }
+        before {
+          BigbluebuttonRecording.delete_all
+          @r1 = FactoryGirl.create(:bigbluebutton_recording, :available => true, :server => new_server, :room => target_room)
+          @r2 = FactoryGirl.create(:bigbluebutton_recording, :available => true, :server => new_server, :room => target_room)
+          @r3 = FactoryGirl.create(:bigbluebutton_recording, :available => true, :server => new_server, :room => FactoryGirl.create(:bigbluebutton_room))
+          @r4 = FactoryGirl.create(:bigbluebutton_recording, :available => true, :server => new_server, :room => FactoryGirl.create(:bigbluebutton_room))
+          BigbluebuttonRecording.sync(new_server, data, BigbluebuttonRecording.where(room: target_room))
+        }
+        it ("recording from the target server") { @r1.reload.available.should == false }
+        it ("recording from the target server") { @r2.reload.available.should == false }
+        it ("recording from another server") { @r3.reload.available.should == true }
+        it ("recording from another server") { @r4.reload.available.should == true }
+      end
+
+      context "only changes 'available' for recordings created before the sync started" do
+        before {
+          sync_started_at = DateTime.now
+
+          BigbluebuttonRecording.delete_all
+          @r1 = FactoryGirl.create(:bigbluebutton_recording, :available => true, :server => new_server, created_at: sync_started_at + 1.hour)
+          @r2 = FactoryGirl.create(:bigbluebutton_recording, :available => true, :server => new_server, created_at: sync_started_at + 1.second)
+          @r3 = FactoryGirl.create(:bigbluebutton_recording, :available => true, :server => new_server, created_at: sync_started_at)
+          @r4 = FactoryGirl.create(:bigbluebutton_recording, :available => true, :server => new_server, created_at: sync_started_at - 1.second)
+
+          scope = BigbluebuttonRecording.where(server: new_server)
+          BigbluebuttonRecording.sync(new_server, data, scope, sync_started_at)
+        }
+        it { BigbluebuttonRecording.count.should == 5 }
+        it ("recording created after the sync started") { @r1.reload.available.should == true }
+        it ("recording created after the sync started") { @r2.reload.available.should == true }
+        it ("recording created before the sync started") { @r3.reload.available.should == false }
+        it ("recording created before the sync started") { @r4.reload.available.should == false }
       end
     end
 
@@ -495,12 +559,12 @@ describe BigbluebuttonRecording do
         BigbluebuttonRecording.delete_all
         @r = FactoryGirl.create(:bigbluebutton_recording, :available => false, :server => new_server, :recordid => data[0][:recordID])
         # so it creates the recording the first time
-        BigbluebuttonRecording.sync(new_server, data, true)
+        BigbluebuttonRecording.sync(new_server, data, BigbluebuttonRecording.where(server: new_server))
 
         BigbluebuttonRecording.find_by(recordid: data[0][:recordID])
           .update_attributes(available: false)
 
-        BigbluebuttonRecording.sync(new_server, data, true)
+        BigbluebuttonRecording.sync(new_server, data, BigbluebuttonRecording.where(server: new_server))
       }
       it { @r.reload.available.should be(true) }
     end
@@ -565,21 +629,17 @@ describe BigbluebuttonRecording do
     it "doesn't update if the recording didn't change" do
       # once to create the recording
       now = DateTime.now
-      expected = now - 1.month
+      expected = now - 1.day
       Timecop.freeze(expected)
       rec_data = data.clone
-
       BigbluebuttonRecording.sync(new_server, rec_data)
 
-      # set an expected updated_at
+      # bug to the current timestamp
       rec = BigbluebuttonRecording.first
-      puts "before #{rec.updated_at} (#{DateTime.now})"
-      # rec.send(:write_attribute, :updated_at, expected)
+      Timecop.freeze(now)
 
       # shouldn't change it
-      Timecop.freeze(now)
       BigbluebuttonRecording.sync(new_server, rec_data)
-      puts "after #{rec.reload.updated_at} (#{DateTime.now})"
       rec.reload.updated_at.to_i.should eql(expected.to_i)
 
       Timecop.return
