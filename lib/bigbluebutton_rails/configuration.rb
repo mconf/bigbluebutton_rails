@@ -32,7 +32,8 @@ module BigbluebuttonRails
         servers: 'bigbluebutton/servers',
         rooms: 'bigbluebutton/rooms',
         recordings: 'bigbluebutton/recordings',
-        playback_types: 'bigbluebutton/playback_types'
+        playback_types: 'bigbluebutton/playback_types',
+        meetings: 'bigbluebutton/meetings'
       }
       @routing_scope = 'bigbluebutton'
 
@@ -133,7 +134,7 @@ module BigbluebuttonRails
 
     def set_controllers(options)
       unless options.nil? || options.empty?
-        @controllers.merge!(options).slice!(:servers, :rooms, :recordings, :playback_types)
+        @controllers.merge!(options).slice!(:servers, :rooms, :recordings, :playback_types, :meetings)
       end
     end
 
