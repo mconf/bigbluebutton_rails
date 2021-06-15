@@ -1,5 +1,19 @@
 # Change Log
 
+## [3.2.0] - 2021-06-15
+* [#198] Fix deletion of meetings with recordings.
+  When deleting a meeting with recording,
+  sometimes errors occurred and the recording was kept.
+  Now these errors are rescued and both are deleted.
+* [#197] Now the meetings controller can be overriden on apps if necessary.
+* [#196] Fix race condition of workers and improve performance.
+  Now workers will run sync for each rooms, not for each server, and 
+  will run 16 times for about 24h after a meeting end, 
+  applications can easily customize the intervals between each job
+* Migration to:
+    - Add missing `BigbluebuttonRecording#state` attribute
+
+
 ## [3.1.2] - 2021-05-15
 
 * [#190] Increase the size of `BigbluebuttonMeeting#title` from 80 to 255 characters. It was a column
@@ -379,6 +393,7 @@ https://github.com/mconf/bigbluebutton_rails/wiki/Migrate-to-1.3.0
 * Controller to access servers and rooms
 * rooms_controller interacts with a BBB server using bigbluebutton-api-ruby
 
+[3.2.0]: https://github.com/mconf/bigbluebutton_rails/compare/v3.1.2...v3.2.0
 [3.1.2]: https://github.com/mconf/bigbluebutton_rails/compare/v3.1.1...v3.1.2
 [3.1.1]: https://github.com/mconf/bigbluebutton_rails/compare/v3.1.0...v3.1.1
 [3.1.0]: https://github.com/mconf/bigbluebutton_rails/compare/v3.0.1...v3.1.0
