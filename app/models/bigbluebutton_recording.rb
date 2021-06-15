@@ -72,7 +72,12 @@ class BigbluebuttonRecording < ActiveRecord::Base
   # Remove this recording from the server
   def delete_from_server!
     if self.server.present?
-      self.server.send_delete_recordings(self.recordid)
+      begin
+        self.server.send_delete_recordings(self.recordid)
+      rescue BigBlueButton::BigBlueButtonException => e
+        logger.error "Could not delete the recording #{self.id} from the server. API error: #{e}"
+        return false
+      end
     else
       false
     end
