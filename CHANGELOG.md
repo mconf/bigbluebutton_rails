@@ -10,7 +10,7 @@
   Now workers will run sync for each rooms, not for each server, and 
   will run 16 times for about 24h after a meeting end, 
   applications can easily customize the intervals between each job
-* Migration to:
+* Fix migration.rb:
     - Add missing `BigbluebuttonRecording#state` attribute
 
 
