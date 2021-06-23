@@ -5,6 +5,6 @@ child(@room => :data) {
   node(:id) { |obj| obj.to_param }
 
   node :attributes do |room|
-    { :running => room.is_running? }
+    { :running => @running }
   end
 }

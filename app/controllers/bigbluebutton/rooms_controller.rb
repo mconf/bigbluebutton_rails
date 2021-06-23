@@ -79,7 +79,6 @@ class Bigbluebutton::RoomsController < ApplicationController
   def destroy
     error = false
     begin
-      @room.fetch_is_running?
       @room.send_end if @room.is_running?
       message = t('bigbluebutton_rails.rooms.notice.destroy.success')
     rescue BigBlueButton::BigBlueButtonException => e
@@ -120,19 +119,18 @@ class Bigbluebutton::RoomsController < ApplicationController
 
   def running
     begin
-      @room.fetch_is_running?
+      running = @room.is_running?
       info = @room.fetch_meeting_info
     rescue BigBlueButton::BigBlueButtonException => e
       render :json => { :running => "false", :error => "#{api_error_msg(e)}" }
     else
-      render :json => { :running => "#{@room.is_running?}", :meeting_info => info}
+      render :json => { :running => "#{running}", :meeting_info => info}
     end
   end
 
   def end
     error = false
     begin
-      @room.fetch_is_running?
       if @room.is_running?
         @room.send_end
         message = t('bigbluebutton_rails.rooms.notice.end.success')
@@ -273,7 +271,7 @@ class Bigbluebutton::RoomsController < ApplicationController
   # Aborts and redirects to an error if the user can't create a meeting in
   # the room and it needs to be created.
   def join_check_can_create
-    unless @room.fetch_is_running?
+    unless @room.is_running?
       unless bigbluebutton_can_create?(@room, @user_role)
         flash[:error] = t('bigbluebutton_rails.rooms.errors.join.cannot_create')
         redirect_to_on_join_error
@@ -318,7 +316,7 @@ class Bigbluebutton::RoomsController < ApplicationController
   def join_internal(username, role, id)
     begin
       # first check if we have to create the room and if the user can do it
-      unless @room.fetch_is_running?
+      unless @room.is_running?
         if bigbluebutton_can_create?(@room, role)
           if @room.create_meeting(bigbluebutton_user, request)
             logger.info "Meeting created: id: #{@room.meetingid}, name: #{@room.name}, created_by: #{username}, time: #{Time.now.iso8601}"

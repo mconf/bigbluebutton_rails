@@ -50,7 +50,7 @@ class BigbluebuttonMeeting < ActiveRecord::Base
           title: room.name,
           recorded: room.record_meeting,
           create_time: room.create_time,
-          running: room.running,
+          running: response[:running],
           ended: false,
           internal_meeting_id: response[:internalMeetingID]
         }

@@ -45,7 +45,7 @@ class Bigbluebutton::Api::RoomsController < ApplicationController
   end
 
   def running
-    check_is_running
+    @running = check_is_running
   end
 
   def join
@@ -89,12 +89,11 @@ class Bigbluebutton::Api::RoomsController < ApplicationController
 
   def check_is_running
     begin
-      @room.fetch_is_running?
+      @room.is_running?
     rescue StandardError => e
       @errors = [BigbluebuttonRails::APIError.new(e.to_s, 500)]
-      render 'bigbluebutton/api/error'
+      render 'bigbluebutton/api/error' and return false
     end
-    @room.is_running?
   end
 
   def set_content_type
