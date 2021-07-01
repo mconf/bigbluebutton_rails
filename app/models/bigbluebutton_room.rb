@@ -108,7 +108,6 @@ class BigbluebuttonRoom < ActiveRecord::Base
   # The attributes changed are:
   # * <tt>participant_count</tt>
   # * <tt>moderator_count</tt>
-  # * <tt>running</tt>
   # * <tt>has_been_forcibly_ended</tt>
   # * <tt>create_time</tt>
   # * <tt>end_time</tt>
