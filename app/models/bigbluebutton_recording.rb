@@ -72,7 +72,12 @@ class BigbluebuttonRecording < ActiveRecord::Base
   # Remove this recording from the server
   def delete_from_server!
     if self.server.present?
-      self.server.send_delete_recordings(self.recordid)
+      begin
+        self.server.send_delete_recordings(self.recordid)
+      rescue BigBlueButton::BigBlueButtonException => e
+        logger.error "Could not delete the recording #{self.id} from the server. API error: #{e}"
+        return false
+      end
     else
       false
     end
@@ -106,7 +111,7 @@ class BigbluebuttonRecording < ActiveRecord::Base
       # the attributes that are considered in the comparison
       keys = [ # rawSize is not stored at the moment
         :end_time, :meetingid,  :metadata, :playback, :published,
-        :recordid, :size, :start_time
+        :recordid, :size, :start_time, :state, :name
       ]
       keys_formats = [ # :size, :processingTime are not stored at the moment
         :length, :type, :url
@@ -153,26 +158,36 @@ class BigbluebuttonRecording < ActiveRecord::Base
   # Will add new recordings that are not in the db yet and update the ones that
   # already are (matching by 'recordid'). Will NOT delete recordings from the db
   # if they are not in the array but instead mark them as unavailable.
-  # 'server' is the BigbluebuttonServer object from which the recordings
-  # were fetched.
+  #
+  # server:: The BigbluebuttonServer from which the recordings were fetched.
+  # recordings:: The response from getRecordings.
+  # sync_scope:: The scope to which these recordings are part of. If we fetched all recordings
+  #   in a server, the scope is all recordings in the server; if we fetched only recordings
+  #   for a room, the scope is the recordings of this room. This is used to set `available`
+  #   in the recordings that might not be in the server anymore.
+  # sync_started_at:: Moment when the getRecordings call that returned the `recordings`
+  #   was made. Used so we don't set `available` on recordings created during the
+  #   synchronization process.
   #
   # TODO: catch exceptions on creating/updating recordings
-  def self.sync(server, recordings, full_sync=false)
+  def self.sync(server, recordings, sync_scope=nil, sync_started_at=nil)
+    logger.info "Sync recordings: starting a sync for server=#{server.url};#{server.secret} sync_scope=\"#{sync_scope&.to_sql}\""
+
     recordings.each do |rec|
-      rec_obj = BigbluebuttonRecording.find_by_recordid(rec[:recordID])
+      rec_obj = BigbluebuttonRecording.find_by(recordid: rec[:recordID])
       rec_data = adapt_recording_hash(rec)
-      changed = !rec_obj.present? ||
-                self.recording_changed?(rec_obj, rec_data)
+      changed = !rec_obj.present? || self.recording_changed?(rec_obj, rec_data)
 
       if changed
+        logger.info "Sync recordings: detected that the recording changed #{rec[:recordID]}"
         BigbluebuttonRecording.transaction do
           if rec_obj
-            logger.info "Sync recordings: updating recording #{rec_obj.inspect}"
-            logger.debug "Sync recordings: recording data #{rec_data.inspect}"
+            logger.info "Sync recordings: updating recording #{rec[:recordID]}"
+            logger.debug "Sync recordings: updating recording with data #{rec_data.inspect}"
             self.update_recording(server, rec_obj, rec_data)
           else
-            logger.info "Sync recordings: creating recording"
-            logger.debug "Sync recordings: recording data #{rec_data.inspect}"
+            logger.info "Sync recordings: creating recording #{rec[:recordID]}"
+            logger.debug "Sync recordings: creating recording with data #{rec_data.inspect}"
             self.create_recording(server, rec_data)
           end
         end
@@ -180,26 +195,34 @@ class BigbluebuttonRecording < ActiveRecord::Base
     end
     cleanup_playback_types
 
-    # set as unavailable the recordings that are not in 'recordings', but
-    # only in a full synchronization process, which means that the recordings
-    # in `recordings` are *all* available in `server`, not a subset.
-    if full_sync
+    # Set as unavailable the recordings that are not in the list returned by getRecordings, but
+    # only if there is a scope set, otherwise we don't know how the call to getRecordings was filtered.
+    # Uses the scope passed to figure out which recordings should be marked as unavailable.
+    if sync_scope.present?
+      sync_started_at = DateTime.now if sync_started_at.nil?
+
       recordIDs = recordings.map{ |rec| rec[:recordID] }
-      if recordIDs.length <= 0 # empty response
-        BigbluebuttonRecording.
-          where(available: true, server: server).
+      if recordIDs.length <= 0
+        # empty response, all recordings in the scope are unavailable
+        sync_scope.
+          where(available: true).
+          where("created_at <= ?", sync_started_at).
           update_all(available: false)
       else
-        BigbluebuttonRecording.
-          where(available: true, server: server).
-          where.not(recordid: recordIDs).
+        # non empty response, mark as unavailable all recordings in the scope that
+        # were not returned by getRecording
+        sync_scope.
+          where(available: true).where.not(recordid: recordIDs).
+          where("created_at <= ?", sync_started_at).
           update_all(available: false)
-        BigbluebuttonRecording.
-          where(available: false, server: server).
-          where(recordid: recordIDs).
+        sync_scope.
+          where(available: false, recordid: recordIDs).
+          where("created_at <= ?", sync_started_at).
           update_all(available: true)
       end
     end
+
+    logger.info "Sync recordings: finished a sync for server=#{server.url};#{server.secret} sync_scope=\"#{sync_scope&.to_sql}\""
   end
 
   protected

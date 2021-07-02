@@ -393,11 +393,9 @@ class BigbluebuttonRoom < ActiveRecord::Base
 
     if to_be_finished.count > 0
       # start trying to get the recording for this room
-      # since we don't have a way to know exactly when a recording is done, we
-      # have to keep polling the server for them
-      # 3 times so it tries at: 4, 9, 14 and 19
-      # no point trying more since there is a global synchronization process
-      Resque.enqueue_in(1.minutes, ::BigbluebuttonRecordingsForRoomWorker, self.id, 10)
+      intervals  = BigbluebuttonRails.configuration.recording_sync_for_room_intervals
+      tries = intervals.length - 1
+      Resque.enqueue_in(intervals[0], ::BigbluebuttonRecordingsForRoomWorker, self.id, tries)
     end
   end
 
@@ -425,10 +423,14 @@ class BigbluebuttonRoom < ActiveRecord::Base
     end
   end
 
-  def fetch_recordings(filter={})
+  # Synchronizes all the recordings for this room. Will only get recordings with the
+  # default states (won't get recordings with the state 'deleted', for instance).
+  def fetch_recordings
     server = BigbluebuttonRails.configuration.select_server.call(self, :get_recordings)
     if server.present?
-      server.fetch_recordings(filter.merge({ meetingID: self.meetingid }))
+      states = BigbluebuttonRecording::STATES.values
+      scope = BigbluebuttonRecording.where(room: self, state: states)
+      server.fetch_recordings({ meetingID: self.meetingid, state: states }, scope)
       true
     else
       false

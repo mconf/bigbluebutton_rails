@@ -76,7 +76,7 @@ pt-br:
           failure: "Não foi possível atualizar seu registro de reunião."
         destroy:
           success_with_bbb_error: "O registro foi destruído com sucesso mas não foi removido do servidor de videoconferência (\"%{error}\")"
-          error_destroy: "Não foi possível deletar este registro."
+          error: "Não foi possível deletar este registro."
           running:
             not_ended: "Este registro não pode ser deletado pois a reunião ainda está acontecendo."
     metadata:
@@ -109,6 +109,7 @@ pt-br:
         destroy:
           success: "Gravação destruida!"
           success_with_bbb_error: "A gravação foi destruída com sucesso mas não foi removida do servidor de webconferência."
+          error: "Não foi possível deletar esta gravação."
         publish:
           success: "Gravação publicada!"
         unpublish:
@@ -138,6 +139,7 @@ pt-br:
         destroy:
           success: "Reunião destruída!"
           success_with_bbb_error: "A sala foi destruída com sucesso mas a reunião não foi finalizada no servidor de webconferência."
+          error: "Não foi possível deletar esta sala."
         end:
           not_running: "A reunião não pôde ser finalizada pois não está em andamento."
           success: "A reunião foi finalizada com sucesso."

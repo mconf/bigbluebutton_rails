@@ -792,13 +792,16 @@ describe Bigbluebutton::RoomsController do
     before do
       mock_server_and_api
     end
+    let(:scope) {
+      BigbluebuttonRecording.where(room: room, state: BigbluebuttonRecording::STATES.values)
+    }
     let(:filter) {
-      { :meetingID => room.meetingid }
+      { :meetingID => room.meetingid, :state => BigbluebuttonRecording::STATES.values }
     }
 
     context "on success" do
       before(:each) {
-        mocked_server.should_receive(:fetch_recordings).with(filter)
+        mocked_server.should_receive(:fetch_recordings).with(filter, scope)
         post :fetch_recordings, :id => room.to_param
       }
       it { should respond_with(:redirect) }
@@ -808,7 +811,7 @@ describe Bigbluebutton::RoomsController do
 
     context "responds to :json" do
       before(:each) {
-        mocked_server.should_receive(:fetch_recordings).with(filter)
+        mocked_server.should_receive(:fetch_recordings).with(filter, scope)
         post :fetch_recordings, :id => room.to_param, :format => :json
       }
       it { should respond_with(:success) }
@@ -840,7 +843,7 @@ describe Bigbluebutton::RoomsController do
     context "with :redir_url" do
       context "on success" do
         before(:each) {
-          mocked_server.should_receive(:fetch_recordings).with(filter)
+          mocked_server.should_receive(:fetch_recordings).with(filter, scope)
           post :fetch_recordings, :id => room.to_param, :redir_url => "/any"
         }
         it {should respond_with(:redirect) }

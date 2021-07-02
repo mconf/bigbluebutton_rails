@@ -17,6 +17,7 @@ module BigbluebuttonRails
     attr_accessor :downloadable_playback_types
     attr_accessor :debug
     attr_accessor :api_timeout
+    attr_accessor :recording_sync_for_room_intervals
 
     # methods
     attr_accessor :select_server
@@ -24,13 +25,15 @@ module BigbluebuttonRails
     attr_accessor :get_invitation_url
     attr_accessor :get_create_options
     attr_accessor :get_join_options
+    attr_accessor :rooms_for_full_recording_sync
 
     def initialize
       @controllers = {
         servers: 'bigbluebutton/servers',
         rooms: 'bigbluebutton/rooms',
         recordings: 'bigbluebutton/recordings',
-        playback_types: 'bigbluebutton/playback_types'
+        playback_types: 'bigbluebutton/playback_types',
+        meetings: 'bigbluebutton/meetings'
       }
       @routing_scope = 'bigbluebutton'
 
@@ -102,11 +105,36 @@ module BigbluebuttonRails
       # Set it to an empty string to disable authentication. Set it to nil to deny all
       # requests (disable the API).
       @api_secret = nil
+
+      # Sequence of intervals for the worker that monitors the recordings of a room after
+      # a meeting ends in that room. Sleep this amount of time between each `getRecordings`
+      # to the room.
+      # Start faster, get slower later on. Tries for a total of about 24h.
+      @recording_sync_for_room_intervals = [
+        1.minute,
+        5.minutes, 5.minutes,
+        10.minutes, 10.minutes,
+        30.minutes, 30.minutes, 30.minutes,
+        2.hours, 2.hours,
+        3.hours, 3.hours, 3.hours, 3.hours, 3.hours, 3.hours
+      ]
+
+      # Return a query that selects the rooms that should be iterated over when updating all
+      # recordings in a full sync. This is used so users can program a logic to select only
+      # a subset of rooms in case there are too many rooms to iterate over every time.
+      # Return `nil` to iterate over all rooms.
+      @rooms_for_full_recording_sync = Proc.new do
+        # Get only the rooms that had at least one meeting in the previous 7 days
+        since = (DateTime.now - 7.days).to_i * 1000 # create_time is a 13-digit timestamp
+        room_ids = BigbluebuttonMeeting.where("create_time >= ? ", since)
+                     .select(:room_id).distinct.pluck(:room_id)
+        BigbluebuttonRoom.where(id: room_ids)
+      end
     end
 
     def set_controllers(options)
       unless options.nil? || options.empty?
-        @controllers.merge!(options).slice!(:servers, :rooms, :recordings, :playback_types)
+        @controllers.merge!(options).slice!(:servers, :rooms, :recordings, :playback_types, :meetings)
       end
     end
 

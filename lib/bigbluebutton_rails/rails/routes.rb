@@ -162,7 +162,8 @@ module ActionDispatch::Routing
     end
 
     def add_routes_for_meetings #:nodoc:
-      resources :meetings, :controller => 'bigbluebutton/meetings', :only => [:destroy, :update, :edit]
+      resources :meetings, :only => [:destroy, :update, :edit],
+                           :controller => BigbluebuttonRails.configuration.controllers[:meetings]
     end
   end
 end
