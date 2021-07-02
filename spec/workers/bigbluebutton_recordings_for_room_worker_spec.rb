@@ -18,17 +18,18 @@ describe BigbluebuttonRecordingsForRoomWorker do
     end
 
     context "if there are still tries left" do
+      let(:tries_left) { 7 }
       before {
         BigbluebuttonRoom.stub(:find).and_return(room)
         room.stub(:fetch_recordings)
 
         intervals = BigbluebuttonRails.configuration.recording_sync_for_room_intervals
-        wait = intervals[intervals.length - 6]
+        wait = intervals[intervals.length - tries_left]
         expect(Resque).to receive(:enqueue_in)
                            .with(wait, ::BigbluebuttonRecordingsForRoomWorker, room.id, 6)
                            .once
       }
-      it { BigbluebuttonRecordingsForRoomWorker.perform(room.id, 7) }
+      it { BigbluebuttonRecordingsForRoomWorker.perform(room.id, tries_left) }
     end
 
     context "if there are no more tries left" do

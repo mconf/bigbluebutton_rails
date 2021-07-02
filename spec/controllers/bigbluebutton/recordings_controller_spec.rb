@@ -156,7 +156,10 @@ describe Bigbluebutton::RecordingsController do
       }
       it { should respond_with(:redirect) }
       it { should redirect_to bigbluebutton_recordings_url }
-      it { should set_the_flash.to(I18n.t('bigbluebutton_rails.recordings.notice.destroy.success')) }
+      it {
+        msg = I18n.t('bigbluebutton_rails.recordings.notice.destroy.success')
+        should set_the_flash.to(msg)
+      }
     end
 
     context "on failure" do
@@ -171,7 +174,7 @@ describe Bigbluebutton::RecordingsController do
       it { should respond_with(:redirect) }
       it { should redirect_to bigbluebutton_recordings_url }
       it {
-        msg = I18n.t('bigbluebutton_rails.recordings.notice.destroy.success_with_bbb_error')
+        msg = I18n.t('bigbluebutton_rails.recordings.notice.destroy.error')
         should set_the_flash.to(msg)
       }
     end
@@ -207,7 +210,10 @@ describe Bigbluebutton::RecordingsController do
       }
       it { should respond_with(:redirect) }
       it { should redirect_to bigbluebutton_recordings_url }
-      it { should set_the_flash.to(I18n.t('bigbluebutton_rails.recordings.notice.destroy.success')) }
+      it {
+        msg = I18n.t('bigbluebutton_rails.recordings.notice.destroy.error')
+        should set_the_flash.to(msg)
+      }
     end
 
     context "doesn't override @recording" do

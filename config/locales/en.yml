@@ -93,7 +93,7 @@ en:
           failure: "It was not possible to update your meeting record."
         destroy:
           success_with_bbb_error: "The record was successfully destroyed but it wasn't deleted from the videoconference server (\"%{error}\")"
-          error_destroy: "This record could not be deleted"
+          error: "This record could not be deleted"
           running:
             not_ended: "This record can not be deleted because the meeting is still running"
     metadata:
@@ -126,6 +126,7 @@ en:
         destroy:
           success: "Recording destroyed!"
           success_with_bbb_error: "The recording was successfully destroyed but it wasn't deleted from the webconference server."
+          error: "This recording could not be deleted."
         publish:
           success: "Recording published!"
         unpublish:
@@ -155,6 +156,7 @@ en:
         destroy:
           success: "Room destroyed."
           success_with_bbb_error: "The room was successfully destroyed but the meeting wasn't ended in the webconference server."
+          error: "This room could not be deleted."
         end:
           not_running: "The meeting could not be ended because it is not running."
           success: "The meeting was successfully ended."

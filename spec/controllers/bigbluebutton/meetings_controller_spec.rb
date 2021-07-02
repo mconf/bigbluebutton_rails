@@ -38,7 +38,7 @@ describe Bigbluebutton::MeetingsController do
           }
           it("should not decrease meetings count") { }
           it { should redirect_to '/any' }
-          it { should set_the_flash.to(I18n.t('bigbluebutton_rails.meetings.notice.destroy.error_destroy')) }
+          it { should set_the_flash.to(I18n.t('bigbluebutton_rails.meetings.notice.destroy.error')) }
         end
       end
       context "when meeting has recordings" do
@@ -67,7 +67,7 @@ describe Bigbluebutton::MeetingsController do
           }
           it("should not decrease Recordings count") { }
           it { should redirect_to '/any' }
-          it { should set_the_flash.to(I18n.t('bigbluebutton_rails.meetings.notice.destroy.error_destroy')) }
+          it { should set_the_flash.to(I18n.t('bigbluebutton_rails.meetings.notice.destroy.error')) }
         end
       end
     end

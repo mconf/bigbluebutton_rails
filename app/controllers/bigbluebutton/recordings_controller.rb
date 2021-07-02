@@ -45,24 +45,14 @@ class Bigbluebutton::RecordingsController < ApplicationController
   end
 
   def destroy
-    error = false
-    begin
-      @recording.destroy
-      message = t('bigbluebutton_rails.recordings.notice.destroy.success')
-    rescue BigBlueButton::BigBlueButtonException => e
-      error = true
-      message = t('bigbluebutton_rails.recordings.notice.destroy.success_with_bbb_error')
+    if @recording.destroy
+      flash[:success] = t('bigbluebutton_rails.recordings.notice.destroy.success')
+    else
+      flash[:error] = t('bigbluebutton_rails.recordings.notice.destroy.error')
     end
 
     respond_with do |format|
-      format.html {
-        if error
-          flash[:error] = message
-          redirect_to_using_params bigbluebutton_recordings_url
-        else
-          redirect_to_using_params bigbluebutton_recordings_url, :notice => message
-        end
-      }
+      format.html { redirect_to_using_params bigbluebutton_recordings_url }
     end
   end
 

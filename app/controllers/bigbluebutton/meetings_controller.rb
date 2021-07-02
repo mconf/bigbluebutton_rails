@@ -24,7 +24,7 @@ class Bigbluebutton::MeetingsController < ApplicationController
           }
         end
       else
-        flash[:error] = t('bigbluebutton_rails.meetings.notice.destroy.error_destroy')
+        flash[:error] = t('bigbluebutton_rails.meetings.notice.destroy.error')
         redirect_to_using_params_or_back(request.referer)
       end
     else
