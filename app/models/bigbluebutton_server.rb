@@ -93,8 +93,7 @@ class BigbluebuttonServer < ActiveRecord::Base
         room.update_attributes(attendee_api_password: attr[:attendeePW],
                                moderator_api_password: attr[:moderatorPW])
       end
-      room.running = attr[:running]
-      room.update_current_meeting_record
+      room.update_current_meeting_record(attr)
 
       @meetings << room
     end

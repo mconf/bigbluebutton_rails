@@ -282,6 +282,8 @@ describe Bigbluebutton::ServersController do
         server.should_receive(:meetings).at_least(:once).and_return([room1, room2])
         room1.should_receive(:fetch_meeting_info)
         room2.should_receive(:fetch_meeting_info)
+        room1.should_receive(:fetch_is_running?)
+        room2.should_receive(:fetch_is_running?)
       end
 
       context do
@@ -318,6 +320,8 @@ describe Bigbluebutton::ServersController do
           server.should_receive(:fetch_meetings).and_return({ })
           server.should_receive(:meetings).at_least(:once).and_return([room1, room2])
           room1.should_receive(:fetch_meeting_info) { raise bbb_error }
+          room1.should_receive(:fetch_is_running?)
+          room2.should_receive(:fetch_is_running?)
         end
         before(:each) { get :activity, :id => server.to_param }
         it { should set_the_flash.to(api_error_msg(bbb_error)) }

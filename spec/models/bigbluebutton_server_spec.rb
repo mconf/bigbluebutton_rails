@@ -173,9 +173,9 @@ describe BigbluebuttonServer do
     # the hashes should be exactly as returned by bigbluebutton-api-ruby to be sure we are testing it right
     let(:meetings) {
       [
-       { :meetingID => room1.meetingid, :attendeePW => "ap", :moderatorPW => "mp", :hasBeenForciblyEnded => false, :running => true},
-       { :meetingID => room2.meetingid, :attendeePW => "pass", :moderatorPW => "pass", :hasBeenForciblyEnded => true, :running => false},
-       { :meetingID => "im not in the db", :attendeePW => "pass", :moderatorPW => "pass", :hasBeenForciblyEnded => true, :running => true}
+       { :meetingID => room1.meetingid, createTime: Time.now.to_i, :attendeePW => "ap", :moderatorPW => "mp", :hasBeenForciblyEnded => false, :running => true},
+       { :meetingID => room2.meetingid, createTime: Time.now.to_i + 123, :attendeePW => "pass", :moderatorPW => "pass", :hasBeenForciblyEnded => true, :running => false},
+       { :meetingID => "im not in the db", createTime: Time.now.to_i + 234, :attendeePW => "pass", :moderatorPW => "pass", :hasBeenForciblyEnded => true, :running => true}
       ]
     }
     let(:hash) {
@@ -204,7 +204,6 @@ describe BigbluebuttonServer do
     it { server.meetings[2].name.should == "im not in the db" }
     it { server.meetings[2].attendee_api_password.should == "pass" }
     it { server.meetings[2].moderator_api_password.should == "pass" }
-    it { server.meetings[2].running.should == true }
     it { server.meetings[2].new_record?.should be_truthy }
     it { server.meetings[2].external.should be_truthy }
     it { server.meetings[2].private.should be_truthy  }

@@ -46,7 +46,7 @@ describe BigbluebuttonRoom do
   it { should accept_nested_attributes_for(:metadata).allow_destroy(true) }
 
   # attr_accessors
-  [:running, :participant_count, :moderator_count, :current_attendees,
+  [:participant_count, :moderator_count, :current_attendees,
    :has_been_forcibly_ended, :create_time, :end_time, :external,
    :request_headers, :record_meeting, :duration].each do |attr|
     it { should respond_to(attr) }
@@ -185,9 +185,9 @@ describe BigbluebuttonRoom do
     it { should respond_to(:instance_variables_compare) }
     it { room.instance_variables_compare(room2).should be_empty }
     it "compares instance variables" do
-      room2.running = !room.running
+      room2.end_time = !room.end_time
       room.instance_variables_compare(room2).should_not be_empty
-      room.instance_variables_compare(room2).should include(:@running)
+      room.instance_variables_compare(room2).should include(:@end_time)
     end
     it "ignores attributes" do
       room2.private = !room.private
@@ -202,7 +202,7 @@ describe BigbluebuttonRoom do
     it { should respond_to(:attr_equal?) }
     it { room.attr_equal?(room2).should be_truthy }
     it "differentiates instance variables" do
-      room2.running = !room.running
+      room2.end_time = !room.end_time
       room.attr_equal?(room2).should be(false)
     end
     it "differentiates attributes" do
@@ -221,7 +221,6 @@ describe BigbluebuttonRoom do
     it "fetched attributes before they are fetched" do
       room.participant_count.should be(0)
       room.moderator_count.should be(0)
-      room.running.should be(false)
       room.has_been_forcibly_ended.should be(false)
       room.create_time.should be_nil
       room.end_time.should be_nil
@@ -303,8 +302,6 @@ describe BigbluebuttonRoom do
           room.should_receive(:select_server).and_return(mocked_server)
         }
         before(:each) { @response = room.fetch_is_running? }
-        it { room.running.should be(false) }
-        it { room.is_running?.should be(false) }
         it { @response.should be(false) }
       end
 
@@ -314,8 +311,6 @@ describe BigbluebuttonRoom do
           room.should_receive(:select_server).and_return(mocked_server)
         }
         before(:each) { @response = room.fetch_is_running? }
-        it { room.running.should be_truthy }
-        it { room.is_running?.should be_truthy }
         it { @response.should be_truthy }
       end
 
@@ -362,7 +357,6 @@ describe BigbluebuttonRoom do
           room.should_receive(:select_server).and_return(mocked_server)
         }
         before(:each) { room.fetch_meeting_info }
-        it { room.running.should == false }
         it { room.has_been_forcibly_ended.should == false }
         it { room.participant_count.should == 0 }
         it { room.moderator_count.should == 0 }
@@ -379,7 +373,6 @@ describe BigbluebuttonRoom do
           room.should_receive(:select_server).and_return(mocked_server)
         }
         before(:each) { room.fetch_meeting_info }
-        it { room.running.should == true }
         it { room.has_been_forcibly_ended.should == false }
         it { room.participant_count.should == 4 }
         it { room.moderator_count.should == 2 }
@@ -403,7 +396,7 @@ describe BigbluebuttonRoom do
           room.should_receive(:select_server).and_return(mocked_server)
 
           # here's the validation
-          room.should_receive(:update_current_meeting_record).with(metadata, true)
+          room.should_receive(:update_current_meeting_record).with(hash_info2, true)
         }
         it { room.fetch_meeting_info }
       end
@@ -1186,7 +1179,6 @@ describe BigbluebuttonRoom do
   describe "#create_meeting" do
     let(:room) { FactoryGirl.create(:bigbluebutton_room) }
     let(:user) { FactoryGirl.build(:user) }
-    before { room.should_receive(:fetch_is_running?) }
 
     context "when the conference is running" do
       before {
@@ -1309,29 +1301,39 @@ describe BigbluebuttonRoom do
 
     context "if #create_time is set" do
       let(:user) { FactoryGirl.build(:user) }
-      let(:metadata) {
-        m = {}
-        m[BigbluebuttonRails.configuration.metadata_user_id] = user.id
-        m[BigbluebuttonRails.configuration.metadata_user_name] = user.name
-        m
+      let(:create_time) { Time.now.to_i - 123 }
+      let(:running) { false }
+      let(:response) {
+        r = {}
+        r[:createTime] = create_time
+        r[:running] = running
+        r[:metadata] = {}
+        r[:metadata][BigbluebuttonRails.configuration.metadata_user_id] = user.id
+        r[:metadata][BigbluebuttonRails.configuration.metadata_user_name] = user.name
+        r
       }
       before {
         room.create_time = Time.now.utc
-        room.running = !room.running # to change its default value
-        room.create_time = Time.at(Time.now.to_i - 123)  # to change its default value
+        room.create_time = create_time
       }
 
       context "and no metadata was passed" do
+        let(:response) {
+          r = {}
+          r[:createTime] = create_time
+          r[:running] = running
+          r
+        }
         before {
           FactoryGirl.create(:bigbluebutton_meeting, :room => room, :create_time => room.create_time)
         }
         before(:each) {
           expect {
-            room.update_current_meeting_record
+            room.update_current_meeting_record(response)
           }.not_to change{ BigbluebuttonMeeting.count }
         }
         subject { BigbluebuttonMeeting.find_by_room_id(room.id) }
-        it("sets running") { subject.running.should eq(room.running) }
+        it("sets running") { subject.running.should eq(running) }
         it("sets create_time") { subject.create_time.should eq(room.create_time.to_i) }
         it("doesn't set creator_id") { subject.creator_id.should be_nil }
         it("doesn't set creator_name") { subject.creator_name.should be_nil }
@@ -1343,11 +1345,11 @@ describe BigbluebuttonRoom do
         }
         before(:each) {
           expect {
-            room.update_current_meeting_record(metadata)
+            room.update_current_meeting_record(response)
           }.not_to change{ BigbluebuttonMeeting.count }
         }
         subject { BigbluebuttonMeeting.find_by_room_id(room.id) }
-        it("sets running") { subject.running.should eq(room.running) }
+        it("sets running") { subject.running.should eq(running) }
         it("sets create_time") { subject.create_time.should eq(room.create_time.to_i) }
         it("sets creator_id") { subject.creator_id.should eq(user.id) }
         it("sets creator_name") { subject.creator_name.should eq(user.name) }
@@ -1363,7 +1365,7 @@ describe BigbluebuttonRoom do
           }.not_to change{ BigbluebuttonMeeting.count }
         }
         subject { BigbluebuttonMeeting.find_by_room_id(room.id) }
-        it("sets running") { subject.running.should eq(room.running) }
+        it("sets running") { subject.running.should eq(running) }
         it("sets create_time") { subject.create_time.should eq(room.create_time.to_i) }
         it("sets ended") { subject.ended.should be(false) }
       end

@@ -51,7 +51,7 @@ class BigbluebuttonRoom < ActiveRecord::Base
   validates :moderator_key, :presence => true, :if => :private?
 
   # Note: these params need to be fetched from the server before being accessed
-  attr_accessor :running, :participant_count, :moderator_count, :current_attendees,
+  attr_accessor :participant_count, :moderator_count, :current_attendees,
                 :has_been_forcibly_ended, :end_time
 
   after_initialize :init
@@ -95,7 +95,8 @@ class BigbluebuttonRoom < ActiveRecord::Base
 
   # Convenience method to access the attribute <tt>running</tt>
   def is_running?
-    @running
+    # TODO: cache this maybe?
+    fetch_is_running?
   end
 
   # Fetches info from BBB about this room.
@@ -107,7 +108,6 @@ class BigbluebuttonRoom < ActiveRecord::Base
   # The attributes changed are:
   # * <tt>participant_count</tt>
   # * <tt>moderator_count</tt>
-  # * <tt>running</tt>
   # * <tt>has_been_forcibly_ended</tt>
   # * <tt>create_time</tt>
   # * <tt>end_time</tt>
@@ -121,7 +121,6 @@ class BigbluebuttonRoom < ActiveRecord::Base
 
       @participant_count = response[:participantCount]
       @moderator_count = response[:moderatorCount]
-      @running = response[:running]
       @has_been_forcibly_ended = response[:hasBeenForciblyEnded]
       @end_time = response[:endTime]
       @current_attendees = []
@@ -135,8 +134,8 @@ class BigbluebuttonRoom < ActiveRecord::Base
 
       # a 'shortcut' to update meetings since we have all information we need
       # if we got here, it means the meeting is still in the server, so it's not ended
-      self.update_attributes(create_time: response[:createTime]) unless self.new_record?
-      self.update_current_meeting_record(response[:metadata], true)
+      update_attributes(create_time: response[:createTime]) unless self.new_record?
+      update_current_meeting_record(response, true)
 
     rescue BigBlueButton::BigBlueButtonException => e
       # note: we could catch only the 'notFound' error, but there are complications, so
@@ -156,7 +155,7 @@ class BigbluebuttonRoom < ActiveRecord::Base
   # Triggers API call: <tt>isMeetingRunning</tt>.
   def fetch_is_running?
     server = BigbluebuttonRails.configuration.select_server.call(self, :is_meeting_running)
-    @running = server.api.is_meeting_running?(self.meetingid)
+    server.api.is_meeting_running?(self.meetingid)
   end
 
   # Sends a call to the BBB server to end the meeting.
@@ -288,7 +287,7 @@ class BigbluebuttonRoom < ActiveRecord::Base
   # if they are have all equal values.
   # From: http://alicebobandmallory.com/articles/2009/11/02/comparing-instance-variables-in-ruby
   def instance_variables_compare(o)
-    vars = [ :@running, :@participant_count, :@moderator_count, :@current_attendees,
+    vars = [ :@participant_count, :@moderator_count, :@current_attendees,
              :@has_been_forcibly_ended, :@end_time ]
     Hash[*vars.map { |v|
            self.instance_variable_get(v)!=o.instance_variable_get(v) ?
@@ -311,7 +310,6 @@ class BigbluebuttonRoom < ActiveRecord::Base
   # Will create the meeting in this room unless it is already running.
   # Returns true if the meeting was created.
   def create_meeting(user=nil, request=nil)
-    fetch_is_running?
     unless is_running?
       add_domain_to_logout_url(request.protocol, request.host_with_port) unless request.nil?
       send_create(user)
@@ -353,16 +351,13 @@ class BigbluebuttonRoom < ActiveRecord::Base
   end
 
   # Updates the current meeting associated with this room
-  def update_current_meeting_record(metadata=nil, force_not_ended=false)
-    unless self.create_time.nil?
-      attrs = {
-        :running => self.running,
-        :create_time => self.create_time
-      }
-      # note: it's important to update the 'ended' attr so the meeting is
-      # reopened in case it was mistakenly considered as ended
-      attrs[:ended] = false if force_not_ended
+  def update_current_meeting_record(response, force_not_ended=false)
+    attrs = {}
+    unless response.nil?
+      attrs[:running] = response[:running]
+      attrs[:create_time] = response[:createTime]
 
+      metadata = response[:metadata]
       unless metadata.nil?
         begin
           attrs[:creator_id] = metadata[BigbluebuttonRails.configuration.metadata_user_id].to_i
@@ -372,10 +367,13 @@ class BigbluebuttonRoom < ActiveRecord::Base
           attrs[:creator_name] = nil
         end
       end
-
-      meeting = self.get_current_meeting
-      meeting.update_attributes(attrs) if meeting.present?
     end
+    # note: it's important to update the 'ended' attr so the meeting is
+    # reopened in case it was mistakenly considered as ended
+    attrs[:ended] = false if force_not_ended
+
+    meeting = self.get_current_meeting
+    meeting.update_attributes(attrs) if meeting.present?
   end
 
   # Sets all meetings related to this room as not running
@@ -464,7 +462,6 @@ class BigbluebuttonRoom < ActiveRecord::Base
     # fetched attributes
     @participant_count = 0
     @moderator_count = 0
-    @running = false
     @has_been_forcibly_ended = false
     @end_time = nil
     @current_attendees = []

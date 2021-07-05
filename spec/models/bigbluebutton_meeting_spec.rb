@@ -114,16 +114,16 @@ describe BigbluebuttonMeeting do
       }
       before {
         room.create_time = Time.now.utc
-        room.running = !room.running # to change its default value
         room.record_meeting = !room.record_meeting # to change its default value
         room.create_time = Time.at(Time.now.to_i - 123)  # to change its default value
       }
 
       context "if there's no meeting associated yet creates one" do
         context "and there's no metadata in the response" do
+          let(:running) { false }
           before(:each) {
             expect {
-              BigbluebuttonMeeting.create_meeting_record_from_room(room, {internalMeetingID: 'fake-id'}, server, nil, {})
+              BigbluebuttonMeeting.create_meeting_record_from_room(room, {internalMeetingID: 'fake-id', running: running}, server, nil, {})
             }.to change{ BigbluebuttonMeeting.count }.by(1)
           }
           subject { BigbluebuttonMeeting.last }
@@ -133,7 +133,9 @@ describe BigbluebuttonMeeting do
           it("sets meetingid") { subject.meetingid.should eq(room.meetingid) }
           it("sets name") { subject.name.should eq(room.name) }
           it("sets recorded") { subject.recorded.should eq(room.record_meeting) }
-          it("sets running") { subject.running.should eq(room.running) }
+          it("sets running") {
+            room.should_receive(:fetch_is_running?).and_return(running)
+            subject.running.should eq(room.is_running?) }
           it("sets create_time") { subject.create_time.should eq(room.create_time.to_i) }
           it("doesn't set creator_id") { subject.creator_id.should be_nil }
           it("doesn't set creator_name") { subject.creator_name.should be_nil }
