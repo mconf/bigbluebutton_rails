@@ -1026,6 +1026,7 @@ describe BigbluebuttonRoom do
       let(:username) { Forgery(:name).full_name }
       let(:role) { :attendee }
       let(:id) { 'fake-user-id' }
+      let(:request) { double(ActionDispatch::Request) }
 
       context "sets a config token" do
         context "when it exists" do
@@ -1144,23 +1145,23 @@ describe BigbluebuttonRoom do
             let(:user) { 'any user' }
             before {
               proc = double(Proc)
-              proc.should_receive(:call).with(room, user, {username: username, role: role} )
+              proc.should_receive(:call).with(room, user, request)
               BigbluebuttonRails.configuration.should_receive(:get_join_options).and_return(proc)
               room.stub(:fetch_new_token).and_return(nil)
               room.stub(:join_url)
             }
-            it { room.parameterized_join_url(username, role, nil, {}, user) }
+            it { room.parameterized_join_url(username, role, nil, {}, user, request) }
           end
 
           context "if the user is not passed in the arguments" do
             before {
               proc = double(Proc)
-              proc.should_receive(:call).with(room, nil, {username: username, role: role} )
+              proc.should_receive(:call).with(room, {username: username, role: role}, request)
               BigbluebuttonRails.configuration.should_receive(:get_join_options).and_return(proc)
               room.stub(:fetch_new_token).and_return(nil)
               room.stub(:join_url)
             }
-            it { room.parameterized_join_url(username, role, nil, {}, nil) }
+            it { room.parameterized_join_url(username, role, nil, {}, nil, request) }
           end
         end
       end
@@ -1413,7 +1414,12 @@ describe BigbluebuttonRoom do
   describe "#create_meeting" do
     let(:room) { FactoryGirl.create(:bigbluebutton_room) }
     let(:user) { FactoryGirl.build(:user) }
-    before { room.should_receive(:fetch_is_running?) }
+    let(:request) { double(ActionDispatch::Request) }
+    before {
+      request.stub(:protocol).and_return("HTTP://")
+      request.stub(:host_with_port).and_return("test.com:80")
+      room.should_receive(:fetch_is_running?)
+    }
 
     context "when the conference is running" do
       before {
@@ -1426,9 +1432,9 @@ describe BigbluebuttonRoom do
     context "when the conference is not running" do
       before {
         room.should_receive(:is_running?).and_return(false)
-        room.should_receive(:send_create).with(user)
+        room.should_receive(:send_create).with(user, request)
       }
-      subject { room.create_meeting(user) }
+      subject { room.create_meeting(user, request) }
       it { should be(true) }
     end
 
@@ -1436,18 +1442,15 @@ describe BigbluebuttonRoom do
     context "when the conference is not running doesn't call end" do
       before {
         room.should_receive(:is_running?).and_return(false)
-        room.should_receive(:send_create).with(user)
+        room.should_receive(:send_create).with(user, request)
         room.should_not_receive(:send_end)
       }
-      subject { room.create_meeting(user) }
+      subject { room.create_meeting(user, request) }
       it { should be(true) }
     end
 
     context "when the parameter 'request' is informed" do
-      let(:request) { double(ActionDispatch::Request) }
       before {
-        request.stub(:protocol).and_return("HTTP://")
-        request.stub(:host_with_port).and_return("test.com:80")
         room.should_receive(:add_domain_to_logout_url).with("HTTP://", "test.com:80")
         room.should_receive(:is_running?).and_return(false)
         room.should_receive(:send_create)

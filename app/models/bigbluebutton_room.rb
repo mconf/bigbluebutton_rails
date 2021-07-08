@@ -203,14 +203,14 @@ class BigbluebuttonRoom < ActiveRecord::Base
   # * <tt>moderator_api_password</tt>
   #
   # Triggers API call: <tt>create</tt>.
-  def send_create(user=nil)
+  def send_create(user = nil, request = nil)
     self.meetingid = unique_meetingid() if self.meetingid.blank?
     self.moderator_api_password = internal_password() if self.moderator_api_password.blank?
     self.attendee_api_password = internal_password() if self.attendee_api_password.blank?
     self.save unless self.new_record?
 
     # Get the user options to use when creating the meeting
-    user_opts = BigbluebuttonRails.configuration.get_create_options.call(self, user)
+    user_opts = BigbluebuttonRails.configuration.get_create_options.call(self, user, request)
     user_opts = {} if user_opts.blank?
 
     server, response = internal_create_meeting(user, user_opts)
@@ -264,7 +264,7 @@ class BigbluebuttonRoom < ActiveRecord::Base
     r
   end
 
-  def parameterized_join_url(username, role, id, options={}, user=nil)
+  def parameterized_join_url(username, role, id, options = {}, user = nil, request = nil)
     opts = options.clone
 
     # gets the token with the configurations for this user/room
@@ -278,7 +278,9 @@ class BigbluebuttonRoom < ActiveRecord::Base
     opts.merge!({ userID: id }) unless id.blank? || options[:userID].present?
 
     # Get options passed by the application, if any
-    user_opts = BigbluebuttonRails.configuration.get_join_options.call(self, user, { username: username, role: role })
+    user_opts = BigbluebuttonRails.configuration.get_join_options.call(
+      self, user || { username: username, role: role }, request
+    )
     user_opts = {} if user_opts.blank?
     opts.merge!(user_opts)
 
@@ -334,11 +336,11 @@ class BigbluebuttonRoom < ActiveRecord::Base
   # The create logic.
   # Will create the meeting in this room unless it is already running.
   # Returns true if the meeting was created.
-  def create_meeting(user=nil, request=nil)
+  def create_meeting(user = nil, request = nil)
     fetch_is_running?
     unless is_running?
       add_domain_to_logout_url(request.protocol, request.host_with_port) unless request.nil?
-      send_create(user)
+      send_create(user, request)
       true
     else
       false

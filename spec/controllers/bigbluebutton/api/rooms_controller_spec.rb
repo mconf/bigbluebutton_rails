@@ -370,7 +370,8 @@ describe Bigbluebutton::Api::RoomsController do
 
       context "attendee in a public room" do
         before {
-          room.should_receive(:parameterized_join_url).with('User 1', :attendee, nil, {}).and_return(expected_url)
+          room.should_receive(:parameterized_join_url)
+            .with('User 1', :attendee, nil, {}, controller.request).and_return(expected_url)
         }
         before(:each) { post :join, id: room.to_param, format: :json, name: 'User 1' }
         it { JSON.parse(response.body)['data']['id'].should eql(expected_url) }
@@ -379,7 +380,9 @@ describe Bigbluebutton::Api::RoomsController do
       context "attendee in a private room" do
         before {
           room.update_attributes(private: true)
-          room.should_receive(:parameterized_join_url).with('User 1', :attendee, nil, {}).and_return(expected_url)
+          room.should_receive(:parameterized_join_url).with(
+            'User 1', :attendee, nil, {}, controller.request
+          ).and_return(expected_url)
         }
         before(:each) { post :join, id: room.to_param, format: :json, name: 'User 1', key: room.attendee_key }
         it { JSON.parse(response.body)['data']['id'].should eql(expected_url) }
@@ -388,7 +391,9 @@ describe Bigbluebutton::Api::RoomsController do
       context "moderator in a private room" do
         before {
           room.update_attributes(private: true)
-          room.should_receive(:parameterized_join_url).with('User 1', :moderator, nil, {}).and_return(expected_url)
+          room.should_receive(:parameterized_join_url).with(
+            'User 1', :moderator, nil, {}, controller.request
+          ).and_return(expected_url)
         }
         before(:each) { post :join, id: room.to_param, format: :json, name: 'User 1', key: room.moderator_key }
         it { JSON.parse(response.body)['data']['id'].should eql(expected_url) }
@@ -399,7 +404,9 @@ describe Bigbluebutton::Api::RoomsController do
           { 'userdata-param-1' => 1, 'userdata-param_2' => 'string-2' }
         }
         before {
-          room.should_receive(:parameterized_join_url).with('User 1', :attendee, nil, expected_meta).and_return(expected_url)
+          room.should_receive(:parameterized_join_url).with(
+            'User 1', :attendee, nil, expected_meta, controller.request
+          ).and_return(expected_url)
         }
         before(:each) {
           post :join, id: room.to_param, format: :json, name: 'User 1', key: room.moderator_key,
@@ -489,7 +496,9 @@ describe Bigbluebutton::Api::RoomsController do
       }
 
       before {
-        room.should_receive(:parameterized_join_url).with('User 1', :guest, nil, {}).and_return(expected_url)
+        room.should_receive(:parameterized_join_url).with(
+          'User 1', :guest, nil, {}, controller.request
+        ).and_return(expected_url)
       }
       before(:each) { post :join, id: room.to_param, format: :json, name: 'User 1' }
       it { JSON.parse(response.body)['data']['id'].should eql(expected_url) }

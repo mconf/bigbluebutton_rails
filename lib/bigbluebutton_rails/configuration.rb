@@ -71,11 +71,12 @@ module BigbluebuttonRails
 
       # Define this method to return extra parameters to be passed to a `create` call.
       # `user` is the user creating the meeting, if any.
-      @get_create_options = Proc.new{ |room, user| nil }
+      @get_create_options = Proc.new{ |room, user, request = nil| nil }
 
       # Define this method to return extra parameters to be passed to a `join` call.
-      # `user` is the user joining the meeting, if any.
-      @get_join_options = Proc.new{ |room, user| nil }
+      # `user` is the user joining the meeting. If there's no user signed in, it will
+      # be a hash with the name and role set for the user joining.
+      @get_join_options = Proc.new{ |room, user, request = nil| nil }
 
       # Selects a server to be used by `room` whenever it needs to make API calls.
       # By default, if no servers are available an exception is raised.
