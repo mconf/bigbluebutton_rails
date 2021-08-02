@@ -7,6 +7,7 @@ gem "jquery-rails"
 gem "forgery"
 gem 'rabl'
 gem 'activerecord-import'
+gem 'byebug'
 
 group :development do
   gem "rdoc"

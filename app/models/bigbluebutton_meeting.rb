@@ -34,56 +34,52 @@ class BigbluebuttonMeeting < ActiveRecord::Base
 
   # Creates a meeting using information from a room. Called in the rooms model.
   def self.create_meeting_record_from_room(room, response, server, user, user_opts)
-    unless room.get_current_meeting.present?
-      if room.create_time.present?
+    current_meeting = room.get_current_meeting
+    return if current_meeting&.create_time == response[:createTime]
 
-        # to make sure there's no other meeting related to this room that
-        # has not yet been set as ended
-        room.finish_meetings
+    # to make sure there's no other meeting related to this room that
+    # has not yet been set as ended
+    room.finish_meetings
 
-        attrs = {
-          room: room,
-          server_url: server.url,
-          server_secret: server.secret,
-          meetingid: room.meetingid,
-          name: room.name,
-          title: room.name,
-          recorded: room.record_meeting,
-          create_time: room.create_time,
-          running: response[:running],
-          ended: false,
-          internal_meeting_id: response[:internalMeetingID]
-        }
+    attrs = {
+      room: room,
+      server_url: server.url,
+      server_secret: server.secret,
+      meetingid: room.meetingid,
+      name: room.name,
+      title: room.name,
+      recorded: room.record_meeting,
+      create_time: response[:createTime],
+      running: response[:running],
+      ended: false,
+      internal_meeting_id: response[:internalMeetingID]
+    }
 
-        metadata = response[:metadata]
-        unless metadata.nil?
-          begin
-            attrs[:creator_id] = metadata[BigbluebuttonRails.configuration.metadata_user_id].to_i
-            attrs[:creator_name] = metadata[BigbluebuttonRails.configuration.metadata_user_name]
-          rescue
-            attrs[:creator_id] = nil
-            attrs[:creator_name] = nil
-          end
-        end
-
-        # the parameters the user might have overwritten in the create call
-        # need to be mapped to the name of the attrs in BigbluebuttMeeting
-        # note: recorded is not in the API response, so we can't just get these
-        # attributes from there
-        attrs_user = {
-          meetingid: user_opts[:meetingID],
-          name: user_opts[:name],
-          recorded: user_opts[:record],
-          creator_id: user_opts[:creator_id],
-          creator_name: user_opts[:creator_name]
-        }.delete_if { |k, v| v.nil? }
-        attrs.merge!(attrs_user)
-
-        BigbluebuttonMeeting.create(attrs)
-      else
-        Rails.logger.error "Did not create a current meeting because there was no create_time on room #{room.meetingid}"
+    metadata = response[:metadata]
+    unless metadata.nil?
+      begin
+        attrs[:creator_id] = metadata[BigbluebuttonRails.configuration.metadata_user_id].to_i
+        attrs[:creator_name] = metadata[BigbluebuttonRails.configuration.metadata_user_name]
+      rescue
+        attrs[:creator_id] = nil
+        attrs[:creator_name] = nil
       end
     end
+
+    # the parameters the user might have overwritten in the create call
+    # need to be mapped to the name of the attrs in BigbluebuttMeeting
+    # note: recorded is not in the API response, so we can't just get these
+    # attributes from there
+    attrs_user = {
+      meetingid: user_opts[:meetingID],
+      name: user_opts[:name],
+      recorded: user_opts[:record],
+      creator_id: user_opts[:creator_id],
+      creator_name: user_opts[:creator_name]
+    }.delete_if { |k, v| v.nil? }
+    attrs.merge!(attrs_user)
+
+    BigbluebuttonMeeting.create(attrs)
   end
 
   # Creates a meeting using information from a recording. Called inside the recording's model.

@@ -134,7 +134,6 @@ class BigbluebuttonRoom < ActiveRecord::Base
 
       # a 'shortcut' to update meetings since we have all information we need
       # if we got here, it means the meeting is still in the server, so it's not ended
-      update_attributes(create_time: response[:createTime]) unless self.new_record?
       update_current_meeting_record(response, true)
 
     rescue BigBlueButton::BigBlueButtonException => e
@@ -143,8 +142,7 @@ class BigbluebuttonRoom < ActiveRecord::Base
       # not end it at all (e.g. in case the server stops responding)
       Rails.logger.info "BigbluebuttonRoom: detected that a meeting ended in the room #{self.meetingid} after the error #{e.inspect}"
 
-      self.update_attributes(create_time: nil) unless self.new_record?
-      self.finish_meetings
+      finish_meetings
     end
 
     response
@@ -196,7 +194,6 @@ class BigbluebuttonRoom < ActiveRecord::Base
     unless response.nil?
       self.attendee_api_password = response[:attendeePW]
       self.moderator_api_password = response[:moderatorPW]
-      self.create_time = response[:createTime]
       self.voice_bridge = response[:voiceBridge] if response.has_key?(:voiceBridge)
 
       unless self.new_record?
@@ -246,9 +243,11 @@ class BigbluebuttonRoom < ActiveRecord::Base
   def parameterized_join_url(username, role, id, options={}, user=nil)
     opts = options.clone
 
+    meeting = get_current_meeting
+    create_time = meeting&.create_time
     # set the create time and the user id, if they exist
-    if self.create_time.present? && options[:createTime].blank?
-      opts.merge!({ createTime: self.create_time })
+    if create_time.present? && options[:createTime].blank?
+      opts.merge!({ createTime: create_time })
     end
     opts.merge!({ userID: id }) unless id.blank? || options[:userID].present?
 
@@ -343,11 +342,10 @@ class BigbluebuttonRoom < ActiveRecord::Base
 
   # Returns the current meeting running on this room, if any.
   def get_current_meeting
-    unless self.create_time.nil?
-      BigbluebuttonMeeting.find_by(room_id: self.id, create_time: self.create_time)
-    else
-      nil
-    end
+    meeting = meetings.last
+    return nil if meeting&.ended
+
+    meeting
   end
 
   # Updates the current meeting associated with this room

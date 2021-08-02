@@ -1,13 +1,40 @@
 # coding: utf-8
 require 'spec_helper'
+require 'support/models/bigbluebutton_room_support'
+
+RSpec.configure do |c|
+  c.include BigbluebuttonRoomSupport
+end
+
+shared_examples_for :RoomWithNoMeetings do |args|
+  room = args[:room]
+  it { room.meetings.count.should == 0 }
+end
+shared_examples_for :RoomWithMeetings do |args|
+  room = args[:room]
+  meetings_count = args[:meetings_count]
+  last_meeting_ended = args[:last_meeting_ended]
+  last_meeting_create_time = args[:last_meeting_create_time]
+  it { room.meetings.count.should > 0 }
+  it { room.meetings.count.should == meetings_count }
+  unless last_meeting_create_time.nil?
+    it { room.meetings.last.create_time == create_time }
+  end
+  unless last_meeting_ended.nil?
+    it { room.get_current_meeting.should == (last_meeting_ended ? nil : room.meetings.last) }
+    it { room.meetings.last.running == !last_meeting_ended }
+    it { room.meetings.last.ended == last_meeting_ended }
+  end
+end
 
 describe BigbluebuttonRoom do
   it "loaded correctly" do
     BigbluebuttonRoom.new.should be_a_kind_of(ActiveRecord::Base)
   end
 
-  before { FactoryGirl.create(:bigbluebutton_room) }
 
+
+  before { FactoryGirl.create(:bigbluebutton_room) }
   it { should belong_to(:owner) }
   it { should_not validate_presence_of(:owner_id) }
   it { should_not validate_presence_of(:owner_type) }
@@ -47,7 +74,7 @@ describe BigbluebuttonRoom do
 
   # attr_accessors
   [:participant_count, :moderator_count, :current_attendees,
-   :has_been_forcibly_ended, :create_time, :end_time, :external,
+   :has_been_forcibly_ended, :end_time, :external,
    :request_headers, :record_meeting, :duration].each do |attr|
     it { should respond_to(attr) }
     it { should respond_to("#{attr}=") }
@@ -222,7 +249,8 @@ describe BigbluebuttonRoom do
       room.participant_count.should be(0)
       room.moderator_count.should be(0)
       room.has_been_forcibly_ended.should be(false)
-      room.create_time.should be_nil
+      room.meetings.count.should be(0)
+      room.get_current_meeting.should be_nil
       room.end_time.should be_nil
       room.current_attendees.should eql([])
       room.request_headers.should == {}
@@ -322,7 +350,7 @@ describe BigbluebuttonRoom do
       # these hashes should be exactly as returned by bigbluebutton-api-ruby to be sure we are testing it right
       let(:hash_info) {
         { :returncode=>true, :meetingID=>"test_id", :attendeePW=>"1234", :moderatorPW=>"4321",
-          :running=>false, :hasBeenForciblyEnded=>false, :startTime=>nil, :createTime=>nil, :endTime=>nil,
+          :running=>false, :hasBeenForciblyEnded=>false, :startTime=>nil, :createTime=>Time.now.to_i, :endTime=>nil,
           :participantCount=>0, :moderatorCount=>0, :attendees=>[], :messageKey=>"", :message=>""
         }
       }
@@ -344,7 +372,7 @@ describe BigbluebuttonRoom do
         { :returncode=>true, :meetingID=>"test_id", :attendeePW=>"1234", :moderatorPW=>"4321",
           :running=>true, :hasBeenForciblyEnded=>false, :startTime=>DateTime.parse("Wed Apr 06 17:09:57 UTC 2011"),
           :endTime=>nil, :participantCount=>4, :moderatorCount=>2, :metadata=>metadata,
-          :createTime=>1466876909, :attendees=>users, :messageKey=>{ }, :message=>{ }
+          :createTime=>Time.now.to_i + 123, :attendees=>users, :messageKey=>{ }, :message=>{ }
         }
       }
 
@@ -357,13 +385,43 @@ describe BigbluebuttonRoom do
           room.should_receive(:select_server).and_return(mocked_server)
         }
         before(:each) { room.fetch_meeting_info }
-        it { room.has_been_forcibly_ended.should == false }
-        it { room.participant_count.should == 0 }
-        it { room.moderator_count.should == 0 }
-        it { room.create_time.should == nil }
-        it { room.reload.create_time.should == nil }
-        it { room.end_time.should == nil }
-        it { room.current_attendees.should == [] }
+
+        context "with no meetings" do
+          let(:room) { create_room_without_meetings }
+          it { room.has_been_forcibly_ended.should == false }
+          it { room.participant_count.should == 0 }
+          it { room.moderator_count.should == 0 }
+          it { room.end_time.should == nil }
+          it { room.current_attendees.should == [] }
+        end
+        context "with meetings" do
+          context "with no meeting running" do
+            let(:meetings_count) { 3 }
+            let(:ended) { true }
+            let(:room) do
+              create_room_with_meetings(meetings_count: meetings_count,
+                                        ended: ended)
+            end
+            it { room.has_been_forcibly_ended.should == false }
+            it { room.participant_count.should == 0 }
+            it { room.moderator_count.should == 0 }
+            it { room.current_attendees.should == [] }
+            it { room.get_current_meeting.should be nil}
+          end
+          context "with meeting running" do
+            let(:meetings_count) { 4 }
+            let(:ended) { false }
+            let(:room) do
+              create_room_with_meetings(meetings_count: meetings_count,
+                                        ended: ended)
+            end
+            it { room.get_current_meeting.create_time.should be hash_info[:createTime] }
+            it { room.has_been_forcibly_ended.should == false }
+            it { room.participant_count.should == 0 }
+            it { room.moderator_count.should == 0 }
+            it { room.current_attendees.should == [] }
+          end
+        end
       end
 
       context "fetches meeting info when the meeting is running" do
@@ -376,7 +434,6 @@ describe BigbluebuttonRoom do
         it { room.has_been_forcibly_ended.should == false }
         it { room.participant_count.should == 4 }
         it { room.moderator_count.should == 2 }
-        it { room.reload.create_time.should == 1466876909 }
         it { room.end_time.should == nil }
         it {
           users.each do |att|
@@ -387,6 +444,24 @@ describe BigbluebuttonRoom do
             found.role.should eql(attendee.role)
           end
         }
+        context "with no meetings" do
+          let(:room) { create_room_without_meetings }
+        end
+        context "with meetings" do
+          let(:meetings_count) { 5 }
+          let(:room) do
+            create_room_with_meetings(meetings_count: meetings_count,
+                                      ended: ended)
+          end
+          context 'with no meeting running' do
+            let(:ended) { true }
+            it { room.get_current_meeting.should be_nil }
+          end
+          context 'with meeting running' do
+            let(:ended) { false }
+            it { room.get_current_meeting.create_time.should be hash_info2[:createTime] }
+          end
+        end
       end
 
       context "calls #update_current_meeting_record after the information is fetched" do
@@ -401,75 +476,127 @@ describe BigbluebuttonRoom do
         it { room.fetch_meeting_info }
       end
 
+      shared_examples_for 'BigbluebuttonException, should not raise exception' do
+        context 'without meetings' do
+          let(:room) { create_room_without_meetings }
+          it {
+            room.should_receive(:select_server).and_return(mocked_server)
+            expect(mocked_api).to receive(:get_meeting_info) { raise exception }
+            expect(room).not_to receive(:update_current_meeting_record)
+            expect(room).to receive(:finish_meetings).and_call_original
+            expect { room.fetch_meeting_info }.not_to raise_exception
+
+            room.get_current_meeting.should be_nil
+            room.meetings.count.should == 0
+          }
+        end
+        context 'with meetings' do
+          let(:meetings_count) { 6 }
+          let(:room) do
+            create_room_with_meetings(meetings_count: meetings_count,
+                                      ended: ended)
+          end
+          context 'with no meeting running' do
+            let(:ended) { true }
+            it {
+              room.should_receive(:select_server).and_return(mocked_server)
+              expect(mocked_api).to receive(:get_meeting_info) { raise exception }
+              expect(room).not_to receive(:update_current_meeting_record)
+              expect(room).to receive(:finish_meetings).and_call_original
+              expect { room.fetch_meeting_info }.not_to raise_exception
+
+              room.get_current_meeting.should be_nil
+              room.meetings.last.ended == true
+              room.meetings.last.running == false
+            }
+          end
+          context 'with meeting running' do
+            let(:ended) { false }
+            it {
+              room.should_receive(:select_server).and_return(mocked_server)
+              expect(mocked_api).to receive(:get_meeting_info) { raise exception }
+              expect(room).not_to receive(:update_current_meeting_record)
+              expect(room).to receive(:finish_meetings).and_call_original
+              expect { room.fetch_meeting_info }.not_to raise_exception
+
+              room.get_current_meeting.should_not be_nil
+              room.meetings.last.ended == false
+              room.meetings.last.running == true
+            }
+          end
+        end
+      end
+
       context "if an exception 'notFound' is raised" do
-        let!(:exception) {
+        let(:exception) {
           e = BigBlueButton::BigBlueButtonException.new('Test error')
           e.key = 'notFound'
           e
         }
-        before {
-          room.should_receive(:select_server).and_return(mocked_server)
-          expect(mocked_api).to receive(:get_meeting_info) { raise exception }
-          expect(room).not_to receive(:update_current_meeting_record)
-          expect(room).to receive(:finish_meetings)
-        }
-        it { expect { room.fetch_meeting_info }.not_to raise_exception }
-        it {
-          room.fetch_meeting_info
-          room.reload.create_time.should be_nil
-        }
+        it_behaves_like 'BigbluebuttonException, should not raise exception'
       end
 
       context "if an exception other than 'notFound' is raised" do
-        let!(:exception) {
+        let(:exception) {
           e = BigBlueButton::BigBlueButtonException.new('Test error')
           e.key = 'anythingElse'
           e
         }
-        before {
-          room.should_receive(:select_server).and_return(mocked_server)
-          expect(mocked_api).to receive(:get_meeting_info) { raise exception }
-          expect(room).not_to receive(:update_current_meeting_record)
-          expect(room).to receive(:finish_meetings)
-        }
-        it { expect { room.fetch_meeting_info }.not_to raise_exception }
-        it {
-          room.fetch_meeting_info
-          room.reload.create_time.should be_nil
-        }
+        it_behaves_like 'BigbluebuttonException, should not raise exception'
       end
 
       context "if an exception with a blank key is raised" do
-        let!(:exception) {
+        let(:exception) {
           e = BigBlueButton::BigBlueButtonException.new('Test error')
           e.key = ''
           e
         }
-        before {
-          room.should_receive(:select_server).and_return(mocked_server)
-          expect(mocked_api).to receive(:get_meeting_info) { raise exception }
-          expect(room).not_to receive(:update_current_meeting_record)
-          expect(room).to receive(:finish_meetings)
-        }
-        it { expect { room.fetch_meeting_info }.not_to raise_exception }
-        it {
-          room.fetch_meeting_info
-          room.reload.create_time.should be_nil
-        }
+        it_behaves_like 'BigbluebuttonException, should not raise exception'
       end
 
       context "raises any exception other than a BigBlueButtonException" do
         let!(:exception) { NoMethodError.new('Test error') }
-        before {
-          room.should_receive(:select_server).and_return(mocked_server)
-          expect(mocked_api).to receive(:get_meeting_info) { raise exception }
-          expect(room).not_to receive(:update_current_meeting_record)
-          expect(room).not_to receive(:finish_meetings)
-        }
-        it {
-          expect { room.fetch_meeting_info }.to raise_exception
-          room.reload.create_time.should_not be_nil
-        }
+        context 'without meetings' do
+          let(:room) { create_room_without_meetings }
+          it do
+            room.should_receive(:select_server).and_return(mocked_server)
+            expect(mocked_api).to receive(:get_meeting_info) { raise exception }
+            expect(room).not_to receive(:update_current_meeting_record)
+            expect(room).not_to receive(:finish_meetings)
+            expect { room.fetch_meeting_info }.to raise_exception
+          end
+          it { room.get_current_meeting.should be_nil }
+        end
+        context 'with meetings' do
+          let(:meetings_count) { 7 }
+          let(:room) do
+            create_room_with_meetings(meetings_count: meetings_count,
+                                      ended: ended)
+          end
+          context 'with no meeting running' do
+            let(:ended) { true }
+            it do
+              room.should_receive(:select_server).and_return(mocked_server)
+              expect(mocked_api).to receive(:get_meeting_info) { raise exception }
+              expect(room).not_to receive(:update_current_meeting_record)
+              expect(room).not_to receive(:finish_meetings)
+              expect { room.fetch_meeting_info }.to raise_exception
+            end
+            it { room.get_current_meeting.should be_nil }
+          end
+          context 'with meeting running' do
+            let(:ended) { false }
+            it do
+              room.should_receive(:select_server).and_return(mocked_server)
+              expect(mocked_api).to receive(:get_meeting_info) { raise exception }
+              expect(room).not_to receive(:update_current_meeting_record)
+              expect(room).not_to receive(:finish_meetings)
+              expect { room.fetch_meeting_info }.to raise_exception
+            end
+            it { room.get_current_meeting.running.should == true }
+            it { room.get_current_meeting.ended.should == false }
+          end
+        end
       end
     end
 
@@ -550,7 +677,7 @@ describe BigbluebuttonRoom do
           room.send_create
         end
 
-        it { expect(room.create_time).to eq(time) }
+        it { expect(room.get_current_meeting.create_time).to eq(time) }
       end
 
       context "sends create_meeting" do
@@ -705,7 +832,7 @@ describe BigbluebuttonRoom do
             it { subject.meetingid.should eql(room.meetingid) }
             it { subject.name.should eql(room.name) }
             it { subject.recorded.should eql(room.record_meeting) }
-            it { subject.create_time.should eql(room.create_time) }
+            it { subject.create_time.should eql(room.get_current_meeting.create_time) }
             it { subject.ended.should eql(false) }
           end
 
@@ -974,10 +1101,38 @@ describe BigbluebuttonRoom do
 
       context "sets a create time" do
         context "when it exists" do
-          before {
-            room.should_receive(:join_url).with(username, role, nil, { createTime: room.create_time })
-          }
-          it { room.parameterized_join_url(username, role, nil) }
+          context "with no meetings" do
+            let(:room) { create_room_without_meetings }
+            it do
+              room.should_receive(:join_url)
+                  .with(username, role, nil, {})
+              room.parameterized_join_url(username, role, nil)
+            end
+          end
+          context "with meetings" do
+            let(:meetings_count) { 8 }
+            let(:room) do
+              create_room_with_meetings(meetings_count: meetings_count,
+                                        ended: ended)
+            end
+            context "with no meeting running" do
+              let(:ended) { true }
+              it do
+                room.should_receive(:join_url)
+                    .with(username, role, nil, {})
+                room.parameterized_join_url(username, role, nil)
+              end
+            end
+            context "with meeting running" do
+              let(:ended) { false }
+              it do
+                room.should_receive(:join_url)
+                    .with(username, role, nil,
+                          { createTime: room.get_current_meeting.create_time })
+                room.parameterized_join_url(username, role, nil)
+              end
+            end
+          end
         end
 
         context "when it doesn't exist" do
@@ -1011,7 +1166,6 @@ describe BigbluebuttonRoom do
         context "when the are set" do
           let(:options) { { option1: 'value1' } }
           before {
-            room.create_time = nil
             room.should_receive(:join_url).with(username, role, nil, options)
           }
           it { room.parameterized_join_url(username, role, nil, options) }
@@ -1031,7 +1185,6 @@ describe BigbluebuttonRoom do
           let(:options) { { option1: 'value1' } }
           before {
             BigbluebuttonRails.configuration.stub(:get_join_options).and_return(Proc.new{ options })
-            room.create_time = nil
             room.should_receive(:join_url).with(username, role, nil, options)
           }
           it { room.parameterized_join_url(username, role, nil, {}) }
@@ -1073,17 +1226,35 @@ describe BigbluebuttonRoom do
 
       context "returns #join_url" do
         let(:expected_url) { 'https://fake-return-url.no/join?here=1' }
-        before {
-          room.should_receive(:join_url)
-            .with(
-              username, role, nil, {
-                userID: 'fake-user-id', createTime: room.create_time
-              }
-            ).and_return(expected_url)
-        }
-        it {
-          room.parameterized_join_url(username, role, 'fake-user-id').should eql(expected_url)
-        }
+
+        context "with no meetings" do
+          let(:room) { create_room_without_meetings }
+          it do
+            room.should_receive(:join_url)
+                .with(username, role, nil, { userID: 'fake-user-id' })
+                .and_return(expected_url)
+            room.parameterized_join_url(username, role, 'fake-user-id')
+                .should eql(expected_url)
+          end
+        end
+
+        context "with meetings" do
+          let(:meetings_count) { 9 }
+          let(:room) do
+            create_room_with_meetings(meetings_count: meetings_count,
+                                      ended: ended)
+          end
+          context "with no meeting running" do
+            let(:ended) { true }
+            let(:create_time) { Time.now.to_i }
+            it { room.get_current_meeting.should be_nil }
+          end
+          context "with meeting running" do
+            let(:ended) { false }
+            let(:create_time) { Time.now.to_i }
+            it { room.get_current_meeting.create_time.should be create_time }
+          end
+        end
       end
     end
   end
@@ -1273,32 +1444,35 @@ describe BigbluebuttonRoom do
   describe "#get_current_meeting" do
     let(:room) { FactoryGirl.create(:bigbluebutton_room) }
 
-    context "if there's no create_time set in the room" do
-      before { room.create_time = nil }
+    context "when there's no meeting" do
+      let(:room) { create_room_without_meetings }
       it { room.get_current_meeting.should be_nil }
     end
 
-    context "if the room has a create_time set" do
-      before {
-        @m1 = FactoryGirl.create(:bigbluebutton_meeting, :room => room, :create_time => Time.now.utc - 2.minutes)
-        @m2 = FactoryGirl.create(:bigbluebutton_meeting, :room => room, :create_time => Time.now.utc)
-        room.update_attributes(create_time: @m1.create_time)
-      }
-      it("returns the correct BigbluebuttonMeeting") { room.get_current_meeting.should eql(@m1) }
+    context 'when there is meetingg' do
+      let(:room) do
+        create_room_with_meetings(meetings_count: meetings_count,
+                                  ended: ended,
+                                  create_time: create_time)
+      end
+      context 'when the meeting has no ended' do
+        let(:ended) { false }
+        let(:meetings_count) { 11 }
+        let(:create_time) { Time.now.to_i + 123 }
+        it { room.get_current_meeting.should eql room.meetings.last }
+        it { room.get_current_meeting.create_time.should eql create_time }
+        it { room.get_current_meeting.running.should eql true }
+      end
+      context 'when the meeting has ended' do
+        let(:ended) { true }
+        let(:meetings_count) { 12 }
+        let(:create_time) { Time.now.to_i + 234 }
+        it { room.get_current_meeting.should be_nil }
+      end
     end
   end
 
   describe "#update_current_meeting_record" do
-    let(:room) { FactoryGirl.create(:bigbluebutton_room) }
-
-    context "if #create_time is not set in the room" do
-      before { room.update_attributes(create_time: nil) }
-      subject { room.update_current_meeting_record }
-      it("doesn't do anything") {
-        BigbluebuttonMeeting.find_by_room_id(room.id).should be_nil
-      }
-    end
-
     context "if #create_time is set" do
       let(:user) { FactoryGirl.build(:user) }
       let(:create_time) { Time.now.to_i - 123 }
@@ -1312,10 +1486,6 @@ describe BigbluebuttonRoom do
         r[:metadata][BigbluebuttonRails.configuration.metadata_user_name] = user.name
         r
       }
-      before {
-        room.create_time = Time.now.utc
-        room.create_time = create_time
-      }
 
       context "and no metadata was passed" do
         let(:response) {
@@ -1324,50 +1494,133 @@ describe BigbluebuttonRoom do
           r[:running] = running
           r
         }
-        before {
-          FactoryGirl.create(:bigbluebutton_meeting, :room => room, :create_time => room.create_time)
-        }
-        before(:each) {
-          expect {
-            room.update_current_meeting_record(response)
-          }.not_to change{ BigbluebuttonMeeting.count }
-        }
-        subject { BigbluebuttonMeeting.find_by_room_id(room.id) }
-        it("sets running") { subject.running.should eq(running) }
-        it("sets create_time") { subject.create_time.should eq(room.create_time.to_i) }
-        it("doesn't set creator_id") { subject.creator_id.should be_nil }
-        it("doesn't set creator_name") { subject.creator_name.should be_nil }
+
+        context "when there's no meeting" do
+          let(:room) { create_room_without_meetings }
+          before(:each) {
+            room
+            expect {
+              room.update_current_meeting_record(response)
+            }.not_to change{ BigbluebuttonMeeting.count }
+          }
+        end
+        context 'when there is meetings' do
+          context 'when the meeting has not ended' do
+            let(:room) do
+              create_room_with_meetings(ended: false,
+                                        meetings_count: 13,
+                                        create_time: Time.now.to_i + 345)
+            end
+            before(:each) do
+              room
+              expect {
+                room.update_current_meeting_record(response)
+              }.not_to change{ BigbluebuttonMeeting.count }
+            end
+            it("sets running") { room.get_current_meeting.running.should eq(response[:running]) }
+            it("sets create_time") { room.get_current_meeting.create_time.should eq(response[:createTime]) }
+            it("doesn't set creator_id") { room.get_current_meeting.creator_id.should be_nil }
+            it("doesn't set creator_name") { room.get_current_meeting.creator_name.should be_nil }
+          end
+          context 'when the meeting has ended' do
+            let(:room) do
+              create_room_with_meetings(ended: true,
+                                        meetings_count: 14,
+                                        create_time: Time.now.to_i + 567)
+            end
+            before(:each) do
+              room
+              expect {
+                room.update_current_meeting_record(response)
+              }.not_to change{ BigbluebuttonMeeting.count }
+            end
+            it { expect(room.get_current_meeting).to be_nil}
+          end
+        end
       end
 
       context "and metadata was passed" do
-        before {
-          FactoryGirl.create(:bigbluebutton_meeting, :room => room, :create_time => room.create_time)
-        }
-        before(:each) {
-          expect {
-            room.update_current_meeting_record(response)
-          }.not_to change{ BigbluebuttonMeeting.count }
-        }
-        subject { BigbluebuttonMeeting.find_by_room_id(room.id) }
-        it("sets running") { subject.running.should eq(running) }
-        it("sets create_time") { subject.create_time.should eq(room.create_time.to_i) }
-        it("sets creator_id") { subject.creator_id.should eq(user.id) }
-        it("sets creator_name") { subject.creator_name.should eq(user.name) }
+        context "when there's no meeting" do
+          let(:room) { create_room_without_meetings }
+          before(:each) do
+            room
+            expect { room.update_current_meeting_record(response) }
+            .not_to change{ BigbluebuttonMeeting.count }
+          end
+        end
+        context 'when there is meetings' do
+          context 'when the meeting has not ended' do
+            let(:room) do
+              create_room_with_meetings(ended: false,
+                                        meetings_count: 12,
+                                        create_time: Time.now.to_i + 345)
+            end
+            before(:each) do
+              room
+              expect { room.update_current_meeting_record(response) }
+              .not_to change{ BigbluebuttonMeeting.count }
+            end
+            it("sets running") { room.get_current_meeting.running.should eq(running) }
+            it("sets create_time") { room.get_current_meeting.create_time.should eq(response[:createTime]) }
+            it("sets creator_id") { room.get_current_meeting.creator_id.should eq(user.id) }
+            it("sets creator_name") { room.get_current_meeting.creator_name.should eq(user.name) }
+          end
+          context 'when the meeting has ended' do
+            let(:room) do
+              create_room_with_meetings(ended: true,
+                                        meetings_count: 13,
+                                        create_time: Time.now.to_i + 456)
+            end
+            before(:each) do
+              room
+              expect { room.update_current_meeting_record(response) }
+              .not_to change{ BigbluebuttonMeeting.count }
+            end
+            it { room.get_current_meeting.should be_nil }
+          end
+        end
       end
 
       context "if force_not_ended is set" do
-        before {
-          FactoryGirl.create(:bigbluebutton_meeting, :room => room, :create_time => room.create_time, :ended => true)
-        }
-        before(:each) {
-          expect {
-            room.update_current_meeting_record(nil, true)
-          }.not_to change{ BigbluebuttonMeeting.count }
-        }
-        subject { BigbluebuttonMeeting.find_by_room_id(room.id) }
-        it("sets running") { subject.running.should eq(running) }
-        it("sets create_time") { subject.create_time.should eq(room.create_time.to_i) }
-        it("sets ended") { subject.ended.should be(false) }
+        context "when there's no meeting" do
+          let(:room) { create_room_without_meetings }
+          before(:each) do
+            room
+            expect { room.update_current_meeting_record(response) }
+            .not_to change{ BigbluebuttonMeeting.count }
+          end
+        end
+        context 'when there is meetings' do
+          context 'when the meeting has not ended' do
+            let(:create_time) { Time.now.to_i + 567 }
+            let(:room) do
+              create_room_with_meetings(ended: false,
+                                        meetings_count: 14,
+                                        create_time: create_time)
+            end
+            before(:each) do
+              room
+              expect { room.update_current_meeting_record(nil, true) }
+              .not_to change{ BigbluebuttonMeeting.count }
+            end
+            it("sets running") { room.get_current_meeting.running.should eq(true) }
+            it("sets create_time") { room.get_current_meeting.create_time.should eq(create_time) }
+            it("sets ended") { room.get_current_meeting.ended.should be(false) }
+          end
+          context 'when the meeting has ended' do
+            let(:room) do
+              create_room_with_meetings(ended: true,
+                                        meetings_count: 15,
+                                        create_time: Time.now.to_i + 567)
+            end
+            before(:each) do
+              room
+              expect { room.update_current_meeting_record(nil, true) }
+              .not_to change{ BigbluebuttonMeeting.count }
+            end
+            it { room.get_current_meeting.should be_nil }
+          end
+        end
       end
     end
   end
@@ -1393,7 +1646,7 @@ describe BigbluebuttonRoom do
     end
 
     context "if there's a current meeting not running, ends it" do
-      let!(:meeting) { FactoryGirl.create(:bigbluebutton_meeting, room: room, ended: false, running: false, create_time: room.create_time) }
+      let!(:meeting) { FactoryGirl.create(:bigbluebutton_meeting, room: room, ended: false, running: false, create_time: Time.now) }
       let!(:now) { DateTime.now }
       before(:each) {
         DateTime.stub(:now).and_return(now)
