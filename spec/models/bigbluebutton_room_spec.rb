@@ -1449,13 +1449,13 @@ describe BigbluebuttonRoom do
       it { room.get_current_meeting.should be_nil }
     end
 
-    context 'when there is meetingg' do
+    context 'when there are meetings' do
       let(:room) do
         create_room_with_meetings(meetings_count: meetings_count,
                                   ended: ended,
                                   create_time: create_time)
       end
-      context 'when the meeting has no ended' do
+      context 'when the meeting has not ended' do
         let(:ended) { false }
         let(:meetings_count) { 11 }
         let(:create_time) { Time.now.to_i + 123 }
@@ -1504,7 +1504,7 @@ describe BigbluebuttonRoom do
             }.not_to change{ BigbluebuttonMeeting.count }
           }
         end
-        context 'when there is meetings' do
+        context 'when there are meetings' do
           context 'when the meeting has not ended' do
             let(:room) do
               create_room_with_meetings(ended: false,
@@ -1548,7 +1548,7 @@ describe BigbluebuttonRoom do
             .not_to change{ BigbluebuttonMeeting.count }
           end
         end
-        context 'when there is meetings' do
+        context 'when there are meetings' do
           context 'when the meeting has not ended' do
             let(:room) do
               create_room_with_meetings(ended: false,
@@ -1590,7 +1590,7 @@ describe BigbluebuttonRoom do
             .not_to change{ BigbluebuttonMeeting.count }
           end
         end
-        context 'when there is meetings' do
+        context 'when there are meetings' do
           context 'when the meeting has not ended' do
             let(:create_time) { Time.now.to_i + 567 }
             let(:room) do
