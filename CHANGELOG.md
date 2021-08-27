@@ -1,5 +1,11 @@
 # Change Log
 
+## [3.3.1] - 2021-08-27
+* [#201] Remove create_time attribute from BigbluebuttonRoom model
+
+## [3.3.0] - 2021-07-16
+* [#200] Remove running attribute from BigbluebuttonRoom model
+
 ## [3.2.0] - 2021-06-15
 * [#198] Fix deletion of meetings with recordings.
   When deleting a meeting with recording,
