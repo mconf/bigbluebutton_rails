@@ -1033,36 +1033,35 @@ describe Bigbluebutton::RoomsController do
     end
 
     context "pass createTime parameter to join_url" do
-      let(:time) { DateTime.now }
-      before {
-        room.should_receive(:fetch_is_running?).at_least(:once).and_return(true)
-        room.should_not_receive(:create_meeting)
-      }
+      let(:time) { Time.now.to_i }
 
-      context "if the createTime is not blank" do
-        before(:each) {
-          room.stub(:create_time).and_return(time)
+      context "if the current_meeting is not blank" do
+        let(:room) do
+          FactoryGirl.create(:bigbluebutton_room_with_meetings,
+                             last_meeting_create_time: time)
+        end
+        before do
+          room.stub(:fetch_is_running?).and_return(true)
+          room.should_receive(:is_running?).at_least(:once).and_call_original
+          room.should_not_receive(:create_meeting)
           room.should_receive(:join_url)
-            .with(user.name, :attendee, nil, hash_including(:createTime => time))
-        }
-        it ("uses the createTime") { get :join, :id => room.to_param }
+              .with(user.name, :attendee, nil, hash_including(createTime: time))
+          expect(room.get_current_meeting).to_not be_nil
+        end
+
+        it ("uses the createTime") { get :join, id: room.to_param }
       end
 
-      context "if the createTime is blank" do
-        before(:each) {
-          room.stub(:create_time).and_return("")
+      context "if the current_meeting is blank" do
+        before do
+          room.stub(:fetch_is_running?).and_return(true)
+          room.should_receive(:is_running?).at_least(:once).and_call_original
+          room.should_not_receive(:create_meeting)
           room.should_receive(:join_url)
-            .with(user.name, :attendee, nil, hash_not_including(:createTime))
-        }
-        it ("does not use the createTime") { get :join, :id => room.to_param }
-      end
+              .with(user.name, :attendee, nil, hash_not_including(:createTime))
+          expect(room.get_current_meeting).to be_nil
+        end
 
-      context "if the createTime is nil" do
-        before(:each) {
-          room.stub(:create_time).and_return(nil)
-          room.should_receive(:join_url)
-            .with(user.name, :attendee, nil, hash_not_including(:createTime))
-        }
         it ("does not use the createTime") { get :join, :id => room.to_param }
       end
     end

@@ -85,7 +85,7 @@ describe BigbluebuttonMeeting do
     let(:room) { FactoryGirl.create(:bigbluebutton_room) }
 
     context "if there is already a current meeting" do
-      let!(:meeting) { FactoryGirl.create(:bigbluebutton_meeting, room: room, ended: false, running: true, create_time: room.create_time) }
+      let!(:meeting) { FactoryGirl.create(:bigbluebutton_meeting, room: room, ended: false, running: true) }
       subject {
         expect {
           BigbluebuttonMeeting.create_meeting_record_from_room(room, {}, server, nil, {})
@@ -94,14 +94,6 @@ describe BigbluebuttonMeeting do
       it { BigbluebuttonMeeting.where(room: room).count.should be(1) }
       it { meeting.reload.running.should be(true) }
       it { meeting.reload.ended.should be(false) }
-    end
-
-    context "if #create_time is not set in the room" do
-      before { room.update_attributes(create_time: nil) }
-      subject { BigbluebuttonMeeting.create_meeting_record_from_room(room, {}, server, nil, {}) }
-      it("doesn't create a meeting") {
-        BigbluebuttonMeeting.find_by(room_id: room.id).should be_nil
-      }
     end
 
     context "if #create_time is set" do
@@ -113,17 +105,16 @@ describe BigbluebuttonMeeting do
         m
       }
       before {
-        room.create_time = Time.now.utc
         room.record_meeting = !room.record_meeting # to change its default value
-        room.create_time = Time.at(Time.now.to_i - 123)  # to change its default value
       }
 
       context "if there's no meeting associated yet creates one" do
         context "and there's no metadata in the response" do
           let(:running) { false }
+          let(:create_time) { Time.now.to_i }
           before(:each) {
             expect {
-              BigbluebuttonMeeting.create_meeting_record_from_room(room, {internalMeetingID: 'fake-id', running: running}, server, nil, {})
+              BigbluebuttonMeeting.create_meeting_record_from_room(room, {internalMeetingID: 'fake-id', running: running, createTime: create_time }, server, nil, {})
             }.to change{ BigbluebuttonMeeting.count }.by(1)
           }
           subject { BigbluebuttonMeeting.last }
@@ -136,7 +127,7 @@ describe BigbluebuttonMeeting do
           it("sets running") {
             room.should_receive(:fetch_is_running?).and_return(running)
             subject.running.should eq(room.is_running?) }
-          it("sets create_time") { subject.create_time.should eq(room.create_time.to_i) }
+          it("sets create_time") { subject.create_time.should eq(create_time) }
           it("doesn't set creator_id") { subject.creator_id.should be_nil }
           it("doesn't set creator_name") { subject.creator_name.should be_nil }
           it("sets internal_meeting_id") { subject.internal_meeting_id.should eq('fake-id') }
@@ -145,7 +136,7 @@ describe BigbluebuttonMeeting do
         context "and there's metadata in the response" do
           before(:each) {
             expect {
-              BigbluebuttonMeeting.create_meeting_record_from_room(room, { metadata: metadata }, server, nil, {})
+              BigbluebuttonMeeting.create_meeting_record_from_room(room, { createTime: Time.now.to_i, metadata: metadata }, server, nil, {})
             }.to change{ BigbluebuttonMeeting.count }.by(1)
           }
           subject { BigbluebuttonMeeting.last }
@@ -166,7 +157,7 @@ describe BigbluebuttonMeeting do
           before {
             room.record_meeting = true
             expect {
-              BigbluebuttonMeeting.create_meeting_record_from_room(room, {internal_meeting_id: 'fake-id'}, server, nil, user_attrs)
+              BigbluebuttonMeeting.create_meeting_record_from_room(room, {createTime: Time.now.to_i, internal_meeting_id: 'fake-id'}, server, nil, user_attrs)
             }.to change{ BigbluebuttonMeeting.count }.by(1)
           }
           subject { BigbluebuttonMeeting.last }
@@ -185,7 +176,7 @@ describe BigbluebuttonMeeting do
         before(:each) {
           BigbluebuttonMeeting.where(room: room, ended: false).count.should be(2)
           expect {
-            BigbluebuttonMeeting.create_meeting_record_from_room(room, { metadata: metadata }, server, nil, {})
+            BigbluebuttonMeeting.create_meeting_record_from_room(room, { createTime: Time.now.to_i, metadata: metadata }, server, nil, {})
           }.to change{ BigbluebuttonMeeting.count }.by(1)
         }
         it { BigbluebuttonMeeting.where(room: room).count.should be(3) }
@@ -201,7 +192,7 @@ describe BigbluebuttonMeeting do
     let(:room) { FactoryGirl.create(:bigbluebutton_room) }
     let!(:recording1) { FactoryGirl.create(:bigbluebutton_recording, meeting_id: nil, server_id: server.id, room_id: room.id) }
     let!(:recording2) { FactoryGirl.create(:bigbluebutton_recording, meeting_id: nil, server_id: server.id, room_id: nil, name: "no_room") }
-    
+
     context "when there is a room_id on the recording" do
       before(:each) {
         expect {
@@ -218,7 +209,7 @@ describe BigbluebuttonMeeting do
       it("doesn't set creator_name") { subject.creator_name.should be_nil }
       it("sets server_url") { subject.server_url.should eq(recording1.server.url) }
       it("sets server_secret") { subject.server_secret.should eq(recording1.server.secret) }
-      it("sets create_time") { subject.create_time.should eq(recording1.start_time * 1000) }   
+      it("sets create_time") { subject.create_time.should eq(recording1.start_time * 1000) }
       it("sets ended") { subject.recorded.should eq(true) }
       it("sets finish_time") { subject.finish_time.should eq(recording1.end_time) }
       it("sets title") { subject.title.should eq(recording1.name) }
@@ -233,7 +224,7 @@ describe BigbluebuttonMeeting do
     end
   end
 
-  describe ".update_meeting_creator" do   
+  describe ".update_meeting_creator" do
     let(:meeting1) { FactoryGirl.create(:bigbluebutton_meeting, creator_name: nil, creator_id: nil) }
     let(:recording1) { FactoryGirl.create(:bigbluebutton_recording, meeting: meeting1) }
     let(:recording2) { FactoryGirl.create(:bigbluebutton_recording, meeting: meeting1) }

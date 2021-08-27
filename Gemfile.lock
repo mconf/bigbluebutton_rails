@@ -47,6 +47,7 @@ GEM
       xml-simple (~> 1.1)
     browser (0.8.0)
     builder (3.2.2)
+    byebug (11.0.1)
     capybara (2.2.1)
       mime-types (>= 1.16)
       nokogiri (>= 1.3.3)
@@ -284,6 +285,7 @@ PLATFORMS
 DEPENDENCIES
   activerecord-import
   bigbluebutton_rails!
+  byebug
   capybara (~> 2.2.0)
   capybara-mechanize
   capybara-webkit

@@ -29,7 +29,6 @@ class CreateBigbluebuttonRails < ActiveRecord::Migration
       t.integer :duration, :default => 0
       t.string :attendee_api_password
       t.string :moderator_api_password
-      t.decimal :create_time, precision: 14, scale: 0
       t.string :moderator_only_message
       t.boolean :auto_start_recording, default: false
       t.boolean :allow_start_stop_recording, default: true
