@@ -21,7 +21,7 @@ describe BigbluebuttonMeeting do
       before do
         expect(BigbluebuttonMeeting.where(id: meeting.id).count).to eq(1)
         expect(BigbluebuttonRecording.where(meeting_id: meeting.id).count).to eq(1)
-        BigbluebuttonServer.any_instance.stub(:send_delete_recordings).and_return(true)
+        BigbluebuttonServer.any_instance.stub(:send_delete_recordings).and_return({some: :response})
       end
 
       it "should destroy the meeting and the associated recording" do
@@ -29,18 +29,45 @@ describe BigbluebuttonMeeting do
         expect(BigbluebuttonMeeting.where(id: meeting.id).count).to eq(0)
         expect(BigbluebuttonRecording.where(meeting_id: meeting.id).count).to eq(0)
       end
+
+      context "when the delete recording fails with notFound" do
+        let(:exception) do
+          e = BigBlueButton::BigBlueButtonException.new("Some mesage")
+          e.key = BigbluebuttonRecording.delete_status[:notFound]
+          e
+        end
+        before do
+          expect(BigbluebuttonMeeting.where(id: meeting.id).count).to eq(1)
+          expect(BigbluebuttonRecording.where(meeting_id: meeting.id).count).to eq(1)
+
+          BigbluebuttonServer.any_instance.stub(:send_delete_recordings).and_raise(exception)
+        end
+        it "should not destroy the meeting nor the associated recording" do
+          meeting.destroy
+          expect(BigbluebuttonMeeting.where(id: meeting.id).count).to eq(0)
+          expect(BigbluebuttonRecording.where(meeting_id: meeting.id).count).to eq(0)
+        end
+      end
     end
 
     context "when the meeting fails to be destroyed" do
-      before do
-        expect(BigbluebuttonMeeting.where(id: meeting.id).count).to eq(1)
-        expect(BigbluebuttonRecording.where(meeting_id: meeting.id).count).to eq(1)
-        BigbluebuttonServer.any_instance.stub(:send_delete_recordings).and_return(false)
-      end
-      it "should not destroy the meeting nor the associated recording" do
-        meeting.destroy
-        expect(BigbluebuttonMeeting.where(id: meeting.id).count).to eq(1)
-        expect(BigbluebuttonRecording.where(meeting_id: meeting.id).count).to eq(1)
+      context "when deleting recording fails with an exception" do
+        let(:exception) do
+          e = BigBlueButton::BigBlueButtonException.new("Some mesage")
+          e
+        end
+        before do
+          expect(BigbluebuttonMeeting.where(id: meeting.id).count).to eq(1)
+          expect(BigbluebuttonRecording.where(meeting_id: meeting.id).count).to eq(1)
+          expect(exception.key != BigbluebuttonRecording.delete_status[:notFound])
+
+          BigbluebuttonServer.any_instance.stub(:send_delete_recordings).and_raise(exception)
+        end
+        it "should not destroy the meeting nor the associated recording" do
+          meeting.destroy
+          expect(BigbluebuttonMeeting.where(id: meeting.id).count).to eq(1)
+          expect(BigbluebuttonRecording.where(meeting_id: meeting.id).count).to eq(1)
+        end
       end
     end
   end

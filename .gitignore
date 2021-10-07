@@ -10,3 +10,4 @@ coverage/
 rails_best_practices_output.html
 bot.log
 .bundle/
+.byebug_history

@@ -29,12 +29,20 @@ class BigbluebuttonRecording < ActiveRecord::Base
 
   serialize :recording_users, Array
 
+  DELETE_STATUS = {
+    notFound: 'notFound'
+  }
+
   STATES = {
     processing: 'processing',
     processed: 'processed',
     published: 'published',
     unpublished: 'unpublished'
   }
+
+  def self.delete_status
+    DELETE_STATUS
+  end
 
   def to_param
     self.recordid
@@ -75,6 +83,11 @@ class BigbluebuttonRecording < ActiveRecord::Base
       begin
         self.server.send_delete_recordings(self.recordid)
       rescue BigBlueButton::BigBlueButtonException => e
+        if e.key == DELETE_STATUS[:notFound]
+          logger.info "Recording #{id} not found on server."
+          return true
+        end
+
         logger.error "Could not delete the recording #{self.id} from the server. API error: #{e}"
         return false
       end

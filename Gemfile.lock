@@ -1,7 +1,7 @@
 PATH
   remote: .
   specs:
-    bigbluebutton_rails (3.2.0)
+    bigbluebutton_rails (3.3.1)
       activerecord-import (~> 1.0)
       bigbluebutton-api-ruby (~> 1.6)
       browser (~> 0.8.0)
@@ -134,7 +134,7 @@ GEM
     mime-types (1.25.1)
     mini_portile (0.6.0)
     minitest (5.4.0)
-    mono_logger (1.1.0)
+    mono_logger (1.1.1)
     multi_json (1.10.1)
     multi_test (0.1.1)
     mysql2 (0.3.18)
@@ -196,6 +196,7 @@ GEM
       redis (~> 3.0)
       resque (~> 1.25)
       rufus-scheduler (~> 2.0)
+    rexml (3.2.5)
     rspec-activemodel-mocks (1.0.1)
       activemodel (>= 3.0)
       activesupport (>= 3.0)
@@ -274,7 +275,8 @@ GEM
       addressable (>= 2.3.6)
       crack (>= 0.3.2)
     webrobots (0.1.1)
-    xml-simple (1.1.5)
+    xml-simple (1.1.9)
+      rexml
     xpath (2.0.0)
       nokogiri (~> 1.3)
 
