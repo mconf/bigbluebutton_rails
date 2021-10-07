@@ -20,7 +20,7 @@
         <span class="not_running">Not running</span>
       <% end %>
     </div>
-    <% unless room.create_time.nil? %>
+    <% unless room.get_current_meeting&.create_time.nil? %>
       Started at: <%= Time.at(room.create_time).strftime("%F, %R UTC%z") %><br/>
     <% end %>
     <% unless room.end_time.nil? %>

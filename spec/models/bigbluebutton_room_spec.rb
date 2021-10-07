@@ -1099,55 +1099,9 @@ describe BigbluebuttonRoom do
       let(:role) { :attendee }
       let(:id) { 'fake-user-id' }
 
-      context "sets a create time" do
-        context "when it exists" do
-          context "with no meetings" do
-            let(:room) { create_room_without_meetings }
-            it do
-              room.should_receive(:join_url)
-                  .with(username, role, nil, {})
-              room.parameterized_join_url(username, role, nil)
-            end
-          end
-          context "with meetings" do
-            let(:meetings_count) { 8 }
-            let(:room) do
-              create_room_with_meetings(meetings_count: meetings_count,
-                                        ended: ended)
-            end
-            context "with no meeting running" do
-              let(:ended) { true }
-              it do
-                room.should_receive(:join_url)
-                    .with(username, role, nil, {})
-                room.parameterized_join_url(username, role, nil)
-              end
-            end
-            context "with meeting running" do
-              let(:ended) { false }
-              it do
-                room.should_receive(:join_url)
-                    .with(username, role, nil,
-                          { createTime: room.get_current_meeting.create_time })
-                room.parameterized_join_url(username, role, nil)
-              end
-            end
-          end
-        end
-
-        context "when it doesn't exist" do
-          before {
-            room.create_time = nil
-            room.should_receive(:join_url).with(username, role, nil, { })
-          }
-          it { room.parameterized_join_url(username, role, nil) }
-        end
-      end
-
       context "sets a user id" do
         context "when it exists" do
           before {
-            room.create_time = nil
             room.should_receive(:join_url).with(username, role, nil, { userID: 'fake-user-id' })
           }
           it { room.parameterized_join_url(username, role, 'fake-user-id') }
@@ -1155,7 +1109,6 @@ describe BigbluebuttonRoom do
 
         context "when it doesn't exist" do
           before {
-            room.create_time = nil
             room.should_receive(:join_url).with(username, role, nil, { })
           }
           it { room.parameterized_join_url(username, role, nil) }
