@@ -278,6 +278,7 @@ class BigbluebuttonRecording < ActiveRecord::Base
     recording.room = BigbluebuttonRails.configuration.match_room_recording.call(data)
     recording.attributes = data.slice(:meetingid, :name, :published, :start_time, :end_time, :size, :state)
     recording.available = true
+    recording.meeting = BigbluebuttonRecording.find_matching_meeting(recording)
     recording.recording_users = adapt_recording_users(data[:recordingUsers])
     recording.save!
 
