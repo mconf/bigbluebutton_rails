@@ -701,6 +701,23 @@ describe BigbluebuttonRecording do
       }
       it { recording.recording_users.should == [] }
     end
+
+    context "creates a new meeting if recording has room_id but no meeting" do
+      before {
+        # make sure the recording has a room_id
+        @room = FactoryGirl.create(:bigbluebutton_room, :meetingid => attrs[:meetingid])
+        recording.room = @room
+        allow(BigbluebuttonRails.configuration.match_room_recording).to receive(:call).with(data).and_return(@room)
+
+        # and doesn't have a meeting
+        data.delete(:meetingid)
+        recording.meetingid = nil
+        recording.meeting = nil
+
+        BigbluebuttonRecording.send(:update_recording, new_server, recording, data)
+      }
+      it { recording.meeting.should_not be_nil }
+    end
   end
 
   describe ".create_recording" do
