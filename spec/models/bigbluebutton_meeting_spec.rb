@@ -42,7 +42,7 @@ describe BigbluebuttonMeeting do
 
           BigbluebuttonServer.any_instance.stub(:send_delete_recordings).and_raise(exception)
         end
-        it "should not destroy the meeting nor the associated recording" do
+        it "should destroy the meeting" do
           meeting.destroy
           expect(BigbluebuttonMeeting.where(id: meeting.id).count).to eq(0)
           expect(BigbluebuttonRecording.where(meeting_id: meeting.id).count).to eq(0)
