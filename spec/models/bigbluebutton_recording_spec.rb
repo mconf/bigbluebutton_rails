@@ -702,21 +702,21 @@ describe BigbluebuttonRecording do
       it { recording.recording_users.should == [] }
     end
 
-    context "creates a new meeting if recording has room_id but no meeting" do
+    context "creates a new meeting if recording has room_id and meetingid but no corresponding meeting" do
       before {
         # make sure the recording has a room_id
         @room = FactoryGirl.create(:bigbluebutton_room, :meetingid => attrs[:meetingid])
         recording.room = @room
         allow(BigbluebuttonRails.configuration.match_room_recording).to receive(:call).with(data).and_return(@room)
 
-        # and doesn't have a meeting
-        data.delete(:meetingid)
-        recording.meetingid = nil
-        recording.meeting = nil
+        # and that looking for the corresponding meeting returns no meeting
+        allow(BigbluebuttonMeeting).to receive(:where).with(anything, attrs[:meetingid], anything).and_return(BigbluebuttonMeeting.none)
 
         BigbluebuttonRecording.send(:update_recording, new_server, recording, data)
       }
-      it { recording.meeting.should_not be_nil }
+      it("sets meeting_id") { recording.meeting_id.should_not be_nil }
+      it("sets meetingid") { recording.meetingid.should_not be_nil }
+      it("sets meeting") { recording.meeting.should_not be_nil }
     end
   end
 
@@ -739,25 +739,45 @@ describe BigbluebuttonRecording do
     }
     let(:new_server) { FactoryGirl.create(:bigbluebutton_server) }
 
-    before {
-      @room = FactoryGirl.create(:bigbluebutton_room, :meetingid => attrs[:meetingid])
-      @meeting = FactoryGirl.create(:bigbluebutton_meeting, :room => @room, :create_time => meeting_create_time, :meetingid => attrs[:meetingid])
+    context "default behavior" do
+      before {
+        @room = FactoryGirl.create(:bigbluebutton_room, :meetingid => attrs[:meetingid])
+        @meeting = FactoryGirl.create(:bigbluebutton_meeting, :room => @room, :create_time => meeting_create_time, :meetingid => attrs[:meetingid])
 
-      BigbluebuttonRecording.should_receive(:sync_additional_data)
-        .with(anything, data)
-      BigbluebuttonRecording.send(:create_recording, new_server, data)
-      @recording = BigbluebuttonRecording.last
-    }
-    it("sets recordid") { @recording.recordid.should == recordid }
-    it("sets meetingid") { @recording.meetingid.should == attrs[:meetingid] }
-    it("sets name") { @recording.name.should == attrs[:name] }
-    it("sets published") { @recording.published.should == attrs[:published] }
-    it("sets end_time") { @recording.end_time.to_i.should == attrs[:end_time].to_i }
-    it("sets start_time") { @recording.start_time.to_i.should == meeting_create_time }
-    it("sets server") { @recording.server.should == new_server }
-    it("sets room") { @recording.room.should == @room }
-    it("sets meeting") { @recording.meeting.should == @meeting }
-    it("sets recording_users") { @recording.recording_users.should eql([3, 4]) }
+        BigbluebuttonRecording.should_receive(:sync_additional_data)
+          .with(anything, data)
+        BigbluebuttonRecording.send(:create_recording, new_server, data)
+        @recording = BigbluebuttonRecording.last
+      }
+      it("sets recordid") { @recording.recordid.should == recordid }
+      it("sets meetingid") { @recording.meetingid.should == attrs[:meetingid] }
+      it("sets name") { @recording.name.should == attrs[:name] }
+      it("sets published") { @recording.published.should == attrs[:published] }
+      it("sets end_time") { @recording.end_time.to_i.should == attrs[:end_time].to_i }
+      it("sets start_time") { @recording.start_time.to_i.should == meeting_create_time }
+      it("sets server") { @recording.server.should == new_server }
+      it("sets room") { @recording.room.should == @room }
+      it("sets meeting") { @recording.meeting.should == @meeting }
+      it("sets recording_users") { @recording.recording_users.should eql([3, 4]) }
+    end
+
+    context "creates a new meeting if no meeting is found for that recording" do
+      before {
+        @room = FactoryGirl.create(:bigbluebutton_room, :meetingid => attrs[:meetingid])
+        allow(BigbluebuttonRails.configuration.match_room_recording).to receive(:call).with(data).and_return(@room)
+
+        # make sure looking for the corresponding meeting returns no meeting
+        allow(BigbluebuttonMeeting).to receive(:where).with(anything, attrs[:meetingid], anything).and_return(BigbluebuttonMeeting.none)
+
+        BigbluebuttonRecording.should_receive(:sync_additional_data)
+          .with(anything, data)
+        BigbluebuttonRecording.send(:create_recording, new_server, data)
+        @recording = BigbluebuttonRecording.last
+      }
+      it("sets meeting_id") { @recording.meeting_id.should_not be_nil }
+      it("sets meetingid") { @recording.meetingid.should_not be_nil }
+      it("sets meeting") { @recording.meeting.should_not be_nil }
+    end
   end
 
   describe ".adapt_recording_hash" do
