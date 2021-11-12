@@ -16,7 +16,6 @@ class BigbluebuttonMeetingUpdaterWorker
       # calling `room.update_current_meeting_record`
       room.fetch_meeting_info
     end
-    Rails.logger.flush
 
     # note: don't need to keep trying because there's a worker that runs periodically
     # for each meeting that still hasn't ended
