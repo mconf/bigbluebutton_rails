@@ -1,5 +1,11 @@
 # Change Log
 
+## [3.3.3] - 2021-11-12
+* [#206] Remove "flush" call on Rails logger from BigbluebuttonMeetingUpdaterWorker.
+
+## [3.3.2] - 2021-10-07
+* [32f81805] Allow a meeting to be removed when its recording has not been found.
+
 ## [3.3.1] - 2021-08-27
 * [#201] Remove create_time attribute from BigbluebuttonRoom model
 
@@ -399,6 +405,18 @@ https://github.com/mconf/bigbluebutton_rails/wiki/Migrate-to-1.3.0
 * Controller to access servers and rooms
 * rooms_controller interacts with a BBB server using bigbluebutton-api-ruby
 
+[#206]: https://github.com/mconf/bigbluebutton_rails/pull/206
+[32f81805]: https://github.com/mconf/bigbluebutton_rails/commit/32f8180504b64713bc7fcfc8b31dc0c67ccc36f3
+[#201]: https://github.com/mconf/bigbluebutton_rails/pull/201
+[#200]: https://github.com/mconf/bigbluebutton_rails/pull/200
+[#198]: https://github.com/mconf/bigbluebutton_rails/pull/198
+[#197]: https://github.com/mconf/bigbluebutton_rails/pull/197
+[#196]: https://github.com/mconf/bigbluebutton_rails/pull/196
+
+[3.3.3]: https://github.com/mconf/bigbluebutton_rails/compare/v3.3.2...v3.3.3
+[3.3.2]: https://github.com/mconf/bigbluebutton_rails/compare/v3.3.1...v3.3.2
+[3.3.1]: https://github.com/mconf/bigbluebutton_rails/compare/v3.3.0...v3.3.1
+[3.3.0]: https://github.com/mconf/bigbluebutton_rails/compare/v3.2.0...v3.3.0
 [3.2.0]: https://github.com/mconf/bigbluebutton_rails/compare/v3.1.2...v3.2.0
 [3.1.2]: https://github.com/mconf/bigbluebutton_rails/compare/v3.1.1...v3.1.2
 [3.1.1]: https://github.com/mconf/bigbluebutton_rails/compare/v3.1.0...v3.1.1
