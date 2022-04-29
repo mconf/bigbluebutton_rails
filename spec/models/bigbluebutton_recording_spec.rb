@@ -709,9 +709,6 @@ describe BigbluebuttonRecording do
         recording.room = @room
         allow(BigbluebuttonRails.configuration.match_room_recording).to receive(:call).with(data).and_return(@room)
 
-        # and that looking for the corresponding meeting returns no meeting
-        allow(BigbluebuttonMeeting).to receive(:where).with(anything, attrs[:meetingid], anything).and_return(BigbluebuttonMeeting.none)
-
         BigbluebuttonRecording.send(:update_recording, new_server, recording, data)
       }
       it("sets meeting_id") { recording.meeting_id.should_not be_nil }
@@ -766,17 +763,14 @@ describe BigbluebuttonRecording do
         @room = FactoryGirl.create(:bigbluebutton_room, :meetingid => attrs[:meetingid])
         allow(BigbluebuttonRails.configuration.match_room_recording).to receive(:call).with(data).and_return(@room)
 
-        # make sure looking for the corresponding meeting returns no meeting
-        allow(BigbluebuttonMeeting).to receive(:where).with(anything, attrs[:meetingid], anything).and_return(BigbluebuttonMeeting.none)
-
         BigbluebuttonRecording.should_receive(:sync_additional_data)
           .with(anything, data)
         BigbluebuttonRecording.send(:create_recording, new_server, data)
         @recording = BigbluebuttonRecording.last
       }
-      it("sets meeting_id") { @recording.meeting_id.should_not be_nil }
-      it("sets meetingid") { @recording.meetingid.should_not be_nil }
-      it("sets meeting") { @recording.meeting.should_not be_nil }
+      it("sets meeting_id") { expect(@recording.meeting_id).not_to be_nil }
+      it("sets meetingid") { expect(@recording.meetingid).not_to be_nil }
+      it("sets meeting") { expect(@recording.meeting).not_to be_nil }
     end
   end
 
@@ -1123,44 +1117,66 @@ describe BigbluebuttonRecording do
   describe ".find_matching_meeting" do
 
     context "if no recording is informed" do
-      let(:recording) { FactoryGirl.create(:bigbluebutton_recording, :room => nil) }
+      let(:recording) { FactoryGirl.create(:bigbluebutton_recording, room: nil) }
       subject { BigbluebuttonRecording.send(:find_matching_meeting, nil) }
       it { subject.should be_nil }
     end
 
     context "if the recording has no room associated to it" do
-      let(:recording) { FactoryGirl.create(:bigbluebutton_recording, :room => nil) }
+      let(:recording) { FactoryGirl.create(:bigbluebutton_recording, room: nil) }
       subject { BigbluebuttonRecording.send(:find_matching_meeting, recording) }
       it { subject.should be_nil }
     end
 
-    context "if the recording has no start_time" do
-      let(:recording) { FactoryGirl.create(:bigbluebutton_recording, start_time: nil) }
-      subject { BigbluebuttonRecording.send(:find_matching_meeting, recording) }
-      it { subject.should be_nil }
-    end
-
-    context "if the recording has start_time" do
-      let(:meeting_create_time) { DateTime.now.to_i }
-      let(:meetingid_rand) { SecureRandom.uuid }
-      let(:recording) {
-        FactoryGirl.create(:bigbluebutton_recording, :recordid => "#{SecureRandom.uuid}-#{meeting_create_time}", :start_time => meeting_create_time, :meetingid => "#{meetingid_rand}-#{meeting_create_time}")
+    context "when there is a meeting with internal_meeting_id matching the rec's recordid" do
+      let(:recording) { FactoryGirl.create(:bigbluebutton_recording) }
+      before {
+        @meeting = FactoryGirl.create(:bigbluebutton_meeting,
+          room: recording.room,
+          internal_meeting_id: recording.recordid
+        )
       }
+      subject { BigbluebuttonRecording.send(:find_matching_meeting, recording) }
+      it { expect(subject).to eql(@meeting) }
+    end
 
-      context "when there's no associated meeting" do
-        before {
-          @meeting = BigbluebuttonMeeting.create_meeting_record_from_recording(recording)
-        }
+    context "when there isn't a meeting with internal_meeting_id matching the rec's recordid" do
+      context "and the recording has no start_time" do
+        let(:recording) { FactoryGirl.create(:bigbluebutton_recording, start_time: nil) }
         subject { BigbluebuttonRecording.send(:find_matching_meeting, recording) }
-        it("creates a meeting for the recording") { subject.should eq(@meeting) }
+        it { subject.should be_nil }
       end
 
-      context "when there's one associated meeting" do
-        before {
-          @meeting = FactoryGirl.create(:bigbluebutton_meeting, :room => recording.room, :create_time => meeting_create_time, :meetingid => "#{meetingid_rand}-#{meeting_create_time}")
-        }
-        subject { BigbluebuttonRecording.send(:find_matching_meeting, recording) }
-        it { subject.should eq(@meeting) }
+      context "and the recording has start_time" do
+        let(:meeting_create_time) { DateTime.now.to_i }
+        let(:meetingid_rand) { SecureRandom.uuid }
+        let(:recording) do
+          FactoryGirl.create(:bigbluebutton_recording,
+            recordid: "#{SecureRandom.uuid}-#{meeting_create_time}",
+            start_time: meeting_create_time,
+            meetingid: "#{meetingid_rand}-#{meeting_create_time}"
+          )
+        end
+
+        context "when there's no associated meeting" do
+          before do
+            @meeting = BigbluebuttonMeeting.create_meeting_record_from_recording(recording)
+          end
+          subject { BigbluebuttonRecording.send(:find_matching_meeting, recording) }
+          it("creates a meeting for the recording") { subject.should eq(@meeting) }
+        end
+
+        context "when there's one associated meeting" do
+          before do
+            @meeting = FactoryGirl.create(:bigbluebutton_meeting,
+              room: recording.room,
+              create_time: meeting_create_time,
+              meetingid: "#{meetingid_rand}-#{meeting_create_time}"
+            )
+          end
+          subject { BigbluebuttonRecording.send(:find_matching_meeting, recording) }
+          it { subject.should eq(@meeting) }
+        end
       end
     end
 

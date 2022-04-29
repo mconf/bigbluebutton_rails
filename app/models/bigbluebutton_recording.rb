@@ -383,13 +383,16 @@ class BigbluebuttonRecording < ActiveRecord::Base
   end
 
   # Finds the BigbluebuttonMeeting that generated this recording. The meeting is searched using
-  # the meetingid associated with this recording and the create time of the meeting, taken from
-  # the recording's ID. There are some flexible clauses that try to match very close or truncated
+  # the recording's recordid to match with a meeting's internal_meeting_id. If it's not found
+  # this way, we try with the meetingid associated with this recording and the create time of
+  # the meeting. There are some flexible clauses that try to match very close or truncated
   # timestamps from recordings start times to meeting create times.
   def self.find_matching_meeting(recording)
     meeting = nil
     unless recording.nil? #or recording.room.nil?
-      unless recording.start_time.nil?
+      record_id = recording.recordid
+      meeting = BigbluebuttonMeeting.where(internal_meeting_id: record_id).last
+      if meeting.nil? && !recording.start_time.nil?
         start_time = recording.start_time
         meeting = BigbluebuttonMeeting.where("meetingid = ? AND create_time = ?", recording.meetingid, start_time).last
           if meeting.nil?
