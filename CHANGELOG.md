@@ -1,5 +1,10 @@
 # Change Log
 
+## [Unreleased]
+* [#] Find matching meetings for recordings using recordid and internal_meeting_id first.
+
+[#207]: https://github.com/mconf/bigbluebutton_rails/pull/206
+
 ## [3.3.3] - 2021-11-12
 * [#206] Remove "flush" call on Rails logger from BigbluebuttonMeetingUpdaterWorker.
 
