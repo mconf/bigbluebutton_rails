@@ -252,7 +252,6 @@ describe BigbluebuttonRoom do
       room.meetings.count.should be(0)
       room.get_current_meeting.should be_nil
       room.end_time.should be_nil
-      room.current_attendees.should eql([])
       room.request_headers.should == {}
     end
 
@@ -392,7 +391,6 @@ describe BigbluebuttonRoom do
           it { room.participant_count.should == 0 }
           it { room.moderator_count.should == 0 }
           it { room.end_time.should == nil }
-          it { room.current_attendees.should == [] }
         end
         context "with meetings" do
           context "with no meeting running" do
@@ -405,7 +403,6 @@ describe BigbluebuttonRoom do
             it { room.has_been_forcibly_ended.should == false }
             it { room.participant_count.should == 0 }
             it { room.moderator_count.should == 0 }
-            it { room.current_attendees.should == [] }
             it { room.get_current_meeting.should be nil}
           end
           context "with meeting running" do
@@ -419,7 +416,6 @@ describe BigbluebuttonRoom do
             it { room.has_been_forcibly_ended.should == false }
             it { room.participant_count.should == 0 }
             it { room.moderator_count.should == 0 }
-            it { room.current_attendees.should == [] }
           end
         end
       end
@@ -435,15 +431,6 @@ describe BigbluebuttonRoom do
         it { room.participant_count.should == 4 }
         it { room.moderator_count.should == 2 }
         it { room.end_time.should == nil }
-        it {
-          users.each do |att|
-            attendee = BigbluebuttonAttendee.new
-            attendee.from_hash(att)
-            found = room.current_attendees.select{ |a| a.user_name == attendee.user_name }[0]
-            found.user_id.should eql(attendee.user_id)
-            found.role.should eql(attendee.role)
-          end
-        }
         context "with no meetings" do
           let(:room) { create_room_without_meetings }
         end
