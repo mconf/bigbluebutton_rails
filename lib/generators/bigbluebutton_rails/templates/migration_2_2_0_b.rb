@@ -54,16 +54,6 @@ class BigbluebuttonRailsTo220B < ActiveRecord::Migration
       puts "Created a meeting for the recording id-#{rec.id}: Meeting id-#{meeting.id}"
     end
 
-    create_table :bigbluebutton_attendees do |t|
-      t.string :user_id
-      t.string :external_user_id
-      t.string :user_name
-      t.decimal :join_time, precision: 14, scale: 0
-      t.decimal :left_time, precision: 14, scale: 0
-      t.integer :bigbluebutton_meeting_id
-      t.timestamps
-    end
-
     add_column :bigbluebutton_meetings, :finish_time, :decimal, precision: 14, scale: 0
     add_column :bigbluebutton_meetings, :got_stats, :string
   end
