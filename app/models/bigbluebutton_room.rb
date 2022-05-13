@@ -103,7 +103,6 @@ class BigbluebuttonRoom < ActiveRecord::Base
   # The response is parsed and stored in the model. You can access it using attributes such as:
   #
   #   room.participant_count
-  #   room.current_attendees[0].user_name
   #
   # The attributes changed are:
   # * <tt>participant_count</tt>
@@ -111,7 +110,6 @@ class BigbluebuttonRoom < ActiveRecord::Base
   # * <tt>has_been_forcibly_ended</tt>
   # * <tt>create_time</tt>
   # * <tt>end_time</tt>
-  # * <tt>current_attendees</tt> (array of <tt>BigbluebuttonAttendee</tt>)
   #
   # Triggers API call: <tt>getMeetingInfo</tt>.
   def fetch_meeting_info
@@ -123,14 +121,6 @@ class BigbluebuttonRoom < ActiveRecord::Base
       @moderator_count = response[:moderatorCount]
       @has_been_forcibly_ended = response[:hasBeenForciblyEnded]
       @end_time = response[:endTime]
-      @current_attendees = []
-      if response[:attendees].present?
-        response[:attendees].each do |att|
-          attendee = BigbluebuttonAttendee.new
-          attendee.from_hash(att)
-          @current_attendees << attendee
-        end
-      end
 
       # a 'shortcut' to update meetings since we have all information we need
       # if we got here, it means the meeting is still in the server, so it's not ended
@@ -462,7 +452,6 @@ class BigbluebuttonRoom < ActiveRecord::Base
     @moderator_count = 0
     @has_been_forcibly_ended = false
     @end_time = nil
-    @current_attendees = []
   end
 
   def internal_create_meeting(user=nil, user_opts={})
