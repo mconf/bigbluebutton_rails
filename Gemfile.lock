@@ -1,7 +1,7 @@
 PATH
   remote: .
   specs:
-    bigbluebutton_rails (3.3.4)
+    bigbluebutton_rails (3.4.0-elos)
       activerecord-import (~> 1.0)
       bigbluebutton-api-ruby (~> 1.6)
       browser (~> 0.8.0)

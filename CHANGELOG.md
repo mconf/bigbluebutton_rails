@@ -1,22 +1,28 @@
 # Change Log
 
+## [3.4.0] - 2022-05-13
+* [#212] Remove all references to `BigbluebuttonAttendee` table. Applications updating to this version are advised to remove the table from their databases.
+
+[3.4.0]: https://github.com/mconf/bigbluebutton_rails/compare/v3.3.4...v3.4.0-elos
+[#212]: https://github.com/mconf/bigbluebutton_rails/pull/212
+
 ## [3.3.4] - 2022-04-29
-* [#211] Find matching meetings for recordings using recordid and internal_meeting_id first.
+* [#211] Find matching meetings for recordings using `recordid` and `internal_meeting_id` first.
 
 [3.3.4]: https://github.com/mconf/bigbluebutton_rails/compare/v3.3.3...v3.3.4
-[#211]: https://github.com/mconf/bigbluebutton_rails/pull/206
+[#211]: https://github.com/mconf/bigbluebutton_rails/pull/211
 
 ## [3.3.3] - 2021-11-12
-* [#206] Remove "flush" call on Rails logger from BigbluebuttonMeetingUpdaterWorker.
+* [#206] Remove "flush" call on Rails logger from `BigbluebuttonMeetingUpdaterWorker`.
 
 ## [3.3.2] - 2021-10-07
 * [32f81805] Allow a meeting to be removed when its recording has not been found.
 
 ## [3.3.1] - 2021-08-27
-* [#201] Remove create_time attribute from BigbluebuttonRoom model
+* [#201] Remove `create_time` attribute from `BigbluebuttonRoom` model
 
 ## [3.3.0] - 2021-07-16
-* [#200] Remove running attribute from BigbluebuttonRoom model
+* [#200] Remove `running` attribute from BigbluebuttonRoom model
 
 ## [3.2.0] - 2021-06-15
 * [#198] Fix deletion of meetings with recordings.
