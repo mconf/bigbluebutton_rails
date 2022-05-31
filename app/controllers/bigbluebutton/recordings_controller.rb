@@ -3,9 +3,9 @@ class Bigbluebutton::RecordingsController < ApplicationController
   include BigbluebuttonRailsHelper
 
   respond_to :html
-  before_filter :find_recording, :except => [:index]
-  before_filter :check_for_server, :only => [:publish, :unpublish]
-  before_filter :find_playback, :only => [:play]
+  before_action :find_recording, :except => [:index]
+  before_action :check_for_server, :only => [:publish, :unpublish]
+  before_action :find_playback, :only => [:play]
 
   layout :determine_layout
 
@@ -71,7 +71,7 @@ class Bigbluebutton::RecordingsController < ApplicationController
           end
         rescue BigBlueButton::BigBlueButtonException => e
           flash[:error] = t('bigbluebutton_rails.recordings.errors.play.no_token')
-          redirect_to :back
+          redirect_back(fallback_location: bigbluebutton_recording_path(@recording))
         end
 
       # else will render the default 'play' view

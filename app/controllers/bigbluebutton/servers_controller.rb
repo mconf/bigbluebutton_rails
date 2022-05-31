@@ -3,7 +3,7 @@ class Bigbluebutton::ServersController < ApplicationController
   include BigbluebuttonRailsHelper
 
   respond_to :html
-  before_filter :find_server, :except => [:index, :new, :create]
+  before_action :find_server, :except => [:index, :new, :create]
 
   def index
     @servers ||= BigbluebuttonServer.all
