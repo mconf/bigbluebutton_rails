@@ -14,7 +14,11 @@ module BigbluebuttonRails
           if !params[:redir_url].blank? && is_relative
             redirect_to params[:redir_url], response_status
           else
-            redirect_to options, response_status
+            if options == :back
+              redirect_back fallback_location: options, **response_status
+            else
+              redirect_to options, response_status
+            end
           end
         end
 
@@ -29,16 +33,6 @@ module BigbluebuttonRails
           end
         end
 
-        # Redirects to `:back` if the referer is set, otherwise redirects to `options`.
-        def redirect_to_back(options={}, response_status={})
-          if !request.env["HTTP_REFERER"].blank? &&
-             request.env["HTTP_REFERER"] != request.env["REQUEST_URI"]
-            redirect_to :back, response_status
-          else
-            redirect_to options, response_status
-          end
-        end
-
         # Redirects to:
         #   1. A redirect URL set in the parameters of the current URL; or
         #   2. To `:back`, if the referer is set; or
@@ -47,7 +41,7 @@ module BigbluebuttonRails
           unless params[:redir_url].blank?
             redirect_to params[:redir_url], response_status
           else
-            redirect_to_back options, response_status
+            redirect_back fallback_location: options, **response_status
           end
         end
 

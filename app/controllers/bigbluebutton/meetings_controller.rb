@@ -4,7 +4,7 @@ require 'bigbluebutton_api'
 class Bigbluebutton::MeetingsController < ApplicationController
   include BigbluebuttonRails::InternalControllerMethods
 
-  before_filter :find_meeting
+  before_action :find_meeting
 
   respond_to :html
 

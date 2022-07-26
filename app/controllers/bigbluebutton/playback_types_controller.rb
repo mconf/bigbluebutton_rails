@@ -2,7 +2,7 @@ class Bigbluebutton::PlaybackTypesController < ApplicationController
   include BigbluebuttonRails::InternalControllerMethods
 
   respond_to :html
-  before_filter :find_playback_type, only: [:update]
+  before_action :find_playback_type, only: [:update]
 
   def update
     respond_with @playback_type do |format|
