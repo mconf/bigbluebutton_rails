@@ -1,13 +1,13 @@
 PATH
   remote: .
   specs:
-    bigbluebutton_rails (3.4.0-elos)
+    bigbluebutton_rails (3.4.0.pre.elos)
       activerecord-import (~> 1.0)
       bigbluebutton-api-ruby (~> 1.6)
       browser (~> 0.8.0)
       rails (>= 4.0.0)
-      resque (~> 1.25.1)
-      resque-scheduler (~> 3.0)
+      resque (>= 1.25)
+      resque-scheduler (>= 3.0)
 
 GEM
   remote: http://rubygems.org/
