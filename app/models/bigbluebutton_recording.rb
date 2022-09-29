@@ -3,13 +3,10 @@ class BigbluebuttonRecording < ActiveRecord::Base
 
   # NOTE: when adding new attributes to recordings, add them to `recording_changed?`
 
-  belongs_to :server, class_name: 'BigbluebuttonServer'
   belongs_to :room, class_name: 'BigbluebuttonRoom'
   belongs_to :meeting, class_name: 'BigbluebuttonMeeting'
 
   before_destroy :delete_from_server!
-
-  validates :server, :presence => true
 
   validates :recordid,
             :presence => true,
@@ -60,6 +57,10 @@ class BigbluebuttonRecording < ActiveRecord::Base
     str_token
   end
 
+  def server(api_method=nil)
+    self.room&.server(api_method)
+  end
+
   # Passing it on the url
   #
   def token_url(user, ip, playback)
@@ -79,9 +80,10 @@ class BigbluebuttonRecording < ActiveRecord::Base
 
   # Remove this recording from the server
   def delete_from_server!
-    if self.server.present?
+    server = self.server
+    if server.present?
       begin
-        self.server.send_delete_recordings(self.recordid)
+        server.send_delete_recordings(self.recordid)
       rescue BigBlueButton::BigBlueButtonException => e
         if e.key == DELETE_STATUS[:notFound]
           logger.info "Recording #{id} not found on server."
@@ -274,7 +276,6 @@ class BigbluebuttonRecording < ActiveRecord::Base
   # The format expected for 'data' follows the format returned by
   # BigBlueButtonApi#get_recordings but with the keys already converted to our format.
   def self.update_recording(server, recording, data)
-    recording.server = server
     recording.room = BigbluebuttonRails.configuration.match_room_recording.call(data)
     recording.attributes = data.slice(:meetingid, :name, :published, :start_time, :end_time, :size, :state)
     recording.available = true
@@ -293,7 +294,6 @@ class BigbluebuttonRecording < ActiveRecord::Base
     recording = BigbluebuttonRecording.create(filtered)
     recording.available = true
     recording.room = BigbluebuttonRails.configuration.match_room_recording.call(data)
-    recording.server = server
     recording.meeting = BigbluebuttonRecording.find_matching_meeting(recording)
     recording.recording_users = adapt_recording_users(data[:recordingUsers])
     recording.save!
