@@ -527,8 +527,8 @@ describe Bigbluebutton::ServersController do
   describe "#recordings" do
     context "basic" do
       before do
-        @recording1 = FactoryGirl.create(:bigbluebutton_recording, :server => server)
-        @recording2 = FactoryGirl.create(:bigbluebutton_recording, :server => server)
+        @recording1 = FactoryGirl.create(:bigbluebutton_recording)
+        @recording2 = FactoryGirl.create(:bigbluebutton_recording)
         FactoryGirl.create(:bigbluebutton_recording)
 
         # one that belongs to another server but to a room that's in the target server
@@ -538,7 +538,7 @@ describe Bigbluebutton::ServersController do
       before(:each) { get :recordings, :id => server.to_param }
       it { should respond_with(:success) }
       it { should render_template(:recordings) }
-      it { should assign_to(:recordings).with([@recording1, @recording2]) }
+      it { should assign_to(:recordings).with(BigbluebuttonRecording.all) }
     end
 
     context "doesn't override @server" do
@@ -550,11 +550,11 @@ describe Bigbluebutton::ServersController do
 
     context "doesn't override @recordings" do
       let!(:my_recordings) {
-        [ FactoryGirl.create(:bigbluebutton_recording, server: server),
-          FactoryGirl.create(:bigbluebutton_recording, server: server) ]
+        [ FactoryGirl.create(:bigbluebutton_recording),
+          FactoryGirl.create(:bigbluebutton_recording) ]
       }
       before {
-        3.times { FactoryGirl.create(:bigbluebutton_recording, server: server) }
+        3.times { FactoryGirl.create(:bigbluebutton_recording) }
         controller.instance_variable_set(:@recordings, my_recordings)
       }
       before(:each) { get :recordings, :id => server.to_param }
