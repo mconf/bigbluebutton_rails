@@ -63,6 +63,20 @@ describe BigbluebuttonRecording do
     it  { recording.get_token(user, user_ip).should include("RECORDING_TOKEN") }
   end
 
+  describe "#server" do
+    it { should respond_to(:server) }
+
+    let!(:room) { FactoryGirl.create(:bigbluebutton_room) }
+    let!(:recording) { FactoryGirl.create(:bigbluebutton_recording, room: room) }
+    let!(:server) { FactoryGirl.create(:bigbluebutton_server) }
+
+    before do
+      BigbluebuttonRoom.any_instance.stub(:server).and_return(server)
+    end
+
+    it  { recording.server.should eql(server) }
+  end
+
   describe "#token_url" do
     it { should respond_to(:token_url) }
 
