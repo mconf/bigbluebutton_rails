@@ -6,8 +6,6 @@ describe BigbluebuttonServer do
     BigbluebuttonServer.new.should be_a_kind_of(ActiveRecord::Base)
   end
 
-  it { should have_many(:recordings).dependent(:destroy) }
-
   it { should validate_presence_of(:name) }
   it { should validate_presence_of(:url) }
   it { should validate_presence_of(:secret) }
@@ -16,32 +14,6 @@ describe BigbluebuttonServer do
   context "uniqueness of" do
     before(:each) { FactoryGirl.create(:bigbluebutton_server) }
     it { should validate_uniqueness_of(:slug) }
-  end
-
-  it "has associated recordings" do
-    server = FactoryGirl.create(:bigbluebutton_server)
-    server.recordings.should be_empty
-
-    r = FactoryGirl.create(:bigbluebutton_recording, server: server)
-    server = BigbluebuttonServer.find(server.id)
-    server.recordings.should == [r]
-  end
-
-  context "destroys associated recordings when destroyed" do
-    let!(:server) { FactoryGirl.create(:bigbluebutton_server) }
-    let!(:rec1) { FactoryGirl.create(:bigbluebutton_recording, server: server) }
-    let!(:rec2) { FactoryGirl.create(:bigbluebutton_recording, server: server) }
-    let!(:rec3) { FactoryGirl.create(:bigbluebutton_recording) }
-
-    before { BigbluebuttonServer.any_instance.stub(:send_delete_recordings).and_return(true) }
-
-    it {
-      server.recordings.count.should eql(2)
-      server.destroy
-      BigbluebuttonRecording.find_by(recordid: rec1.recordid).should be_nil
-      BigbluebuttonRecording.find_by(recordid: rec2.recordid).should be_nil
-      BigbluebuttonRecording.find_by(recordid: rec3.recordid).should_not be_nil
-    }
   end
 
   it { should ensure_length_of(:name).is_at_least(1).is_at_most(500) }

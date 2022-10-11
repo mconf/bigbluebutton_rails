@@ -3,11 +3,6 @@ require 'bigbluebutton_api'
 class BigbluebuttonServer < ActiveRecord::Base
   include ActiveModel::ForbiddenAttributesProtection
 
-  has_many :recordings,
-           class_name: 'BigbluebuttonRecording',
-           foreign_key: 'server_id',
-           dependent: :destroy
-
   validates :name,
             :presence => true,
             :length => { :minimum => 1, :maximum => 500 }

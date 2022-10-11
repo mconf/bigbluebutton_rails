@@ -424,7 +424,7 @@ class BigbluebuttonRoom < ActiveRecord::Base
   # Synchronizes all the recordings for this room. Will only get recordings with the
   # default states (won't get recordings with the state 'deleted', for instance).
   def fetch_recordings
-    server = BigbluebuttonRails.configuration.select_server.call(self, :get_recordings)
+    server = self.server(:get_recordings)
     if server.present?
       states = BigbluebuttonRecording::STATES.values
       scope = BigbluebuttonRecording.where(room: self, state: states)
@@ -433,6 +433,13 @@ class BigbluebuttonRoom < ActiveRecord::Base
     else
       false
     end
+  end
+
+  # Since we have removed the `server_id` attribute from
+  # BigBlueButtonRecording and BigBlueButtonRoom tables
+  # This method is necessary to dynamically define a server
+  def server(api_method=nil)
+    server = BigbluebuttonRails.configuration.select_server.call(self, api_method)
   end
 
   def select_server(api_method=nil)

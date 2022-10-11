@@ -1,6 +1,5 @@
 FactoryGirl.define do
   factory :bigbluebutton_recording do |r|
-    r.association :server, :factory => :bigbluebutton_server
     r.association :room, :factory => :bigbluebutton_room
     r.association :meeting, :factory => :bigbluebutton_meeting
     r.meetingid { "meeting" + SecureRandom.hex(8) }
