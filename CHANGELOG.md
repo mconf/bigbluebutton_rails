@@ -1,10 +1,19 @@
 # Change Log
 
+## [3.4.0] - 2022-10-14
+* [#217] Remove `server_id` attribute from `BigbluebuttonRecording` and `BigbluebuttonRoom`.
+  Now, a server is always chosen dinamically.
+  For rooms, it is done with the `server` method, which uses the `select_server` configured
+  by the application. Recordings also have a `server` method, which returns it's room's server.
+
+[3.4.0]: https://github.com/mconf/bigbluebutton_rails/compare/v3.3.4...v3.4.0
+[#217]: https://github.com/mconf/bigbluebutton_rails/pull/217
+
 ## [3.3.4] - 2022-04-29
 * [#211] Find matching meetings for recordings using recordid and internal_meeting_id first.
 
 [3.3.4]: https://github.com/mconf/bigbluebutton_rails/compare/v3.3.3...v3.3.4
-[#211]: https://github.com/mconf/bigbluebutton_rails/pull/206
+[#211]: https://github.com/mconf/bigbluebutton_rails/pull/211
 
 ## [3.3.3] - 2021-11-12
 * [#206] Remove "flush" call on Rails logger from BigbluebuttonMeetingUpdaterWorker.
