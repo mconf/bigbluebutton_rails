@@ -217,6 +217,7 @@ describe Bigbluebutton::RecordingsController do
     end
 
     context "doesn't override @recording" do
+      let!(:server) { FactoryGirl.create(:bigbluebutton_server) }
       let!(:other_recording) { FactoryGirl.create(:bigbluebutton_recording) }
       before {
         controller.instance_variable_set(:@recording, other_recording)
@@ -443,6 +444,7 @@ describe Bigbluebutton::RecordingsController do
       end
 
       context "doesn't override @recording" do
+        let!(:server) { FactoryGirl.create(:bigbluebutton_server) }
         let!(:other_recording) { FactoryGirl.create(:bigbluebutton_recording) }
         before {
           controller.instance_variable_set(:@recording, other_recording)

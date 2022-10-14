@@ -1344,6 +1344,15 @@ describe BigbluebuttonRoom do
     it { subject.short_path.should eql("/bigbluebutton/rooms/#{subject.to_param}/join") }
   end
 
+  describe "#server" do
+    let!(:server) { FactoryGirl.create(:bigbluebutton_server) }
+    subject { FactoryGirl.create(:bigbluebutton_room) }
+    before do
+      BigbluebuttonRails.configuration.select_server.should_receive(:call).and_return(server)
+    end
+    it  { subject.server.should eql(server) }
+  end
+
   describe "#select_server" do
     let!(:server) { FactoryGirl.create(:bigbluebutton_server) }
     let!(:room) { FactoryGirl.create(:bigbluebutton_room) }

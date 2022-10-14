@@ -16,12 +16,6 @@
 </p>
 
 <p>
-  <b><%= BigbluebuttonRecording.human_attribute_name(:server_id) %>:</b>
-  <%= @recording.server_id %>
-  <%= link_to('(view server)', bigbluebutton_server_path(@recording.server)) unless @recording.server.nil? %>
-</p>
-
-<p>
   <b><%= BigbluebuttonRecording.human_attribute_name(:room_id) %>:</b>
   <%= @recording.room_id %>
   <%= link_to('(view room)', bigbluebutton_room_path(@recording.room)) unless @recording.room.nil? %>

@@ -1,9 +1,24 @@
 # Change Log
 
-## [3.4.0] - 2022-05-13
-* [#212] Remove all references to `BigbluebuttonAttendee` table. Applications updating to this version are advised to remove the table from their databases.
+## [3.5.0-elos] - 2022-10-14
+* Merge changes from 3.4.0 (master) into Elos branch.
 
-[3.4.0]: https://github.com/mconf/bigbluebutton_rails/compare/v3.3.4...v3.4.0-elos
+[3.5.0-elos]: https://github.com/mconf/bigbluebutton_rails/compare/v3.4.0-elos...v3.5.0-elos
+
+## [3.4.0] - 2022-10-14
+* [#217] Remove `server_id` attribute from `BigbluebuttonRecording` and `BigbluebuttonRoom`.
+  Now, a server is always chosen dinamically.
+  For rooms, it is done with the `server` method, which uses the `select_server` configured
+  by the application. Recordings also have a `server` method, which returns it's room's server.
+
+[3.4.0]: https://github.com/mconf/bigbluebutton_rails/compare/v3.3.4...v3.4.0
+[#217]: https://github.com/mconf/bigbluebutton_rails/pull/217
+
+## [3.4.0-elos] - 2022-05-13
+* [#212] Remove all references to `BigbluebuttonAttendee` table.
+  Applications updating to this version are advised to remove the table from their databases.
+
+[3.4.0-elos]: https://github.com/mconf/bigbluebutton_rails/compare/v3.3.4...v3.4.0-elos
 [#212]: https://github.com/mconf/bigbluebutton_rails/pull/212
 
 ## [3.3.4] - 2022-04-29
