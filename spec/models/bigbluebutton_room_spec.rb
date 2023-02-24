@@ -51,7 +51,6 @@ describe BigbluebuttonRoom do
   it { should ensure_length_of(:name).is_at_least(1).is_at_most(250) }
 
   it { should validate_presence_of(:slug) }
-  it { should validate_uniqueness_of(:slug) }
   it { should ensure_length_of(:slug).is_at_least(1) }
 
   it { should be_boolean(:private) }

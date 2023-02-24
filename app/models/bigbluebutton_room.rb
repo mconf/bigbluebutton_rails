@@ -35,12 +35,12 @@ class BigbluebuttonRoom < ActiveRecord::Base
     :presence => true,
     :numericality => { :only_integer => true, :greater_than_or_equal_to => 0 }
 
+  # Uniqueness validation is left to the applications, to do according to their rules
   validates :slug,
-            :presence => true,
-            :uniqueness => true,
-            :length => { :minimum => 1 },
-            :format => { :with => /\A([a-zA-Z\d_]|[a-zA-Z\d_]+[a-zA-Z\d_-]*[a-zA-Z\d_]+)\z/,
-                         :message => I18n.t('bigbluebutton_rails.rooms.errors.slug_format') }
+            presence: true,
+            length: { minimum: 1 },
+            format: { with: /\A([a-zA-Z\d_]|[a-zA-Z\d_]+[a-zA-Z\d_-]*[a-zA-Z\d_]+)\z/,
+                         message: I18n.t('bigbluebutton_rails.rooms.errors.slug_format') }
 
   # Passwords are 16 character strings
   # See http://groups.google.com/group/bigbluebutton-dev/browse_thread/thread/9be5aae1648bcab?pli=1
