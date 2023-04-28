@@ -6,8 +6,16 @@
   For rooms, it is done with the `server` method, which uses the `select_server` configured
   by the application. Recordings also have a `server` method, which returns it's room's server.
 
-[3.4.0]: https://github.com/mconf/bigbluebutton_rails/compare/v3.3.4...v3.4.0
+[3.4.0]: https://github.com/mconf/bigbluebutton_rails/compare/v3.3.5...v3.4.0
 [#217]: https://github.com/mconf/bigbluebutton_rails/pull/217
+
+## [3.3.5] - 2023-04-28
+* [#221] Adds the `skip_callbacks` attr_accessor to allow skipping model callbacks
+  of `BigbluebuttonRecording`. More precisely, allows deleting a recording locally
+  without destroying it on the BBB server.
+
+[3.3.5]: https://github.com/mconf/bigbluebutton_rails/compare/v3.3.4...v3.3.5
+[#221]: https://github.com/mconf/bigbluebutton_rails/pull/221
 
 ## [3.3.4] - 2022-04-29
 * [#211] Find matching meetings for recordings using recordid and internal_meeting_id first.
