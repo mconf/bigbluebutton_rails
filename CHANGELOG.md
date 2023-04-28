@@ -1,5 +1,12 @@
 # Change Log
 
+## [3.4.1] - 2023-04-28
+* [679a062e] Fix `BigbluebuttonRecording` query, now that query gets `all` of `BigbluebuttonRecording`
+  by `fetch_recording` from `BigbluebuttonServer` as a `sync_scope`.
+
+[3.4.1]: https://github.com/mconf/bigbluebutton_rails/compare/v3.4.0...v3.4.1
+[679a062e]: https://github.com/mconf/bigbluebutton_rails/commit/679a062e7faedf26a259df1e1872798e2b60c1fa
+
 ## [3.4.0] - 2022-10-14
 * [#217] Remove `server_id` attribute from `BigbluebuttonRecording` and `BigbluebuttonRoom`.
   Now, a server is always chosen dinamically.
