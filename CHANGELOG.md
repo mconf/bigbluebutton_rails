@@ -1,10 +1,18 @@
 # Change Log
 
+## [3.3.5] - 2023-04-28
+* [#221] Adds the `skip_callbacks` attr_accessor to allow skipping model callbacks
+  of `BigbluebuttonRecording`. More precisely, allows deleting a recording locally
+  without destroying it on the BBB server.
+
+[3.3.5]: https://github.com/mconf/bigbluebutton_rails/compare/v3.3.4...v3.3.5
+[#221]: https://github.com/mconf/bigbluebutton_rails/pull/221
+
 ## [3.3.4] - 2022-04-29
 * [#211] Find matching meetings for recordings using recordid and internal_meeting_id first.
 
 [3.3.4]: https://github.com/mconf/bigbluebutton_rails/compare/v3.3.3...v3.3.4
-[#211]: https://github.com/mconf/bigbluebutton_rails/pull/206
+[#211]: https://github.com/mconf/bigbluebutton_rails/pull/211
 
 ## [3.3.3] - 2021-11-12
 * [#206] Remove "flush" call on Rails logger from BigbluebuttonMeetingUpdaterWorker.
