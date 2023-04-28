@@ -139,7 +139,7 @@ class BigbluebuttonServer < ActiveRecord::Base
 
       # if no scope is set and there are no filters, set the scope to all recordings
       # in this server
-      sync_scope = BigbluebuttonRecording.where(server: self) if filter.blank? && sync_scope.nil?
+      sync_scope = BigbluebuttonRecording.all if filter.blank? && sync_scope.nil?
 
       BigbluebuttonRecording.sync(self, recordings[:recordings], sync_scope, sync_started_at)
     end
