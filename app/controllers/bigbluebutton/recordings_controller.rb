@@ -3,9 +3,10 @@ class Bigbluebutton::RecordingsController < ApplicationController
   include BigbluebuttonRailsHelper
 
   respond_to :html
-  before_action :find_recording, :except => [:index]
-  before_action :check_for_server, :only => [:publish, :unpublish]
-  before_action :find_playback, :only => [:play]
+  before_filter :find_recording, except: [:index]
+  before_action :set_server, only: [:publish, :unpublish]
+  before_filter :check_for_server, only: [:publish, :unpublish]
+  before_filter :find_playback, only: [:play]
 
   layout :determine_layout
 
@@ -95,12 +96,16 @@ class Bigbluebutton::RecordingsController < ApplicationController
 
   protected
 
+  def set_server
+    @server = @recording.server
+  end
+
   def find_recording
     @recording ||= BigbluebuttonRecording.find_by_recordid(params[:id])
   end
 
   def check_for_server
-    unless @recording.server
+    unless @server
       message = t('bigbluebutton_rails.recordings.errors.check_for_server.no_server')
       respond_with do |format|
         format.html {
@@ -116,8 +121,7 @@ class Bigbluebutton::RecordingsController < ApplicationController
 
   def publish_unpublish(publish)
     begin
-      server = @recording.server
-      server.send_publish_recordings(@recording.recordid, publish)
+      @server.send_publish_recordings(@recording.recordid, publish)
       respond_with do |format|
         if publish
           message = t('bigbluebutton_rails.recordings.notice.publish.success')

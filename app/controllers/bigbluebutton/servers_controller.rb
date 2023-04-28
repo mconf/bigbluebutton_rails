@@ -91,7 +91,7 @@ class Bigbluebutton::ServersController < ApplicationController
   end
 
   def recordings
-    @recordings ||= @server.recordings
+    @recordings ||= BigbluebuttonRecording.all
     respond_with(@recordings)
   end
 

@@ -1,10 +1,33 @@
 # Change Log
 
-## [3.4.0] - 2022-05-13
-* [#212] Remove all references to `BigbluebuttonAttendee` table. Applications updating to this version are advised to remove the table from their databases.
+## [3.5.0-elos] - 2022-10-14
+* Merge changes from 3.4.0 (master) into Elos branch.
 
-[3.4.0]: https://github.com/mconf/bigbluebutton_rails/compare/v3.3.4...v3.4.0-elos
+[3.5.0-elos]: https://github.com/mconf/bigbluebutton_rails/compare/v3.4.0-elos...v3.5.0-elos
+
+## [3.4.0] - 2022-10-14
+* [#217] Remove `server_id` attribute from `BigbluebuttonRecording` and `BigbluebuttonRoom`.
+  Now, a server is always chosen dinamically.
+  For rooms, it is done with the `server` method, which uses the `select_server` configured
+  by the application. Recordings also have a `server` method, which returns it's room's server.
+
+[3.4.0]: https://github.com/mconf/bigbluebutton_rails/compare/v3.3.5...v3.4.0
+[#217]: https://github.com/mconf/bigbluebutton_rails/pull/217
+
+## [3.4.0-elos] - 2022-05-13
+* [#212] Remove all references to `BigbluebuttonAttendee` table.
+  Applications updating to this version are advised to remove the table from their databases.
+
+[3.4.0-elos]: https://github.com/mconf/bigbluebutton_rails/compare/v3.3.5...v3.4.0-elos
 [#212]: https://github.com/mconf/bigbluebutton_rails/pull/212
+
+## [3.3.5] - 2023-04-28
+* [#221] Adds the `skip_callbacks` attr_accessor to allow skipping model callbacks
+  of `BigbluebuttonRecording`. More precisely, allows deleting a recording locally
+  without destroying it on the BBB server.
+
+[3.3.5]: https://github.com/mconf/bigbluebutton_rails/compare/v3.3.4...v3.3.5
+[#221]: https://github.com/mconf/bigbluebutton_rails/pull/221
 
 ## [3.3.4] - 2022-04-29
 * [#211] Find matching meetings for recordings using `recordid` and `internal_meeting_id` first.
@@ -31,8 +54,8 @@
   Now these errors are rescued and both are deleted.
 * [#197] Now the meetings controller can be overriden on apps if necessary.
 * [#196] Fix race condition of workers and improve performance.
-  Now workers will run sync for each rooms, not for each server, and 
-  will run 16 times for about 24h after a meeting end, 
+  Now workers will run sync for each rooms, not for each server, and
+  will run 16 times for about 24h after a meeting end,
   applications can easily customize the intervals between each job
 * Fix migration.rb:
     - Add missing `BigbluebuttonRecording#state` attribute
@@ -47,7 +70,7 @@
 
 ## [3.1.1] - 2021-04-29
 
-* [#186] Refactoring to unify meeting creation on `bigbluebuttonMeeting` model. 
+* [#186] Refactoring to unify meeting creation on `bigbluebuttonMeeting` model.
   Meeting creation methods that were dispersed on `BigbluebuttonRoom` and
   `BigbluebuttonRecording` models are now unified.
 * [#186] Migration to:

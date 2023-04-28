@@ -14,6 +14,7 @@ describe BigbluebuttonMeeting do
   it { should have_one(:recording).dependent(:destroy) }
 
   describe "recording association" do
+    let!(:server) { FactoryGirl.create(:bigbluebutton_server) }
     let!(:meeting) { FactoryGirl.create(:bigbluebutton_meeting, ended: true) }
     let!(:recording) { FactoryGirl.create(:bigbluebutton_recording, meeting: meeting) }
 
@@ -215,10 +216,10 @@ describe BigbluebuttonMeeting do
   end
 
   describe ".create_meeting_record_from_recording" do
-    let(:server) { FactoryGirl.create(:bigbluebutton_server) }
+    let!(:server) { FactoryGirl.create(:bigbluebutton_server) }
     let(:room) { FactoryGirl.create(:bigbluebutton_room) }
-    let!(:recording1) { FactoryGirl.create(:bigbluebutton_recording, meeting_id: nil, server_id: server.id, room_id: room.id) }
-    let!(:recording2) { FactoryGirl.create(:bigbluebutton_recording, meeting_id: nil, server_id: server.id, room_id: nil, name: "no_room") }
+    let!(:recording1) { FactoryGirl.create(:bigbluebutton_recording, meeting_id: nil, room_id: room.id) }
+    let!(:recording2) { FactoryGirl.create(:bigbluebutton_recording, meeting_id: nil, room_id: nil, name: "no_room") }
 
     context "when there is a room_id on the recording" do
       before(:each) {

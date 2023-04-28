@@ -6,9 +6,6 @@ describe BigbluebuttonRecording do
     BigbluebuttonRecording.new.should be_a_kind_of(ActiveRecord::Base)
   end
 
-  it { should belong_to(:server) }
-  it { should validate_presence_of(:server) }
-
   it { should belong_to(:room) }
 
   it { should belong_to(:meeting) }
@@ -66,6 +63,20 @@ describe BigbluebuttonRecording do
     it  { recording.get_token(user, user_ip).should include("RECORDING_TOKEN") }
   end
 
+  describe "#server" do
+    it { should respond_to(:server) }
+
+    let!(:room) { FactoryGirl.create(:bigbluebutton_room) }
+    let!(:recording) { FactoryGirl.create(:bigbluebutton_recording, room: room) }
+    let!(:server) { FactoryGirl.create(:bigbluebutton_server) }
+
+    before do
+      BigbluebuttonRoom.any_instance.stub(:server).and_return(server)
+    end
+
+    it  { recording.server.should eql(server) }
+  end
+
   describe "#token_url" do
     it { should respond_to(:token_url) }
 
@@ -106,18 +117,18 @@ describe BigbluebuttonRecording do
   describe "#delete_from_server" do
     let!(:recording) { FactoryGirl.create(:bigbluebutton_recording) }
 
-    context "when there's a server associated" do
+    context "when there's a server" do
       let!(:server) { FactoryGirl.create(:bigbluebutton_server) }
       before {
-        recording.update_attributes(server: server)
+        recording.should_receive(:server).and_return(server)
         server.should_receive(:send_delete_recordings).with(recording.recordid).and_return('response')
       }
       it { recording.delete_from_server!.should eql('response') }
     end
 
-    context "when there's no server associated" do
+    context "when there is no server" do
       before {
-        recording.update_attributes(server: nil)
+        recording.should_receive(:server).and_return(nil)
       }
       it { recording.delete_from_server!.should be(false) }
     end
@@ -480,11 +491,12 @@ describe BigbluebuttonRecording do
       context "for recordings in multiple servers" do
         before {
           BigbluebuttonRecording.delete_all
-          @r1 = FactoryGirl.create(:bigbluebutton_recording, :available => true, :server => new_server)
-          @r2 = FactoryGirl.create(:bigbluebutton_recording, :available => true, :server => new_server)
-          @r3 = FactoryGirl.create(:bigbluebutton_recording, :available => true, :server => FactoryGirl.create(:bigbluebutton_server))
-          @r4 = FactoryGirl.create(:bigbluebutton_recording, :available => true, :server => FactoryGirl.create(:bigbluebutton_server))
-          BigbluebuttonRecording.sync(new_server, data, BigbluebuttonRecording.where(server: new_server))
+          @r1 = FactoryGirl.create(:bigbluebutton_recording, :available => true)
+          @r2 = FactoryGirl.create(:bigbluebutton_recording, :available => true)
+          @r3 = FactoryGirl.create(:bigbluebutton_recording, :available => true)
+          @r4 = FactoryGirl.create(:bigbluebutton_recording, :available => true)
+          scope_server_recordings = BigbluebuttonRecording.where(id: [@r1, @r2].map(&:id))
+          BigbluebuttonRecording.sync(new_server, data, scope_server_recordings)
         }
         it { BigbluebuttonRecording.count.should == 5 }
         it ("recording from the target server") { @r1.reload.available.should == false }
@@ -495,12 +507,11 @@ describe BigbluebuttonRecording do
 
       context "when there are no recordings in the target server" do
         before {
-          new_server.recordings.delete_all
-          @r1 = FactoryGirl.create(:bigbluebutton_recording, :available => true, :server => FactoryGirl.create(:bigbluebutton_server))
-          @r2 = FactoryGirl.create(:bigbluebutton_recording, :available => true, :server => FactoryGirl.create(:bigbluebutton_server))
-          BigbluebuttonRecording.sync(new_server, data, BigbluebuttonRecording.where(server: new_server))
+          @r1 = FactoryGirl.create(:bigbluebutton_recording, :available => true)
+          @r2 = FactoryGirl.create(:bigbluebutton_recording, :available => true)
+          scope_server_recordings = BigbluebuttonRecording.where(id: [].map(&:id))
+          BigbluebuttonRecording.sync(new_server, data, scope_server_recordings)
         }
-        it { new_server.recordings.should be_empty }
         it ("recording from another server") { @r1.reload.available.should == true }
         it ("recording from another server") { @r2.reload.available.should == true }
       end
@@ -508,9 +519,10 @@ describe BigbluebuttonRecording do
       context "when there are no recordings in other servers" do
         before {
           BigbluebuttonRecording.delete_all
-          @r1 = FactoryGirl.create(:bigbluebutton_recording, :available => true, :server => new_server)
-          @r2 = FactoryGirl.create(:bigbluebutton_recording, :available => true, :server => new_server)
-          BigbluebuttonRecording.sync(new_server, data, BigbluebuttonRecording.where(server: new_server))
+          @r1 = FactoryGirl.create(:bigbluebutton_recording, :available => true)
+          @r2 = FactoryGirl.create(:bigbluebutton_recording, :available => true)
+          scope_server_recordings = BigbluebuttonRecording.where(id: [@r1, @r2].map(&:id))
+          BigbluebuttonRecording.sync(new_server, data, scope_server_recordings)
         }
         it { BigbluebuttonRecording.count.should == 3 }
         it ("recording from another server") { @r1.reload.available.should == false }
@@ -521,10 +533,10 @@ describe BigbluebuttonRecording do
         let(:target_room) { FactoryGirl.create(:bigbluebutton_room) }
         before {
           BigbluebuttonRecording.delete_all
-          @r1 = FactoryGirl.create(:bigbluebutton_recording, :available => true, :server => new_server, :room => target_room)
-          @r2 = FactoryGirl.create(:bigbluebutton_recording, :available => true, :server => new_server, :room => target_room)
-          @r3 = FactoryGirl.create(:bigbluebutton_recording, :available => true, :server => new_server, :room => FactoryGirl.create(:bigbluebutton_room))
-          @r4 = FactoryGirl.create(:bigbluebutton_recording, :available => true, :server => new_server, :room => FactoryGirl.create(:bigbluebutton_room))
+          @r1 = FactoryGirl.create(:bigbluebutton_recording, :available => true, :room => target_room)
+          @r2 = FactoryGirl.create(:bigbluebutton_recording, :available => true, :room => target_room)
+          @r3 = FactoryGirl.create(:bigbluebutton_recording, :available => true, :room => FactoryGirl.create(:bigbluebutton_room))
+          @r4 = FactoryGirl.create(:bigbluebutton_recording, :available => true, :room => FactoryGirl.create(:bigbluebutton_room))
           BigbluebuttonRecording.sync(new_server, data, BigbluebuttonRecording.where(room: target_room))
         }
         it ("recording from the target server") { @r1.reload.available.should == false }
@@ -538,12 +550,12 @@ describe BigbluebuttonRecording do
           sync_started_at = DateTime.now
 
           BigbluebuttonRecording.delete_all
-          @r1 = FactoryGirl.create(:bigbluebutton_recording, :available => true, :server => new_server, created_at: sync_started_at + 1.hour)
-          @r2 = FactoryGirl.create(:bigbluebutton_recording, :available => true, :server => new_server, created_at: sync_started_at + 1.second)
-          @r3 = FactoryGirl.create(:bigbluebutton_recording, :available => true, :server => new_server, created_at: sync_started_at)
-          @r4 = FactoryGirl.create(:bigbluebutton_recording, :available => true, :server => new_server, created_at: sync_started_at - 1.second)
+          @r1 = FactoryGirl.create(:bigbluebutton_recording, :available => true, created_at: sync_started_at + 1.hour)
+          @r2 = FactoryGirl.create(:bigbluebutton_recording, :available => true, created_at: sync_started_at + 1.second)
+          @r3 = FactoryGirl.create(:bigbluebutton_recording, :available => true, created_at: sync_started_at)
+          @r4 = FactoryGirl.create(:bigbluebutton_recording, :available => true, created_at: sync_started_at - 1.second)
+          scope = BigbluebuttonRecording.where(id: [@r1, @r2, @r3, @r4].map(&:id))
 
-          scope = BigbluebuttonRecording.where(server: new_server)
           BigbluebuttonRecording.sync(new_server, data, scope, sync_started_at)
         }
         it { BigbluebuttonRecording.count.should == 5 }
@@ -557,14 +569,15 @@ describe BigbluebuttonRecording do
     context "sets recording that are in the parameters as available in a full sync" do
       before {
         BigbluebuttonRecording.delete_all
-        @r = FactoryGirl.create(:bigbluebutton_recording, :available => false, :server => new_server, :recordid => data[0][:recordID])
+        @r = FactoryGirl.create(:bigbluebutton_recording, :available => false, :recordid => data[0][:recordID])
         # so it creates the recording the first time
-        BigbluebuttonRecording.sync(new_server, data, BigbluebuttonRecording.where(server: new_server))
+        scope = BigbluebuttonRecording.where(id: [@r].map(&:id))
+        BigbluebuttonRecording.sync(new_server, data, scope)
 
         BigbluebuttonRecording.find_by(recordid: data[0][:recordID])
           .update_attributes(available: false)
 
-        BigbluebuttonRecording.sync(new_server, data, BigbluebuttonRecording.where(server: new_server))
+        BigbluebuttonRecording.sync(new_server, data, scope)
       }
       it { @r.reload.available.should be(true) }
     end
@@ -572,10 +585,10 @@ describe BigbluebuttonRecording do
     context "doesn't set recordings that are not in the parameters as unavailable if not in a full sync" do
       before {
         BigbluebuttonRecording.delete_all
-        @r1 = FactoryGirl.create(:bigbluebutton_recording, :available => true, :server => new_server)
-        @r2 = FactoryGirl.create(:bigbluebutton_recording, :available => true, :server => new_server)
-        @r3 = FactoryGirl.create(:bigbluebutton_recording, :available => true, :server => FactoryGirl.create(:bigbluebutton_server))
-        @r4 = FactoryGirl.create(:bigbluebutton_recording, :available => true, :server => FactoryGirl.create(:bigbluebutton_server))
+        @r1 = FactoryGirl.create(:bigbluebutton_recording, :available => true)
+        @r2 = FactoryGirl.create(:bigbluebutton_recording, :available => true)
+        @r3 = FactoryGirl.create(:bigbluebutton_recording, :available => true)
+        @r4 = FactoryGirl.create(:bigbluebutton_recording, :available => true)
         BigbluebuttonRecording.sync(new_server, data)
       }
       it { @r1.reload.available.should == true }
@@ -1159,6 +1172,7 @@ describe BigbluebuttonRecording do
         end
 
         context "when there's no associated meeting" do
+          let!(:server) { FactoryGirl.create(:bigbluebutton_server) }
           before do
             @meeting = BigbluebuttonMeeting.create_meeting_record_from_recording(recording)
           end
