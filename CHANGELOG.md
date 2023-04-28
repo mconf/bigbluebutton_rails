@@ -1,5 +1,10 @@
 # Change Log
 
+## [3.5.1-elos] - 2022-10-14
+* Merge changes from 3.4.1 (master) into Elos branch.
+
+[3.5.1-elos]: https://github.com/mconf/bigbluebutton_rails/compare/v3.5.0-elos...v3.5.1-elos
+
 ## [3.5.0-elos] - 2022-10-14
 * Merge changes from 3.4.0 (master) into Elos branch.
 
