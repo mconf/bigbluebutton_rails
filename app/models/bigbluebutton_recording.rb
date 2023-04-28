@@ -6,7 +6,7 @@ class BigbluebuttonRecording < ActiveRecord::Base
   belongs_to :room, class_name: 'BigbluebuttonRoom'
   belongs_to :meeting, class_name: 'BigbluebuttonMeeting'
 
-  before_destroy :delete_from_server!
+  before_destroy :delete_from_server!, unless: :skip_callbacks
 
   validates :recordid,
             :presence => true,
@@ -25,6 +25,8 @@ class BigbluebuttonRecording < ActiveRecord::Base
   scope :published, -> { where(:published => true) }
 
   serialize :recording_users, Array
+  
+  attr_accessor :skip_callbacks
 
   DELETE_STATUS = {
     notFound: 'notFound'
@@ -76,6 +78,19 @@ class BigbluebuttonRecording < ActiveRecord::Base
   def default_playback_format
     playback_formats.joins(:playback_type)
       .where("bigbluebutton_playback_types.default = ?", true).first
+  end
+
+  # To destroy the rec without running callbacks to Server
+  # Used when destroying BigbluebuttonRecordings from the local database
+  def without_callbacks
+    prev_skip_callbacks = @skip_callbacks
+    @skip_callbacks = true
+    begin
+      ret = yield
+    ensure
+      @skip_callbacks = prev_skip_callbacks
+    end
+    ret
   end
 
   # Remove this recording from the server
