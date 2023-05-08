@@ -3,10 +3,10 @@ class Bigbluebutton::RecordingsController < ApplicationController
   include BigbluebuttonRailsHelper
 
   respond_to :html
-  before_filter :find_recording, except: [:index]
+  before_action :find_recording, except: [:index]
   before_action :set_server, only: [:publish, :unpublish]
-  before_filter :check_for_server, only: [:publish, :unpublish]
-  before_filter :find_playback, only: [:play]
+  before_action :check_for_server, only: [:publish, :unpublish]
+  before_action :find_playback, only: [:play]
 
   layout :determine_layout
 
