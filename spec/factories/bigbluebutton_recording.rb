@@ -7,6 +7,7 @@ FactoryGirl.define do
     r.published true
     r.start_time { Time.now.to_i - rand(5).hours }
     r.end_time { Time.now.to_i + rand(5).hours }
+    r.expiration_date { Time.now.to_i + rand(5).days }
     # TODO: should contain the meeting's start_time at the end
     r.sequence(:recordid) { |n| "rec#{n}-#{SecureRandom.uuid}-#{DateTime.now.to_i}" }
     r.size { rand((20*1024**2)..(500*1024**2)) } # size ranging from 20Mb to 500Mb
