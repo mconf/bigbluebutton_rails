@@ -19,6 +19,7 @@ pt-br:
       bigbluebutton_recording:
         description: "Descrição"
         end_time: "Horário de Fim"
+        expiration_date: "Data de Expiração"
         meetingid: "ID da Reunião"
         metadata: Metadados
         name: Nome

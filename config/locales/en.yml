@@ -19,6 +19,7 @@ en:
       bigbluebutton_recording:
         description: "Description"
         end_time: "End Time"
+        expiration_date: "Expiration Date"
         meetingid: "Meeting ID"
         metadata: Metadata
         name: Name
