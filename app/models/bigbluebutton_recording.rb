@@ -141,7 +141,7 @@ class BigbluebuttonRecording < ActiveRecord::Base
       # the attributes that are considered in the comparison
       keys = [ # rawSize is not stored at the moment
         :end_time, :meetingid,  :metadata, :playback, :published,
-        :recordid, :size, :start_time, :state, :name
+        :recordid, :size, :start_time, :state, :name, :expiration_date
       ]
       keys_formats = [ # :size, :processingTime are not stored at the moment
         :length, :type, :url
@@ -161,6 +161,7 @@ class BigbluebuttonRecording < ActiveRecord::Base
       end
       data_clone[:end_time] = data_clone[:end_time].to_i if data_clone.key?(:end_time)
       data_clone[:start_time] = data_clone[:start_time].to_i if data_clone.key?(:start_time)
+      data_clone[:expiration_date] = data_clone[:expiration_date].to_i if data_clone.key?(:expiration_date)
       data_clone = data_clone.slice(*keys)
       data_sorted = data_clone.sort
 
@@ -265,7 +266,8 @@ class BigbluebuttonRecording < ActiveRecord::Base
       :recordID => :recordid,
       :meetingID => :meetingid,
       :startTime => :start_time,
-      :endTime => :end_time
+      :endTime => :end_time,
+      :expirationDate => :expiration_date
     }
     new_hash.keys.each { |k| new_hash[ mappings[k] ] = new_hash.delete(k) if mappings[k] }
     new_hash
