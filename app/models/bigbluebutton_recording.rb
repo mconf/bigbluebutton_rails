@@ -294,7 +294,7 @@ class BigbluebuttonRecording < ActiveRecord::Base
   # BigBlueButtonApi#get_recordings but with the keys already converted to our format.
   def self.update_recording(server, recording, data)
     recording.room = BigbluebuttonRails.configuration.match_room_recording.call(data)
-    recording.attributes = data.slice(:meetingid, :name, :published, :start_time, :end_time, :size, :state)
+    recording.attributes = data.slice(:meetingid, :name, :published, :start_time, :end_time, :expiration_date, :size, :state)
     recording.available = true
     recording.meeting = BigbluebuttonRecording.find_matching_meeting(recording)
     recording.recording_users = adapt_recording_users(data[:recordingUsers])
@@ -307,7 +307,7 @@ class BigbluebuttonRecording < ActiveRecord::Base
   # The format expected for 'data' follows the format returned by
   # BigBlueButtonApi#get_recordings but with the keys already converted to our format.
   def self.create_recording(server, data)
-    filtered = data.slice(:recordid, :meetingid, :name, :published, :start_time, :end_time, :size, :state)
+    filtered = data.slice(:recordid, :meetingid, :name, :published, :start_time, :end_time, :expiration_date, :size, :state)
     recording = BigbluebuttonRecording.create(filtered)
     recording.available = true
     recording.room = BigbluebuttonRails.configuration.match_room_recording.call(data)
