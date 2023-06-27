@@ -90,7 +90,8 @@ namespace :db do
               :published => true,
               :available => true,
               :start_time => meeting.create_time,
-              :end_time => meeting.create_time + rand(5).hours
+              :end_time => meeting.create_time + rand(5).hours,
+              :expiration_date => meeting.create_time + rand(5).days
             }
             time = params[:start_time]
             puts "    - Creating recording #{params[:name]}"

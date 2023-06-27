@@ -47,6 +47,11 @@
 </p>
 
 <p>
+  <b><%= BigbluebuttonRecording.human_attribute_name(:expiration_date) %>:</b>
+  <%= @recording.expiration_date %>
+</p>
+
+<p>
   <b><%= BigbluebuttonRecording.human_attribute_name(:metadata) %>:</b>
   <% @recording.metadata.each do |metadata| %>
     <%= metadata.attributes.except("id", "owner_id", "owner_type", "updated_at", "created_at") %>,

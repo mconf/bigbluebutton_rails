@@ -175,6 +175,7 @@ describe BigbluebuttonRecording do
         published: true,
         start_time: DateTime.now,
         end_time: DateTime.now + 2.hours,
+        expiration_date: DateTime.now + 2.days,
         size: "100",
         state: "processing",
         metadata: {
@@ -204,6 +205,7 @@ describe BigbluebuttonRecording do
         published: data[:published],
         start_time: data[:start_time],
         end_time: data[:end_time],
+        expiration_date: data[:expiration_date],
         size: data[:size],
         state: data[:state],
       }
@@ -392,6 +394,7 @@ describe BigbluebuttonRecording do
         published: true,
         startTime: DateTime.now,
         endTime: DateTime.now + 2.hours,
+        expirationDate: DateTime.now + 1.day,
         size: 100,
         state: 'processing',
         metadata: {
@@ -427,6 +430,7 @@ describe BigbluebuttonRecording do
       it { @recording.name.should == data[0][:name] }
       it { @recording.published.should == data[0][:published] }
       it { @recording.end_time.to_i.should == data[0][:endTime].to_i }
+      it { @recording.expiration_date.to_i.should == data[0][:expirationDate].to_i }
       it { @recording.start_time.to_i.should == data[0][:startTime].to_i }
       it { @recording.server.should == new_server }
       it { @recording.room.should == @room }
@@ -459,6 +463,7 @@ describe BigbluebuttonRecording do
       it { @recording.name.should == data[0][:name] }
       it { @recording.published.should == data[0][:published] }
       it { @recording.end_time.to_i.should == data[0][:endTime].to_i }
+      it { @recording.expiration_date.to_i.should == data[0][:expirationDate].to_i }
       it { @recording.start_time.to_i.should == data[0][:startTime].to_i }
       it { @recording.server.should == new_server }
       it { @recording.room.should == @room }
@@ -671,6 +676,7 @@ describe BigbluebuttonRecording do
         :published => !old_attrs[:published],
         :start_time => attrs[:start_time],
         :end_time => attrs[:end_time],
+        :expiration_date => attrs[:expiration_date],
         :size => attrs[:size],
         :metadata => { :any => "any" },
         :recordingUsers => { :user => [{ :externalUserID => 1 }, { :externalUserID => 2 }] },
@@ -691,6 +697,7 @@ describe BigbluebuttonRecording do
       it { recording.name.should == attrs[:name] }
       it { recording.published.should == !old_attrs[:published] }
       it { recording.end_time.to_i.should == attrs[:end_time].to_i }
+      it { recording.expiration_date.to_i.should == attrs[:expiration_date].to_i }
       it { recording.start_time.to_i.should == attrs[:start_time].to_i }
       it { recording.size.should == attrs[:size] }
       it { recording.server.should == new_server }
@@ -742,6 +749,7 @@ describe BigbluebuttonRecording do
         :published => attrs[:published],
         :start_time => meeting_create_time,
         :end_time => attrs[:end_time],
+        :expiration_date => attrs[:expiration_date],
         :metadata => { :any => "any" },
         :recordingUsers => { :user => [{ :externalUserID => 3 }, { :externalUserID => 4 }] },
         :playback => { :format => [ { :type => "any1" }, { :type => "any2" } ] }
@@ -764,6 +772,7 @@ describe BigbluebuttonRecording do
       it("sets name") { @recording.name.should == attrs[:name] }
       it("sets published") { @recording.published.should == attrs[:published] }
       it("sets end_time") { @recording.end_time.to_i.should == attrs[:end_time].to_i }
+      it("sets expiration_date") { @recording.expiration_date.to_i.should == attrs[:expiration_date].to_i }
       it("sets start_time") { @recording.start_time.to_i.should == meeting_create_time }
       it("sets server") { @recording.server.should == new_server }
       it("sets room") { @recording.room.should == @room }
@@ -794,7 +803,8 @@ describe BigbluebuttonRecording do
         :name => "anything",
         :published => "anything",
         :startTime => "anything",
-        :endTime => "anything"
+        :endTime => "anything",
+        :expirationDate => "anything"
       }
     }
     let(:after) {
@@ -803,7 +813,8 @@ describe BigbluebuttonRecording do
         :name => "anything",
         :published => "anything",
         :start_time => "anything",
-        :end_time => "anything"
+        :end_time => "anything",
+        :expiration_date => "anything"
       }
     }
     subject { BigbluebuttonRecording.send(:adapt_recording_hash, before) }
@@ -845,6 +856,7 @@ describe BigbluebuttonRecording do
         :published => attrs[:published],
         :startTime => attrs[:start_time],
         :endTime => attrs[:end_time],
+        :expirationDate => attrs[:expiration_date],
         :metadata => { :any => "any" },
         :playback => { :format => [ { :type => "any1" }, { :type => "any2" } ] }
       }
