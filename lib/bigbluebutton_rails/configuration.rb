@@ -18,6 +18,7 @@ module BigbluebuttonRails
     attr_accessor :debug
     attr_accessor :api_timeout
     attr_accessor :recording_sync_for_room_intervals
+    attr_accessor :response_expires_in
 
     # methods
     attr_accessor :select_server
@@ -118,6 +119,9 @@ module BigbluebuttonRails
         2.hours, 2.hours,
         3.hours, 3.hours, 3.hours, 3.hours, 3.hours, 3.hours
       ]
+
+      # Expiration time to the "running" method response
+      @response_expires_in = 30
 
       # Return a query that selects the rooms that should be iterated over when updating all
       # recordings in a full sync. This is used so users can program a logic to select only

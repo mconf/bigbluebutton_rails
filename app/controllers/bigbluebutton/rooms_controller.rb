@@ -119,12 +119,21 @@ class Bigbluebutton::RoomsController < ApplicationController
 
   def running
     begin
-      running = @room.is_running?
       info = @room.fetch_meeting_info
     rescue BigBlueButton::BigBlueButtonException => e
       render :json => { :running => "false", :error => "#{api_error_msg(e)}" }
     else
-      render :json => { :running => "#{running}", :meeting_info => info}
+      if info.nil?
+        data = { :running => "false", :meeting_info => info }
+      else
+        running = info[:running]
+        info = info.slice(:createTime, :startTime, :participantCount)
+        data = { :running => "#{running}", :meeting_info => info }
+      end
+      size = ActiveSupport::JSON.encode(data).bytes.size.to_s
+      response.headers["Content-Length"] = size
+      expires_in BigbluebuttonRails.configuration.response_expires_in, public: true
+      render :json => data
     end
   end
 
