@@ -65,7 +65,11 @@ class Bigbluebutton::RoomsController < ApplicationController
       if @room.update_attributes(room_params)
         message = t('bigbluebutton_rails.rooms.notice.update.success')
         format.html {
-          redirect_to_using_params bigbluebutton_room_path(@room), :notice => message
+          if @room.owner.is_a?(GroupRoom)
+            redirect_to_using_params bigbluebutton_room_path(institution_slug: @room.owner.institution, id: @room), :notice => message
+          else
+            redirect_to_using_params bigbluebutton_room_path(@room), :notice => message
+          end
         }
       else
         format.html {
