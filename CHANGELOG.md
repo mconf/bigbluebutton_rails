@@ -1,9 +1,16 @@
 # Change Log
 
+## [3.6.1-elos] - 2023-08-09
+* [#229] Check for `institution_slug` param presence to define where to redirect to after updating
+  a `bigbluebutton_room` on `rooms#update`.
+
+[3.6.1-elos]: https://github.com/mconf/bigbluebutton_rails/compare/v3.6.0-elos...v3.6.1-elos
+[#229]: https://github.com/mconf/bigbluebutton_rails/pull/229
+
 ## [3.6.0-elos] - 2023-07-24
-* [#228] Refactored running method with less meeting info(`createTime`, `startTime`, `participant_count`) 
+* [#228] Refactored running method with less meeting info(`createTime`, `startTime`, `participant_count`)
   and an expiration for its response, which can be configured in the application env.
-* [#227] Added `expiration_date` as new attribute to `BigbluebuttonRecording`, 
+* [#227] Added `expiration_date` as new attribute to `BigbluebuttonRecording`,
   that attribute is a timestamp to expire the recording.
 * [#222] Removed `BigbluebuttonRoom` slug uniqueness validation 
   to application to validate it if needed.
