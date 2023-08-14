@@ -37,6 +37,7 @@ services:
 
   # test
   test:
+    image: bigbluebutton_rails-dev:latest
     build: .
     tty: true
     depends_on:
