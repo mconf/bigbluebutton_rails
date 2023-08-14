@@ -2,10 +2,10 @@ require 'spec_helper'
 
 describe Bigbluebutton::PlaybackTypesController do
   render_views
-  let!(:playback_type) { FactoryGirl.create(:bigbluebutton_playback_type) }
+  let!(:playback_type) { FactoryBot.create(:bigbluebutton_playback_type) }
 
   describe "#update" do
-    let!(:new_playback_type) { FactoryGirl.build(:bigbluebutton_playback_type, visible: !playback_type.visible) }
+    let!(:new_playback_type) { FactoryBot.build(:bigbluebutton_playback_type, visible: !playback_type.visible) }
     let(:referer) { "/back" }
     before { request.env["HTTP_REFERER"] = referer }
 
@@ -41,7 +41,7 @@ describe Bigbluebutton::PlaybackTypesController do
     end
 
     describe "params handling" do
-      let(:attrs) { FactoryGirl.attributes_for(:bigbluebutton_playback_type) }
+      let(:attrs) { FactoryBot.attributes_for(:bigbluebutton_playback_type) }
       let(:params) { { :bigbluebutton_playback_type => attrs } }
       let(:allowed_params) {
         [ :visible, :default ]
@@ -60,8 +60,8 @@ describe Bigbluebutton::PlaybackTypesController do
     end
 
     context "doesn't override @playback_type" do
-      let!(:other_playback_type) { FactoryGirl.create(:bigbluebutton_playback_type) }
-      let(:format) { FactoryGirl.create(:bigbluebutton_playback_format, :playback_type => playback_type) }
+      let!(:other_playback_type) { FactoryBot.create(:bigbluebutton_playback_type) }
+      let(:format) { FactoryBot.create(:bigbluebutton_playback_format, :playback_type => playback_type) }
       before { controller.instance_variable_set(:@playback_type, other_playback_type) }
       before(:each) {
         put :update, :id => playback_type.to_param, :bigbluebutton_playback_type => new_playback_type.attributes

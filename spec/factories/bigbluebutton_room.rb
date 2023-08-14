@@ -1,4 +1,4 @@
-FactoryGirl.define do
+FactoryBot.define do
   factory :bigbluebutton_room do |r|
     # meetingid with a random factor to avoid duplicated ids in consecutive test runs
 
@@ -10,11 +10,11 @@ FactoryGirl.define do
     r.attendee_api_password { SecureRandom.uuid }
     r.moderator_api_password { SecureRandom.uuid }
     r.welcome_msg { Forgery(:lorem_ipsum).sentences(2) }
-    r.private false
+    r.private { false }
     r.sequence(:slug) { |n| "meeting-#{n}" }
-    r.external false
-    r.record_meeting false
-    r.duration 0
+    r.external { false }
+    r.record_meeting { false }
+    r.duration { 0 }
     r.sequence(:voice_bridge) { |n| "7#{n.to_s.rjust(4, '0')}" }
     r.dial_number { SecureRandom.random_number(9999999).to_s }
     r.sequence(:logout_url) { |n| "http://bigbluebutton#{n}.test.com/logout" }
@@ -26,11 +26,11 @@ FactoryGirl.define do
     end
 
     factory :bigbluebutton_room_with_meetings do
-      ignore do
-        last_meeting_create_time nil
-        last_meeting_ended false
-        last_meeting_running true
-        meetings_count 1
+      transient do
+        last_meeting_create_time { nil }
+        last_meeting_ended {false}
+        last_meeting_running {true}
+        meetings_count {1}
       end
 
       after(:create) do |room, evaluator|

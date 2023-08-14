@@ -136,9 +136,9 @@ describe ActionController do
     }
 
     context "custom named route helpers" do
-      let(:server) { FactoryGirl.create(:bigbluebutton_server) }
-      let(:room) { FactoryGirl.create(:bigbluebutton_room) }
-      let(:recording) { FactoryGirl.create(:bigbluebutton_recording) }
+      let(:server) { FactoryBot.create(:bigbluebutton_server) }
+      let(:room) { FactoryBot.create(:bigbluebutton_room) }
+      let(:recording) { FactoryBot.create(:bigbluebutton_recording) }
 
       it { custom_name_servers_path.should == "/custom/servers" }
       it { new_custom_name_server_path.should == "/custom/servers/new" }

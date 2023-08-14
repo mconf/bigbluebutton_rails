@@ -3,7 +3,7 @@ require 'bigbluebutton_api'
 
 describe Bigbluebutton::Api::RoomsController do
   render_views
-  let!(:room) { FactoryGirl.create(:bigbluebutton_room) }
+  let!(:room) { FactoryBot.create(:bigbluebutton_room) }
 
   before {
     @previous = BigbluebuttonRails.configuration.api_secret
@@ -120,7 +120,7 @@ describe Bigbluebutton::Api::RoomsController do
     end
 
     context "content" do
-      let(:owner) { FactoryGirl.create(:bigbluebutton_server) } # could be any model
+      let(:owner) { FactoryBot.create(:bigbluebutton_server) } # could be any model
       before { room.update_attributes(owner: owner) }
       before(:each) { get :index, format: :json }
 
@@ -143,8 +143,8 @@ describe Bigbluebutton::Api::RoomsController do
 
     context "filtering" do
       before { room.update_attributes(name: "La Lo", slug: "lalo-1") }
-      let!(:room2) { FactoryGirl.create(:bigbluebutton_room, name: "La Le", slug: "lale-2") }
-      let!(:room3) { FactoryGirl.create(:bigbluebutton_room, name: "Li Lo", slug: "lilo") }
+      let!(:room2) { FactoryBot.create(:bigbluebutton_room, name: "La Le", slug: "lale-2") }
+      let!(:room3) { FactoryBot.create(:bigbluebutton_room, name: "Li Lo", slug: "lilo") }
 
       context "filters by terms" do
         before(:each) { get :index, filter: { terms: 'la' }, format: :json }
@@ -167,8 +167,8 @@ describe Bigbluebutton::Api::RoomsController do
     end
 
     context "sorting" do
-      let!(:room2) { FactoryGirl.create(:bigbluebutton_room, name: room.name + "-2") }
-      let!(:room3) { FactoryGirl.create(:bigbluebutton_room, name: room.name + "-3") }
+      let!(:room2) { FactoryBot.create(:bigbluebutton_room, name: room.name + "-2") }
+      let!(:room3) { FactoryBot.create(:bigbluebutton_room, name: room.name + "-3") }
 
       context "orders by name" do
         before(:each) { get :index, sort: 'name', format: :json }
@@ -193,9 +193,9 @@ describe Bigbluebutton::Api::RoomsController do
 
       context "orders by activity" do
         before {
-          FactoryGirl.create(:bigbluebutton_meeting, create_time: Time.now - 2.hours, room: room)
-          FactoryGirl.create(:bigbluebutton_meeting, create_time: Time.now, room: room2)
-          FactoryGirl.create(:bigbluebutton_meeting, create_time: Time.now - 1.hour, room: room3)
+          FactoryBot.create(:bigbluebutton_meeting, create_time: Time.now - 2.hours, room: room)
+          FactoryBot.create(:bigbluebutton_meeting, create_time: Time.now, room: room2)
+          FactoryBot.create(:bigbluebutton_meeting, create_time: Time.now - 1.hour, room: room3)
         }
         before(:each) { get :index, sort: 'activity', format: :json }
         it { JSON.parse(response.body)['data'][0]['attributes']['name'].should eql(room2.name) }
@@ -205,9 +205,9 @@ describe Bigbluebutton::Api::RoomsController do
 
       context "orders by activity DESC" do
         before {
-          FactoryGirl.create(:bigbluebutton_meeting, create_time: Time.now - 2.hours, room: room)
-          FactoryGirl.create(:bigbluebutton_meeting, create_time: Time.now, room: room2)
-          FactoryGirl.create(:bigbluebutton_meeting, create_time: Time.now - 1.hour, room: room3)
+          FactoryBot.create(:bigbluebutton_meeting, create_time: Time.now - 2.hours, room: room)
+          FactoryBot.create(:bigbluebutton_meeting, create_time: Time.now, room: room2)
+          FactoryBot.create(:bigbluebutton_meeting, create_time: Time.now - 1.hour, room: room3)
         }
         before(:each) { get :index, sort: '-activity', format: :json }
         it { JSON.parse(response.body)['data'][0]['attributes']['name'].should eql(room.name) }
@@ -217,9 +217,9 @@ describe Bigbluebutton::Api::RoomsController do
 
       context "doesn't order by anything else" do
         before {
-          FactoryGirl.create(:bigbluebutton_room, attendee_key: "2")
-          FactoryGirl.create(:bigbluebutton_room, attendee_key: "1")
-          FactoryGirl.create(:bigbluebutton_room, attendee_key: "0")
+          FactoryBot.create(:bigbluebutton_room, attendee_key: "2")
+          FactoryBot.create(:bigbluebutton_room, attendee_key: "1")
+          FactoryBot.create(:bigbluebutton_room, attendee_key: "0")
         }
         before(:each) { get :index, sort: 'attendee_key', format: :json }
         it { JSON.parse(response.body)['data'][0]['attributes']['name'].should eql(room.name) }
@@ -231,7 +231,7 @@ describe Bigbluebutton::Api::RoomsController do
     context "pagination" do
       context "limits to 10 by default" do
         before {
-          15.times { FactoryGirl.create(:bigbluebutton_room) }
+          15.times { FactoryBot.create(:bigbluebutton_room) }
         }
         before(:each) { get :index, format: :json }
         it { JSON.parse(response.body)['data'].length.should be(10) }
@@ -239,7 +239,7 @@ describe Bigbluebutton::Api::RoomsController do
 
       context "paginates" do
         before {
-          9.times { FactoryGirl.create(:bigbluebutton_room) }
+          9.times { FactoryBot.create(:bigbluebutton_room) }
           @rooms = BigbluebuttonRoom.order('name').all
         }
 

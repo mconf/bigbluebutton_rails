@@ -7,13 +7,13 @@ include BigbluebuttonRailsHelper
 
 describe Bigbluebutton::RoomsController do
   render_views
-  let!(:server) { FactoryGirl.create(:bigbluebutton_server) }
-  let!(:room) { FactoryGirl.create(:bigbluebutton_room) }
+  let!(:server) { FactoryBot.create(:bigbluebutton_server) }
+  let!(:room) { FactoryBot.create(:bigbluebutton_room) }
   let(:params_to_ignore) { ['moderator_api_password', 'attendee_api_password', 'create_time'] }
 
   describe "#index" do
     context "basic" do
-      before { 3.times { FactoryGirl.create(:bigbluebutton_room) } }
+      before { 3.times { FactoryBot.create(:bigbluebutton_room) } }
       before(:each) { get :index }
       it { should respond_with(:success) }
       it { should assign_to(:rooms).with(BigbluebuttonRoom.all) }
@@ -21,9 +21,9 @@ describe Bigbluebutton::RoomsController do
     end
 
     context "doesn't override @rooms" do
-      let!(:my_rooms) { [ FactoryGirl.create(:bigbluebutton_room), FactoryGirl.create(:bigbluebutton_room) ] }
+      let!(:my_rooms) { [ FactoryBot.create(:bigbluebutton_room), FactoryBot.create(:bigbluebutton_room) ] }
       before {
-        3.times { FactoryGirl.create(:bigbluebutton_room) }
+        3.times { FactoryBot.create(:bigbluebutton_room) }
         controller.instance_variable_set(:@rooms, my_rooms)
       }
       before(:each) { get :index }
@@ -40,7 +40,7 @@ describe Bigbluebutton::RoomsController do
     end
 
     context "doesn't override @room" do
-      let!(:other_room) { FactoryGirl.create(:bigbluebutton_room) }
+      let!(:other_room) { FactoryBot.create(:bigbluebutton_room) }
       before { controller.instance_variable_set(:@room, other_room) }
       before(:each) { get :show, :id => room.to_param }
       it { should assign_to(:room).with(other_room) }
@@ -56,7 +56,7 @@ describe Bigbluebutton::RoomsController do
     end
 
     context "doesn't override @room" do
-      let!(:other_room) { FactoryGirl.create(:bigbluebutton_room) }
+      let!(:other_room) { FactoryBot.create(:bigbluebutton_room) }
       before { controller.instance_variable_set(:@room, other_room) }
       before(:each) { get :new }
       it { should assign_to(:room).with(other_room) }
@@ -72,7 +72,7 @@ describe Bigbluebutton::RoomsController do
     end
 
     context "doesn't override @room" do
-      let!(:other_room) { FactoryGirl.create(:bigbluebutton_room) }
+      let!(:other_room) { FactoryBot.create(:bigbluebutton_room) }
       before { controller.instance_variable_set(:@room, other_room) }
       before(:each) { get :edit, :id => room.to_param }
       it { should assign_to(:room).with(other_room) }
@@ -80,8 +80,8 @@ describe Bigbluebutton::RoomsController do
   end
 
   describe "#join_mobile" do
-    let(:user) { FactoryGirl.build(:user) }
-    let(:room) { FactoryGirl.create(:bigbluebutton_room) }
+    let(:user) { FactoryBot.build(:user) }
+    let(:room) { FactoryBot.create(:bigbluebutton_room) }
     let(:http_referer) { bigbluebutton_room_path(room) }
     before {
       request.env["HTTP_REFERER"] = http_referer
@@ -129,7 +129,7 @@ describe Bigbluebutton::RoomsController do
     end
 
     context "doesn't override @room" do
-      let!(:other_room) { FactoryGirl.create(:bigbluebutton_room) }
+      let!(:other_room) { FactoryBot.create(:bigbluebutton_room) }
       before { controller.instance_variable_set(:@room, other_room) }
       before(:each) { get :join_mobile, :id => room.to_param }
       it { should assign_to(:room).with(other_room) }
@@ -137,7 +137,7 @@ describe Bigbluebutton::RoomsController do
   end
 
   describe "#create" do
-    let(:new_room) { FactoryGirl.build(:bigbluebutton_room) }
+    let(:new_room) { FactoryBot.build(:bigbluebutton_room) }
 
     context "on success" do
       before :each do
@@ -203,7 +203,7 @@ describe Bigbluebutton::RoomsController do
     end
 
     describe "params handling" do
-      let(:attrs) { FactoryGirl.attributes_for(:bigbluebutton_room) }
+      let(:attrs) { FactoryBot.attributes_for(:bigbluebutton_room) }
       let(:params) { { :bigbluebutton_room => attrs } }
       let(:allowed_params) {
         [ :name, :meetingid, :attendee_key, :moderator_key, :welcome_msg,
@@ -237,7 +237,7 @@ describe Bigbluebutton::RoomsController do
     end
 
     context "doesn't override @room" do
-      let!(:other_room) { FactoryGirl.create(:bigbluebutton_room) }
+      let!(:other_room) { FactoryBot.create(:bigbluebutton_room) }
       before { controller.instance_variable_set(:@room, other_room) }
       before(:each) { post :create, :bigbluebutton_room => new_room.attributes }
       it { should assign_to(:room).with(other_room) }
@@ -245,7 +245,7 @@ describe Bigbluebutton::RoomsController do
   end
 
   describe "#update" do
-    let(:new_room) { FactoryGirl.build(:bigbluebutton_room) }
+    let(:new_room) { FactoryBot.build(:bigbluebutton_room) }
 
     context "on success" do
       before :each do
@@ -294,7 +294,7 @@ describe Bigbluebutton::RoomsController do
     end
 
     describe "params handling" do
-      let(:attrs) { FactoryGirl.attributes_for(:bigbluebutton_room) }
+      let(:attrs) { FactoryBot.attributes_for(:bigbluebutton_room) }
       let(:params) { { :bigbluebutton_room => attrs } }
       let(:allowed_params) {
         [ :name, :meetingid, :attendee_key, :moderator_key, :welcome_msg,
@@ -326,7 +326,7 @@ describe Bigbluebutton::RoomsController do
     end
 
     context "doesn't override @room" do
-      let!(:other_room) { FactoryGirl.create(:bigbluebutton_room) }
+      let!(:other_room) { FactoryBot.create(:bigbluebutton_room) }
       before { controller.instance_variable_set(:@room, other_room) }
       before(:each) { put :update, :id => room.to_param, :bigbluebutton_room => new_room.attributes }
       it { should assign_to(:room).with(other_room) }
@@ -392,7 +392,7 @@ describe Bigbluebutton::RoomsController do
     end
 
     context "doesn't override @room" do
-      let!(:other_room) { FactoryGirl.create(:bigbluebutton_room) }
+      let!(:other_room) { FactoryBot.create(:bigbluebutton_room) }
       before { controller.instance_variable_set(:@room, other_room) }
       before(:each) { delete :destroy, :id => room.to_param }
       it { should assign_to(:room).with(other_room) }
@@ -426,7 +426,7 @@ describe Bigbluebutton::RoomsController do
     end
 
     context "doesn't override @room" do
-      let!(:other_room) { FactoryGirl.create(:bigbluebutton_room) }
+      let!(:other_room) { FactoryBot.create(:bigbluebutton_room) }
       before {
         controller.stub(:running)
         controller.instance_variable_set(:@room, other_room)
@@ -442,7 +442,7 @@ describe Bigbluebutton::RoomsController do
   end
 
   describe "#join" do
-    let(:user) { FactoryGirl.build(:user) }
+    let(:user) { FactoryBot.build(:user) }
     let(:http_referer) { bigbluebutton_room_path(room) }
     before {
       request.env["HTTP_REFERER"] = http_referer
@@ -480,7 +480,7 @@ describe Bigbluebutton::RoomsController do
           end
 
           context "doesn't override @room" do
-            let!(:other_room) { FactoryGirl.create(:bigbluebutton_room) }
+            let!(:other_room) { FactoryBot.create(:bigbluebutton_room) }
             before {
               controller.instance_variable_set(:@room, other_room)
               other_room.stub(:fetch_is_running?).and_return(true)
@@ -724,7 +724,7 @@ describe Bigbluebutton::RoomsController do
     end
 
     context "doesn't override @room" do
-      let!(:other_room) { FactoryGirl.create(:bigbluebutton_room) }
+      let!(:other_room) { FactoryBot.create(:bigbluebutton_room) }
       before {
         controller.instance_variable_set(:@room, other_room)
         other_room.stub(:fetch_is_running?).and_return(true)
@@ -736,7 +736,7 @@ describe Bigbluebutton::RoomsController do
 
   describe "#invite" do
     before { mock_server_and_api }
-    let(:user) { FactoryGirl.build(:user) }
+    let(:user) { FactoryBot.build(:user) }
     before { controller.stub(:bigbluebutton_user).and_return(user) }
 
     context "when the user has a role defined" do
@@ -769,7 +769,7 @@ describe Bigbluebutton::RoomsController do
     end
 
     context "doesn't override @room" do
-      let!(:other_room) { FactoryGirl.create(:bigbluebutton_room) }
+      let!(:other_room) { FactoryBot.create(:bigbluebutton_room) }
       before { controller.instance_variable_set(:@room, other_room) }
       before(:each) { get :invite, :id => room.to_param }
       it { should assign_to(:room).with(other_room) }
@@ -850,7 +850,7 @@ describe Bigbluebutton::RoomsController do
     end
 
     context "doesn't override @room" do
-      let!(:other_room) { FactoryGirl.create(:bigbluebutton_room) }
+      let!(:other_room) { FactoryBot.create(:bigbluebutton_room) }
       before {
         controller.instance_variable_set(:@room, other_room)
       }
@@ -861,13 +861,13 @@ describe Bigbluebutton::RoomsController do
 
   describe "#recordings" do
     before do
-      @recording1 = FactoryGirl.create(:bigbluebutton_recording, :room => room)
-      @recording2 = FactoryGirl.create(:bigbluebutton_recording, :room => room)
-      FactoryGirl.create(:bigbluebutton_recording)
+      @recording1 = FactoryBot.create(:bigbluebutton_recording, :room => room)
+      @recording2 = FactoryBot.create(:bigbluebutton_recording, :room => room)
+      FactoryBot.create(:bigbluebutton_recording)
 
       # one that belongs to another room in the same server
-      room2 = FactoryGirl.create(:bigbluebutton_room)
-      FactoryGirl.create(:bigbluebutton_recording, :room => room2)
+      room2 = FactoryBot.create(:bigbluebutton_room)
+      FactoryBot.create(:bigbluebutton_recording, :room => room2)
     end
     before(:each) { get :recordings, :id => room.to_param }
     it { should respond_with(:success) }
@@ -946,7 +946,7 @@ describe Bigbluebutton::RoomsController do
     end
 
     context "doesn't override @room" do
-      let!(:other_room) { FactoryGirl.create(:bigbluebutton_room) }
+      let!(:other_room) { FactoryBot.create(:bigbluebutton_room) }
       before { controller.instance_variable_set(:@room, other_room) }
       before(:each) { get :recordings, :id => room.to_param }
       it { should assign_to(:room).with(other_room) }
@@ -954,11 +954,11 @@ describe Bigbluebutton::RoomsController do
 
     context "doesn't override @recordings" do
       let!(:my_recordings) {
-        [ FactoryGirl.create(:bigbluebutton_recording, room: room),
-          FactoryGirl.create(:bigbluebutton_recording, room: room) ]
+        [ FactoryBot.create(:bigbluebutton_recording, room: room),
+          FactoryBot.create(:bigbluebutton_recording, room: room) ]
       }
       before {
-        3.times { FactoryGirl.create(:bigbluebutton_recording, room: room) }
+        3.times { FactoryBot.create(:bigbluebutton_recording, room: room) }
         controller.instance_variable_set(:@recordings, my_recordings)
       }
       before(:each) { get :recordings, :id => room.to_param }
@@ -969,7 +969,7 @@ describe Bigbluebutton::RoomsController do
   # Test #join_internal using #join because it's easier and cleaner than the other
   # actions that also call #join_internal.
   describe "#join_internal" do
-    let(:user) { FactoryGirl.build(:user) }
+    let(:user) { FactoryBot.build(:user) }
     let(:http_referer) { bigbluebutton_room_path(room) }
     before {
       request.env["HTTP_REFERER"] = http_referer
@@ -1026,7 +1026,7 @@ describe Bigbluebutton::RoomsController do
 
       context "if the current_meeting is not blank" do
         let(:room) do
-          FactoryGirl.create(:bigbluebutton_room_with_meetings,
+          FactoryBot.create(:bigbluebutton_room_with_meetings,
                              last_meeting_create_time: time)
         end
         before do

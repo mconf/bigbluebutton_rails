@@ -1,5 +1,5 @@
 When /^registers a new room$/i do
-  attrs = FactoryGirl.attributes_for(:bigbluebutton_room, :server => @server)
+  attrs = FactoryBot.attributes_for(:bigbluebutton_room, :server => @server)
   fill_in("bigbluebutton_room[name]", :with => attrs[:name])
   fill_in("bigbluebutton_room[meetingid]", :with => attrs[:meetingid])
   check("bigbluebutton_room[private]") if attrs[:private]
@@ -16,7 +16,7 @@ When /^registers a new room$/i do
 end
 
 When /^registers a new room with wrong parameters$/i do
-  attrs = FactoryGirl.attributes_for(:bigbluebutton_room, :server => @server)
+  attrs = FactoryBot.attributes_for(:bigbluebutton_room, :server => @server)
   fill_in("bigbluebutton_room[name]", :with => nil) # invalid
   fill_in("bigbluebutton_room[meetingid]", :with => attrs[:meetingid])
   check("bigbluebutton_room[private]") if attrs[:private]

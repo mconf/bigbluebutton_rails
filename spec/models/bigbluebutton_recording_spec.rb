@@ -28,9 +28,9 @@ describe BigbluebuttonRecording do
 
     describe "#published" do
       before :each do
-        @recording1 = FactoryGirl.create(:bigbluebutton_recording, :published => false)
-        @recording2 = FactoryGirl.create(:bigbluebutton_recording, :published => true)
-        @recording3 = FactoryGirl.create(:bigbluebutton_recording, :published => true)
+        @recording1 = FactoryBot.create(:bigbluebutton_recording, :published => false)
+        @recording2 = FactoryBot.create(:bigbluebutton_recording, :published => true)
+        @recording3 = FactoryBot.create(:bigbluebutton_recording, :published => true)
       end
       it { BigbluebuttonRecording.published.should == [@recording2, @recording3] }
     end
@@ -40,7 +40,7 @@ describe BigbluebuttonRecording do
   describe "#to_param" do
     it { should respond_to(:to_param) }
     it {
-      s = FactoryGirl.create(:bigbluebutton_recording)
+      s = FactoryBot.create(:bigbluebutton_recording)
       s.to_param.should be(s.recordid)
     }
   end
@@ -48,10 +48,10 @@ describe BigbluebuttonRecording do
   describe "#get_token" do
     it { should respond_to(:get_token) }
 
-    let!(:recording) { FactoryGirl.create(:bigbluebutton_recording) }
-    let!(:type_default) { FactoryGirl.create(:bigbluebutton_playback_type, default: true) }
-    let!(:server) { FactoryGirl.create(:bigbluebutton_server) }
-    let(:user) { FactoryGirl.build(:user) }
+    let!(:recording) { FactoryBot.create(:bigbluebutton_recording) }
+    let!(:type_default) { FactoryBot.create(:bigbluebutton_playback_type, default: true) }
+    let!(:server) { FactoryBot.create(:bigbluebutton_server) }
+    let(:user) { FactoryBot.build(:user) }
     let(:user_ip) { "10.0.0.1" }
     let(:api) { double(BigBlueButton::BigBlueButtonApi) }
 
@@ -66,9 +66,9 @@ describe BigbluebuttonRecording do
   describe "#server" do
     it { should respond_to(:server) }
 
-    let!(:room) { FactoryGirl.create(:bigbluebutton_room) }
-    let!(:recording) { FactoryGirl.create(:bigbluebutton_recording, room: room) }
-    let!(:server) { FactoryGirl.create(:bigbluebutton_server) }
+    let!(:room) { FactoryBot.create(:bigbluebutton_room) }
+    let!(:recording) { FactoryBot.create(:bigbluebutton_recording, room: room) }
+    let!(:server) { FactoryBot.create(:bigbluebutton_server) }
 
     before do
       BigbluebuttonRoom.any_instance.stub(:server).and_return(server)
@@ -80,12 +80,12 @@ describe BigbluebuttonRecording do
   describe "#token_url" do
     it { should respond_to(:token_url) }
 
-    let!(:recording) { FactoryGirl.create(:bigbluebutton_recording) }
-    let!(:type_default) { FactoryGirl.create(:bigbluebutton_playback_type, default: true) }
-    let!(:server) { FactoryGirl.create(:bigbluebutton_server) }
-    let(:user) { FactoryGirl.build(:user) }
+    let!(:recording) { FactoryBot.create(:bigbluebutton_recording) }
+    let!(:type_default) { FactoryBot.create(:bigbluebutton_playback_type, default: true) }
+    let!(:server) { FactoryBot.create(:bigbluebutton_server) }
+    let(:user) { FactoryBot.build(:user) }
     let(:user_ip) { "10.0.0.1" }
-    let!(:format) { FactoryGirl.create(:bigbluebutton_playback_format, recording: recording, playback_type: type_default) }
+    let!(:format) { FactoryBot.create(:bigbluebutton_playback_format, recording: recording, playback_type: type_default) }
     let(:api) { double(BigBlueButton::BigBlueButtonApi) }
 
     before do
@@ -97,28 +97,28 @@ describe BigbluebuttonRecording do
   end
 
   describe "#default_playback_format" do
-    let!(:recording) { FactoryGirl.create(:bigbluebutton_recording) }
-    let!(:type_default) { FactoryGirl.create(:bigbluebutton_playback_type, default: true) }
-    let!(:type_other) { FactoryGirl.create(:bigbluebutton_playback_type, default: false) }
-    let!(:format1) { FactoryGirl.create(:bigbluebutton_playback_format, recording: recording, playback_type: type_other) }
-    let!(:format2) { FactoryGirl.create(:bigbluebutton_playback_format, recording: recording, playback_type: type_default) }
-    let!(:format3) { FactoryGirl.create(:bigbluebutton_playback_format, recording: recording, playback_type: type_other) }
+    let!(:recording) { FactoryBot.create(:bigbluebutton_recording) }
+    let!(:type_default) { FactoryBot.create(:bigbluebutton_playback_type, default: true) }
+    let!(:type_other) { FactoryBot.create(:bigbluebutton_playback_type, default: false) }
+    let!(:format1) { FactoryBot.create(:bigbluebutton_playback_format, recording: recording, playback_type: type_other) }
+    let!(:format2) { FactoryBot.create(:bigbluebutton_playback_format, recording: recording, playback_type: type_default) }
+    let!(:format3) { FactoryBot.create(:bigbluebutton_playback_format, recording: recording, playback_type: type_other) }
 
     context "in a normal situation" do
       it { recording.default_playback_format.should eql(format2) }
     end
 
     context "when there's more than one format of the default type" do
-      let!(:format4) { FactoryGirl.create(:bigbluebutton_playback_format, recording: recording, playback_type: type_default) }
+      let!(:format4) { FactoryBot.create(:bigbluebutton_playback_format, recording: recording, playback_type: type_default) }
       it { recording.default_playback_format.should eql(format2) }
     end
   end
 
   describe "#delete_from_server" do
-    let!(:recording) { FactoryGirl.create(:bigbluebutton_recording) }
+    let!(:recording) { FactoryBot.create(:bigbluebutton_recording) }
 
     context "when there's a server" do
-      let!(:server) { FactoryGirl.create(:bigbluebutton_server) }
+      let!(:server) { FactoryBot.create(:bigbluebutton_server) }
       before {
         recording.should_receive(:server).and_return(server)
         server.should_receive(:send_delete_recordings).with(recording.recordid).and_return('response')
@@ -140,14 +140,14 @@ describe BigbluebuttonRecording do
     end
 
     context "when there are a few recordings" do
-      let!(:recording1) { FactoryGirl.create(:bigbluebutton_recording) }
-      let!(:recording2) { FactoryGirl.create(:bigbluebutton_recording) }
-      let!(:type_default) { FactoryGirl.create(:bigbluebutton_playback_type, default: true) }
-      let!(:type_other) { FactoryGirl.create(:bigbluebutton_playback_type, default: false) }
-      let!(:format_other_rec1) { FactoryGirl.create(:bigbluebutton_playback_format, recording: recording1, playback_type: type_other, length: 50) }
-      let!(:format_default_rec1) { FactoryGirl.create(:bigbluebutton_playback_format, recording: recording1, playback_type: type_default, length: 100) }
-      let!(:format_other_rec2) { FactoryGirl.create(:bigbluebutton_playback_format, recording: recording2, playback_type: type_other, length: 50) }
-      let!(:format_default_rec2) { FactoryGirl.create(:bigbluebutton_playback_format, recording: recording2, playback_type: type_default, length: 100) }
+      let!(:recording1) { FactoryBot.create(:bigbluebutton_recording) }
+      let!(:recording2) { FactoryBot.create(:bigbluebutton_recording) }
+      let!(:type_default) { FactoryBot.create(:bigbluebutton_playback_type, default: true) }
+      let!(:type_other) { FactoryBot.create(:bigbluebutton_playback_type, default: false) }
+      let!(:format_other_rec1) { FactoryBot.create(:bigbluebutton_playback_format, recording: recording1, playback_type: type_other, length: 50) }
+      let!(:format_default_rec1) { FactoryBot.create(:bigbluebutton_playback_format, recording: recording1, playback_type: type_default, length: 100) }
+      let!(:format_other_rec2) { FactoryBot.create(:bigbluebutton_playback_format, recording: recording2, playback_type: type_other, length: 50) }
+      let!(:format_default_rec2) { FactoryBot.create(:bigbluebutton_playback_format, recording: recording2, playback_type: type_default, length: 100) }
 
       it { BigbluebuttonRecording.overall_average_length.should eql(6000.0) }
     end
@@ -159,8 +159,8 @@ describe BigbluebuttonRecording do
     end
 
     context "when there are a few recordings" do
-      let!(:recording1) { FactoryGirl.create(:bigbluebutton_recording, size: 100000000) } # 100 MB
-      let!(:recording2) { FactoryGirl.create(:bigbluebutton_recording, size: 200000000) } # 200 MB
+      let!(:recording1) { FactoryBot.create(:bigbluebutton_recording, size: 100000000) } # 100 MB
+      let!(:recording2) { FactoryBot.create(:bigbluebutton_recording, size: 200000000) } # 200 MB
 
       it { BigbluebuttonRecording.overall_average_size.should eql(150000000) }
     end
@@ -209,7 +209,7 @@ describe BigbluebuttonRecording do
         size: data[:size],
         state: data[:state],
       }
-      r = FactoryGirl.create(:bigbluebutton_recording, attrs)
+      r = FactoryBot.create(:bigbluebutton_recording, attrs)
       data[:metadata].each do |k, v|
         BigbluebuttonMetadata.create(owner: r, name: k, content: v)
       end
@@ -414,9 +414,9 @@ describe BigbluebuttonRecording do
         }
       }]
     }
-    let(:new_server) { FactoryGirl.create(:bigbluebutton_server) }
+    let(:new_server) { FactoryBot.create(:bigbluebutton_server) }
     before {
-      @room = FactoryGirl.create(:bigbluebutton_room, :meetingid => "meetingid-1")
+      @room = FactoryBot.create(:bigbluebutton_room, :meetingid => "meetingid-1")
     }
 
     context "adds new recordings" do
@@ -453,7 +453,7 @@ describe BigbluebuttonRecording do
     context "updates existing recordings" do
       before {
         # pre-existing recording, with same id but the rest is different
-        FactoryGirl.create(:bigbluebutton_recording, :recordid => data[0][:recordID])
+        FactoryBot.create(:bigbluebutton_recording, :recordid => data[0][:recordID])
         BigbluebuttonRecording.sync(new_server, data)
         @recording = BigbluebuttonRecording.last
       }
@@ -486,7 +486,7 @@ describe BigbluebuttonRecording do
     context "doesn't remove recordings" do
       before {
         # pre-existing recording that shouldn't be removed
-        FactoryGirl.create(:bigbluebutton_recording)
+        FactoryBot.create(:bigbluebutton_recording)
         BigbluebuttonRecording.sync(new_server, data)
       }
       it { BigbluebuttonRecording.count.should == 2 }
@@ -496,10 +496,10 @@ describe BigbluebuttonRecording do
       context "for recordings in multiple servers" do
         before {
           BigbluebuttonRecording.delete_all
-          @r1 = FactoryGirl.create(:bigbluebutton_recording, :available => true)
-          @r2 = FactoryGirl.create(:bigbluebutton_recording, :available => true)
-          @r3 = FactoryGirl.create(:bigbluebutton_recording, :available => true)
-          @r4 = FactoryGirl.create(:bigbluebutton_recording, :available => true)
+          @r1 = FactoryBot.create(:bigbluebutton_recording, :available => true)
+          @r2 = FactoryBot.create(:bigbluebutton_recording, :available => true)
+          @r3 = FactoryBot.create(:bigbluebutton_recording, :available => true)
+          @r4 = FactoryBot.create(:bigbluebutton_recording, :available => true)
           scope_server_recordings = BigbluebuttonRecording.where(id: [@r1, @r2].map(&:id))
           BigbluebuttonRecording.sync(new_server, data, scope_server_recordings)
         }
@@ -512,8 +512,8 @@ describe BigbluebuttonRecording do
 
       context "when there are no recordings in the target server" do
         before {
-          @r1 = FactoryGirl.create(:bigbluebutton_recording, :available => true)
-          @r2 = FactoryGirl.create(:bigbluebutton_recording, :available => true)
+          @r1 = FactoryBot.create(:bigbluebutton_recording, :available => true)
+          @r2 = FactoryBot.create(:bigbluebutton_recording, :available => true)
           scope_server_recordings = BigbluebuttonRecording.where(id: [].map(&:id))
           BigbluebuttonRecording.sync(new_server, data, scope_server_recordings)
         }
@@ -524,8 +524,8 @@ describe BigbluebuttonRecording do
       context "when there are no recordings in other servers" do
         before {
           BigbluebuttonRecording.delete_all
-          @r1 = FactoryGirl.create(:bigbluebutton_recording, :available => true)
-          @r2 = FactoryGirl.create(:bigbluebutton_recording, :available => true)
+          @r1 = FactoryBot.create(:bigbluebutton_recording, :available => true)
+          @r2 = FactoryBot.create(:bigbluebutton_recording, :available => true)
           scope_server_recordings = BigbluebuttonRecording.where(id: [@r1, @r2].map(&:id))
           BigbluebuttonRecording.sync(new_server, data, scope_server_recordings)
         }
@@ -535,13 +535,13 @@ describe BigbluebuttonRecording do
       end
 
       context "when updating for a single room" do
-        let(:target_room) { FactoryGirl.create(:bigbluebutton_room) }
+        let(:target_room) { FactoryBot.create(:bigbluebutton_room) }
         before {
           BigbluebuttonRecording.delete_all
-          @r1 = FactoryGirl.create(:bigbluebutton_recording, :available => true, :room => target_room)
-          @r2 = FactoryGirl.create(:bigbluebutton_recording, :available => true, :room => target_room)
-          @r3 = FactoryGirl.create(:bigbluebutton_recording, :available => true, :room => FactoryGirl.create(:bigbluebutton_room))
-          @r4 = FactoryGirl.create(:bigbluebutton_recording, :available => true, :room => FactoryGirl.create(:bigbluebutton_room))
+          @r1 = FactoryBot.create(:bigbluebutton_recording, :available => true, :room => target_room)
+          @r2 = FactoryBot.create(:bigbluebutton_recording, :available => true, :room => target_room)
+          @r3 = FactoryBot.create(:bigbluebutton_recording, :available => true, :room => FactoryBot.create(:bigbluebutton_room))
+          @r4 = FactoryBot.create(:bigbluebutton_recording, :available => true, :room => FactoryBot.create(:bigbluebutton_room))
           BigbluebuttonRecording.sync(new_server, data, BigbluebuttonRecording.where(room: target_room))
         }
         it ("recording from the target server") { @r1.reload.available.should == false }
@@ -555,10 +555,10 @@ describe BigbluebuttonRecording do
           sync_started_at = DateTime.now
 
           BigbluebuttonRecording.delete_all
-          @r1 = FactoryGirl.create(:bigbluebutton_recording, :available => true, created_at: sync_started_at + 1.hour)
-          @r2 = FactoryGirl.create(:bigbluebutton_recording, :available => true, created_at: sync_started_at + 1.second)
-          @r3 = FactoryGirl.create(:bigbluebutton_recording, :available => true, created_at: sync_started_at)
-          @r4 = FactoryGirl.create(:bigbluebutton_recording, :available => true, created_at: sync_started_at - 1.second)
+          @r1 = FactoryBot.create(:bigbluebutton_recording, :available => true, created_at: sync_started_at + 1.hour)
+          @r2 = FactoryBot.create(:bigbluebutton_recording, :available => true, created_at: sync_started_at + 1.second)
+          @r3 = FactoryBot.create(:bigbluebutton_recording, :available => true, created_at: sync_started_at)
+          @r4 = FactoryBot.create(:bigbluebutton_recording, :available => true, created_at: sync_started_at - 1.second)
           scope = BigbluebuttonRecording.where(id: [@r1, @r2, @r3, @r4].map(&:id))
 
           BigbluebuttonRecording.sync(new_server, data, scope, sync_started_at)
@@ -574,7 +574,7 @@ describe BigbluebuttonRecording do
     context "sets recording that are in the parameters as available in a full sync" do
       before {
         BigbluebuttonRecording.delete_all
-        @r = FactoryGirl.create(:bigbluebutton_recording, :available => false, :recordid => data[0][:recordID])
+        @r = FactoryBot.create(:bigbluebutton_recording, :available => false, :recordid => data[0][:recordID])
         # so it creates the recording the first time
         scope = BigbluebuttonRecording.where(id: [@r].map(&:id))
         BigbluebuttonRecording.sync(new_server, data, scope)
@@ -590,10 +590,10 @@ describe BigbluebuttonRecording do
     context "doesn't set recordings that are not in the parameters as unavailable if not in a full sync" do
       before {
         BigbluebuttonRecording.delete_all
-        @r1 = FactoryGirl.create(:bigbluebutton_recording, :available => true)
-        @r2 = FactoryGirl.create(:bigbluebutton_recording, :available => true)
-        @r3 = FactoryGirl.create(:bigbluebutton_recording, :available => true)
-        @r4 = FactoryGirl.create(:bigbluebutton_recording, :available => true)
+        @r1 = FactoryBot.create(:bigbluebutton_recording, :available => true)
+        @r2 = FactoryBot.create(:bigbluebutton_recording, :available => true)
+        @r3 = FactoryBot.create(:bigbluebutton_recording, :available => true)
+        @r4 = FactoryBot.create(:bigbluebutton_recording, :available => true)
         BigbluebuttonRecording.sync(new_server, data)
       }
       it { @r1.reload.available.should == true }
@@ -635,8 +635,8 @@ describe BigbluebuttonRecording do
 
     context "when there are unused playback types on the database" do
       before {
-        FactoryGirl.create(:bigbluebutton_playback_type, :identifier => "to-be-removed")
-        FactoryGirl.create(:bigbluebutton_playback_type, :identifier => "another")
+        FactoryBot.create(:bigbluebutton_playback_type, :identifier => "to-be-removed")
+        FactoryBot.create(:bigbluebutton_playback_type, :identifier => "another")
         BigbluebuttonRecording.sync(new_server, data)
       }
       it { BigbluebuttonPlaybackType.count.should == 2 }
@@ -665,9 +665,9 @@ describe BigbluebuttonRecording do
   end
 
   describe ".update_recording" do
-    let(:old_attrs) { FactoryGirl.attributes_for(:bigbluebutton_recording) }
-    let(:attrs) { FactoryGirl.attributes_for(:bigbluebutton_recording) }
-    let(:recording) { FactoryGirl.create(:bigbluebutton_recording, old_attrs) }
+    let(:old_attrs) { FactoryBot.attributes_for(:bigbluebutton_recording) }
+    let(:attrs) { FactoryBot.attributes_for(:bigbluebutton_recording) }
+    let(:recording) { FactoryBot.create(:bigbluebutton_recording, old_attrs) }
     let(:data) {
       {
         :recordid => attrs[:recordid],
@@ -683,11 +683,11 @@ describe BigbluebuttonRecording do
         :playback => { :format => [ { :type => "any1" }, { :type => "any2" } ] }
       }
     }
-    let(:new_server) { FactoryGirl.create(:bigbluebutton_server) }
+    let(:new_server) { FactoryBot.create(:bigbluebutton_server) }
 
     context "default behavior" do
       before {
-        @room = FactoryGirl.create(:bigbluebutton_room, :meetingid => attrs[:meetingid])
+        @room = FactoryBot.create(:bigbluebutton_room, :meetingid => attrs[:meetingid])
         BigbluebuttonRecording.should_receive(:sync_additional_data)
           .with(recording, data)
         BigbluebuttonRecording.send(:update_recording, new_server, recording, data)
@@ -725,7 +725,7 @@ describe BigbluebuttonRecording do
     context "creates a new meeting if recording has room_id and meetingid but no corresponding meeting" do
       before {
         # make sure the recording has a room_id
-        @room = FactoryGirl.create(:bigbluebutton_room, :meetingid => attrs[:meetingid])
+        @room = FactoryBot.create(:bigbluebutton_room, :meetingid => attrs[:meetingid])
         recording.room = @room
         allow(BigbluebuttonRails.configuration.match_room_recording).to receive(:call).with(data).and_return(@room)
 
@@ -740,7 +740,7 @@ describe BigbluebuttonRecording do
   describe ".create_recording" do
     let(:meeting_create_time) { DateTime.now.utc.to_i }
     let(:recordid) { "#{SecureRandom.uuid}-#{meeting_create_time.to_i}" }
-    let(:attrs) { FactoryGirl.attributes_for(:bigbluebutton_recording) }
+    let(:attrs) { FactoryBot.attributes_for(:bigbluebutton_recording) }
     let(:data) {
       {
         :recordid => recordid,
@@ -755,12 +755,12 @@ describe BigbluebuttonRecording do
         :playback => { :format => [ { :type => "any1" }, { :type => "any2" } ] }
       }
     }
-    let(:new_server) { FactoryGirl.create(:bigbluebutton_server) }
+    let(:new_server) { FactoryBot.create(:bigbluebutton_server) }
 
     context "default behavior" do
       before {
-        @room = FactoryGirl.create(:bigbluebutton_room, :meetingid => attrs[:meetingid])
-        @meeting = FactoryGirl.create(:bigbluebutton_meeting, :room => @room, :create_time => meeting_create_time, :meetingid => attrs[:meetingid])
+        @room = FactoryBot.create(:bigbluebutton_room, :meetingid => attrs[:meetingid])
+        @meeting = FactoryBot.create(:bigbluebutton_meeting, :room => @room, :create_time => meeting_create_time, :meetingid => attrs[:meetingid])
 
         BigbluebuttonRecording.should_receive(:sync_additional_data)
           .with(anything, data)
@@ -782,7 +782,7 @@ describe BigbluebuttonRecording do
 
     context "creates a new meeting if no meeting is found for that recording" do
       before {
-        @room = FactoryGirl.create(:bigbluebutton_room, :meetingid => attrs[:meetingid])
+        @room = FactoryBot.create(:bigbluebutton_room, :meetingid => attrs[:meetingid])
         allow(BigbluebuttonRails.configuration.match_room_recording).to receive(:call).with(data).and_return(@room)
 
         BigbluebuttonRecording.should_receive(:sync_additional_data)
@@ -846,8 +846,8 @@ describe BigbluebuttonRecording do
   end
 
   describe ".sync_additional_data" do
-    let(:attrs) { FactoryGirl.attributes_for(:bigbluebutton_recording) }
-    let(:recording) { FactoryGirl.create(:bigbluebutton_recording) }
+    let(:attrs) { FactoryBot.attributes_for(:bigbluebutton_recording) }
+    let(:recording) { FactoryBot.create(:bigbluebutton_recording) }
     let(:data) {
       {
         :recordID => attrs[:recordid],
@@ -892,7 +892,7 @@ describe BigbluebuttonRecording do
   end
 
   describe ".sync_metadata" do
-    let(:recording) { FactoryGirl.create(:bigbluebutton_recording) }
+    let(:recording) { FactoryBot.create(:bigbluebutton_recording) }
 
     context "updates metadata that are already in the db" do
       let(:metadata) {
@@ -902,9 +902,9 @@ describe BigbluebuttonRecording do
       }
       before {
         # two metadata to be updated
-        @meta1 = FactoryGirl.create(:bigbluebutton_metadata,
+        @meta1 = FactoryBot.create(:bigbluebutton_metadata,
                                     :owner => recording, :name => "course")
-        @meta2 = FactoryGirl.create(:bigbluebutton_metadata,
+        @meta2 = FactoryBot.create(:bigbluebutton_metadata,
                                     :owner => recording, :name => "description")
         BigbluebuttonRecording.send(:sync_metadata, recording, metadata)
       }
@@ -922,9 +922,9 @@ describe BigbluebuttonRecording do
       }
       before {
         # two metadata to be removed
-        FactoryGirl.create(:bigbluebutton_metadata,
+        FactoryBot.create(:bigbluebutton_metadata,
                            :owner => recording, :name => "meta1deleted")
-        FactoryGirl.create(:bigbluebutton_metadata,
+        FactoryBot.create(:bigbluebutton_metadata,
                            :owner => recording, :name => "meta2deleted")
         BigbluebuttonRecording.send(:sync_metadata, recording, metadata)
       }
@@ -951,7 +951,7 @@ describe BigbluebuttonRecording do
   end
 
   describe ".sync_playback_formats" do
-    let(:recording) { FactoryGirl.create(:bigbluebutton_recording) }
+    let(:recording) { FactoryBot.create(:bigbluebutton_recording) }
 
     context "with a single format" do
       let(:data) {
@@ -987,8 +987,8 @@ describe BigbluebuttonRecording do
       context "and it's already in the database" do
         before {
           # one playback format to be updated
-          playback_type = FactoryGirl.create(:bigbluebutton_playback_type, identifier: "any1", visible: false)
-          FactoryGirl.create(:bigbluebutton_playback_format,
+          playback_type = FactoryBot.create(:bigbluebutton_playback_type, identifier: "any1", visible: false)
+          FactoryBot.create(:bigbluebutton_playback_format,
                              :recording => recording, :playback_type => playback_type)
 
           BigbluebuttonRecording.send(:sync_playback_formats, recording, data)
@@ -1003,8 +1003,8 @@ describe BigbluebuttonRecording do
       context "and there are unused formats in the database" do
         before {
           # formats to be deleted
-          FactoryGirl.create(:bigbluebutton_playback_format, :recording => recording)
-          FactoryGirl.create(:bigbluebutton_playback_format, :recording => recording)
+          FactoryBot.create(:bigbluebutton_playback_format, :recording => recording)
+          FactoryBot.create(:bigbluebutton_playback_format, :recording => recording)
 
           BigbluebuttonRecording.send(:sync_playback_formats, recording, data)
         }
@@ -1022,19 +1022,19 @@ describe BigbluebuttonRecording do
           { :type => "any3", :url => "url3", :length => 3 } ]
       }
       let(:playback_type) {
-        FactoryGirl.create(:bigbluebutton_playback_type, identifier: "any1", visible: true)
+        FactoryBot.create(:bigbluebutton_playback_type, identifier: "any1", visible: true)
       }
       let(:playback_type_hidden) {
-        FactoryGirl.create(:bigbluebutton_playback_type, identifier: "any2", visible: false)
+        FactoryBot.create(:bigbluebutton_playback_type, identifier: "any2", visible: false)
       }
       before {
         # two playback formats to be updated
-        FactoryGirl.create(:bigbluebutton_playback_format,
+        FactoryBot.create(:bigbluebutton_playback_format,
                            :recording => recording, :playback_type => playback_type)
-        FactoryGirl.create(:bigbluebutton_playback_format,
+        FactoryBot.create(:bigbluebutton_playback_format,
                            :recording => recording, :playback_type => playback_type_hidden)
         # one to be deleted
-        FactoryGirl.create(:bigbluebutton_playback_format, :recording => recording)
+        FactoryBot.create(:bigbluebutton_playback_format, :recording => recording)
 
         BigbluebuttonRecording.send(:sync_playback_formats, recording, data)
       }
@@ -1088,7 +1088,7 @@ describe BigbluebuttonRecording do
 
       context "when the playback type is already on the database" do
         let!(:playback_type) {
-          FactoryGirl.create(:bigbluebutton_playback_type, :identifier => "any1")
+          FactoryBot.create(:bigbluebutton_playback_type, :identifier => "any1")
         }
         before {
           BigbluebuttonRecording.send(:sync_playback_formats, recording, data)
@@ -1109,12 +1109,12 @@ describe BigbluebuttonRecording do
   end
 
   describe ".cleanup_playback_types" do
-    let(:recording) { FactoryGirl.create(:bigbluebutton_recording) }
+    let(:recording) { FactoryBot.create(:bigbluebutton_recording) }
 
     context "when all playback types are in use" do
       before {
-        @kept1 = FactoryGirl.create(:bigbluebutton_playback_format, :recording => recording).playback_type
-        @kept2 = FactoryGirl.create(:bigbluebutton_playback_format, :recording => recording).playback_type
+        @kept1 = FactoryBot.create(:bigbluebutton_playback_format, :recording => recording).playback_type
+        @kept2 = FactoryBot.create(:bigbluebutton_playback_format, :recording => recording).playback_type
 
         BigbluebuttonRecording.send(:cleanup_playback_types)
       }
@@ -1125,9 +1125,9 @@ describe BigbluebuttonRecording do
 
     context "when there are unused playback types" do
       before {
-        @removed1 = FactoryGirl.create(:bigbluebutton_playback_type)
-        @removed2 = FactoryGirl.create(:bigbluebutton_playback_type)
-        @kept1 = FactoryGirl.create(:bigbluebutton_playback_format, :recording => recording).playback_type
+        @removed1 = FactoryBot.create(:bigbluebutton_playback_type)
+        @removed2 = FactoryBot.create(:bigbluebutton_playback_type)
+        @kept1 = FactoryBot.create(:bigbluebutton_playback_format, :recording => recording).playback_type
 
         BigbluebuttonRecording.send(:cleanup_playback_types)
       }
@@ -1142,21 +1142,21 @@ describe BigbluebuttonRecording do
   describe ".find_matching_meeting" do
 
     context "if no recording is informed" do
-      let(:recording) { FactoryGirl.create(:bigbluebutton_recording, room: nil) }
+      let(:recording) { FactoryBot.create(:bigbluebutton_recording, room: nil) }
       subject { BigbluebuttonRecording.send(:find_matching_meeting, nil) }
       it { subject.should be_nil }
     end
 
     context "if the recording has no room associated to it" do
-      let(:recording) { FactoryGirl.create(:bigbluebutton_recording, room: nil) }
+      let(:recording) { FactoryBot.create(:bigbluebutton_recording, room: nil) }
       subject { BigbluebuttonRecording.send(:find_matching_meeting, recording) }
       it { subject.should be_nil }
     end
 
     context "when there is a meeting with internal_meeting_id matching the rec's recordid" do
-      let(:recording) { FactoryGirl.create(:bigbluebutton_recording) }
+      let(:recording) { FactoryBot.create(:bigbluebutton_recording) }
       before {
-        @meeting = FactoryGirl.create(:bigbluebutton_meeting,
+        @meeting = FactoryBot.create(:bigbluebutton_meeting,
           room: recording.room,
           internal_meeting_id: recording.recordid
         )
@@ -1167,7 +1167,7 @@ describe BigbluebuttonRecording do
 
     context "when there isn't a meeting with internal_meeting_id matching the rec's recordid" do
       context "and the recording has no start_time" do
-        let(:recording) { FactoryGirl.create(:bigbluebutton_recording, start_time: nil) }
+        let(:recording) { FactoryBot.create(:bigbluebutton_recording, start_time: nil) }
         subject { BigbluebuttonRecording.send(:find_matching_meeting, recording) }
         it { subject.should be_nil }
       end
@@ -1176,7 +1176,7 @@ describe BigbluebuttonRecording do
         let(:meeting_create_time) { DateTime.now.to_i }
         let(:meetingid_rand) { SecureRandom.uuid }
         let(:recording) do
-          FactoryGirl.create(:bigbluebutton_recording,
+          FactoryBot.create(:bigbluebutton_recording,
             recordid: "#{SecureRandom.uuid}-#{meeting_create_time}",
             start_time: meeting_create_time,
             meetingid: "#{meetingid_rand}-#{meeting_create_time}"
@@ -1184,7 +1184,7 @@ describe BigbluebuttonRecording do
         end
 
         context "when there's no associated meeting" do
-          let!(:server) { FactoryGirl.create(:bigbluebutton_server) }
+          let!(:server) { FactoryBot.create(:bigbluebutton_server) }
           before do
             @meeting = BigbluebuttonMeeting.create_meeting_record_from_recording(recording)
           end
@@ -1194,7 +1194,7 @@ describe BigbluebuttonRecording do
 
         context "when there's one associated meeting" do
           before do
-            @meeting = FactoryGirl.create(:bigbluebutton_meeting,
+            @meeting = FactoryBot.create(:bigbluebutton_meeting,
               room: recording.room,
               create_time: meeting_create_time,
               meetingid: "#{meetingid_rand}-#{meeting_create_time}"

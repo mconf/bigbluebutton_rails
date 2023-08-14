@@ -3,11 +3,11 @@ include BigbluebuttonRailsHelper
 
 describe Bigbluebutton::ServersController do
   render_views
-  let!(:server) { FactoryGirl.create(:bigbluebutton_server) }
+  let!(:server) { FactoryBot.create(:bigbluebutton_server) }
 
   describe "#index" do
     context "basic" do
-      before { 3.times { FactoryGirl.create(:bigbluebutton_server) } }
+      before { 3.times { FactoryBot.create(:bigbluebutton_server) } }
       before(:each) { get :index }
       it { should respond_with(:success) }
       it { should assign_to(:servers).with(BigbluebuttonServer.all) }
@@ -15,9 +15,9 @@ describe Bigbluebutton::ServersController do
     end
 
     context "doesn't override @servers" do
-      let!(:my_servers) { [ FactoryGirl.create(:bigbluebutton_server), FactoryGirl.create(:bigbluebutton_server) ] }
+      let!(:my_servers) { [ FactoryBot.create(:bigbluebutton_server), FactoryBot.create(:bigbluebutton_server) ] }
       before {
-        3.times { FactoryGirl.create(:bigbluebutton_server) }
+        3.times { FactoryBot.create(:bigbluebutton_server) }
         controller.instance_variable_set(:@servers, my_servers)
       }
       before(:each) { get :index }
@@ -34,7 +34,7 @@ describe Bigbluebutton::ServersController do
     end
 
     context "doesn't override @server" do
-      let!(:other_server) { FactoryGirl.create(:bigbluebutton_server) }
+      let!(:other_server) { FactoryBot.create(:bigbluebutton_server) }
       before { controller.instance_variable_set(:@server, other_server) }
       before(:each) { get :show, :id => server.to_param }
       it { should assign_to(:server).with(other_server) }
@@ -57,7 +57,7 @@ describe Bigbluebutton::ServersController do
     end
 
     context "doesn't override @server" do
-      let!(:other_server) { FactoryGirl.create(:bigbluebutton_server) }
+      let!(:other_server) { FactoryBot.create(:bigbluebutton_server) }
       before { controller.instance_variable_set(:@server, other_server) }
       before(:each) { get :edit, :id => server.to_param }
       it { should assign_to(:server).with(other_server) }
@@ -68,7 +68,7 @@ describe Bigbluebutton::ServersController do
     context "on success" do
       before(:each) {
         expect {
-          post :create, :bigbluebutton_server => FactoryGirl.attributes_for(:bigbluebutton_server)
+          post :create, :bigbluebutton_server => FactoryBot.attributes_for(:bigbluebutton_server)
         }.to change{ BigbluebuttonServer.count }.by(1)
       }
       it { should respond_with(:redirect) }
@@ -78,7 +78,7 @@ describe Bigbluebutton::ServersController do
 
     context "on failure" do
       before(:each) {
-        attributes = FactoryGirl.attributes_for(:bigbluebutton_server)
+        attributes = FactoryBot.attributes_for(:bigbluebutton_server)
         attributes.delete(:url)
         post :create, :bigbluebutton_server => attributes
       }
@@ -86,7 +86,7 @@ describe Bigbluebutton::ServersController do
     end
 
     describe "params handling" do
-      let(:attrs) { FactoryGirl.attributes_for(:bigbluebutton_server) }
+      let(:attrs) { FactoryBot.attributes_for(:bigbluebutton_server) }
       let(:params) { { :bigbluebutton_server => attrs } }
       let(:allowed_params) {
         [ :name, :url, :secret, :slug ]
@@ -116,7 +116,7 @@ describe Bigbluebutton::ServersController do
     context "with :redir_url" do
       context "on success" do
         before(:each) {
-          post :create, :bigbluebutton_server => FactoryGirl.attributes_for(:bigbluebutton_server), :redir_url => '/any'
+          post :create, :bigbluebutton_server => FactoryBot.attributes_for(:bigbluebutton_server), :redir_url => '/any'
         }
         it { should respond_with(:redirect) }
         it { should redirect_to "/any" }
@@ -124,7 +124,7 @@ describe Bigbluebutton::ServersController do
 
       context "on failure" do
         before(:each) {
-          attributes = FactoryGirl.attributes_for(:bigbluebutton_server)
+          attributes = FactoryBot.attributes_for(:bigbluebutton_server)
           attributes.delete(:url)
           post :create, :bigbluebutton_server => attributes, :redir_url => '/any'
         }
@@ -134,18 +134,18 @@ describe Bigbluebutton::ServersController do
     end
 
     context "doesn't override @server" do
-      let!(:other_server) { FactoryGirl.create(:bigbluebutton_server) }
+      let!(:other_server) { FactoryBot.create(:bigbluebutton_server) }
       before { controller.instance_variable_set(:@server, other_server) }
-      before(:each) { post :create, :bigbluebutton_server => FactoryGirl.attributes_for(:bigbluebutton_server) }
+      before(:each) { post :create, :bigbluebutton_server => FactoryBot.attributes_for(:bigbluebutton_server) }
       it { should assign_to(:server).with(other_server) }
     end
   end
 
   describe "#update" do
-    let(:new_server) { FactoryGirl.build(:bigbluebutton_server) }
+    let(:new_server) { FactoryBot.build(:bigbluebutton_server) }
 
     context "on success" do
-      let(:new_server) { FactoryGirl.build(:bigbluebutton_server, version: "") }
+      let(:new_server) { FactoryBot.build(:bigbluebutton_server, version: "") }
 
       before {
         BigBlueButton::BigBlueButtonApi.any_instance.should_receive(:get_api_version).and_return("0.9")
@@ -176,7 +176,7 @@ describe Bigbluebutton::ServersController do
     end
 
     describe "params handling" do
-      let(:attrs) { FactoryGirl.attributes_for(:bigbluebutton_server) }
+      let(:attrs) { FactoryBot.attributes_for(:bigbluebutton_server) }
       let(:params) { { :bigbluebutton_server => attrs } }
       let(:allowed_params) {
         [ :name, :url, :secret, :slug ]
@@ -224,7 +224,7 @@ describe Bigbluebutton::ServersController do
     end
 
     context "doesn't override @server" do
-      let!(:other_server) { FactoryGirl.create(:bigbluebutton_server) }
+      let!(:other_server) { FactoryBot.create(:bigbluebutton_server) }
       before { controller.instance_variable_set(:@server, other_server) }
       before(:each) {
         BigbluebuttonServer.any_instance.should_receive(:set_api_version_from_server).and_return(anything)
@@ -258,7 +258,7 @@ describe Bigbluebutton::ServersController do
     end
 
     context "doesn't override @server" do
-      let!(:other_server) { FactoryGirl.create(:bigbluebutton_server) }
+      let!(:other_server) { FactoryBot.create(:bigbluebutton_server) }
       before { controller.instance_variable_set(:@server, other_server) }
       before(:each) { delete :destroy, :id => server.to_param }
       it { should assign_to(:server).with(other_server) }
@@ -266,8 +266,8 @@ describe Bigbluebutton::ServersController do
   end
 
   describe "#activity" do
-    let(:room1) { FactoryGirl.create(:bigbluebutton_room) }
-    let(:room2) { FactoryGirl.create(:bigbluebutton_room) }
+    let(:room1) { FactoryBot.create(:bigbluebutton_room) }
+    let(:room2) { FactoryBot.create(:bigbluebutton_room) }
     before do
       # return our mocked server
       BigbluebuttonServer.stub(:find_by).with(slug: server.to_param).
@@ -329,7 +329,7 @@ describe Bigbluebutton::ServersController do
     end
 
     context "doesn't override @server" do
-      let!(:other_server) { FactoryGirl.create(:bigbluebutton_server) }
+      let!(:other_server) { FactoryBot.create(:bigbluebutton_server) }
       before {
         controller.instance_variable_set(:@server, other_server)
         other_server.stub(:fetch_meetings)
@@ -389,7 +389,7 @@ describe Bigbluebutton::ServersController do
     end
 
     context "doesn't override @server" do
-      let!(:other_server) { FactoryGirl.create(:bigbluebutton_server) }
+      let!(:other_server) { FactoryBot.create(:bigbluebutton_server) }
       before {
         controller.instance_variable_set(:@server, other_server)
         other_server.stub(:send_publish_recordings)
@@ -448,7 +448,7 @@ describe Bigbluebutton::ServersController do
     end
 
     context "doesn't override @server" do
-      let!(:other_server) { FactoryGirl.create(:bigbluebutton_server) }
+      let!(:other_server) { FactoryBot.create(:bigbluebutton_server) }
       before {
         controller.instance_variable_set(:@server, other_server)
         other_server.stub(:send_publish_recordings)
@@ -514,7 +514,7 @@ describe Bigbluebutton::ServersController do
     end
 
     context "doesn't override @server" do
-      let!(:other_server) { FactoryGirl.create(:bigbluebutton_server) }
+      let!(:other_server) { FactoryBot.create(:bigbluebutton_server) }
       before {
         controller.instance_variable_set(:@server, other_server)
         other_server.stub(:fetch_recordings)
@@ -527,13 +527,13 @@ describe Bigbluebutton::ServersController do
   describe "#recordings" do
     context "basic" do
       before do
-        @recording1 = FactoryGirl.create(:bigbluebutton_recording)
-        @recording2 = FactoryGirl.create(:bigbluebutton_recording)
-        FactoryGirl.create(:bigbluebutton_recording)
+        @recording1 = FactoryBot.create(:bigbluebutton_recording)
+        @recording2 = FactoryBot.create(:bigbluebutton_recording)
+        FactoryBot.create(:bigbluebutton_recording)
 
         # one that belongs to another server but to a room that's in the target server
-        room = FactoryGirl.create(:bigbluebutton_room)
-        FactoryGirl.create(:bigbluebutton_recording, :room => room)
+        room = FactoryBot.create(:bigbluebutton_room)
+        FactoryBot.create(:bigbluebutton_recording, :room => room)
       end
       before(:each) { get :recordings, :id => server.to_param }
       it { should respond_with(:success) }
@@ -542,7 +542,7 @@ describe Bigbluebutton::ServersController do
     end
 
     context "doesn't override @server" do
-      let!(:other_server) { FactoryGirl.create(:bigbluebutton_server) }
+      let!(:other_server) { FactoryBot.create(:bigbluebutton_server) }
       before { controller.instance_variable_set(:@server, other_server) }
       before(:each) { get :recordings, :id => server.to_param }
       it { should assign_to(:server).with(other_server) }
@@ -550,11 +550,11 @@ describe Bigbluebutton::ServersController do
 
     context "doesn't override @recordings" do
       let!(:my_recordings) {
-        [ FactoryGirl.create(:bigbluebutton_recording),
-          FactoryGirl.create(:bigbluebutton_recording) ]
+        [ FactoryBot.create(:bigbluebutton_recording),
+          FactoryBot.create(:bigbluebutton_recording) ]
       }
       before {
-        3.times { FactoryGirl.create(:bigbluebutton_recording) }
+        3.times { FactoryBot.create(:bigbluebutton_recording) }
         controller.instance_variable_set(:@recordings, my_recordings)
       }
       before(:each) { get :recordings, :id => server.to_param }

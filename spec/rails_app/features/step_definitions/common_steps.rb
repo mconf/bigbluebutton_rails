@@ -1,26 +1,26 @@
 When /^a real server$/i do
-  @server = FactoryGirl.create(:bigbluebutton_server_integration)
+  @server = FactoryBot.create(:bigbluebutton_server_integration)
 end
 
 When /^(\d+) server(s)?$/i do |count, _|
   # Note: these servers are not real, it will NOT be possible to make api requests
   #       for a real server use :bigbluebutton_server_integration
   count.to_i.times do
-    FactoryGirl.create(:bigbluebutton_server)
+    FactoryBot.create(:bigbluebutton_server)
   end
 end
 
 When /^a(n external)? room in this server$/i do |external|
   if external.nil?
-    @room = FactoryGirl.create(:bigbluebutton_room, :server => @server)
+    @room = FactoryBot.create(:bigbluebutton_room, :server => @server)
   else
-    @room = FactoryGirl.build(:bigbluebutton_room, :server => @server, :external => true)
+    @room = FactoryBot.build(:bigbluebutton_room, :server => @server, :external => true)
   end
   @room.send_create
 end
 
 When /^an external room in this server with a meeting running$/i do
-  @room = FactoryGirl.build(:bigbluebutton_room, :server => @server, :external => true)
+  @room = FactoryBot.build(:bigbluebutton_room, :server => @server, :external => true)
   # can't call a create to this run because the bot will do so
   steps %Q{ When a meeting is running in this room with 1 attendees }
 end
@@ -60,7 +60,7 @@ When /see the (.+) page$/i do |page_name|
 end
 
 When /a user named "(.+)"/i do |username|
-  @user = FactoryGirl.build(:user, :name => username)
+  @user = FactoryBot.build(:user, :name => username)
   ApplicationController.set_user(@user) # This is now the logged user
 end
 

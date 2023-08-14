@@ -1,4 +1,4 @@
-FactoryGirl.define do
+FactoryBot.define do
   factory :bigbluebutton_playback_format do |r|
     r.association :recording, :factory => :bigbluebutton_recording
     r.association :playback_type, :factory => :bigbluebutton_playback_type
