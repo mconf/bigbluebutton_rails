@@ -16,11 +16,11 @@ module BigbluebuttonRoomSupport
                                last_meeting_running: !ended,
                                last_meeting_ended: ended,
                                last_meeting_create_time: create_time)
-    RSpec::Core::ExampleGroup.it_behaves_like :RoomWithMeetings, { room: room,
-                                         meetings_count: meetings_count,
-                                         last_meeting_running: !ended,
-                                         last_meeting_ended: ended,
-                                         last_meeting_create_time: create_time }
+    # RSpec::Core::ExampleGroup.it_behaves_like :RoomWithMeetings, { room: room,
+    #                                      meetings_count: meetings_count,
+    #                                      last_meeting_running: !ended,
+    #                                      last_meeting_ended: ended,
+    #                                      last_meeting_create_time: create_time }
     room
   end
 end

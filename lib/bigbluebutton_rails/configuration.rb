@@ -38,7 +38,7 @@ module BigbluebuttonRails
       }
       @routing_scope = 'bigbluebutton'
 
-      @debug = false
+      @debug = nil
       @api_timeout = 10  # default timeout for API requests (seconds)
 
       @metadata_room_id        = :'bbbrails-room-id'

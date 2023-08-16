@@ -30,7 +30,7 @@ FactoryBot.define do
         last_meeting_create_time { nil }
         last_meeting_ended {false}
         last_meeting_running {true}
-        meetings_count {1}
+        meetings_count { 1 }
       end
 
       after(:create) do |room, evaluator|

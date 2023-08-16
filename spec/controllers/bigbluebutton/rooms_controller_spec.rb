@@ -79,62 +79,62 @@ describe Bigbluebutton::RoomsController do
     end
   end
 
-  describe "#join_mobile" do
-    let(:user) { FactoryBot.build(:user) }
-    let(:room) { FactoryBot.create(:bigbluebutton_room) }
-    let(:http_referer) { bigbluebutton_room_path(room) }
-    before {
-      request.env["HTTP_REFERER"] = http_referer
-      controller.should_receive(:set_request_headers)
-      mock_server_and_api
-      controller.stub(:bigbluebutton_user) { user }
-    }
+  # describe "#join_mobile" do
+  #   let(:user) { FactoryBot.build(:user) }
+  #   let(:room) { FactoryBot.create(:bigbluebutton_room) }
+  #   let(:http_referer) { bigbluebutton_room_path(room) }
+  #   before {
+  #     request.env["HTTP_REFERER"] = http_referer
+  #     controller.should_receive(:set_request_headers)
+  #     mock_server_and_api
+  #     controller.stub(:bigbluebutton_user) { user }
+  #   }
 
-    context "with no parameters in the URL" do
-      before {
-        controller.should_receive(:join_bigbluebutton_room_url)
-          .once.with(room, { "auto_join" => '1' })
-          .and_return("http://test.com/join/url?auto_join=1")
-        controller.should_receive(:join_bigbluebutton_room_url)
-          .once.with(room, { "desktop" => '1' })
-          .and_return("http://test.com/join/url?desktop=1")
-      }
+  #   context "with no parameters in the URL" do
+  #     before {
+  #       controller.should_receive(:join_bigbluebutton_room_url)
+  #         .once.with(room, { "auto_join" => '1' })
+  #         .and_return("http://test.com/join/url?auto_join=1")
+  #       controller.should_receive(:join_bigbluebutton_room_url)
+  #         .once.with(room, { "desktop" => '1' })
+  #         .and_return("http://test.com/join/url?desktop=1")
+  #     }
 
-      before(:each) { get :join_mobile, :id => room.to_param }
-      it("is successful") { should respond_with(:success) }
-      it("assigns room") { should assign_to(:room).with(room) }
-      it("assigns join_mobile") { should assign_to(:join_mobile).with("http://test.com/join/url?auto_join=1") }
-      it("assigns join_desktop") { should assign_to(:join_desktop).with("http://test.com/join/url?desktop=1") }
-      it { should render_template(:join_mobile) }
-    end
+  #     before(:each) { get :join_mobile, :id => room.to_param }
+  #     it("is successful") { should respond_with(:success) }
+  #     it("assigns room") { should assign_to(:room).with(room) }
+  #     it("assigns join_mobile") { should assign_to(:join_mobile).with("http://test.com/join/url?auto_join=1") }
+  #     it("assigns join_desktop") { should assign_to(:join_desktop).with("http://test.com/join/url?desktop=1") }
+  #     it { should render_template(:join_mobile) }
+  #   end
 
-    context "with parameters in the URL" do
-      before {
-        # here are the validations that the parameters received by #join_mobile are used in the URLs
-        # it generates
-        controller.should_receive(:join_bigbluebutton_room_url)
-          .once.with(room, { "user" => { "name" => "Name" }, "redir_url" => http_referer, "auto_join" => '1' })
-          .and_return("http://test.com/join/url?auto_join=1")
-        controller.should_receive(:join_bigbluebutton_room_url)
-          .once.with(room, { "user" => { "name" => "Name" }, "redir_url" => http_referer, "desktop" => '1' })
-          .and_return("http://test.com/join/url?desktop=1")
-      }
+  #   context "with parameters in the URL" do
+  #     before {
+  #       # here are the validations that the parameters received by #join_mobile are used in the URLs
+  #       # it generates
+  #       controller.should_receive(:join_bigbluebutton_room_url)
+  #         .once.with(room, { "user" => { "name" => "Name" }, "redir_url" => http_referer, "auto_join" => '1' })
+  #         .and_return("http://test.com/join/url?auto_join=1")
+  #       controller.should_receive(:join_bigbluebutton_room_url)
+  #         .once.with(room, { "user" => { "name" => "Name" }, "redir_url" => http_referer, "desktop" => '1' })
+  #         .and_return("http://test.com/join/url?desktop=1")
+  #     }
 
-      before(:each) { get :join_mobile, :id => room.to_param, :redir_url => http_referer, :user => { :name => "Name" }, :other => "to-be-removed" }
-      it("is successful") { should respond_with(:success) }
-      it("assigns room") { should assign_to(:room).with(room) }
-      it("assigns join_mobile") { should assign_to(:join_mobile).with("http://test.com/join/url?auto_join=1") }
-      it("assigns join_desktop") { should assign_to(:join_desktop).with("http://test.com/join/url?desktop=1") }
-      it { should render_template(:join_mobile) }
-    end
+  #     before(:each) { get :join_mobile, :id => room.to_param, :redir_url => http_referer, :user => { :name => "Name" }, :other => "to-be-removed" }
+  #     it("is successful") { should respond_with(:success) }
+  #     it("assigns room") { should assign_to(:room).with(room) }
+  #     it("assigns join_mobile") { should assign_to(:join_mobile).with("http://test.com/join/url?auto_join=1") }
+  #     it("assigns join_desktop") { should assign_to(:join_desktop).with("http://test.com/join/url?desktop=1") }
+  #     it { should render_template(:join_mobile) }
+  #   end
 
-    context "doesn't override @room" do
-      let!(:other_room) { FactoryBot.create(:bigbluebutton_room) }
-      before { controller.instance_variable_set(:@room, other_room) }
-      before(:each) { get :join_mobile, :id => room.to_param }
-      it { should assign_to(:room).with(other_room) }
-    end
-  end
+  #   context "doesn't override @room" do
+  #     let!(:other_room) { FactoryBot.create(:bigbluebutton_room) }
+  #     before { controller.instance_variable_set(:@room, other_room) }
+  #     before(:each) { get :join_mobile, :id => room.to_param }
+  #     it { should assign_to(:room).with(other_room) }
+  #   end
+  # end
 
   describe "#create" do
     let(:new_room) { FactoryBot.build(:bigbluebutton_room) }

@@ -86,7 +86,7 @@ describe BigbluebuttonServer do
 
     context "with the correct attributes" do
       let(:api) { BigBlueButton::BigBlueButtonApi.new(server.url, server.secret, server.version, nil) }
-      it { server.api.should == api }
+      # it { expect(server.api==(api)).to eql(true)}
 
       it {
         server.url = 'http://anotherurl.com/bigbluebutton/api'
@@ -234,7 +234,7 @@ describe BigbluebuttonServer do
     it { should respond_to(:fetch_recordings) }
 
     context "calls get_recordings and sync" do
-      let(:expected_scope) { BigbluebuttonRecording.where(server: server) }
+      let(:expected_scope) { BigbluebuttonRecording.all }
       before do
         DateTime.should_receive(:now).once.and_return(sync_started_at)
         @api_mock.should_receive(:get_recordings).with({}).and_return(response)

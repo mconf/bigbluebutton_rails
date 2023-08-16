@@ -152,7 +152,7 @@ class BigbluebuttonServer < ActiveRecord::Base
   def set_api_version_from_server
     begin
       # creating the object with version=nil makes the gem fetch the version from the server
-      api = BigBlueButton::BigBlueButtonApi.new(self.url, self.secret, nil, false)
+      api = BigBlueButton::BigBlueButtonApi.new(self.url, self.secret, nil, nil)
       self.version = api.version
     rescue BigBlueButton::BigBlueButtonException
       # we just ignore errors in case the server is not responding
