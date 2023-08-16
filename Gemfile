@@ -30,6 +30,7 @@ group :test do
   gem "generator_spec"
   gem "rspec-rails", '~> 3.9'
   gem 'rspec-activemodel-mocks'
+  gem 'rails-controller-testing'
   # gem "bbbot-ruby", :git => "git://github.com/mconf/bbbot-ruby.git"
   gem "capybara", "~> 2.2.0"
   gem "capybara-mechanize" # for remote requests
