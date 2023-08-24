@@ -5,8 +5,7 @@ class BigbluebuttonRoom < ActiveRecord::Base
 
   has_many :recordings,
            class_name: 'BigbluebuttonRecording',
-           foreign_key: 'room_id',
-           dependent: :nullify
+           foreign_key: 'room_id'
 
   has_many :metadata,
            class_name: 'BigbluebuttonMetadata',

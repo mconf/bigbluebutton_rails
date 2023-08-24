@@ -109,6 +109,7 @@ class BigbluebuttonRecording < ActiveRecord::Base
         return false
       end
     else
+      logger.error "Could not delete the recording #{self.id}. Server not found"
       false
     end
   end
