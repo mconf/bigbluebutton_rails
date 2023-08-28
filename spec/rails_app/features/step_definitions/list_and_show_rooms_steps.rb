@@ -7,9 +7,9 @@ When /^he should see all the information available for this room$/i do
 end
 
 When /^(\d+) room(s)? in any other server$/i do |count, _|
-  any_other_server = FactoryGirl.create(:bigbluebutton_server)
+  any_other_server = FactoryBot.create(:bigbluebutton_server)
   count.to_i.times do
-    FactoryGirl.create(:bigbluebutton_room, :server => any_other_server)
+    FactoryBot.create(:bigbluebutton_room, :server => any_other_server)
   end
 end
 

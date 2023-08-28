@@ -8,7 +8,7 @@ development:
   host: dev_db
   # socket: /var/run/mysqld/mysqld.sock
 
-test: &test
+test:
   adapter: mysql2
   database: bigbluebutton_rails_test
   username: bbbrails
@@ -24,4 +24,8 @@ test: &test
 #   socket: /var/run/mysqld/mysqld.sock
 
 cucumber:
-  <<: *test
+  adapter: mysql2
+  database: bigbluebutton_rails_test
+  username: bbbrails
+  password: bbbrails
+  host: test_db

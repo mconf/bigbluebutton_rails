@@ -18,7 +18,7 @@ class BigbluebuttonPlaybackFormat < ActiveRecord::Base
     else
       others = where("id NOT IN (?)", default.pluck(:id))
     end
-    default.concat others
+    default + others
   }
 
   def length_in_secs

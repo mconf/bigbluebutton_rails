@@ -7,7 +7,7 @@ describe BigbluebuttonRecordingsForRoomWorker do
   end
 
   describe "#perform" do
-    let!(:room) { FactoryGirl.create(:bigbluebutton_room) }
+    let!(:room) { FactoryBot.create(:bigbluebutton_room) }
 
     context "calls #fetch_recordings on the room" do
       before {

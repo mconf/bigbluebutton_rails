@@ -6,7 +6,7 @@ describe BigbluebuttonMeeting do
     BigbluebuttonMeeting.new.should be_a_kind_of(ActiveRecord::Base)
   end
 
-  before { FactoryGirl.create(:bigbluebutton_meeting) }
+  before { FactoryBot.create(:bigbluebutton_meeting) }
 
   it { should belong_to(:room) }
   it { should validate_presence_of(:room) }
@@ -14,9 +14,9 @@ describe BigbluebuttonMeeting do
   it { should have_one(:recording).dependent(:destroy) }
 
   describe "recording association" do
-    let!(:server) { FactoryGirl.create(:bigbluebutton_server) }
-    let!(:meeting) { FactoryGirl.create(:bigbluebutton_meeting, ended: true) }
-    let!(:recording) { FactoryGirl.create(:bigbluebutton_recording, meeting: meeting) }
+    let!(:server) { FactoryBot.create(:bigbluebutton_server) }
+    let!(:meeting) { FactoryBot.create(:bigbluebutton_meeting, ended: true) }
+    let!(:recording) { FactoryBot.create(:bigbluebutton_recording, meeting: meeting) }
 
     context "when the meeting is successfully destroyed" do
       before do
@@ -81,14 +81,14 @@ describe BigbluebuttonMeeting do
 
 
   describe "#created_by?" do
-    let(:target) { FactoryGirl.create(:bigbluebutton_meeting) }
+    let(:target) { FactoryBot.create(:bigbluebutton_meeting) }
 
     context "if the user informed is nil" do
       it { target.created_by?(nil).should be_falsey }
     end
 
     context "with a valid user informed" do
-      let(:user) { FactoryGirl.build(:user) }
+      let(:user) { FactoryBot.build(:user) }
 
       context "if the meeting has no creator_id" do
         before { target.update_attributes(:creator_id => nil) }
@@ -96,7 +96,7 @@ describe BigbluebuttonMeeting do
       end
 
       context "if it wasn't the user that created the meeting" do
-        let(:user2) { FactoryGirl.build(:user) }
+        let(:user2) { FactoryBot.build(:user) }
         before { target.update_attributes(:creator_id => user2.id, :creator_name => user2.name) }
         it { target.created_by?(user).should be_falsey }
       end
@@ -109,11 +109,11 @@ describe BigbluebuttonMeeting do
   end
 
   describe ".create_meeting_record_from_room" do
-    let(:server) { FactoryGirl.create(:bigbluebutton_server) }
-    let(:room) { FactoryGirl.create(:bigbluebutton_room) }
+    let(:server) { FactoryBot.create(:bigbluebutton_server) }
+    let(:room) { FactoryBot.create(:bigbluebutton_room) }
 
     context "if there is already a current meeting" do
-      let!(:meeting) { FactoryGirl.create(:bigbluebutton_meeting, room: room, ended: false, running: true) }
+      let!(:meeting) { FactoryBot.create(:bigbluebutton_meeting, room: room, ended: false, running: true) }
       subject {
         expect {
           BigbluebuttonMeeting.create_meeting_record_from_room(room, {}, server, nil, {})
@@ -125,7 +125,7 @@ describe BigbluebuttonMeeting do
     end
 
     context "if #create_time is set" do
-      let(:user) { FactoryGirl.build(:user) }
+      let(:user) { FactoryBot.build(:user) }
       let(:metadata) {
         m = {}
         m[BigbluebuttonRails.configuration.metadata_user_id] = user.id
@@ -198,8 +198,8 @@ describe BigbluebuttonMeeting do
       end
 
       context "if there were already old meetings associated with the room, finishes them" do
-        let!(:meeting1) { FactoryGirl.create(:bigbluebutton_meeting, room: room, ended: false, running: true) }
-        let!(:meeting2) { FactoryGirl.create(:bigbluebutton_meeting, room: room, ended: false, running: false) }
+        let!(:meeting1) { FactoryBot.create(:bigbluebutton_meeting, room: room, ended: false, running: true) }
+        let!(:meeting2) { FactoryBot.create(:bigbluebutton_meeting, room: room, ended: false, running: false) }
 
         before(:each) {
           BigbluebuttonMeeting.where(room: room, ended: false).count.should be(2)
@@ -216,10 +216,10 @@ describe BigbluebuttonMeeting do
   end
 
   describe ".create_meeting_record_from_recording" do
-    let!(:server) { FactoryGirl.create(:bigbluebutton_server) }
-    let(:room) { FactoryGirl.create(:bigbluebutton_room) }
-    let!(:recording1) { FactoryGirl.create(:bigbluebutton_recording, meeting_id: nil, room_id: room.id) }
-    let!(:recording2) { FactoryGirl.create(:bigbluebutton_recording, meeting_id: nil, room_id: nil, name: "no_room") }
+    let!(:server) { FactoryBot.create(:bigbluebutton_server) }
+    let(:room) { FactoryBot.create(:bigbluebutton_room) }
+    let!(:recording1) { FactoryBot.create(:bigbluebutton_recording, meeting_id: nil, room_id: room.id) }
+    let!(:recording2) { FactoryBot.create(:bigbluebutton_recording, meeting_id: nil, room_id: nil, name: "no_room") }
 
     context "when there is a room_id on the recording" do
       before(:each) {
@@ -253,11 +253,11 @@ describe BigbluebuttonMeeting do
   end
 
   describe ".update_meeting_creator" do
-    let(:meeting1) { FactoryGirl.create(:bigbluebutton_meeting, creator_name: nil, creator_id: nil) }
-    let(:recording1) { FactoryGirl.create(:bigbluebutton_recording, meeting: meeting1) }
-    let(:recording2) { FactoryGirl.create(:bigbluebutton_recording, meeting: meeting1) }
-    let!(:metadata1) { FactoryGirl.create(:bigbluebutton_metadata, name: 'bbbrails-user-name', content: 'BbbUserName', owner: recording1) }
-    let!(:metadata2) { FactoryGirl.create(:bigbluebutton_metadata, name: 'bbbrails-user-id', content: 21, owner: recording1) }
+    let(:meeting1) { FactoryBot.create(:bigbluebutton_meeting, creator_name: nil, creator_id: nil) }
+    let(:recording1) { FactoryBot.create(:bigbluebutton_recording, meeting: meeting1) }
+    let(:recording2) { FactoryBot.create(:bigbluebutton_recording, meeting: meeting1) }
+    let!(:metadata1) { FactoryBot.create(:bigbluebutton_metadata, name: 'bbbrails-user-name', content: 'BbbUserName', owner: recording1) }
+    let!(:metadata2) { FactoryBot.create(:bigbluebutton_metadata, name: 'bbbrails-user-id', content: 21, owner: recording1) }
     context "when the recording has the needed metadata" do
       before { BigbluebuttonMeeting.update_meeting_creator(recording1) }
       it("the meeting's creator_name should be updated with the recording's metadata bbbrails-user-name") {

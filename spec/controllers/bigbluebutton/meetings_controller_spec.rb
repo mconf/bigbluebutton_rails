@@ -6,14 +6,14 @@ require 'bigbluebutton_api'
 
 describe Bigbluebutton::MeetingsController do
   render_views
-  let!(:server) { FactoryGirl.create(:bigbluebutton_server) }
-  let!(:meeting) { FactoryGirl.create(:bigbluebutton_meeting) }
-  let!(:rec){ FactoryGirl.create(:bigbluebutton_recording, :published => false, :meeting => meeting) }
+  let!(:server) { FactoryBot.create(:bigbluebutton_server) }
+  let!(:meeting) { FactoryBot.create(:bigbluebutton_meeting) }
+  let!(:rec){ FactoryBot.create(:bigbluebutton_recording, :published => false, :meeting => meeting) }
 
   describe '#destroy' do
     context "when meeting_ended == true" do
       context "when meeting has no recordings" do
-        let!(:meeting) { FactoryGirl.create(:bigbluebutton_meeting, ended: true) }
+        let!(:meeting) { FactoryBot.create(:bigbluebutton_meeting, ended: true) }
 
         context "when meeting.destroy == true" do
           before {
@@ -42,7 +42,7 @@ describe Bigbluebutton::MeetingsController do
         end
       end
       context "when meeting has recordings" do
-        let!(:meeting) { FactoryGirl.create(:bigbluebutton_meeting, ended: true) }
+        let!(:meeting) { FactoryBot.create(:bigbluebutton_meeting, ended: true) }
 
         context "when meeting.destroy == true" do
           before {
@@ -73,7 +73,7 @@ describe Bigbluebutton::MeetingsController do
     end
 
     context "When meeting_ended == false" do
-      let!(:meeting) { FactoryGirl.create(:bigbluebutton_meeting, ended: false) }
+      let!(:meeting) { FactoryBot.create(:bigbluebutton_meeting, ended: false) }
 
       before {
           request.env["HTTP_REFERER"] = '/any'
@@ -98,7 +98,7 @@ describe Bigbluebutton::MeetingsController do
     end
 
     context "doesn't override @meeting" do
-      let!(:other_meeting) { FactoryGirl.create(:bigbluebutton_meeting) }
+      let!(:other_meeting) { FactoryBot.create(:bigbluebutton_meeting) }
       before { controller.instance_variable_set(:@meeting, other_meeting) }
       before(:each) { get :edit, :id => meeting.to_param }
       it { should assign_to(:meeting).with(other_meeting) }
@@ -106,7 +106,7 @@ describe Bigbluebutton::MeetingsController do
   end
 
   describe "#update" do
-    let!(:new_meeting) { FactoryGirl.build(:bigbluebutton_meeting) }
+    let!(:new_meeting) { FactoryBot.build(:bigbluebutton_meeting) }
 
     context "on success" do
       before(:each) {
@@ -138,7 +138,7 @@ describe Bigbluebutton::MeetingsController do
     end
 
     describe "params handling" do
-      let(:attrs) { FactoryGirl.attributes_for(:bigbluebutton_meeting) }
+      let(:attrs) { FactoryBot.attributes_for(:bigbluebutton_meeting) }
       let(:params) { { :bigbluebutton_meeting => attrs } }
       let(:allowed_params) {
         [:title]
@@ -186,7 +186,7 @@ describe Bigbluebutton::MeetingsController do
     end
 
     context "doesn't override @meeting" do
-      let!(:other_meeting) { FactoryGirl.create(:bigbluebutton_meeting) }
+      let!(:other_meeting) { FactoryBot.create(:bigbluebutton_meeting) }
       before { controller.instance_variable_set(:@meeting, other_meeting) }
       before(:each) { put :update, :id => meeting.to_param, :bigbluebutton_meeting => new_meeting.attributes }
       it { should assign_to(:meeting).with(other_meeting) }

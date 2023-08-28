@@ -6,7 +6,7 @@ describe BigbluebuttonPlaybackType do
     BigbluebuttonPlaybackType.new.should be_a_kind_of(ActiveRecord::Base)
   end
 
-  before { FactoryGirl.create(:bigbluebutton_playback_type) }
+  before { FactoryBot.create(:bigbluebutton_playback_type) }
 
   it { should validate_presence_of(:identifier) }
 
@@ -16,8 +16,8 @@ describe BigbluebuttonPlaybackType do
 
   context "ensures only 0 or 1 records with default=true" do
     context "automatically sets new records as default=false if setting the current as default=true" do
-      let!(:first) { FactoryGirl.create(:bigbluebutton_playback_type, default: true) }
-      let!(:target) { FactoryGirl.create(:bigbluebutton_playback_type, default: false) }
+      let!(:first) { FactoryBot.create(:bigbluebutton_playback_type, default: true) }
+      let!(:target) { FactoryBot.create(:bigbluebutton_playback_type, default: false) }
       before(:each) {
         target.update_attributes(default: true)
       }
@@ -26,8 +26,8 @@ describe BigbluebuttonPlaybackType do
     end
 
     context "doesn't change other records to default=false if not setting the current as default=true" do
-      let!(:first) { FactoryGirl.create(:bigbluebutton_playback_type, default: true) }
-      let!(:target) { FactoryGirl.create(:bigbluebutton_playback_type, default: false) }
+      let!(:first) { FactoryBot.create(:bigbluebutton_playback_type, default: true) }
+      let!(:target) { FactoryBot.create(:bigbluebutton_playback_type, default: false) }
       before(:each) {
         target.update_attributes(identifier: "any")
       }
@@ -36,8 +36,8 @@ describe BigbluebuttonPlaybackType do
     end
 
     context "allows all records to have default=false" do
-      let!(:first) { FactoryGirl.create(:bigbluebutton_playback_type, default: false) }
-      let!(:target) { FactoryGirl.create(:bigbluebutton_playback_type, default: true) }
+      let!(:first) { FactoryBot.create(:bigbluebutton_playback_type, default: false) }
+      let!(:target) { FactoryBot.create(:bigbluebutton_playback_type, default: true) }
       before(:each) {
         target.update_attributes(default: false)
       }
@@ -47,7 +47,7 @@ describe BigbluebuttonPlaybackType do
   end
 
   describe "#name" do
-    let(:subject) { FactoryGirl.create(:bigbluebutton_playback_type) }
+    let(:subject) { FactoryBot.create(:bigbluebutton_playback_type) }
 
     it {
       subject.identifier = "presentation"
@@ -61,7 +61,7 @@ describe BigbluebuttonPlaybackType do
   end
 
   describe "#description" do
-    let(:subject) { FactoryGirl.create(:bigbluebutton_playback_type) }
+    let(:subject) { FactoryBot.create(:bigbluebutton_playback_type) }
 
     it {
       subject.identifier = "presentation"

@@ -18,7 +18,7 @@ shared_examples_for :RoomWithMeetings do |args|
   it { room.meetings.count.should > 0 }
   it { room.meetings.count.should == meetings_count }
   unless last_meeting_create_time.nil?
-    it { room.meetings.last.create_time == create_time }
+    it { room.meetings.last.create_time == last_meeting_create_time }
   end
   unless last_meeting_ended.nil?
     it { room.get_current_meeting.should == (last_meeting_ended ? nil : room.meetings.last) }
@@ -34,7 +34,7 @@ describe BigbluebuttonRoom do
 
 
 
-  before { FactoryGirl.create(:bigbluebutton_room) }
+  before { FactoryBot.create(:bigbluebutton_room) }
   it { should belong_to(:owner) }
   it { should_not validate_presence_of(:owner_id) }
   it { should_not validate_presence_of(:owner_type) }
@@ -82,7 +82,7 @@ describe BigbluebuttonRoom do
   context ".to_param" do
     it { should respond_to(:to_param) }
     it {
-      r = FactoryGirl.create(:bigbluebutton_room)
+      r = FactoryBot.create(:bigbluebutton_room)
       r.to_param.should be(r.slug)
     }
   end
@@ -90,14 +90,14 @@ describe BigbluebuttonRoom do
   it { should respond_to(:is_running?) }
 
   describe ".order_by_activity" do
-    let!(:room1) { FactoryGirl.create(:bigbluebutton_room) }
-    let!(:room2) { FactoryGirl.create(:bigbluebutton_room) }
-    let!(:room3) { FactoryGirl.create(:bigbluebutton_room) }
-    let!(:room4) { FactoryGirl.create(:bigbluebutton_room) }
-    let!(:meeting1) { FactoryGirl.create(:bigbluebutton_meeting, create_time: Time.now - 2.hours, room: room1) }
-    let!(:meeting2) { FactoryGirl.create(:bigbluebutton_meeting, create_time: Time.now, room: room2) }
-    let!(:meeting3) { FactoryGirl.create(:bigbluebutton_meeting, create_time: Time.now - 1.hour, room: room3) }
-    let!(:meeting4) { FactoryGirl.create(:bigbluebutton_meeting, create_time: Time.now - 3.hour, room: room4) }
+    let!(:room1) { FactoryBot.create(:bigbluebutton_room) }
+    let!(:room2) { FactoryBot.create(:bigbluebutton_room) }
+    let!(:room3) { FactoryBot.create(:bigbluebutton_room) }
+    let!(:room4) { FactoryBot.create(:bigbluebutton_room) }
+    let!(:meeting1) { FactoryBot.create(:bigbluebutton_meeting, create_time: Time.now - 2.hours, room: room1) }
+    let!(:meeting2) { FactoryBot.create(:bigbluebutton_meeting, create_time: Time.now, room: room2) }
+    let!(:meeting3) { FactoryBot.create(:bigbluebutton_meeting, create_time: Time.now - 1.hour, room: room3) }
+    let!(:meeting4) { FactoryBot.create(:bigbluebutton_meeting, create_time: Time.now - 3.hour, room: room4) }
 
     context "ASC" do
       subject { BigbluebuttonRoom.order_by_activity }
@@ -119,9 +119,9 @@ describe BigbluebuttonRoom do
   describe ".search_by_terms" do
     let!(:rooms) {
       [
-        FactoryGirl.create(:bigbluebutton_room, name: "La Lo", slug: "lalo-1"),
-        FactoryGirl.create(:bigbluebutton_room, name: "La Le", slug: "lale-2"),
-        FactoryGirl.create(:bigbluebutton_room, name: "Li Lo", slug: "lilo")
+        FactoryBot.create(:bigbluebutton_room, name: "La Lo", slug: "lalo-1"),
+        FactoryBot.create(:bigbluebutton_room, name: "La Le", slug: "lale-2"),
+        FactoryBot.create(:bigbluebutton_room, name: "Li Lo", slug: "lilo")
       ]
     }
     let(:subject) { BigbluebuttonRoom.search_by_terms(terms) }
@@ -189,7 +189,7 @@ describe BigbluebuttonRoom do
   end
 
   describe "#user_role" do
-    let(:room) { FactoryGirl.build(:bigbluebutton_room, :moderator_key => "mod", :attendee_key => "att") }
+    let(:room) { FactoryBot.build(:bigbluebutton_room, :moderator_key => "mod", :attendee_key => "att") }
     it { should respond_to(:user_role) }
     it { room.user_role({ :key => room.moderator_key }).should == :moderator }
     it { room.user_role({ :key => room.attendee_key }).should == :attendee }
@@ -206,7 +206,7 @@ describe BigbluebuttonRoom do
   end
 
   describe "#instance_variables_compare" do
-    let(:room) { FactoryGirl.create(:bigbluebutton_room) }
+    let(:room) { FactoryBot.create(:bigbluebutton_room) }
     let(:room2) { BigbluebuttonRoom.last }
     it { should respond_to(:instance_variables_compare) }
     it { room.instance_variables_compare(room2).should be_empty }
@@ -222,7 +222,7 @@ describe BigbluebuttonRoom do
   end
 
   describe "#attr_equal?" do
-    before { FactoryGirl.create(:bigbluebutton_room) }
+    before { FactoryBot.create(:bigbluebutton_room) }
     let(:room) { BigbluebuttonRoom.last }
     let(:room2) { BigbluebuttonRoom.last }
     it { should respond_to(:attr_equal?) }
@@ -291,23 +291,23 @@ describe BigbluebuttonRoom do
       @room.slug.should == @room.name.downcase.parameterize
     end
     it "nil" do
-      @room = FactoryGirl.build(:bigbluebutton_room, slug: nil, name: "-My Name@ _Is Odd_-")
+      @room = FactoryBot.build(:bigbluebutton_room, slug: nil, name: "-My Name@ _Is Odd_-")
     end
     it "empty" do
-      @room = FactoryGirl.build(:bigbluebutton_room, slug: "", name: "-My Name@ _Is Odd_-")
+      @room = FactoryBot.build(:bigbluebutton_room, slug: "", name: "-My Name@ _Is Odd_-")
     end
   end
 
   context "when room set to private" do
     context "sets keys that are not yet defined" do
-      let(:room) { FactoryGirl.create(:bigbluebutton_room, :private => false, :moderator_key => nil, :attendee_key => nil) }
+      let(:room) { FactoryBot.create(:bigbluebutton_room, :private => false, :moderator_key => nil, :attendee_key => nil) }
       before(:each) { room.update_attributes(:private => true) }
       it { room.moderator_key.should_not be_nil }
       it { room.attendee_key.should_not be_nil }
     end
 
     context "only sets the keys if the room was public before" do
-      let(:room) { FactoryGirl.create(:bigbluebutton_room, :private => true, :moderator_key => "123", :attendee_key => "321") }
+      let(:room) { FactoryBot.create(:bigbluebutton_room, :private => true, :moderator_key => "123", :attendee_key => "321") }
       before(:each) { room.update_attributes(:private => true) }
       it { room.moderator_key.should == "123" }
       it { room.attendee_key.should == "321" }
@@ -316,7 +316,7 @@ describe BigbluebuttonRoom do
 
   context "using the api" do
     before { mock_server_and_api }
-    let(:room) { FactoryGirl.create(:bigbluebutton_room) }
+    let(:room) { FactoryBot.create(:bigbluebutton_room) }
 
     describe "#fetch_is_running?" do
 
@@ -343,7 +343,7 @@ describe BigbluebuttonRoom do
     end
 
     describe "#fetch_meeting_info" do
-      let(:user) { FactoryGirl.build(:user) }
+      let(:user) { FactoryBot.build(:user) }
 
       # these hashes should be exactly as returned by bigbluebutton-api-ruby to be sure we are testing it right
       let(:hash_info) {
@@ -617,7 +617,7 @@ describe BigbluebuttonRoom do
       let(:time) { 1409531761442 }
       let(:new_moderator_api_password) { Forgery(:basic).password }
       let(:new_attendee_api_password) { Forgery(:basic).password }
-      let(:voice_bridge) { SecureRandom.random_number(99999) }
+      let(:voice_bridge) { SecureRandom.random_number(99999).to_s }
       let(:hash_create) {
         {
           :returncode => "SUCCESS", :meetingID => "test_id",
@@ -629,8 +629,8 @@ describe BigbluebuttonRoom do
       let(:expected_params) { get_create_params(room) }
       before {
         room.update_attributes(:welcome_msg => "Anything")
-        FactoryGirl.create(:bigbluebutton_room_metadata, :owner => room)
-        FactoryGirl.create(:bigbluebutton_room_metadata, :owner => room)
+        FactoryBot.create(:bigbluebutton_room_metadata, :owner => room)
+        FactoryBot.create(:bigbluebutton_room_metadata, :owner => room)
         mocked_api.stub(:"request_headers=")
       }
 
@@ -675,14 +675,14 @@ describe BigbluebuttonRoom do
             room.stub(:select_server).and_return(mocked_server)
             room.send_create
           end
-          it { room.attendee_api_password.should be(new_attendee_api_password) }
-          it { room.moderator_api_password.should be(new_moderator_api_password) }
-          it { room.voice_bridge.should be(voice_bridge) }
-          it { room.changed?.should be(false) }
+          it { room.attendee_api_password.should eq(new_attendee_api_password) }
+          it { room.moderator_api_password.should eq(new_moderator_api_password) }
+          it { room.voice_bridge.should eq(voice_bridge) }
+          it { room.changed?.should eq(false) }
         end
 
         context "for a new record" do
-          let(:new_room) { FactoryGirl.build(:bigbluebutton_room) }
+          let(:new_room) { FactoryBot.build(:bigbluebutton_room) }
           before do
             params = get_create_params(new_room)
             mocked_api.should_receive(:create_meeting)
@@ -691,9 +691,9 @@ describe BigbluebuttonRoom do
             new_room.stub(:select_server).and_return(mocked_server)
             new_room.send_create
           end
-          it { new_room.attendee_api_password.should be(new_attendee_api_password) }
-          it { new_room.moderator_api_password.should be(new_moderator_api_password) }
-          it { new_room.voice_bridge.should be(voice_bridge) }
+          it { new_room.attendee_api_password.should eq(new_attendee_api_password) }
+          it { new_room.moderator_api_password.should eq(new_moderator_api_password) }
+          it { new_room.voice_bridge.should eq(voice_bridge) }
           it("doesn't save the record") { new_room.new_record?.should be(true) }
           it("doesn't create a meeting") { BigbluebuttonMeeting.where(room: new_room).should be_empty }
           it("doesn't schedule a meeting updater") {
@@ -702,7 +702,7 @@ describe BigbluebuttonRoom do
         end
 
         context "passing the user" do
-          let(:user) { FactoryGirl.build(:user) }
+          let(:user) { FactoryBot.build(:user) }
           before do
             params = get_create_params(room, user)
             mocked_api.should_receive(:create_meeting)
@@ -711,13 +711,13 @@ describe BigbluebuttonRoom do
             room.stub(:select_server).and_return(mocked_server)
             room.send_create(user)
           end
-          it { room.attendee_api_password.should be(new_attendee_api_password) }
-          it { room.moderator_api_password.should be(new_moderator_api_password) }
+          it { room.attendee_api_password.should eq(new_attendee_api_password) }
+          it { room.moderator_api_password.should eq(new_moderator_api_password) }
           it { room.changed?.should be(false) }
         end
 
         context "passing metadata from the db" do
-          let(:user) { FactoryGirl.build(:user) }
+          let(:user) { FactoryBot.build(:user) }
           before do
             mocked_api.should_receive(:create_meeting)
               .with(room.name, room.meetingid, get_create_params(room, user))
@@ -725,13 +725,13 @@ describe BigbluebuttonRoom do
             room.stub(:select_server).and_return(mocked_server)
             room.send_create(user)
           end
-          it { room.attendee_api_password.should be(new_attendee_api_password) }
-          it { room.moderator_api_password.should be(new_moderator_api_password) }
+          it { room.attendee_api_password.should eq(new_attendee_api_password) }
+          it { room.moderator_api_password.should eq(new_moderator_api_password) }
           it { room.changed?.should be(false) }
         end
 
         context "passing additional user options" do
-          let(:user) { FactoryGirl.build(:user) }
+          let(:user) { FactoryBot.build(:user) }
           let(:user_opts) { { :record_meeting => false, :other => true } }
           before do
             params = get_create_params(room, user).merge(user_opts)
@@ -742,8 +742,8 @@ describe BigbluebuttonRoom do
             room.stub(:select_server).and_return(mocked_server)
             room.send_create(user)
           end
-          it { room.attendee_api_password.should be(new_attendee_api_password) }
-          it { room.moderator_api_password.should be(new_moderator_api_password) }
+          it { room.attendee_api_password.should eq(new_attendee_api_password) }
+          it { room.moderator_api_password.should eq(new_moderator_api_password) }
           it { room.changed?.should be(false) }
         end
 
@@ -771,7 +771,7 @@ describe BigbluebuttonRoom do
           }
 
           context "sets the voice bridge in the params if there's a voice bridge" do
-            let(:voice_bridge) { SecureRandom.random_number(99999) }
+            let(:voice_bridge) { SecureRandom.random_number(99999).to_s }
             before do
               room.update_attributes(:voice_bridge => voice_bridge)
               create_params = get_create_params(room)
@@ -942,8 +942,8 @@ describe BigbluebuttonRoom do
       end
 
       context "selects a server" do
-        let(:another_server) { FactoryGirl.create(:bigbluebutton_server) }
-        let(:room2) { FactoryGirl.create(:bigbluebutton_room) }
+        let(:another_server) { FactoryBot.create(:bigbluebutton_server) }
+        let(:room2) { FactoryBot.create(:bigbluebutton_room) }
         let(:api) { double(BigBlueButton::BigBlueButtonApi) }
 
         context "and saves the result" do
@@ -1191,7 +1191,7 @@ describe BigbluebuttonRoom do
           context "with meeting running" do
             let(:ended) { false }
             let(:create_time) { Time.now.to_i }
-            it { room.get_current_meeting.create_time.should be create_time }
+            it { expect(room.get_current_meeting.create_time).to be_within(1e-15).of(create_time) }
           end
         end
       end
@@ -1199,7 +1199,7 @@ describe BigbluebuttonRoom do
   end
 
   context "#generate_dial_number!" do
-    let(:room) { FactoryGirl.create(:bigbluebutton_room) }
+    let(:room) { FactoryBot.create(:bigbluebutton_room) }
 
     context "generates the dial number and saves in the room" do
       before {
@@ -1240,13 +1240,13 @@ describe BigbluebuttonRoom do
 
   context "validates keys" do
     context "for private rooms" do
-      let(:room) { FactoryGirl.create(:bigbluebutton_room, :private => true) }
+      let(:room) { FactoryBot.create(:bigbluebutton_room, :private => true) }
       it { room.should_not allow_value('').for(:moderator_key) }
       it { room.should_not allow_value('').for(:attendee_key) }
     end
 
     context "for public rooms" do
-      let(:room) { FactoryGirl.create(:bigbluebutton_room, :private => false) }
+      let(:room) { FactoryBot.create(:bigbluebutton_room, :private => false) }
       it { room.should allow_value('').for(:moderator_key) }
       it { room.should allow_value('').for(:attendee_key) }
     end
@@ -1254,7 +1254,7 @@ describe BigbluebuttonRoom do
 
   describe "#add_domain_to_logout_url" do
     context "when logout_url has a path only" do
-      let(:room) { FactoryGirl.create(:bigbluebutton_room, :logout_url => '/only/path') }
+      let(:room) { FactoryBot.create(:bigbluebutton_room, :logout_url => '/only/path') }
       before(:each) { room.add_domain_to_logout_url("HTTP://", "test.com:80") }
       it { room.full_logout_url.should == "http://test.com:80/only/path" }
       it { room.logout_url.should == "/only/path" }
@@ -1262,7 +1262,7 @@ describe BigbluebuttonRoom do
     end
 
     context "when logout_url has a path and domain" do
-      let(:room) { FactoryGirl.create(:bigbluebutton_room, :logout_url => 'other.com/only/path') }
+      let(:room) { FactoryBot.create(:bigbluebutton_room, :logout_url => 'other.com/only/path') }
       before(:each) { room.add_domain_to_logout_url("HTTP://", "test.com:80") }
       it { room.full_logout_url.should == "http://other.com/only/path" }
       it { room.logout_url.should == "other.com/only/path" }
@@ -1270,7 +1270,7 @@ describe BigbluebuttonRoom do
     end
 
     context "when logout_url has a path, domain and protocol" do
-      let(:room) { FactoryGirl.create(:bigbluebutton_room, :logout_url => 'HTTPS://other.com/only/path') }
+      let(:room) { FactoryBot.create(:bigbluebutton_room, :logout_url => 'HTTPS://other.com/only/path') }
       before(:each) { room.add_domain_to_logout_url("HTTP://", "test.com:80") }
       it { room.full_logout_url.should == "https://other.com/only/path" }
       it { room.logout_url.should == "HTTPS://other.com/only/path" }
@@ -1278,7 +1278,7 @@ describe BigbluebuttonRoom do
     end
 
     context "does nothing if logout_url is nil" do
-      let(:room) { FactoryGirl.create(:bigbluebutton_room, :logout_url => nil) }
+      let(:room) { FactoryBot.create(:bigbluebutton_room, :logout_url => nil) }
       before(:each) { room.add_domain_to_logout_url("HTTP://", "test.com:80") }
       it { room.full_logout_url.should be_nil }
       it { room.logout_url.should be_nil }
@@ -1287,8 +1287,8 @@ describe BigbluebuttonRoom do
   end
 
   describe "#create_meeting" do
-    let(:room) { FactoryGirl.create(:bigbluebutton_room) }
-    let(:user) { FactoryGirl.build(:user) }
+    let(:room) { FactoryBot.create(:bigbluebutton_room) }
+    let(:user) { FactoryBot.build(:user) }
 
     context "when the conference is running" do
       before {
@@ -1339,13 +1339,13 @@ describe BigbluebuttonRoom do
   end
 
   describe "#short_path" do
-    subject { FactoryGirl.create(:bigbluebutton_room) }
+    subject { FactoryBot.create(:bigbluebutton_room) }
     it { subject.short_path.should eql("/bigbluebutton/rooms/#{subject.to_param}/join") }
   end
 
   describe "#server" do
-    let!(:server) { FactoryGirl.create(:bigbluebutton_server) }
-    subject { FactoryGirl.create(:bigbluebutton_room) }
+    let!(:server) { FactoryBot.create(:bigbluebutton_server) }
+    subject { FactoryBot.create(:bigbluebutton_room) }
     before do
       BigbluebuttonRails.configuration.select_server.should_receive(:call).and_return(server)
     end
@@ -1353,8 +1353,8 @@ describe BigbluebuttonRoom do
   end
 
   describe "#select_server" do
-    let!(:server) { FactoryGirl.create(:bigbluebutton_server) }
-    let!(:room) { FactoryGirl.create(:bigbluebutton_room) }
+    let!(:server) { FactoryBot.create(:bigbluebutton_server) }
+    let!(:room) { FactoryBot.create(:bigbluebutton_room) }
 
     it { room.respond_to?(:select_server, true).should be(true) }
 
@@ -1375,12 +1375,12 @@ describe BigbluebuttonRoom do
   end
 
   describe "#get_metadata_for_create" do
-    let(:room) { FactoryGirl.create(:bigbluebutton_room) }
+    let(:room) { FactoryBot.create(:bigbluebutton_room) }
 
     context "returns the metadata from the database" do
       before {
-        @m1 = FactoryGirl.create(:bigbluebutton_room_metadata, :owner => room)
-        @m2 = FactoryGirl.create(:bigbluebutton_room_metadata, :owner => room)
+        @m1 = FactoryBot.create(:bigbluebutton_room_metadata, :owner => room)
+        @m2 = FactoryBot.create(:bigbluebutton_room_metadata, :owner => room)
       }
       it {
         result = { "meta_#{@m1.name}" => @m1.content, "meta_#{@m2.name}" => @m2.content }
@@ -1390,7 +1390,7 @@ describe BigbluebuttonRoom do
   end
 
   describe "#get_current_meeting" do
-    let(:room) { FactoryGirl.create(:bigbluebutton_room) }
+    let(:room) { FactoryBot.create(:bigbluebutton_room) }
 
     context "when there's no meeting" do
       let(:room) { create_room_without_meetings }
@@ -1422,7 +1422,7 @@ describe BigbluebuttonRoom do
 
   describe "#update_current_meeting_record" do
     context "if #create_time is set" do
-      let(:user) { FactoryGirl.build(:user) }
+      let(:user) { FactoryBot.build(:user) }
       let(:create_time) { Time.now.to_i - 123 }
       let(:running) { false }
       let(:response) {
@@ -1574,12 +1574,12 @@ describe BigbluebuttonRoom do
   end
 
   describe "#finish_meetings" do
-    let!(:room) { FactoryGirl.create(:bigbluebutton_room) }
+    let!(:room) { FactoryBot.create(:bigbluebutton_room) }
 
     context "finishes all meetings related to this room that are still not ended" do
-      let!(:meeting1) { FactoryGirl.create(:bigbluebutton_meeting, room: room, ended: false, running: true) }
-      let!(:meeting2) { FactoryGirl.create(:bigbluebutton_meeting, room: room, ended: false, running: true) }
-      let!(:meeting3) { FactoryGirl.create(:bigbluebutton_meeting, room: room, ended: false, running: false) }
+      let!(:meeting1) { FactoryBot.create(:bigbluebutton_meeting, room: room, ended: false, running: true) }
+      let!(:meeting2) { FactoryBot.create(:bigbluebutton_meeting, room: room, ended: false, running: true) }
+      let!(:meeting3) { FactoryBot.create(:bigbluebutton_meeting, room: room, ended: false, running: false) }
       before(:each) { room.finish_meetings }
       it { meeting1.reload.running.should be(false) }
       it { meeting1.reload.ended.should be(true) }
@@ -1594,7 +1594,7 @@ describe BigbluebuttonRoom do
     end
 
     context "if there's a current meeting not running, ends it" do
-      let!(:meeting) { FactoryGirl.create(:bigbluebutton_meeting, room: room, ended: false, running: false, create_time: Time.now) }
+      let!(:meeting) { FactoryBot.create(:bigbluebutton_meeting, room: room, ended: false, running: false, create_time: Time.now) }
       let!(:now) { DateTime.now }
       before(:each) {
         DateTime.stub(:now).and_return(now)
@@ -1606,7 +1606,7 @@ describe BigbluebuttonRoom do
     end
 
     context "ends meetings are already ended but still set as running" do
-      let!(:meeting) { FactoryGirl.create(:bigbluebutton_meeting, room: room, ended: true, running: true) }
+      let!(:meeting) { FactoryBot.create(:bigbluebutton_meeting, room: room, ended: true, running: true) }
       let!(:now) { DateTime.now }
       before(:each) {
         DateTime.stub(:now).and_return(now)
@@ -1619,8 +1619,8 @@ describe BigbluebuttonRoom do
 
     context "enqueues workers to fetch recordings" do
       context "if at least one meeting was ended" do
-        let!(:meeting1) { FactoryGirl.create(:bigbluebutton_meeting, room: room, ended: false, running: true) }
-        let!(:meeting2) { FactoryGirl.create(:bigbluebutton_meeting, room: room, ended: false, running: true) }
+        let!(:meeting1) { FactoryBot.create(:bigbluebutton_meeting, room: room, ended: false, running: true) }
+        let!(:meeting2) { FactoryBot.create(:bigbluebutton_meeting, room: room, ended: false, running: true) }
         before {
           tries = BigbluebuttonRails.configuration.recording_sync_for_room_intervals.length - 1
           expect(Resque).to receive(:enqueue_in).with(1.minute, ::BigbluebuttonRecordingsForRoomWorker, room.id, tries)
@@ -1629,7 +1629,7 @@ describe BigbluebuttonRoom do
       end
 
       context "not if no meeting was ended" do
-        let!(:meeting1) { FactoryGirl.create(:bigbluebutton_meeting, room: room, ended: true, running: true) }
+        let!(:meeting1) { FactoryBot.create(:bigbluebutton_meeting, room: room, ended: true, running: true) }
         before {
           expect(Resque).not_to receive(:enqueue_in)
         }
@@ -1649,7 +1649,7 @@ describe BigbluebuttonRoom do
 
     context "adds the invitation URL, if any" do
       before { mock_server_and_api }
-      let(:room) { FactoryGirl.create(:bigbluebutton_room) }
+      let(:room) { FactoryBot.create(:bigbluebutton_room) }
 
       before {
         room.stub(:select_server).and_return(mocked_server)
@@ -1704,7 +1704,7 @@ describe BigbluebuttonRoom do
 
     context "adds the options from user_opts" do
       before { mock_server_and_api }
-      let(:room) { FactoryGirl.create(:bigbluebutton_room) }
+      let(:room) { FactoryBot.create(:bigbluebutton_room) }
       let(:user_opts) { { "meta_test1" => "value1", "meta_test2" => "value2" } }
       before {
         room.stub(:select_server).and_return(mocked_server)
@@ -1721,8 +1721,8 @@ describe BigbluebuttonRoom do
   end
 
   describe "#fetch_recordings" do
-    let!(:server) { FactoryGirl.create(:bigbluebutton_server) }
-    let!(:room) { FactoryGirl.create(:bigbluebutton_room) }
+    let!(:server) { FactoryBot.create(:bigbluebutton_server) }
+    let!(:room) { FactoryBot.create(:bigbluebutton_room) }
 
     it { should respond_to(:fetch_recordings) }
 

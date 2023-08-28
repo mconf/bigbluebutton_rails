@@ -8,12 +8,12 @@ describe BigbluebuttonMeetingUpdaterWorker do
 
   describe "#perform" do
     let!(:api) { double(BigBlueButton::BigBlueButtonApi) }
-    let!(:server) { FactoryGirl.create(:bigbluebutton_server) }
+    let!(:server) { FactoryBot.create(:bigbluebutton_server) }
 
     it "waits the amount of time specified before starting"
 
     context "calls fetch_meeting_info in the target room" do
-      let!(:room) { FactoryGirl.create(:bigbluebutton_room) }
+      let!(:room) { FactoryBot.create(:bigbluebutton_room) }
 
       before {
         expect(BigbluebuttonRoom).to receive(:find).with(room.id).and_return(room)
@@ -23,7 +23,7 @@ describe BigbluebuttonMeetingUpdaterWorker do
     end
 
     context "calls finish_meetings if an exception 'notFound' is raised" do
-      let!(:room) { FactoryGirl.create(:bigbluebutton_room) }
+      let!(:room) { FactoryBot.create(:bigbluebutton_room) }
       let!(:exception) {
         e = BigBlueButton::BigBlueButtonException.new('Test error')
         e.key = 'notFound'
@@ -40,7 +40,7 @@ describe BigbluebuttonMeetingUpdaterWorker do
     end
 
     context "calls finish_meetings if an exception other than 'notFound' is raised" do
-      let!(:room) { FactoryGirl.create(:bigbluebutton_room) }
+      let!(:room) { FactoryBot.create(:bigbluebutton_room) }
       let!(:exception) {
         e = BigBlueButton::BigBlueButtonException.new('Test error')
         e.key = 'anythingElse'
@@ -57,7 +57,7 @@ describe BigbluebuttonMeetingUpdaterWorker do
     end
 
     context "calls finish_meetings if an exception with a blank key is raised" do
-      let!(:room) { FactoryGirl.create(:bigbluebutton_room) }
+      let!(:room) { FactoryBot.create(:bigbluebutton_room) }
       let!(:exception) {
         e = BigBlueButton::BigBlueButtonException.new('Test error')
         e.key = ''
@@ -74,7 +74,7 @@ describe BigbluebuttonMeetingUpdaterWorker do
     end
 
     context "doesn't break if the room is not found" do
-      let!(:room) { FactoryGirl.create(:bigbluebutton_room) }
+      let!(:room) { FactoryBot.create(:bigbluebutton_room) }
       let!(:exception) {
         e = BigBlueButton::BigBlueButtonException.new('Test error')
         e.key = ''

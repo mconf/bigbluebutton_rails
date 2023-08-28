@@ -1,5 +1,5 @@
 When /^registers a new server$/i do
-  attrs = FactoryGirl.attributes_for(:bigbluebutton_server_integration)
+  attrs = FactoryBot.attributes_for(:bigbluebutton_server_integration)
   fill_in("bigbluebutton_server[name]", :with => attrs[:name])
   fill_in("bigbluebutton_server[url]", :with => attrs[:url])
   fill_in("bigbluebutton_server[secret]", :with => attrs[:secret])
@@ -9,7 +9,7 @@ When /^registers a new server$/i do
 end
 
 When /^registers a new server with a wrong URL$/i do
-  attrs = FactoryGirl.attributes_for(:bigbluebutton_server_integration)
+  attrs = FactoryBot.attributes_for(:bigbluebutton_server_integration)
   fill_in("bigbluebutton_server[name]", :with => attrs[:name])
   fill_in("bigbluebutton_server[url]", :with => "invalid url")
   fill_in("bigbluebutton_server[secret]", :with => attrs[:secret])

@@ -9,7 +9,7 @@ describe Bigbluebutton::RoomsController do
     let(:bbb_error_msg) { SecureRandom.hex(250) }
     let(:bbb_error) { BigBlueButton::BigBlueButtonException.new(bbb_error_msg) }
     let(:http_referer) { bigbluebutton_server_path(mocked_server) }
-    let(:room) { FactoryGirl.create(:bigbluebutton_room) }
+    let(:room) { FactoryBot.create(:bigbluebutton_room) }
     before {
       BigbluebuttonRoom.stub(:find_by) { room }
       BigbluebuttonRoom.stub(:find) { room }
@@ -66,7 +66,7 @@ describe Bigbluebutton::RoomsController do
     end
 
     describe "#join" do
-      before { controller.stub(:bigbluebutton_user) { FactoryGirl.build(:user) } }
+      before { controller.stub(:bigbluebutton_user) { FactoryBot.build(:user) } }
 
       context "as moderator" do
         before {

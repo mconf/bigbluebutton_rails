@@ -4,11 +4,11 @@ describe BigbluebuttonRails::BackgroundTasks do
 
   describe ".finish_meetings" do
     let!(:api) { double(BigBlueButton::BigBlueButtonApi) }
-    let!(:server) { FactoryGirl.create(:bigbluebutton_server) }
+    let!(:server) { FactoryBot.create(:bigbluebutton_server) }
 
     context "set meetings that ended as not running and ended" do
-      let(:room) { FactoryGirl.create(:bigbluebutton_room) }
-      let!(:meeting) { FactoryGirl.create(:bigbluebutton_meeting, ended: false, running: true, room: room) }
+      let(:room) { FactoryBot.create(:bigbluebutton_room) }
+      let!(:meeting) { FactoryBot.create(:bigbluebutton_meeting, ended: false, running: true, room: room) }
       let!(:exception) {
         e = BigBlueButton::BigBlueButtonException.new('Test error')
         e.key = 'notFound'
@@ -27,8 +27,8 @@ describe BigbluebuttonRails::BackgroundTasks do
     end
 
     context "doesn't change meetings that are still running" do
-      let(:room) { FactoryGirl.create(:bigbluebutton_room) }
-      let!(:meeting) { FactoryGirl.create(:bigbluebutton_meeting, ended: false, running: true, room: room) }
+      let(:room) { FactoryBot.create(:bigbluebutton_room) }
+      let!(:meeting) { FactoryBot.create(:bigbluebutton_meeting, ended: false, running: true, room: room) }
       before {
         BigBlueButton::BigBlueButtonApi.any_instance
           .stub(:get_api_version).and_return("0.9")
@@ -41,8 +41,8 @@ describe BigbluebuttonRails::BackgroundTasks do
     end
 
     context "ignores meetings that already ended" do
-      let(:room) { FactoryGirl.create(:bigbluebutton_room) }
-      let!(:meeting) { FactoryGirl.create(:bigbluebutton_meeting, ended: true, room: room) }
+      let(:room) { FactoryBot.create(:bigbluebutton_room) }
+      let!(:meeting) { FactoryBot.create(:bigbluebutton_meeting, ended: true, room: room) }
       before(:each) {
         BigbluebuttonRoom.any_instance.should_not_receive(:fetch_meeting_info)
         BigbluebuttonRails::BackgroundTasks.finish_meetings
@@ -51,10 +51,10 @@ describe BigbluebuttonRails::BackgroundTasks do
     end
 
     context "considers both meetings running and not running" do
-      let(:room1) { FactoryGirl.create(:bigbluebutton_room) }
-      let(:room2) { FactoryGirl.create(:bigbluebutton_room) }
-      let!(:meeting1) { FactoryGirl.create(:bigbluebutton_meeting, ended: false, running: true, room: room1) }
-      let!(:meeting2) { FactoryGirl.create(:bigbluebutton_meeting, ended: false, running: false, room: room2) }
+      let(:room1) { FactoryBot.create(:bigbluebutton_room) }
+      let(:room2) { FactoryBot.create(:bigbluebutton_room) }
+      let!(:meeting1) { FactoryBot.create(:bigbluebutton_meeting, ended: false, running: true, room: room1) }
+      let!(:meeting2) { FactoryBot.create(:bigbluebutton_meeting, ended: false, running: false, room: room2) }
       let!(:exception) {
         e = BigBlueButton::BigBlueButtonException.new('Test error')
         e.key = 'notFound'
@@ -74,8 +74,8 @@ describe BigbluebuttonRails::BackgroundTasks do
     end
 
     context "ignore meetings that have no room" do
-      let(:room) { FactoryGirl.create(:bigbluebutton_room) }
-      let!(:meeting) { FactoryGirl.create(:bigbluebutton_meeting, ended: false, running: true, room: room) }
+      let(:room) { FactoryBot.create(:bigbluebutton_room) }
+      let!(:meeting) { FactoryBot.create(:bigbluebutton_meeting, ended: false, running: true, room: room) }
       before(:each) {
         BigbluebuttonRoom.any_instance.should_not_receive(:fetch_meeting_info)
         meeting.room.delete
@@ -85,8 +85,8 @@ describe BigbluebuttonRails::BackgroundTasks do
     end
 
     context "calls finish_meetings if an exception 'notFound' is raised" do
-      let!(:room) { FactoryGirl.create(:bigbluebutton_room) }
-      let!(:meeting) { FactoryGirl.create(:bigbluebutton_meeting, ended: false, running: true, room: room) }
+      let!(:room) { FactoryBot.create(:bigbluebutton_room) }
+      let!(:meeting) { FactoryBot.create(:bigbluebutton_meeting, ended: false, running: true, room: room) }
       let!(:exception) {
         e = BigBlueButton::BigBlueButtonException.new('Test error')
         e.key = 'notFound'
@@ -102,8 +102,8 @@ describe BigbluebuttonRails::BackgroundTasks do
     end
 
     context "calls finish_meetings if an exception other than 'notFound' is raised" do
-      let!(:room) { FactoryGirl.create(:bigbluebutton_room) }
-      let!(:meeting) { FactoryGirl.create(:bigbluebutton_meeting, ended: false, running: true, room: room) }
+      let!(:room) { FactoryBot.create(:bigbluebutton_room) }
+      let!(:meeting) { FactoryBot.create(:bigbluebutton_meeting, ended: false, running: true, room: room) }
       let!(:exception) {
         e = BigBlueButton::BigBlueButtonException.new('Test error')
         e.key = 'anythingElse'
@@ -119,8 +119,8 @@ describe BigbluebuttonRails::BackgroundTasks do
     end
 
     context "calls finish_meetings if an exception with a blank key is raised" do
-      let!(:room) { FactoryGirl.create(:bigbluebutton_room) }
-      let!(:meeting) { FactoryGirl.create(:bigbluebutton_meeting, ended: false, running: true, room: room) }
+      let!(:room) { FactoryBot.create(:bigbluebutton_room) }
+      let!(:meeting) { FactoryBot.create(:bigbluebutton_meeting, ended: false, running: true, room: room) }
       let!(:exception) {
         e = BigBlueButton::BigBlueButtonException.new('Test error')
         e.key = ''
@@ -137,8 +137,8 @@ describe BigbluebuttonRails::BackgroundTasks do
   end
 
   describe ".update_recordings_by_server" do
-    let!(:server1) { FactoryGirl.create(:bigbluebutton_server) }
-    let!(:server2) { FactoryGirl.create(:bigbluebutton_server) }
+    let!(:server1) { FactoryBot.create(:bigbluebutton_server) }
+    let!(:server2) { FactoryBot.create(:bigbluebutton_server) }
 
     context "fetches the recordings for all servers if none is informed" do
       before {
@@ -169,9 +169,9 @@ describe BigbluebuttonRails::BackgroundTasks do
   end
 
   describe ".update_recordings_by_room" do
-    let!(:room1) { FactoryGirl.create(:bigbluebutton_room) }
-    let!(:room2) { FactoryGirl.create(:bigbluebutton_room) }
-    let!(:room3) { FactoryGirl.create(:bigbluebutton_room) }
+    let!(:room1) { FactoryBot.create(:bigbluebutton_room) }
+    let!(:room2) { FactoryBot.create(:bigbluebutton_room) }
+    let!(:room3) { FactoryBot.create(:bigbluebutton_room) }
 
     context "fetches the recordings for all rooms if no query is informed" do
       before {
@@ -207,7 +207,7 @@ describe BigbluebuttonRails::BackgroundTasks do
   end
 
   describe ".update_recordings_for_server" do
-    let!(:server) { FactoryGirl.create(:bigbluebutton_server) }
+    let!(:server) { FactoryBot.create(:bigbluebutton_server) }
 
     context "fetches the recordings the server passed" do
       before {
@@ -225,7 +225,7 @@ describe BigbluebuttonRails::BackgroundTasks do
   end
 
   describe ".update_recordings_for_room" do
-    let!(:room) { FactoryGirl.create(:bigbluebutton_room) }
+    let!(:room) { FactoryBot.create(:bigbluebutton_room) }
 
     context "fetches the recordings the room passed" do
       before {

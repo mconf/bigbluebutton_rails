@@ -3,11 +3,11 @@ include BigbluebuttonRailsHelper
 
 describe Bigbluebutton::RecordingsController do
   render_views
-  let!(:recording) { FactoryGirl.create(:bigbluebutton_recording) }
+  let!(:recording) { FactoryBot.create(:bigbluebutton_recording) }
 
   describe "#index" do
     context "basic" do
-      before { 3.times { FactoryGirl.create(:bigbluebutton_recording) } }
+      before { 3.times { FactoryBot.create(:bigbluebutton_recording) } }
       before(:each) { get :index }
       it { should respond_with(:success) }
       it { should assign_to(:recordings).with(BigbluebuttonRecording.all) }
@@ -15,9 +15,9 @@ describe Bigbluebutton::RecordingsController do
     end
 
     context "doesn't override @recordings" do
-      let!(:my_recordings) { [ FactoryGirl.create(:bigbluebutton_recording), FactoryGirl.create(:bigbluebutton_recording) ] }
+      let!(:my_recordings) { [ FactoryBot.create(:bigbluebutton_recording), FactoryBot.create(:bigbluebutton_recording) ] }
       before {
-        3.times { FactoryGirl.create(:bigbluebutton_recording) }
+        3.times { FactoryBot.create(:bigbluebutton_recording) }
         controller.instance_variable_set(:@recordings, my_recordings)
       }
       before(:each) { get :index }
@@ -34,7 +34,7 @@ describe Bigbluebutton::RecordingsController do
     end
 
     context "doesn't override @recording" do
-      let!(:other_recording) { FactoryGirl.create(:bigbluebutton_recording) }
+      let!(:other_recording) { FactoryBot.create(:bigbluebutton_recording) }
       before { controller.instance_variable_set(:@recording, other_recording) }
       before(:each) { get :show, :id => recording.to_param }
       it { should assign_to(:recording).with(other_recording) }
@@ -50,7 +50,7 @@ describe Bigbluebutton::RecordingsController do
     end
 
     context "doesn't override @recording" do
-      let!(:other_recording) { FactoryGirl.create(:bigbluebutton_recording) }
+      let!(:other_recording) { FactoryBot.create(:bigbluebutton_recording) }
       before { controller.instance_variable_set(:@recording, other_recording) }
       before(:each) { get :edit, :id => recording.to_param }
       it { should assign_to(:recording).with(other_recording) }
@@ -58,7 +58,7 @@ describe Bigbluebutton::RecordingsController do
   end
 
   describe "#update" do
-    let!(:new_recording) { FactoryGirl.build(:bigbluebutton_recording) }
+    let!(:new_recording) { FactoryBot.build(:bigbluebutton_recording) }
 
     context "on success" do
       before(:each) {
@@ -90,7 +90,7 @@ describe Bigbluebutton::RecordingsController do
     end
 
     describe "params handling" do
-      let(:attrs) { FactoryGirl.attributes_for(:bigbluebutton_recording) }
+      let(:attrs) { FactoryBot.attributes_for(:bigbluebutton_recording) }
       let(:params) { { :bigbluebutton_recording => attrs } }
       let(:allowed_params) {
         []
@@ -137,7 +137,7 @@ describe Bigbluebutton::RecordingsController do
     end
 
     context "doesn't override @recording" do
-      let!(:other_recording) { FactoryGirl.create(:bigbluebutton_recording) }
+      let!(:other_recording) { FactoryBot.create(:bigbluebutton_recording) }
       before { controller.instance_variable_set(:@recording, other_recording) }
       before(:each) { put :update, :id => recording.to_param, :bigbluebutton_recording => new_recording.attributes }
       it { should assign_to(:recording).with(other_recording) }
@@ -217,8 +217,8 @@ describe Bigbluebutton::RecordingsController do
     end
 
     context "doesn't override @recording" do
-      let!(:server) { FactoryGirl.create(:bigbluebutton_server) }
-      let!(:other_recording) { FactoryGirl.create(:bigbluebutton_recording) }
+      let!(:server) { FactoryBot.create(:bigbluebutton_server) }
+      let!(:other_recording) { FactoryBot.create(:bigbluebutton_recording) }
       before {
         controller.instance_variable_set(:@recording, other_recording)
         other_recording.server.stub(:send_delete_recordings)
@@ -231,8 +231,8 @@ describe Bigbluebutton::RecordingsController do
   describe "#play" do
     context do
       before {
-        @format1 = FactoryGirl.create(:bigbluebutton_playback_format, :recording => recording)
-        @format2 = FactoryGirl.create(:bigbluebutton_playback_format, :recording => recording)
+        @format1 = FactoryBot.create(:bigbluebutton_playback_format, :recording => recording)
+        @format2 = FactoryBot.create(:bigbluebutton_playback_format, :recording => recording)
       }
 
       context "when params[:type] is specified" do
@@ -275,15 +275,15 @@ describe Bigbluebutton::RecordingsController do
     end
 
     context "doesn't override @recording" do
-      let!(:other_recording) { FactoryGirl.create(:bigbluebutton_recording) }
-      let(:format) { FactoryGirl.create(:bigbluebutton_playback_format, :recording => recording) }
+      let!(:other_recording) { FactoryBot.create(:bigbluebutton_recording) }
+      let(:format) { FactoryBot.create(:bigbluebutton_playback_format, :recording => recording) }
       before { controller.instance_variable_set(:@recording, other_recording) }
       before(:each) { get :play, :id => recording.to_param, :type => format.format_type }
       it { should assign_to(:recording).with(other_recording) }
     end
 
     context "authenticates" do
-      let!(:format) { FactoryGirl.create(:bigbluebutton_playback_format, :recording => recording) }
+      let!(:format) { FactoryBot.create(:bigbluebutton_playback_format, :recording => recording) }
 
       before { @previous = BigbluebuttonRails.configuration.playback_url_authentication }
       after { BigbluebuttonRails.configuration.playback_url_authentication = @previous }
@@ -333,7 +333,7 @@ describe Bigbluebutton::RecordingsController do
     end
 
     context "uses an iframe" do
-      let!(:format) { FactoryGirl.create(:bigbluebutton_playback_format, :recording => recording) }
+      let!(:format) { FactoryBot.create(:bigbluebutton_playback_format, :recording => recording) }
 
       before { @previous = BigbluebuttonRails.configuration.playback_iframe }
       after { BigbluebuttonRails.configuration.playback_iframe = @previous }
@@ -444,8 +444,8 @@ describe Bigbluebutton::RecordingsController do
       end
 
       context "doesn't override @recording" do
-        let!(:server) { FactoryGirl.create(:bigbluebutton_server) }
-        let!(:other_recording) { FactoryGirl.create(:bigbluebutton_recording) }
+        let!(:server) { FactoryBot.create(:bigbluebutton_server) }
+        let!(:other_recording) { FactoryBot.create(:bigbluebutton_recording) }
         before {
           controller.instance_variable_set(:@recording, other_recording)
           other_recording.server.stub(:send_publish_recordings)

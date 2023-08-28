@@ -37,7 +37,6 @@ Rails.backtrace_cleaner.remove_silencers!
 Dir["#{File.dirname(__FILE__)}/support/**/*.rb"].each { |f| require f }
 
 # Load Factories
-require 'factory_girl'
 require 'forgery'
 Dir["#{ File.dirname(__FILE__)}/factories/*.rb"].each { |f| require f }
 
@@ -46,7 +45,7 @@ RSpec.configure do |config|
   config.mock_with :rspec
   config.use_transactional_fixtures = true
   config.include RSpec::Rails::ViewRendering
-  config.include FactoryGirl::Syntax::Methods
+  config.include FactoryBot::Syntax::Methods
 
   config.before(:each) do
     BigbluebuttonRails.reset
