@@ -1,5 +1,15 @@
 # Change Log
 
+## [4.0.0-elos] - 2023-10-18
+* [#230] Updated Ruby and Ruby on Rails versions to `2.5.8` and `5.0.7` respectively.
+  Some gems had to be updated too.
+* [#231] Added a log message when `delete_from_server` fails and removed `dependent: nullify`
+  from the `recordings` dependency on `room` model.
+
+[4.0.0-elos]: https://github.com/mconf/bigbluebutton_rails/compare/v3.6.1-elos...v4.0.0-elos
+[#230]: https://github.com/mconf/bigbluebutton_rails/pull/230
+[#231]: https://github.com/mconf/bigbluebutton_rails/pull/231
+
 ## [3.6.1-elos] - 2023-08-09
 * [#229] Check for `institution_slug` param presence to define where to redirect to after updating
   a `bigbluebutton_room` on `rooms#update`.
