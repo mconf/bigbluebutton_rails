@@ -162,7 +162,6 @@ class BigbluebuttonRecording < ActiveRecord::Base
       end
       data_clone[:end_time] = data_clone[:end_time].to_i if data_clone.key?(:end_time)
       data_clone[:start_time] = data_clone[:start_time].to_i if data_clone.key?(:start_time)
-      data_clone[:expiration_date] = data_clone[:expiration_date].to_i if data_clone.key?(:expiration_date)
       data_clone = data_clone.slice(*keys)
       data_sorted = data_clone.sort
 
@@ -414,11 +413,7 @@ class BigbluebuttonRecording < ActiveRecord::Base
         start_time = recording.start_time
         meeting = BigbluebuttonMeeting.where("meetingid = ? AND create_time = ?", recording.meetingid, start_time).last
           if meeting.nil?
-            meeting = BigbluebuttonMeeting.where("meetingid = ? AND create_time DIV 1000 = ?", recording.meetingid, start_time).last
-          end
-          if meeting.nil?
-            div_start_time = (start_time/10)
-            meeting = BigbluebuttonMeeting.where("meetingid = ? AND create_time DIV 10 = ?", recording.meetingid, div_start_time).last
+            meeting = BigbluebuttonMeeting.where("meetingid = ? AND create_time >= ? AND create_time <= ?", recording.meetingid, start_time*1000, (start_time*1000)+999).last
           end
           if meeting.nil?
             meeting = BigbluebuttonMeeting.create_meeting_record_from_recording(recording)
