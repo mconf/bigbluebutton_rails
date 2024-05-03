@@ -162,7 +162,6 @@ class BigbluebuttonRecording < ActiveRecord::Base
       end
       data_clone[:end_time] = data_clone[:end_time].to_i if data_clone.key?(:end_time)
       data_clone[:start_time] = data_clone[:start_time].to_i if data_clone.key?(:start_time)
-      data_clone[:expiration_date] = data_clone[:expiration_date].to_i if data_clone.key?(:expiration_date)
       data_clone = data_clone.slice(*keys)
       data_sorted = data_clone.sort
 
