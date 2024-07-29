@@ -416,7 +416,9 @@ class BigbluebuttonRoom < ActiveRecord::Base
     server = self.server(:get_recordings)
     if server.present?
       states = BigbluebuttonRecording::STATES.values
-      scope = BigbluebuttonRecording.where(room: self, state: states)
+      # Forcing `scope` as nil to prevent the recordings that are not in the list returned by getRecordings
+      # to be set as unavailable (See bigbluebutton_recording.rb sync method).
+      scope = nil
       server.fetch_recordings({ meetingID: self.meetingid, state: states }, scope)
       true
     else
