@@ -36,7 +36,8 @@ class BigbluebuttonRecording < ActiveRecord::Base
     processing: 'processing',
     processed: 'processed',
     published: 'published',
-    unpublished: 'unpublished'
+    unpublished: 'unpublished',
+    deleted: 'deleted'
   }
 
   def self.delete_status
