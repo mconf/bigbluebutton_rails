@@ -8,7 +8,8 @@ class BigbluebuttonUpdateRecordingsWorker
     Rails.logger.info "BigbluebuttonUpdateRecordingsWorker worker running"
 
     query = BigbluebuttonRails.configuration.rooms_for_full_recording_sync.call
-    BigbluebuttonRails::BackgroundTasks.update_recordings_by_room(query)
+    all_room_servers = true
+    BigbluebuttonRails::BackgroundTasks.update_recordings_by_room(query, all_room_servers)
 
     Rails.logger.info "BigbluebuttonUpdateRecordingsWorker worker ended"
   end

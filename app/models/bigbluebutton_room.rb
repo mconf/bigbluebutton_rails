@@ -410,19 +410,31 @@ class BigbluebuttonRoom < ActiveRecord::Base
     end
   end
 
-  # Synchronizes all the recordings for this room. Will only get recordings with the
-  # default states (won't get recordings with the state 'deleted', for instance).
-  def fetch_recordings
-    server = self.server(:get_recordings)
-    if server.present?
-      states = BigbluebuttonRecording::STATES.values
-      # Forcing `scope` as nil to prevent the recordings that are not in the list returned by getRecordings
-      # to be set as unavailable (See bigbluebutton_recording.rb sync method).
-      scope = nil
-      server.fetch_recordings({ meetingID: self.meetingid, state: states }, scope)
+  # Synchronizes all the recordings for this room. Considers either the room's
+  # current server or all its previous ones (all_room_servers).
+  def fetch_recordings(all_room_servers=false)
+    states = BigbluebuttonRecording::STATES.values
+    # Forcing `scope` as nil to prevent the recordings that are not in the list returned by getRecordings
+    # to be set as unavailable (See bigbluebutton_recording.rb sync method).
+    scope = nil
+    if all_room_servers
+      default = BigbluebuttonServer.default
+      self.meetings.where.not(server_secret: nil).distinct.pluck(:server_secret).each do |server_secret|
+        room_server = BigbluebuttonServer.new(url: default.url, secret: server_secret, version: default.version)
+        room_server.fetch_recordings({ meetingID: self.meetingid, state: states }, scope)
+      end
+
       true
     else
-      false
+      server = self.server(:get_recordings)
+      if server.present?
+        server.fetch_recordings({ meetingID: self.meetingid, state: states }, scope)
+
+        true
+      else
+
+        false
+      end
     end
   end
 

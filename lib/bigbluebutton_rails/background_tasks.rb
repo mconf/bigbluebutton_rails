@@ -35,13 +35,13 @@ module BigbluebuttonRails
 
     # Updates the recordings for all rooms if `query` is nil or will use `query` to fetch the rooms
     # that should be updated.
-    def self.update_recordings_by_room(query=nil)
+    def self.update_recordings_by_room(query=nil, all_room_servers=false)
       query_s = "query=\"#{query&.to_sql}\""
       Rails.logger.info "BackgroundTasks: Starting the update of recordings by room #{query_s}"
 
       query = BigbluebuttonRoom if query.blank?
       query.find_each do |room|
-        update_recordings_for_room(room)
+        update_recordings_for_room(room, all_room_servers)
       end
 
       Rails.logger.info "BackgroundTasks: Ended the update of recordings by room #{query_s}"
@@ -57,9 +57,9 @@ module BigbluebuttonRails
       end
     end
 
-    def self.update_recordings_for_room(room)
+    def self.update_recordings_for_room(room, all_room_servers=false)
       begin
-        room.fetch_recordings
+        room.fetch_recordings(all_room_servers)
         Rails.logger.info "BackgroundTasks: List of recordings for #{room.meetingid} updated successfully"
       rescue StandardError => e
         Rails.logger.info "BackgroundTasks: Failure fetching recordings for room #{room.meetingid} #{e.inspect}"
