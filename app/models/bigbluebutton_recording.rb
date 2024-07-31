@@ -309,10 +309,11 @@ class BigbluebuttonRecording < ActiveRecord::Base
   # BigBlueButtonApi#get_recordings but with the keys already converted to our format.
   def self.create_recording(server, data)
     filtered = data.slice(:recordid, :meetingid, :name, :published, :start_time, :end_time, :expiration_date, :size, :state)
-    recording = BigbluebuttonRecording.create(filtered)
+    recording = BigbluebuttonRecording.new(filtered)
     recording.available = true
     recording.room = BigbluebuttonRails.configuration.match_room_recording.call(data)
     recording.meeting = BigbluebuttonRecording.find_matching_meeting(recording)
+    return if recording.meeting.nil?
     recording.recording_users = adapt_recording_users(data[:recordingUsers])
     recording.save!
 
@@ -416,7 +417,7 @@ class BigbluebuttonRecording < ActiveRecord::Base
           if meeting.nil?
             meeting = BigbluebuttonMeeting.where("meetingid = ? AND create_time >= ? AND create_time <= ?", recording.meetingid, start_time*1000, (start_time*1000)+999).last
           end
-          if meeting.nil?
+          if meeting.nil? && !recording.state.eql?(BigbluebuttonRecording::STATES[:deleted])
             meeting = BigbluebuttonMeeting.create_meeting_record_from_recording(recording)
             logger.info "Recording: meeting created for the recording #{recording.inspect}: #{meeting.inspect}"
           else
