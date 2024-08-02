@@ -1,3 +1,3 @@
 module BigbluebuttonRails
-  VERSION = "4.0.1-elos".freeze
+  VERSION = "4.1.0-elos".freeze
 end
