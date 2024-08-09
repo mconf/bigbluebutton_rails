@@ -186,7 +186,7 @@ describe Bigbluebutton::ServersController do
         # we just check that the rails method 'permit' is being called on the hash with the
         # correct parameters
         BigbluebuttonServer.stub(:find_by).and_return(server)
-        server.stub(:update_attributes).and_return(true)
+        server.stub(:update).and_return(true)
         attrs.stub(:permit).and_return(attrs)
         controller.stub(:params).and_return(params)
 

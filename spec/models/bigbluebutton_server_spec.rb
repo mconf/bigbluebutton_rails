@@ -113,7 +113,7 @@ describe BigbluebuttonServer do
 
     context "automatically fetches the API version if the version if not set" do
       before(:each) {
-        server.update_attributes(version: nil)
+        server.update(version: nil)
         BigBlueButton::BigBlueButtonApi.any_instance.stub(:get_api_version).and_return("0.9")
       }
       it { server.api.version.should eql("0.9") }
@@ -295,22 +295,22 @@ describe BigbluebuttonServer do
 
       context "if #url changed" do
         before { server.should_receive(:set_api_version_from_server).once }
-        it { server.update_attributes(url: server.url + "-2") }
+        it { server.update(url: server.url + "-2") }
       end
 
       context "if #secret changed" do
         before { server.should_receive(:set_api_version_from_server).once }
-        it { server.update_attributes(secret: server.secret + "-2") }
+        it { server.update(secret: server.secret + "-2") }
       end
 
       context "if #version changed" do
         before { server.should_receive(:set_api_version_from_server).once }
-        it { server.update_attributes(version: "0.9") }
+        it { server.update(version: "0.9") }
       end
 
       context "not if #name changed" do
         before { server.should_not_receive(:set_api_version_from_server) }
-        it { server.update_attributes(name: server.name + "-2") }
+        it { server.update(name: server.name + "-2") }
       end
 
       # Specific test for when we have a version set in the server, set it to a blank value,
@@ -328,7 +328,7 @@ describe BigbluebuttonServer do
             BigBlueButton::BigBlueButtonApi.stub(:new).and_return(api_mock)
           }
           it {
-            server.update_attributes(version: "")
+            server.update(version: "")
             server.reload.version.should eql(version_from_api)
           }
         end
@@ -338,7 +338,7 @@ describe BigbluebuttonServer do
             BigBlueButton::BigBlueButtonApi.stub(:new) { raise BigBlueButton::BigBlueButtonException.new('test exception') }
           }
           it {
-            server.update_attributes(url: "http://insert-any-invalid-url.mconf.org/bigbluebutton/api")
+            server.update(url: "http://insert-any-invalid-url.mconf.org/bigbluebutton/api")
             server.reload.version.should be_nil
           }
         end

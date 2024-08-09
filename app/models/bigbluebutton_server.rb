@@ -85,7 +85,7 @@ class BigbluebuttonServer < ActiveRecord::Base
         }
         room = BigbluebuttonRoom.new(attrs)
       else
-        room.update_attributes(attendee_api_password: attr[:attendeePW],
+        room.update(attendee_api_password: attr[:attendeePW],
                                moderator_api_password: attr[:moderatorPW])
       end
       room.update_current_meeting_record(attr)
@@ -108,7 +108,7 @@ class BigbluebuttonServer < ActiveRecord::Base
     ids = ids.split(",") if ids.instance_of?(String) # "id1,id2" to ["id1", "id2"]
     ids.each do |id|
       recording = BigbluebuttonRecording.find_by_recordid(id.strip)
-      recording.update_attributes(:published => publish) unless recording.nil?
+      recording.update(:published => publish) unless recording.nil?
     end
   end
 

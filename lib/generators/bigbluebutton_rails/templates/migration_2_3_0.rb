@@ -6,7 +6,7 @@ class BigbluebuttonRailsTo230 < ActiveRecord::Migration
 
     BigbluebuttonPlaybackType.find_each do |type|
       downloadable = BigbluebuttonRails.configuration.downloadable_playback_types.include?(type.identifier)
-      type.update_attributes(downloadable: downloadable)
+      type.update(downloadable: downloadable)
     end
   end
 

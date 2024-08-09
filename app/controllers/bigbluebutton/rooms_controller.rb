@@ -62,7 +62,7 @@ class Bigbluebutton::RoomsController < ApplicationController
 
   def update
     respond_with @room do |format|
-      if @room.update_attributes(room_params)
+      if @room.update(room_params)
         message = t('bigbluebutton_rails.rooms.notice.update.success')
         format.html {
           if @room.owner.is_a?(GroupRoom)

@@ -130,7 +130,7 @@ describe Bigbluebutton::MeetingsController do
     context "on failure" do
       before(:each) {
         BigbluebuttonMeeting.should_receive(:find_by).and_return(meeting)
-        meeting.should_receive(:update_attributes).and_return(false)
+        meeting.should_receive(:update).and_return(false)
         put :update, :id => meeting.to_param, :bigbluebutton_meeting => new_meeting.attributes
       }
       it { should render_template(:edit) }
@@ -147,7 +147,7 @@ describe Bigbluebutton::MeetingsController do
         # we just check that the rails method 'permit' is being called on the hash with the
         # correct parameters
         BigbluebuttonMeeting.stub(:find_by).and_return(meeting)
-        meeting.stub(:update_attributes).and_return(true)
+        meeting.stub(:update).and_return(true)
         attrs.stub(:permit).and_return(attrs)
         controller.stub(:params).and_return(params)
 
@@ -177,7 +177,7 @@ describe Bigbluebutton::MeetingsController do
       context "on failure" do
         before(:each) {
           BigbluebuttonMeeting.should_receive(:find_by).and_return(meeting)
-          meeting.should_receive(:update_attributes).and_return(false)
+          meeting.should_receive(:update).and_return(false)
           put :update, :id => meeting.to_param, :bigbluebutton_meeting => new_meeting.attributes, :redir_url => '/any'
         }
         it { should respond_with(:redirect) }

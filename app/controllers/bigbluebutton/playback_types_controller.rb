@@ -6,7 +6,7 @@ class Bigbluebutton::PlaybackTypesController < ApplicationController
 
   def update
     respond_with @playback_type do |format|
-      if @playback_type.update_attributes(playback_type_params)
+      if @playback_type.update(playback_type_params)
         format.html {
           message = t('bigbluebutton_rails.playback_types.notice.update.success')
           redirect_to_using_params request.referer, :notice => message

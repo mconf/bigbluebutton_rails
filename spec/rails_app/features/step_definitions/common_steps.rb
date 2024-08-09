@@ -27,12 +27,12 @@ end
 
 When /^a public room in this server$/i do
   steps %Q{ When a room in this server }
-  @room.update_attributes(:private => false)
+  @room.update(:private => false)
 end
 
 When /^a private room in this server$/i do
   steps %Q{ When a room in this server }
-  @room.update_attributes(:private => true)
+  @room.update(:private => true)
 end
 
 When /^(\d+) room(s)? in this server$/i do |count, _|

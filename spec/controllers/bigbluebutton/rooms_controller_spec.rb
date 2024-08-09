@@ -307,7 +307,7 @@ describe Bigbluebutton::RoomsController do
         # we just check that the rails method 'permit' is being called on the hash with the
         # correct parameters
         BigbluebuttonRoom.stub(:find_by).and_return(room)
-        room.stub(:update_attributes).and_return(true)
+        room.stub(:update).and_return(true)
         attrs.stub(:permit).and_return(attrs)
         controller.stub(:params).and_return(params)
 

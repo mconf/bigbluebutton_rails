@@ -49,7 +49,7 @@ class BigbluebuttonRailsTo310 < ActiveRecord::Migration
       end
 
       meeting = BigbluebuttonMeeting.create(attrs)
-      recording.update_attributes(meeting_id: meeting.id)
+      recording.update(meeting_id: meeting.id)
       puts "Created a meeting for the recording id-#{recording.id}: Meeting id-#{meeting.id}"
     end
   end

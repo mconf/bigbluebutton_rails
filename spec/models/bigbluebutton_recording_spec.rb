@@ -580,7 +580,7 @@ describe BigbluebuttonRecording do
         BigbluebuttonRecording.sync(new_server, data, scope)
 
         BigbluebuttonRecording.find_by(recordid: data[0][:recordID])
-          .update_attributes(available: false)
+          .update(available: false)
 
         BigbluebuttonRecording.sync(new_server, data, scope)
       }
@@ -708,7 +708,7 @@ describe BigbluebuttonRecording do
     context "works if the recording returned has no :size attribute" do
       before {
         data.delete(:size)
-        recording.update_attributes(size: 0)
+        recording.update(size: 0)
         BigbluebuttonRecording.send(:update_recording, new_server, recording, data)
       }
       it { recording.size.should == 0 }

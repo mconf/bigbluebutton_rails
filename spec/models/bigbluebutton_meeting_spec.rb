@@ -91,18 +91,18 @@ describe BigbluebuttonMeeting do
       let(:user) { FactoryBot.build(:user) }
 
       context "if the meeting has no creator_id" do
-        before { target.update_attributes(:creator_id => nil) }
+        before { target.update(:creator_id => nil) }
         it { target.created_by?(user).should be_falsey }
       end
 
       context "if it wasn't the user that created the meeting" do
         let(:user2) { FactoryBot.build(:user) }
-        before { target.update_attributes(:creator_id => user2.id, :creator_name => user2.name) }
+        before { target.update(:creator_id => user2.id, :creator_name => user2.name) }
         it { target.created_by?(user).should be_falsey }
       end
 
       context "if it was the user that created the meeting" do
-        before { target.update_attributes(:creator_id => user.id, :creator_name => user.name) }
+        before { target.update(:creator_id => user.id, :creator_name => user.name) }
         it { target.created_by?(user).should be_truthy }
       end
     end

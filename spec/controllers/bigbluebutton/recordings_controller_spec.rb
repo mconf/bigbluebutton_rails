@@ -82,7 +82,7 @@ describe Bigbluebutton::RecordingsController do
     context "on failure" do
       before(:each) {
         BigbluebuttonRecording.should_receive(:find_by_recordid).and_return(recording)
-        recording.should_receive(:update_attributes).and_return(false)
+        recording.should_receive(:update).and_return(false)
         put :update, :id => recording.to_param, :bigbluebutton_recording => new_recording.attributes
       }
       it { should render_template(:edit) }
@@ -99,7 +99,7 @@ describe Bigbluebutton::RecordingsController do
         # we just check that the rails method 'permit' is being called on the hash with the
         # correct parameters
         BigbluebuttonRecording.stub(:find_by_recordid).and_return(recording)
-        recording.stub(:update_attributes).and_return(true)
+        recording.stub(:update).and_return(true)
         attrs.stub(:permit).and_return(attrs)
         controller.stub(:params).and_return(params)
 
@@ -128,7 +128,7 @@ describe Bigbluebutton::RecordingsController do
       context "on failure" do
         before(:each) {
           BigbluebuttonRecording.should_receive(:find_by_recordid).and_return(recording)
-          recording.should_receive(:update_attributes).and_return(false)
+          recording.should_receive(:update).and_return(false)
           put :update, :id => recording.to_param, :bigbluebutton_recording => new_recording.attributes, :redir_url => '/any'
         }
         it { should respond_with(:redirect) }
@@ -244,7 +244,7 @@ describe Bigbluebutton::RecordingsController do
       context "when params[:type] is not specified plays the first format" do
         context "plays the default format" do
           before {
-            @format2.playback_type.update_attributes(default: true)
+            @format2.playback_type.update(default: true)
           }
           before(:each) { get :play, :id => recording.to_param }
           it { should respond_with(:redirect) }
@@ -343,7 +343,7 @@ describe Bigbluebutton::RecordingsController do
 
         context "and it is downloadable" do
           before {
-            format.playback_type.update_attributes(downloadable: true)
+            format.playback_type.update(downloadable: true)
             get :play, :id => recording.to_param, :type => format.format_type
           }
           it { should respond_with(:redirect) }
@@ -352,7 +352,7 @@ describe Bigbluebutton::RecordingsController do
 
         context "and it is not downloadable" do
           before {
-            format.playback_type.update_attributes(downloadable: false)
+            format.playback_type.update(downloadable: false)
             get :play, :id => recording.to_param, :type => format.format_type
           }
           it { should respond_with(:success) }
@@ -366,7 +366,7 @@ describe Bigbluebutton::RecordingsController do
 
         context "and it is downloadable" do
           before {
-            format.playback_type.update_attributes(downloadable: true)
+            format.playback_type.update(downloadable: true)
             get :play, :id => recording.to_param, :type => format.format_type
           }
           it { should respond_with(:redirect) }
@@ -375,7 +375,7 @@ describe Bigbluebutton::RecordingsController do
 
         context "and it is not downloadable" do
           before {
-            format.playback_type.update_attributes(downloadable: false)
+            format.playback_type.update(downloadable: false)
             get :play, :id => recording.to_param, :type => format.format_type
           }
           it { should respond_with(:redirect) }
