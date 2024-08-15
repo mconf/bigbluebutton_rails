@@ -19,7 +19,7 @@ describe BigbluebuttonPlaybackType do
       let!(:first) { FactoryBot.create(:bigbluebutton_playback_type, default: true) }
       let!(:target) { FactoryBot.create(:bigbluebutton_playback_type, default: false) }
       before(:each) {
-        target.update_attributes(default: true)
+        target.update(default: true)
       }
       it { target.reload.default.should be(true) }
       it { first.reload.default.should be(false) }
@@ -29,7 +29,7 @@ describe BigbluebuttonPlaybackType do
       let!(:first) { FactoryBot.create(:bigbluebutton_playback_type, default: true) }
       let!(:target) { FactoryBot.create(:bigbluebutton_playback_type, default: false) }
       before(:each) {
-        target.update_attributes(identifier: "any")
+        target.update(identifier: "any")
       }
       it { target.reload.default.should be(false) }
       it { first.reload.default.should be(true) }
@@ -39,7 +39,7 @@ describe BigbluebuttonPlaybackType do
       let!(:first) { FactoryBot.create(:bigbluebutton_playback_type, default: false) }
       let!(:target) { FactoryBot.create(:bigbluebutton_playback_type, default: true) }
       before(:each) {
-        target.update_attributes(default: false)
+        target.update(default: false)
       }
       it { target.reload.default.should be(false) }
       it { first.reload.default.should be(false) }

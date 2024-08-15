@@ -117,7 +117,7 @@ class BigbluebuttonMeeting < ActiveRecord::Base
           attrs[:creator_id] = nil
           attrs[:creator_name] = nil
         end
-        recording.meeting.update_attributes(attrs)
+        recording.meeting.update(attrs)
       end
     end
   end

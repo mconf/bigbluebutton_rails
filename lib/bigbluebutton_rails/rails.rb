@@ -2,7 +2,9 @@ module BigbluebuttonRails
   class Engine < ::Rails::Engine
 
     initializer 'bigbluebutton_rails.helper' do |app|
-      ActionView::Base.send :include, BigbluebuttonRailsHelper
+      Rails.application.config.after_initialize do
+        ActionView::Base.send :include, BigbluebuttonRailsHelper
+      end
     end
 
     initializer "bigbluebutton_rails.controller_methods" do

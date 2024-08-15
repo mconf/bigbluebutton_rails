@@ -7,7 +7,7 @@ class BigbluebuttonRailsTo300 < ActiveRecord::Migration
 
     BigbluebuttonMeeting.find_each do |meeting|
       if meeting.recording.present?
-        meeting.update_attributes(title: meeting.recording.description)
+        meeting.update(title: meeting.recording.description)
       end
     end
 

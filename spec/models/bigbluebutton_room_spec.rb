@@ -163,8 +163,8 @@ describe BigbluebuttonRoom do
     context "searches by both name and params" do
       let(:terms) { ['abcdef'] }
       before {
-        rooms[1].update_attributes(name: 'abcdef')
-        rooms[2].update_attributes(slug: 'abcdef')
+        rooms[1].update(name: 'abcdef')
+        rooms[2].update(slug: 'abcdef')
       }
       it { subject.count.should be(2) }
       it { subject.should include(rooms[1], rooms[2]) }
@@ -301,14 +301,14 @@ describe BigbluebuttonRoom do
   context "when room set to private" do
     context "sets keys that are not yet defined" do
       let(:room) { FactoryBot.create(:bigbluebutton_room, :private => false, :moderator_key => nil, :attendee_key => nil) }
-      before(:each) { room.update_attributes(:private => true) }
+      before(:each) { room.update(:private => true) }
       it { room.moderator_key.should_not be_nil }
       it { room.attendee_key.should_not be_nil }
     end
 
     context "only sets the keys if the room was public before" do
       let(:room) { FactoryBot.create(:bigbluebutton_room, :private => true, :moderator_key => "123", :attendee_key => "321") }
-      before(:each) { room.update_attributes(:private => true) }
+      before(:each) { room.update(:private => true) }
       it { room.moderator_key.should == "123" }
       it { room.attendee_key.should == "321" }
     end
@@ -628,7 +628,7 @@ describe BigbluebuttonRoom do
       }
       let(:expected_params) { get_create_params(room) }
       before {
-        room.update_attributes(:welcome_msg => "Anything")
+        room.update(:welcome_msg => "Anything")
         FactoryBot.create(:bigbluebutton_room_metadata, :owner => room)
         FactoryBot.create(:bigbluebutton_room_metadata, :owner => room)
         mocked_api.stub(:"request_headers=")
@@ -749,7 +749,7 @@ describe BigbluebuttonRoom do
 
         context "when the call to create doesn't return a voice bridge" do
           before do
-            room.update_attributes(:voice_bridge => nil)
+            room.update(:voice_bridge => nil)
             hash_create.delete(:voiceBridge)
             mocked_api.should_receive(:create_meeting)
               .with(room.name, room.meetingid, expected_params)
@@ -773,7 +773,7 @@ describe BigbluebuttonRoom do
           context "sets the voice bridge in the params if there's a voice bridge" do
             let(:voice_bridge) { SecureRandom.random_number(99999).to_s }
             before do
-              room.update_attributes(:voice_bridge => voice_bridge)
+              room.update(:voice_bridge => voice_bridge)
               create_params = get_create_params(room)
               create_params.merge!({ :voiceBridge => voice_bridge })
               mocked_api.should_receive(:create_meeting)
@@ -788,7 +788,7 @@ describe BigbluebuttonRoom do
           context "doesn't set the voice bridge if it's blank" do
             let(:voice_bridge) { SecureRandom.random_number(99999) }
             before do
-              room.update_attributes(:voice_bridge => "")
+              room.update(:voice_bridge => "")
               mocked_api.should_receive(:create_meeting)
                 .with(room.name, room.meetingid, expected_params)
                 .and_return(hash_create)
@@ -1224,7 +1224,7 @@ describe BigbluebuttonRoom do
 
   context "#generate_dial_number" do
     context "uses the last room creatd to set dial number" do
-      before { BigbluebuttonRoom.last.update_attributes(dial_number: '1234-5678') }
+      before { BigbluebuttonRoom.last.update(dial_number: '1234-5678') }
       it { BigbluebuttonRoom.generate_dial_number('x').should eql('1234-5679') }
     end
 

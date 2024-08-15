@@ -10,7 +10,7 @@ class BigbluebuttonRailsTo220B < ActiveRecord::Migration
     add_column :bigbluebutton_recordings, :temp_end_time, :decimal, precision: 14, scale: 0
 
     BigbluebuttonRecording.find_each do |rec|
-      rec.update_attributes(
+      rec.update(
         temp_start_time: rec.start_time.to_i,
         temp_end_time: rec.end_time.to_i
       )
@@ -23,13 +23,13 @@ class BigbluebuttonRailsTo220B < ActiveRecord::Migration
     rename_column :bigbluebutton_recordings, :temp_end_time, :end_time
 
     BigbluebuttonRecording.find_each do |rec|
-      rec.update_attributes(
+      rec.update(
         meeting_id: BigbluebuttonRecording.find_matching_meeting(rec).try(:id)
       )
     end
 
     BigbluebuttonRecording.where(meeting_id: nil).find_each do |rec|
-      rec.update_attributes(
+      rec.update(
         meeting_id: find_matching_meeting_closer_create_time(rec)
       )
     end
@@ -50,7 +50,7 @@ class BigbluebuttonRailsTo220B < ActiveRecord::Migration
         m.create_time = rec.start_time
         m.ended = true
       end
-      rec.update_attributes(meeting_id: meeting.id)
+      rec.update(meeting_id: meeting.id)
       puts "Created a meeting for the recording id-#{rec.id}: Meeting id-#{meeting.id}"
     end
 

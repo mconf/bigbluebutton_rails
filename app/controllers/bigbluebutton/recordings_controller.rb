@@ -34,7 +34,7 @@ class Bigbluebutton::RecordingsController < ApplicationController
 
   def update
     respond_with @recording do |format|
-      if @recording.update_attributes(recording_params)
+      if @recording.update(recording_params)
         format.html {
           message = t('bigbluebutton_rails.recordings.notice.update.success')
           redirect_to_using_params @recording, :notice => message

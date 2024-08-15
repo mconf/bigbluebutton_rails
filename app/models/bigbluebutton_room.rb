@@ -360,7 +360,7 @@ class BigbluebuttonRoom < ActiveRecord::Base
     attrs[:ended] = false if force_not_ended
 
     meeting = self.get_current_meeting
-    meeting.update_attributes(attrs) if meeting.present?
+    meeting.update(attrs) if meeting.present?
   end
 
   # Sets all meetings related to this room as not running
@@ -387,13 +387,13 @@ class BigbluebuttonRoom < ActiveRecord::Base
   end
 
   # Generates a new dial number following `pattern` and saves it in the room, returning
-  # the results of `update_attributes`.
+  # the results of `update`.
   # Will always generate a unique number. Tries several times if the number already
   # exists and returns `nil` in case it wasn't possible to generate a unique value.
   def generate_dial_number!(pattern=nil)
     unless pattern.nil?
       dn = self.class.generate_dial_number(pattern)
-      return self.update_attributes(dial_number: dn)
+      return self.update(dial_number: dn)
     else
       nil
     end

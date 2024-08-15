@@ -7,7 +7,10 @@ class BigbluebuttonPlaybackFormat < ActiveRecord::Base
   delegate :name, :identifier, :visible, :visible?, :default, :default?,
            :description, :downloadable, :downloadable?,
            to: :playback_type, allow_nil: true
-  alias_attribute :format_type, :identifier
+
+  def format_type
+    identifier
+  end
 
   validates :recording_id, :presence => true
 

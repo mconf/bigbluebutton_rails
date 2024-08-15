@@ -70,7 +70,7 @@ class Bigbluebutton::ServersController < ApplicationController
 
   def update
     respond_with @server do |format|
-      if @server.update_attributes(server_params)
+      if @server.update(server_params)
         format.html {
           message = t('bigbluebutton_rails.servers.notice.update.success')
           redirect_to_using_params @server, :notice => message

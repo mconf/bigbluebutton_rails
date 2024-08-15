@@ -24,7 +24,7 @@ class BigbluebuttonRecording < ActiveRecord::Base
 
   scope :published, -> { where(:published => true) }
 
-  serialize :recording_users, Array
+  serialize :recording_users, type: Array
   
   attr_accessor :skip_callbacks
 

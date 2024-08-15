@@ -121,7 +121,7 @@ describe Bigbluebutton::Api::RoomsController do
 
     context "content" do
       let(:owner) { FactoryBot.create(:bigbluebutton_server) } # could be any model
-      before { room.update_attributes(owner: owner) }
+      before { room.update(owner: owner) }
       before(:each) { get :index, format: :json }
 
       it { JSON.parse(response.body)['data'][0]['attributes']['name'].should eql(room.name) }
@@ -142,7 +142,7 @@ describe Bigbluebutton::Api::RoomsController do
     end
 
     context "filtering" do
-      before { room.update_attributes(name: "La Lo", slug: "lalo-1") }
+      before { room.update(name: "La Lo", slug: "lalo-1") }
       let!(:room2) { FactoryBot.create(:bigbluebutton_room, name: "La Le", slug: "lale-2") }
       let!(:room3) { FactoryBot.create(:bigbluebutton_room, name: "Li Lo", slug: "lilo") }
 
@@ -354,7 +354,7 @@ describe Bigbluebutton::Api::RoomsController do
     end
 
     context "basic" do
-      before { room.update_attributes(private: false) }
+      before { room.update(private: false) }
       before(:each) { post :join, id: room.to_param, format: :json, name: 'User 1' }
       it { should respond_with(:success) }
       it { should respond_with_content_type('json') }
@@ -378,7 +378,7 @@ describe Bigbluebutton::Api::RoomsController do
 
       context "attendee in a private room" do
         before {
-          room.update_attributes(private: true)
+          room.update(private: true)
           room.should_receive(:parameterized_join_url).with('User 1', :attendee, nil, {}).and_return(expected_url)
         }
         before(:each) { post :join, id: room.to_param, format: :json, name: 'User 1', key: room.attendee_key }
@@ -387,7 +387,7 @@ describe Bigbluebutton::Api::RoomsController do
 
       context "moderator in a private room" do
         before {
-          room.update_attributes(private: true)
+          room.update(private: true)
           room.should_receive(:parameterized_join_url).with('User 1', :moderator, nil, {}).and_return(expected_url)
         }
         before(:each) { post :join, id: room.to_param, format: :json, name: 'User 1', key: room.moderator_key }
@@ -451,7 +451,7 @@ describe Bigbluebutton::Api::RoomsController do
     end
 
     context "when a key is not informed and the room is private" do
-      before { room.update_attributes(private: true) }
+      before { room.update(private: true) }
       before(:each) { post :join, id: room.to_param, format: :json, name: 'User 1' }
       it { JSON.parse(response.body)['errors'][0]['status'].should eql('400') }
       it {
@@ -465,7 +465,7 @@ describe Bigbluebutton::Api::RoomsController do
     end
 
     context "attendee in a private room with wrong key" do
-      before { room.update_attributes(private: true) }
+      before { room.update(private: true) }
       before(:each) { post :join, id: room.to_param, format: :json, name: 'User 1', key: 'WRONG' }
       it { JSON.parse(response.body)['errors'][0]['status'].should eql('403') }
       it {

@@ -27,7 +27,7 @@ describe Bigbluebutton::PlaybackTypesController do
     context "on failure" do
       before(:each) {
         BigbluebuttonPlaybackType.should_receive(:find).and_return(playback_type)
-        playback_type.should_receive(:update_attributes).and_return(false)
+        playback_type.should_receive(:update).and_return(false)
         playback_type.errors.add :identifier, "first"
         playback_type.errors.add :visible, "second"
         put :update, :id => playback_type.to_param, :bigbluebutton_playback_type => new_playback_type.attributes
@@ -50,7 +50,7 @@ describe Bigbluebutton::PlaybackTypesController do
         # we just check that the rails method 'permit' is being called on the hash with the
         # correct parameters
         BigbluebuttonPlaybackType.stub(:find).and_return(playback_type)
-        playback_type.stub(:update_attributes).and_return(true)
+        playback_type.stub(:update).and_return(true)
         attrs.stub(:permit).and_return(attrs)
         controller.stub(:params).and_return(params)
 
