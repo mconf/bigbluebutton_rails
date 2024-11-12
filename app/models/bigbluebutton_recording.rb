@@ -397,8 +397,8 @@ class BigbluebuttonRecording < ActiveRecord::Base
 
   # Remove the unused playback types from the list.
   def self.cleanup_playback_types
-    ids = BigbluebuttonPlaybackFormat.uniq.pluck(:playback_type_id)
-    BigbluebuttonPlaybackType.destroy_all(['id NOT IN (?)', ids])
+    ids = BigbluebuttonPlaybackFormat.pluck(:playback_type_id).uniq
+    BigbluebuttonPlaybackType.where.not(id: ids).destroy_all
   end
 
   # Finds the BigbluebuttonMeeting that generated this recording. The meeting is searched using
